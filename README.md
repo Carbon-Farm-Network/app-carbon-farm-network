@@ -1,4 +1,4 @@
-# Acfn
+# ACFN
 
 ## Environment Setup
 
@@ -7,7 +7,7 @@
 Enter the nix shell by running this in the root folder of the repository: 
 
 ```bash
-nix-shell
+nix develop
 npm install
 ```
 
