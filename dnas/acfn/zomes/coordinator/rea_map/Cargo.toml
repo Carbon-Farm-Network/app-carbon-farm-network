@@ -1,0 +1,15 @@
+[package]
+name = "rea_map"
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "rea_map"
+
+[dependencies]
+hdk = { workspace = true }
+
+serde = { workspace = true }
+
+rea_map_integrity = { workspace = true } 

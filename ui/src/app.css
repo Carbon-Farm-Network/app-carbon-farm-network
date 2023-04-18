@@ -1,0 +1,10 @@
+:root {
+  --mdc-theme-primary: #7B1FA2;
+  --mdc-theme-secondary: #FF5722;
+}
+
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;

@@ -1,0 +1,19 @@
+---
+manifest_version: "1"
+name: acfn
+integrity:
+  network_seed: ~
+  properties: ~
+  origin_time: 1681488895304766
+  zomes:
+    - name: rea_map_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/rea_map_integrity.wasm"
+      dependencies: ~
+coordinator:
+  zomes:
+    - name: rea_map
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/rea_map.wasm"
+      dependencies:
+        - name: rea_map_integrity
