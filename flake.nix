@@ -26,6 +26,7 @@
             devShells.default = pkgs.mkShell {
               inputsFrom = [ inputs.holochain.devShells.${system}.holonix ];
               packages = [ pkgs.nodejs-18_x ];
+              GIO_MODULE_DIR="${pkgs.glib-networking}/lib/gio/modules/";
             };
           };
       };

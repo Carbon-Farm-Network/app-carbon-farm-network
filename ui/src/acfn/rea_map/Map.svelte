@@ -28,7 +28,7 @@
   <!-- This example requires Tailwind CSS v2.0+ -->
   <LeafletMap bind:this={leafletMap} options={mapOptions}>
     <TileLayer url={tileUrl} options={tileLayerOptions} />
-    <!-- {#each agents as agent}
+    {#each agents as agent}
       <Marker
         latLng={agent.latLng}
         events={['click']}
@@ -43,6 +43,6 @@
         <Popup><b>{agent.popup}</b></Popup>
         {/if}
       </Marker>
-    {/each} -->
+    {/each}
   </LeafletMap>
   
