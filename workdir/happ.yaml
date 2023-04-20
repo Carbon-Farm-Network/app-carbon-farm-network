@@ -3,12 +3,55 @@ manifest_version: "1"
 name: acfn
 description: ~
 roles:
+
   - name: acfn
     provisioning:
       strategy: create
       deferred: false
     dna:
       bundled: "../dnas/acfn/workdir/acfn.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      version: ~
+      clone_limit: 0
+
+  - name: hrea_observation_0
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "./hrea_observation.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      version: ~
+      clone_limit: 0
+
+  - name: hrea_specification_0
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "./hrea_specification.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      version: ~
+      clone_limit: 0
+
+  - name: hrea_agent_0
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "./hrea_agent.dna"
       modifiers:
         network_seed: ~
         properties: ~
