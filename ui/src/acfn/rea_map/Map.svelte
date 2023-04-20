@@ -1,7 +1,7 @@
 <script lang="ts">
     import { LeafletMap, TileLayer, Icon, Marker, Popup } from 'svelte-leafletjs'
     import 'leaflet/dist/leaflet.css'
-    import type { Agent } from "globals"
+    import type { Agent } from './types'
     const mapOptions = {
       center: [41.083, -74.042],
       zoom: 5
@@ -28,6 +28,7 @@
   <!-- This example requires Tailwind CSS v2.0+ -->
   <LeafletMap bind:this={leafletMap} options={mapOptions}>
     <TileLayer url={tileUrl} options={tileLayerOptions} />
+    <div style="min-height: 50vh">.</div>
     {#each agents as agent}
       <Marker
         latLng={agent.latLng}
@@ -45,4 +46,3 @@
       </Marker>
     {/each}
   </LeafletMap>
-  
