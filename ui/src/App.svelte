@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount, setContext } from 'svelte';
-  import type { ActionHash, AppAgentClient } from '@holochain/client';
-  import { AppAgentWebsocket } from '@holochain/client';
+  import { onMount } from 'svelte';
+  import initGraphQLClient from '@vf-ui/graphql-client-holochain';
+  import { setClient } from "svelte-apollo";
   import '@material/mwc-circular-progress';
 
   import Search from './acfn/rea_map/Search.svelte'
@@ -9,24 +9,20 @@
   import allAgents from './data/agents.json'
   import Map from './acfn/rea_map/Map.svelte'
 
-  import { clientContext } from './contexts';
-
-  let client: AppAgentClient | undefined;
   let loading = true;
+  let error: Error | undefined
 
-  $: client, loading;
+  $: loading, error;
 
+  // init hREA GraphQL API connection
   onMount(async () => {
-    // We pass '' as url because it will dynamically be replaced in launcher environments
-    client = await AppAgentWebsocket.connect('', 'acfn');
-
-    
-
+    try {
+      // :NOTE: no parameters will autoconnect in privileged Holochain UI environments
+      setClient(await initGraphQLClient())
+    } catch (e) {
+      error = e as Error
+    }
     loading = false;
-  });
-
-  setContext(clientContext, {
-    getClient: () => client,
   });
 
   let agents = allAgents;
