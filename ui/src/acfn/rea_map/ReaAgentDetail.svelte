@@ -1,75 +1,48 @@
 <script lang="ts">
-import { createEventDispatcher, onMount, getContext } from 'svelte';
-import '@material/mwc-circular-progress';
-import { decode } from '@msgpack/msgpack';
-import type { Record, ActionHash, AppAgentClient, EntryHash, AgentPubKey, DnaHash } from '@holochain/client';
-import { clientContext } from '../../contexts';
-import type { ReaAgent } from './types';
+import { createEventDispatcher, onMount } from 'svelte';
+import { query } from "svelte-apollo"
+import gql from 'gql-tag'
+import { ID } from '@valueflows/vf-graphql'
+
 import '@material/mwc-circular-progress';
 import type { Snackbar } from '@material/mwc-snackbar';
 import '@material/mwc-snackbar';
 import '@material/mwc-icon-button';
-import EditReaAgent from './EditReaAgent.svelte'; 
+import EditReaAgent from './EditReaAgent.svelte';
 
 const dispatch = createEventDispatcher();
 
-export let reaAgentHash: ActionHash;
-
-let client: AppAgentClient = (getContext(clientContext) as any).getClient();
-
-let loading = true;
-let error: any = undefined;
-
-let record: Record | undefined;
-let reaAgent: ReaAgent | undefined;
+export let reaAgentHash: ID;
 
 let editing = false;
 
 let errorSnackbar: Snackbar;
-  
-$: editing,  error, loading, record, reaAgent;
+
+$: editing;
+
+const READ_AGENT = gql`
+	query GetMyAgent($id: ID!) {
+		agent(id: $id) {
+			id
+			name
+		}
+	}
+`
+
+const record = query(READ_AGENT, {
+	variables: { id: reaAgentHash },
+});
+$: record.refetch({ reaAgentHash });
 
 onMount(async () => {
   if (reaAgentHash === undefined) {
     throw new Error(`The reaAgentHash input is required for the ReaAgentDetail element`);
   }
-  await fetchReaAgent();
 });
-
-async function fetchReaAgent() {
-  loading = true;
-  error = undefined;
-  record = undefined;
-  reaAgent = undefined;
-  
-  try {
-    record = await client.callZome({
-      cap_secret: null,
-      role_name: 'acfn',
-      zome_name: 'rea_map',
-      fn_name: 'get_rea_agent',
-      payload: reaAgentHash,
-    });
-    if (record) {
-      reaAgent = decode((record.entry as any).Present.entry) as ReaAgent;
-    }
-  } catch (e) {
-    error = e;
-  }
-
-  loading = false;
-}
 
 async function deleteReaAgent() {
   try {
-    await client.callZome({
-      cap_secret: null,
-      role_name: 'acfn',
-      zome_name: 'rea_map',
-      fn_name: 'delete_rea_agent',
-      payload: reaAgentHash,
-    });
-    dispatch('rea-agent-deleted', { reaAgentHash: reaAgentHash });
+    // :TODO:
   } catch (e: any) {
     errorSnackbar.labelText = `Error deleting the rea agent: ${e.data.data}`;
     errorSnackbar.show();
@@ -80,19 +53,19 @@ async function deleteReaAgent() {
 <mwc-snackbar bind:this={errorSnackbar} leading>
 </mwc-snackbar>
 
-{#if loading}
+{#if record.loading}
 <div style="display: flex; flex: 1; align-items: center; justify-content: center">
   <mwc-circular-progress indeterminate></mwc-circular-progress>
 </div>
-{:else if error}
-<span>Error fetching the rea agent: {error.data.data}</span>
+{:else if record.error}
+<span>Error fetching the rea agent: {record.error}</span>
 {:else if editing}
+<!-- :TODO: there is work to do here RE rewiring update logics -->
 <EditReaAgent
-  originalReaAgentHash={ reaAgentHash}
-  currentRecord={record}
+  originalReaAgentHash={reaAgentHash}
+  currentRecord={record.data.agent}
   on:rea-agent-updated={async () => {
     editing = false;
-    await fetchReaAgent()
   } }
   on:edit-canceled={() => { editing = false; } }
 ></EditReaAgent>
@@ -107,34 +80,33 @@ async function deleteReaAgent() {
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Name:</strong></span>
-    <span style="white-space: pre-line">{ reaAgent.name }</span>
+    <span style="white-space: pre-line">{ record.data.agent.name }</span>
   </div>
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Latitude:</strong></span>
-    <span style="white-space: pre-line">{ reaAgent.latitude }</span>
+    <span style="white-space: pre-line">{ record.data.agent.latitude }</span>
   </div>
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Longitude:</strong></span>
-    <span style="white-space: pre-line">{ reaAgent.longitude }</span>
+    <span style="white-space: pre-line">{ record.data.agent.longitude }</span>
   </div>
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Image Url:</strong></span>
-    <span style="white-space: pre-line">{ reaAgent.image_url }</span>
+    <span style="white-space: pre-line">{ record.data.agent.image_url }</span>
   </div>
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Address:</strong></span>
-    <span style="white-space: pre-line">{ reaAgent.address }</span>
+    <span style="white-space: pre-line">{ record.data.agent.address }</span>
   </div>
 
   <div style="display: flex; flex-direction: row; margin-bottom: 16px">
     <span style="margin-right: 4px"><strong>Icon Url:</strong></span>
-    <span style="white-space: pre-line">{ reaAgent.icon_url }</span>
+    <span style="white-space: pre-line">{ record.data.agent.icon_url }</span>
   </div>
 
 </div>
 {/if}
-
