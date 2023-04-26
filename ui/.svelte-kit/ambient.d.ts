@@ -60,6 +60,7 @@ declare module '$env/static/private' {
 	export const builder: string;
 	export const XMODIFIERS: string;
 	export const DESKTOP_SESSION: string;
+	export const RBENV_SHELL: string;
 	export const shellHook: string;
 	export const npm_config_globalconfig: string;
 	export const EDITOR: string;
@@ -183,6 +184,7 @@ declare module '$env/static/private' {
 	export const depsBuildBuildPropagated: string;
 	export const npm_config_global_prefix: string;
 	export const NIX_CC_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu: string;
+	export const GIO_MODULE_DIR: string;
 	export const CONFIG_SHELL: string;
 	export const __structuredAttrs: string;
 	export const npm_node_execpath: string;
@@ -258,6 +260,7 @@ declare module '$env/dynamic/private' {
 		builder: string;
 		XMODIFIERS: string;
 		DESKTOP_SESSION: string;
+		RBENV_SHELL: string;
 		shellHook: string;
 		npm_config_globalconfig: string;
 		EDITOR: string;
@@ -381,6 +384,7 @@ declare module '$env/dynamic/private' {
 		depsBuildBuildPropagated: string;
 		npm_config_global_prefix: string;
 		NIX_CC_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu: string;
+		GIO_MODULE_DIR: string;
 		CONFIG_SHELL: string;
 		__structuredAttrs: string;
 		npm_node_execpath: string;
