@@ -1,0 +1,223 @@
+[
+  {
+    "name": "Laughing Goat Fiber Farm",
+    "latLng": [42.44705, -76.56986],
+    "imageUrl": "/laughing_goat.png",
+    "address": "1485 Mecklenburg Road Ithaca, NY 14850",
+    "iconUrl": "/farm.svg",
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Dashing Star Farm",
+    "address": "157 Indian Lake Road Millerton, NY 12546",
+    "iconUrl": "/mill.svg",
+    "latLng": [41.91452, -73.51729],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      },
+      {
+        "name": "Gray wool Unwashed",
+        "quantity": 100,
+        "price": 1,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/02/01",
+        "resourceType": {
+          "color": "gray",
+          "fabric": "wool"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Stone Barns Center",
+    "iconUrl": "/farm.svg",
+    "address": "630 Bedford Road, Tarrytown, NY 10591",
+    "latLng": [41.10322, -73.82446],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Little Creek Farm Alpacas",
+    "iconUrl": "/farm.svg",
+    "address": "321 Hardscrabble Rd North Salem, NY 10560",
+    "latLng": [41.34955,-73.60903],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "La Basse Cour",
+    "iconUrl": "/farm.svg",
+    "address": "3228 Gun House Hill Road, South Kortright, NY 13842",
+    "latLng": [42.41200137139887, -74.71151581375842],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Faraway Farm Alpacas",
+    "iconUrl": "/farm.svg",
+    "address": "1307 Baptist Church Road, Yorktown Heights, NY 10598",
+    "latLng": [41.25580045963474, -73.82250681564271],
+    "offers": [
+    ]
+  },
+  {
+    "name": "Bartlettyarns, Inc.",
+    "iconUrl": "/mill.svg",
+    "address": "20 Water Street, Harmony, Maine",
+    "latLng": [44.971332213114316, -69.54652735260258],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Rosehaven Mill",
+    "iconUrl": "/mill.svg",
+    "address": "2027 Rt 17B Bethel, NY 12720",
+    "latLng": [41.68465966639109, -74.87434810668307],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Hudson Valley Sheep & Wool Company",
+    "iconUrl": "/mill.svg",
+    "address": "192 Yantz Rd., Red Hook, NY 12571",
+    "latLng": [41.98186923716386, -73.84963992811701],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "NJ Knitting Corp.",
+    "iconUrl": "/knitting.svg",
+    "address": "76 Fayette Street Perth Amboy, NJ 08861",
+    "latLng": [40.510085106315, -74.26510137363024],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Simply Knitting Mills, Inc",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  }
+]
