@@ -19,9 +19,9 @@
     "download-hrea-agent": "[ ! -f \"workdir/hrea_agent.dna\" ] && curl -L --output workdir/hrea_agent.dna https://github.com/h-REA/hREA/releases/download/happ-0.1.3-beta/hrea_agent.dna; exit 0",
     "clean:hrea-modules": "rimraf workdir/hrea_observation.dna; rimraf workdir/hrea_specification.dna; rimraf workdir/hrea_agent.dna",
     "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do echo \"  Remove $DIR\"; rm -Rf \"$DIR\"; done",
-    "clean:build-cache": "rimraf .cargo",
+    "clean:build-cache": "rimraf .cargo; rimraf ui/.svelte-kit",
     "clean:build": "rimraf target; rm dnas/acfn/workdir/acfn.dna; rm workdir/acfn.happ",
-    "clean": "npm run clean:modules; npm run clean:build; npm run clean:build-cache; npm run clean:hrea-modules"
+    "clean": "npm run clean:build; npm run clean:build-cache; npm run clean:hrea-modules; npm run clean:modules"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.1.1",
