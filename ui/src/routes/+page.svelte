@@ -1,59 +1,103 @@
 <script lang="ts">
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
+  import type { ComponentType } from 'svelte'
+  import { setClient, query } from 'svelte-apollo'
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { gql } from 'graphql-tag'
+  import autoConnect from '@vf-ui/graphql-client-holochain'
+  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { ApolloClient, NormalizedCacheObject } from '@apollo/client'
+
+  import Error from './__error.svelte'
   import Search from '$lib/Search.svelte'
   import SidePanel from '$lib/SidePanel.svelte'
-  import allAgents from '$lib/data/agents.json'
 
-  import bindSchema, { autoConnect } from '@valueflows/vf-graphql-holochain'
-  import { gql } from 'graphql-tag'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
 
+  // query & data bindings
 
-  let MapComponent
+  const GET_ALL_AGENTS = gql`
+    ${AGENT_CORE_FIELDS}
+    query {
+      agents(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...AgentCoreFields
+          }
+        }
+      }
+    }
+  `
+
+  interface QueryResponse {
+    agents: AgentConnection & RelayConn<Agent>
+  }
+
+  // init and manage GraphQL client connection
+
+  let client: ApolloClient<NormalizedCacheObject> | null = null
+  let loading = true
+  let error = null
+
+  async function initConnection() {
+    try {
+      // :NOTE: conductor URI need not be set when running via Tauri window
+      client = await autoConnect()
+    } catch (e) {
+      error = e
+    }
+    loading = false
+    error = null
+  }
+
+  initConnection()
+
+  // map component state
+
+  let panelInfo: any,
+      MapComponent: ComponentType,
+      agentsQuery: ReadableQuery<QueryResponse>,
+      agents: Agent[]
+
   onMount(async () => {
+    // defer Leaflet map load until rendering, and only in browser environment
     if (browser) {
       MapComponent = (await import('$lib/Map.svelte')).default
     }
-
-    const {dnaConfig} = await autoConnect('ws://localhost:4000', 'hrea_suite');
-    const schema = await bindSchema({ conductorUri: 'ws://localhost:4000', dnaConfig });
-    
-    // console.log(dnaConfig, "dna");
-    // console.log(conductorUri, "conductor");
-
-    // const query = gql`
-    //   query myAgent {
-    //     id
-    //     name
-    //   }`
-
-    // const response = await fetch('ws://localhost:4000', {
-    //    method: 'POST',
-    //    headers: {
-    //      'Content-Type': 'application/json',
-    //    },
-    //    body: JSON.stringify({
-    //      query,
-    //    })
-    //  });
-
-    //  const data = await response.json();
-    //  console.log(data);
   })
 
-  let agents = allAgents;
-  console.log(agents)
-  let displayAgents = [...agents]
-  let panelInfo: any
+  // reactive data bindings
+
+  $: {
+    // set client context & init query when connection has inited
+    if (client) {
+      setClient(client)
+      agentsQuery = query(GET_ALL_AGENTS)
+    }
+
+    // assign derived values from Agent list API
+    if ($agentsQuery.data) {
+      agents = flattenRelayConnection($agentsQuery.data?.agents)
+    }
+  }
 </script>
 
-{#if browser}
+{#if browser && agents !== undefined}
   <div class="relative h-full w-full">
-    <svelte:component this={MapComponent} agents={displayAgents} bind:panelInfo />
-	  <Search bind:allData={agents} bind:displayData={displayAgents} />
-    {#if panelInfo }
-      <SidePanel bind:panelInfo />
+    {#if $agentsQuery.loading}
+      <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
+    {:else if $agentsQuery.error}
+      <Error status="Problem loading network Agents" error={$agentsQuery.error} />
+    {:else}
+      <svelte:component this={MapComponent} agents={agents} bind:panelInfo />
+      <Search bind:allData={agents} bind:displayData={agents} />
+      {#if panelInfo }
+        <SidePanel bind:panelInfo />
+      {/if}
     {/if}
   </div>
 {/if}
-
