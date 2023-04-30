@@ -67,11 +67,7 @@
               -->
               <div class="ml-8">
                 {#if panelInfo && panelInfo.imageUrl}
-                  <img
-                    class="h-20 w-40"
-                    src="{panelInfo.imageUrl}"
-                    alt=""
-                  />
+                  <img class="h-20 w-40" src={panelInfo.imageUrl} alt="" />
                 {:else}
                   <span
                     class="inline-block h-14 w-14 rounded-full overflow-hidden bg-gray-100"
@@ -176,6 +172,22 @@
           </div>
         </div>
         <div class="px-4 pt-5 pb-5 sm:px-0 sm:pt-0">
+          <div class="ml-8 my-4 mr-12">
+            <ul class="divide-y divide-gray-100">
+              <li class="py-4">
+                <div class="flex items-center gap-x-3">
+                  <h3
+                    class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900"
+                  >
+                    Certified Climate Beneficial
+                  </h3>
+                  <p
+                    class="flex-none">yes</p
+                  >
+                </div>
+              </li>
+            </ul>
+          </div>
           <p class="ml-8">Offering:</p>
           <div class="mx-8">
             <ul role="list" class="divide-y divide-gray-200">

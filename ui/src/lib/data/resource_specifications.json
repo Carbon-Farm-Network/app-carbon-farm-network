@@ -1,0 +1,59 @@
+[
+  {
+    "name": "Laughing Goat Fiber Farm",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfResourceId": "something",
+    "defaultUnitOfEffort": "Work",
+    "defaultUnitOfEffortId": "something_else"
+  },
+  {
+    "name": "Dashing Star Farm",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "Stone Barns Center",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "Little Creek Farm Alpacas",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "La Basse Cour",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "Faraway Farm Alpacas",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "Bartlettyarns, Inc.",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "Rosehaven Mill",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "Hudson Valley Sheep & Wool Company",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "NJ Knitting Corp.",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  },
+  {
+    "name": "Simply Knitting Mills, Inc",
+    "defaultUnitOfResource": "Pound",
+    "defaultUnitOfEffort": "Work"
+  }
+]

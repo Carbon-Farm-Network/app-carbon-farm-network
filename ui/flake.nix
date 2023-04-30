@@ -17,7 +17,6 @@
 
       # Nixpkgs instantiated for supported system types.
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = self.overlays; });
-      nixpkgsNoOverlays = forAllSystems (system: import nixpkgs { inherit system; });
     in
     {
       overlays = [ devshell.overlays.default ];
@@ -27,7 +26,6 @@
             pkgs = nixpkgsFor.${system};
           in
           pkgs.devshell.mkShell {
-            packages = [ pkgs.nodePackages_latest.pnpm ];
             env = [
               {
                 name = "PATH";
@@ -57,41 +55,6 @@
                 help = "start hrea";
                 name = "start_hrea";
                 command = "hc sandbox run --all --ports 4000";
-              }
-
-              {
-                name = "clean";
-                category = "dev";
-                help = "Clean the package manager directory and local direnv";
-                command = ''
-                  direnv prune
-                  pnpm prune
-                  pnpm store prune
-                '';
-              }
-              {
-                name = "dev";
-                category = "dev";
-                help = "Start dev server locally";
-                command = "pnpm run dev";
-              }
-              {
-                name = "deps_update";
-                category = "dev";
-                help = "update dependencies";
-                command = "pnpm up --interactive --latest";
-              }
-              {
-                name = "build";
-                category = "dev";
-                help = "build the project for release";
-                command = "pnpm run build";
-              }
-              {
-                name = "preview";
-                category = "dev";
-                help = "preview the release build";
-                command = "pnpm run preview";
               }
             ];
           }
