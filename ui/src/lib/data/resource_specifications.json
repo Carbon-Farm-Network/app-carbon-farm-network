@@ -1,59 +1,46 @@
 [
   {
-    "name": "Laughing Goat Fiber Farm",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfResourceId": "something",
-    "defaultUnitOfEffort": "Work",
-    "defaultUnitOfEffortId": "something_else"
+    "name": "BROWN Alpaca dirty",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Dashing Star Farm",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "WHITE Alpaca dirty",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Stone Barns Center",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "GREY/BLACK Alpaca dirty",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Little Creek Farm Alpacas",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "WHITE WOOL dirty",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "La Basse Cour",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "BROWN Alpaca clean",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Faraway Farm Alpacas",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "WHITE Alpaca clean",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Bartlettyarns, Inc.",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "GREY/BLACK Alpaca clean",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Rosehaven Mill",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "WHITE WOOL clean",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Hudson Valley Sheep & Wool Company",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "Delivery Services",
+    "defaultUnitOfEffort": "Hour"
   },
   {
-    "name": "NJ Knitting Corp.",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "Scouring Services",
+    "defaultUnitOfResource": "Pound"
   },
   {
-    "name": "Simply Knitting Mills, Inc",
-    "defaultUnitOfResource": "Pound",
-    "defaultUnitOfEffort": "Work"
+    "name": "Spinning Services",
+    "defaultUnitOfEffort": "Hour"
   }
 ]
