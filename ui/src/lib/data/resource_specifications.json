@@ -42,5 +42,13 @@
   {
     "name": "Spinning Services",
     "defaultUnitOfEffort": "Hour"
+  },
+  {
+    "name": "US Dollar",
+    "defaultUnitOfResource": "Each"
+  },
+  {
+    "name": "BerkShares",
+    "defaultUnitOfResource": "Each"
   }
 ]
