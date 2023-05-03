@@ -7,7 +7,7 @@
   import { gql } from 'graphql-tag'
   import autoConnect from '@vf-ui/graphql-client-holochain'
   import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
-  import type { ApolloClient, NormalizedCacheObject } from '@apollo/client'
+  import type { ApolloClient, NormalizedCacheObject } from '@apollo/client/core'
 
   import Error from './__error.svelte'
   import Search from '$lib/Search.svelte'
@@ -41,17 +41,17 @@
 
   let client: ApolloClient<NormalizedCacheObject> | null = null
   let loading = true
-  let error = null
+  let error: Error | null = null
 
   async function initConnection() {
+    error = null
     try {
       // :NOTE: conductor URI need not be set when running via Tauri window
       client = await autoConnect()
     } catch (e) {
-      error = e
+      error = e as Error
     }
     loading = false
-    error = null
   }
 
   initConnection()
@@ -80,24 +80,29 @@
     }
 
     // assign derived values from Agent list API
-    if ($agentsQuery.data) {
-      agents = flattenRelayConnection($agentsQuery.data?.agents)
+    let current = agentsQuery && agentsQuery.getCurrentResult()
+    if (current) {
+      agents = flattenRelayConnection(current.data?.agents)
     }
   }
 </script>
 
-{#if browser && agents !== undefined}
-  <div class="relative h-full w-full">
+<div class="relative h-full w-full">
+  {#if agentsQuery !== undefined}
     {#if $agentsQuery.loading}
       <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
     {:else if $agentsQuery.error}
       <Error status="Problem loading network Agents" error={$agentsQuery.error} />
-    {:else}
+    {:else if agents}
       <svelte:component this={MapComponent} agents={agents} bind:panelInfo />
       <Search bind:allData={agents} bind:displayData={agents} />
       {#if panelInfo }
         <SidePanel bind:panelInfo />
       {/if}
+    {:else}
+      <Error status="Problem loading network Agents" error={error} />
     {/if}
-  </div>
-{/if}
+  {:else}
+    <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
+  {/if}
+</div>
