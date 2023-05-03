@@ -30,8 +30,5 @@
   },
   "engines": {
     "npm": ">=7.0.0"
-  },
-  "dependencies": {
-    "svelte-leafletjs": "^0.10.0"
   }
 }
