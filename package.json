@@ -1,11 +1,8 @@
 {
   "name": "acfn-dev",
   "private": true,
-  "workspaces": [
-    "ui",
-    "tests"
-  ],
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "postinstall": "npm run download-hrea-obs && npm run download-hrea-specification && npm run download-hrea-agent",
     "start": "AGENTS=2 npm run network",
     "network": "hc s clean && npm run build:happ && UI_PORT=8888 concurrently \"npm start -w ui\" \"npm run launch:happ\" \"holochain-playground\"",
