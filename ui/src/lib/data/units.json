@@ -1,0 +1,20 @@
+[
+  {
+    "id": "one",
+    "label": "one",
+    "symbol": "1",
+    "overrideLabel": "each",
+    "overrideSymbol": "ea"
+  },
+  {
+    "id": "poundAvoirdupois",
+    "label": "pound (avoirdupois)",
+    "symbol": "lb",
+    "overrideLabel": "pound"
+  },
+  {
+    "id: "hour",
+    "label": "hour",
+    "symbol": "h"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "name": "BROWN Alpaca dirty",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "WHITE Alpaca dirty",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "GREY/BLACK Alpaca dirty",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "WHITE WOOL dirty",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "BROWN Alpaca clean",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "WHITE Alpaca clean",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "GREY/BLACK Alpaca clean",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "WHITE WOOL clean",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "Delivery Services",
+    "defaultUnitOfEffort": "Hour"
+  },
+  {
+    "name": "Scouring Services",
+    "defaultUnitOfResource": "Pound"
+  },
+  {
+    "name": "Spinning Services",
+    "defaultUnitOfEffort": "Hour"
+  },
+  {
+    "name": "US Dollar",
+    "defaultUnitOfResource": "Each"
+  },
+  {
+    "name": "BerkShares",
+    "defaultUnitOfResource": "Each"
+  }
+]

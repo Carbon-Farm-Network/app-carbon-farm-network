@@ -90,25 +90,25 @@
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
 
             <a href="/" class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Dashboard</a
+              >Map</a
             >
 
             <a
-              href="/"
-              class="{path === '/monitor' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Monitor</a
+              href="/agents"
+              class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default"
+              >Agents</a
             >
 
             <a
-              href="/"
-              class="{path === '/configure' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Configure</a
+              href="/resource_specifications"
+              class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default"
+              >Resource specifications</a
             >
 
             <a
-              href="/"
-              class="{path === '/settings' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Settings</a
+              href="/offers"
+              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default"
+              >Offers</a
             >
           </div>
         </div>
@@ -208,25 +208,25 @@
   <div class="{ mobileMenuOpen ? '' : 'hidden' } sm:hidden" id="mobile-menu">
     <div class="px-2 pt-2 pb-3 space-y-1">
       <a href="/" class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Dashboard</a
+        >Map</a
       >
 
       <a
-        href="/"
-        class="{path === '/monitor' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Monitor</a
+        href="/agents"
+        class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default block"
+        >Agents</a
       >
 
       <a
-        href="/"
-        class="{path === '/configure' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Configure</a
+        href="/resource_specifications"
+        class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default block"
+        >Resource specifications</a
       >
 
       <a
-        href="/"
-        class="{path === '/settings' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Settings</a
+        href="/offers"
+        class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default block"
+        >Offers</a
       >
     </div>
   </div>
