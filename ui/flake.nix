@@ -33,11 +33,7 @@
               }
               {
                 name = "REACT_APP_HC_APP_ID";
-                value = "hrea_suite";
-              }
-              {
-                name = "REACT_APP_HC_CONN_URL";
-                value = "ws://localhost:4000";
+                value = "acfn";
               }
             ];
             commands = [
