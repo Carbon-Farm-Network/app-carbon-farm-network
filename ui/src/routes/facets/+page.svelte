@@ -1,18 +1,30 @@
 <script lang="ts">
-  import ResourceSpecificationModal from "$lib/ResourceSpecificationModal.svelte"
-  import resourceSpecifications from '$lib/data/resource_specifications.json'
+  import FacetModal from "$lib/FacetModal.svelte"
+  import allFacetGroups from '$lib/data/facet_groups.json'
+  import facets from '$lib/data/facets.json'
   let modalOpen = false;
-  let name = "";
+  let selectedId: string;
 </script>
 
-<ResourceSpecificationModal bind:open={modalOpen} bind:name={name} />
+<FacetModal bind:open={modalOpen} {selectedId} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
+    
     <div class="sm:flex-auto">
-      <h1 class="text-base font-semibold leading-6 text-gray-900">Resource specifications</h1>
+
+      <div>
+        <label for="facetGroup" class="block text-sm font-medium leading-6 text-gray-900">Facet group</label>
+        <select id="facetGroup" name="location" class="mt-2 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 w-48">
+          {#each allFacetGroups as facetGroup}
+            <option>{facetGroup}</option>
+          {/each}
+        </select>
+      </div>
+
+      <h1 class="text-base font-semibold leading-6 text-gray-900 pt-6">Facets</h1>
       <p class="mt-2 text-sm text-gray-700">
-        The types of resources your network creates, uses, trades; types of work; currencies, tokens.
+        A list of all the facets and their values for the facet group.
       </p>
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -20,7 +32,7 @@
         type="button"
         on:click={() => (modalOpen = true)}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >Add a resource specification</button
+        >Add a facet</button
       >
     </div>
   </div>
@@ -38,37 +50,55 @@
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Default unit of resource</th
+                >Description</th
               >
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Default unit of effort</th
+                >Order</th
+              >
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >Values</th
               >
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
-                <span class="sr-only">Edit</span>
+                <span class="sr-only">Edit facet</span>
+              </th>
+              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+                <span class="sr-only">Edit facet values</span>
               </th>
             </tr>
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
-            {#each resourceSpecifications as resourceSpecification, index}
+            {#each facets as {id, name, description, order, values}, index}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
                 class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                >{resourceSpecification.name}</td
+                >{name}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{resourceSpecification.defaultUnitOfResource || ''}</td
+                >{description}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{resourceSpecification.defaultUnitOfEffort || ''}</td
+                >{order}</td
+              >
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                >{values.join(", ")}</td
               >
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {name = resourceSpecification.name; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
-                  >Edit<span class="sr-only">, Lindsay Walton</span></button
+                <button type="button" on:click={() => {selectedId = id; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                  >Edit facet<span class="sr-only">, Lindsay Walton</span></button
+                >
+              </td>
+              <td
+                class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+              >
+                <a href={`/facet_values/${id}`} class="text-indigo-600 hover:text-indigo-900"
+                  >Edit values<span class="sr-only">, Lindsay Walton</span></a
                 >
               </td>
             </tr>

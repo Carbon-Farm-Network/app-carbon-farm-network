@@ -1,6 +1,8 @@
 <script lang="ts">
   export let open = false;
   export let name = "";
+  import facets from '$lib/data/facets.json'
+  import facetValues from '$lib/data/facet_values.json'
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
@@ -220,6 +222,29 @@
             </div>
           </div>
         </div>
+
+        {#each facets as {name}}
+
+          <div class="mt-4 text-left">
+            <div>
+              <label
+                for="type"
+                class="block text-sm font-medium leading-6 text-gray-900"
+                >{name}</label
+              >
+              <select
+                id="type"
+                name="type"
+                class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              >
+                {#each facetValues as {value}}
+                  <option>{value}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+        {/each}
+
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           <button
             type="button"
