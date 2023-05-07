@@ -106,6 +106,12 @@
             >
 
             <a
+              href="/facets"
+              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default"
+              >Facets</a
+            >
+
+            <a
               href="/offers"
               class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default"
               >Offers</a
@@ -221,6 +227,12 @@
         href="/resource_specifications"
         class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default block"
         >Resource specifications</a
+      >
+
+      <a
+        href="/facets"
+        class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default block"
+        >Facets</a
       >
 
       <a

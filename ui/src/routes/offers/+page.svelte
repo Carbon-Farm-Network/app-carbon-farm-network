@@ -12,7 +12,7 @@
     <div class="sm:flex-auto">
       <h1 class="text-base font-semibold leading-6 text-gray-900">Offers</h1>
       <p class="mt-2 text-sm text-gray-700">
-        A list of all the types of.
+        The goods or services you are offering within the network, now or generally.
       </p>
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
