@@ -1,13 +1,7 @@
 <script lang="ts">
   import FacetModal from "$lib/FacetModal.svelte"
   import allFacetGroups from '$lib/data/facet_groups.json'
-  const facets = [{
-    id: "climate",
-    name: "Climate beneficial certification",
-    description: "A very detailed description",
-    order: 1,
-    values: ["No", "Pending", "Certified"],
-  }];
+  import facets from '$lib/data/facets.json'
   let modalOpen = false;
   let selectedId: string;
 </script>

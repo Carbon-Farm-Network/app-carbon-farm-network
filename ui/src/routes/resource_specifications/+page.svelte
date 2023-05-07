@@ -59,10 +59,10 @@
                 >{resourceSpecification.name}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{resourceSpecification.defaultUnitOfResource}</td
+                >{resourceSpecification.defaultUnitOfResource || ''}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{resourceSpecification.defaultUnitOfEffort}</td
+                >{resourceSpecification.defaultUnitOfEffort || ''}</td
               >
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"

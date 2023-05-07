@@ -1,21 +1,6 @@
 <script lang="ts">
   import FacetValueModal from "$lib/FacetValueModal.svelte"
-  const facetValues = [{
-    id: "no",
-    value: "No",
-    order: 1,
-    description: "Haven't started",
-  },{
-    id: "pending",
-    value: "Pending",
-    order: 2,
-    description: "In process",
-  },{
-    id: "certified",
-    value: "Certified",
-    order: 3,
-    description: "Awarded",
-  }]
+  import facetValues from '$lib/data/facet_values.json'
   let modalOpen = false;
   let selectedId: string;
 </script>
