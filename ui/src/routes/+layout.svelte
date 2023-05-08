@@ -1,36 +1,37 @@
 <script lang="ts">
-	import "../global.css";
-  import Nav from '$lib/Nav.svelte'
-  import { onMount } from 'svelte';
+import { browser } from '$app/environment'
+import { setClient } from 'svelte-apollo'
 
-  let loaded = false
+import "../global.css"
+import { page } from '$app/stores'
 
-  import { page } from '$app/stores'
+import Nav from '$lib/Nav.svelte'
 
-  onMount(async () => {
-		loaded = true;
-	});
+/** @type {import('./$types').LayoutData} */
+export let data;
+if (browser) {
+  setClient(data.client)
+}
 </script>
 
-{#if !loaded }
-<section class="overflow-x-hidden w-screen relative">
-  <div class="fade-in h-screen flex flex-col items-center justify-center">
-    <h1 class="font-sans text-white sm:text-xl lg:text-3xl">
-      loader here?
-    </h1>
-  </div>
-</section>
+{#if !data || !data.client}
+  <section class="overflow-x-hidden w-screen relative">
+    <div class="fade-in h-screen flex flex-col items-center justify-center">
+      <h1 class="font-sans text-white sm:text-xl lg:text-3xl">
+        loader here?
+      </h1>
+    </div>
+  </section>
 {:else}
-<div class="grid">
-  <nav class="nav">
-    <Nav path={$page.url.pathname} />
-  </nav>
+  <div class="grid">
+    <nav class="nav">
+      <Nav path={$page.url.pathname} />
+    </nav>
 
-  <main class="main h-full">
-    <slot />
-  </main>
-  
-</div>
+    <main class="main h-full">
+      <slot />
+    </main>
+  </div>
 {/if}
 
 <style>
@@ -43,7 +44,7 @@
       'nav'
       'main'
   }
-  
+
   .nav {
     grid-area: nav;
   }
@@ -51,5 +52,5 @@
   .main {
     grid-area: main;
   }
-  
+
 </style>

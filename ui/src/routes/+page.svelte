@@ -2,14 +2,12 @@
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
-  import { setClient, query } from 'svelte-apollo'
+  import { query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import autoConnect from '@vf-ui/graphql-client-holochain'
   import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
-  import type { ApolloClient, NormalizedCacheObject } from '@apollo/client/core'
 
-  import Error from './__error.svelte'
+  import ErrorPage from './__error.svelte'
   import Search from '$lib/Search.svelte'
   import SidePanel from '$lib/SidePanel.svelte'
 
@@ -37,31 +35,11 @@
     agents: AgentConnection & RelayConn<Agent>
   }
 
-  // init and manage GraphQL client connection
-
-  let client: ApolloClient<NormalizedCacheObject> | null = null
-  let loading = true
-  let error: Error | null = null
-
-  async function initConnection() {
-    error = null
-    try {
-      // :NOTE: conductor URI need not be set when running via Tauri window
-      client = await autoConnect()
-    } catch (e) {
-      error = e as Error
-    }
-    loading = false
-  }
-
-  initConnection()
-
   // map component state
 
   let panelInfo: any,
       MapComponent: ComponentType,
-      agentsQuery: ReadableQuery<QueryResponse>,
-      agents: Agent[]
+      agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   onMount(async () => {
     // defer Leaflet map load until rendering, and only in browser environment
@@ -72,13 +50,9 @@
 
   // reactive data bindings
 
-  $: {
-    // set client context & init query when connection has inited
-    if (client) {
-      setClient(client)
-      agentsQuery = query(GET_ALL_AGENTS)
-    }
+  let agents: Agent[]
 
+  $: {
     // assign derived values from Agent list API
     let current = agentsQuery && agentsQuery.getCurrentResult()
     if (current) {
@@ -92,7 +66,7 @@
     {#if $agentsQuery.loading}
       <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
     {:else if $agentsQuery.error}
-      <Error status="Problem loading network Agents" error={$agentsQuery.error} />
+      <ErrorPage status="Problem loading network Agents" error={$agentsQuery.error} />
     {:else if agents}
       <svelte:component this={MapComponent} agents={agents} bind:panelInfo />
       <Search bind:allData={agents} bind:displayData={agents} />
@@ -100,7 +74,7 @@
         <SidePanel bind:panelInfo />
       {/if}
     {:else}
-      <Error status="Problem loading network Agents" error={error} />
+      <ErrorPage status="Problem loading network Agents" error={new Error("Failed to interpret response")} />
     {/if}
   {:else}
     <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
