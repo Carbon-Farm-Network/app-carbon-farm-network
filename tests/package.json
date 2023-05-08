@@ -8,7 +8,7 @@
     "@msgpack/msgpack": "^2.7.0",
     "@holochain/client": "^0.12.2",
     "@holochain/tryorama": "^0.11.0",
-    "typescript": "^4.9.4",
+    "typescript": "^5.0.0",
     "vitest": "^0.28.4"
   },
   "type": "module"
