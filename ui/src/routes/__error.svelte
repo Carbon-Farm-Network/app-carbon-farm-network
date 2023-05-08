@@ -3,7 +3,7 @@
   export let error
 
   const dev = process.env.NODE_ENV === 'development'
-  console.log(error)
+  console.warn(error)
 </script>
 
 <style>
