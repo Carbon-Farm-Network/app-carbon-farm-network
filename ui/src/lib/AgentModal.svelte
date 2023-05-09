@@ -3,7 +3,62 @@
   export let name = "";
   import facets from '$lib/data/facets.json'
   import facetValues from '$lib/data/facet_values.json'
+
+  import { onMount } from 'svelte'
+  import { gql } from 'graphql-tag'
+  import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import type { AgentConnection, Agent, Organization, OrganizationCreateParams } from '@valueflows/vf-graphql'
+  import { mutation } from 'svelte-apollo'
+  import type { Mutate } from 'svelte-apollo'
+
+  const ADD_AGENT = gql`
+    ${AGENT_CORE_FIELDS},
+    mutation($agent: OrganizationCreateParams!){
+      createOrganization(organization: $agent
+      ) {
+        agent {id, name, image, note}
+      }
+    }
+  `
+  interface QueryResponse {
+    agent: AgentConnection & RelayConn<Agent>
+  }
+
+  let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
+
+  async function handleSubmit(agent: OrganizationCreateParams) {
+    try {
+      await addAgent({ variables: { agent } }).then((res) => {
+        console.log(res)
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  // onMount(async () => {
+  // })
+
+  // // reactive data bindings
+
+  // let agent: Agent;
+
+  // $: {
+  //   // assign derived values from Agent list API
+  //   let current = agentsQuery && agentsQuery.getCurrentResult()
+  //   if (current) {
+  //     agents = flattenRelayConnection(current.data?.agents)
+  //   }
+  // }
 </script>
+<button on:click={() => {
+  handleSubmit({
+    name: "fake name",
+    image: "https://picsum.photos/200/300",
+    note: "This is a test",
+  })}
+}>add test agent</button>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.

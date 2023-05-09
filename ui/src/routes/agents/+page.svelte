@@ -3,6 +3,64 @@
   import allAgents from '$lib/data/agents.json'
   let modalOpen = false;
   let name = "";
+
+  import { browser } from '$app/environment'
+  import { onMount } from 'svelte'
+  import type { ComponentType } from 'svelte'
+  import { query } from 'svelte-apollo'
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { gql } from 'graphql-tag'
+  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+
+  // const GET_ALL_AGENTS = gql`
+  //   ${AGENT_CORE_FIELDS}
+  //   query {
+  //     agents(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           ...AgentCoreFields
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
+
+  // interface QueryResponse {
+  //   agents: AgentConnection & RelayConn<Agent>
+  // }
+
+  // // map component state
+
+  // // let panelInfo: any,
+  // //     MapComponent: ComponentType,
+  // //     agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+
+  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+
+  // onMount(async () => {
+  //   // defer Leaflet map load until rendering, and only in browser environment
+  //   if (browser) {
+  //     // MapComponent = (await import('$lib/Map.svelte')).default
+
+  //   }
+  // })
+
+  // // reactive data bindings
+
+  // let agents: any = []//[...allAgents]
+
+  // $: {
+  //   // assign derived values from Agent list API
+  //   let current = agentsQuery && agentsQuery.getCurrentResult()
+  //   if (current) {
+  //     agents = flattenRelayConnection(current.data?.agents)
+  //     console.log(agents)
+  //   }
+  // }
 </script>
 
 <AgentModal bind:open={modalOpen} bind:name={name} />
@@ -20,8 +78,7 @@
         type="button"
         on:click={() => (modalOpen = true)}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >Add an agent</button
-      >
+        >Add an agent</button>
     </div>
   </div>
   <div class="mt-8 flow-root">
@@ -47,6 +104,10 @@
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
+            <!-- {#each agents as agent, index}
+              hi
+              {agent.name}
+            {/each} -->
             {#each allAgents as agent, index}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td

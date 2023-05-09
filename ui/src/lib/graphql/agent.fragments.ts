@@ -18,3 +18,12 @@ export const PERSON_CORE_FIELDS = gql`
     note
   }
 `
+export const ORGANIZATION_CORE_FIELDS = gql`
+  fragment OrganizationCoreFields on Organization {
+    id
+    revisionId
+    name
+    image
+    note
+  }
+`
