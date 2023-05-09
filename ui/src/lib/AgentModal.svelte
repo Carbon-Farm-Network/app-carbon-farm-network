@@ -30,11 +30,10 @@
 
   async function handleSubmit(agent: OrganizationCreateParams) {
     try {
-      await addAgent({ variables: { agent } }).then((res) => {
-        console.log(res)
-      })
+      const res = await addAgent({ variables: { agent } })
+      console.log(res)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
