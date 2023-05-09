@@ -15,9 +15,10 @@
   const ADD_AGENT = gql`
     ${AGENT_CORE_FIELDS},
     mutation($agent: OrganizationCreateParams!){
-      createOrganization(organization: $agent
-      ) {
-        agent {id, name, image, note}
+      createOrganization(organization: $agent) {
+        agent {
+          ...AgentCoreFields
+        }
       }
     }
   `
