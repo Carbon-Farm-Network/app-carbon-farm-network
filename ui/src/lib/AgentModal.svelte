@@ -1,6 +1,13 @@
 <script lang="ts">
   export let open = false;
   export let name = "";
+  export let latitude = "";
+  export let longitude = "";
+  export let note = "";
+  export let logo = "";
+  export let type = "Organization";
+  export let role = "Farmer";
+  export let certification = "";
   import facets from '$lib/data/facets.json'
   import facetValues from '$lib/data/facet_values.json'
 
@@ -31,34 +38,22 @@
   async function handleSubmit(agent: OrganizationCreateParams) {
     try {
       const res = await addAgent({ variables: { agent } })
-      console.log(res)
+      console.log(res) 
     } catch (error) {
       console.error(error)
     }
   }
 
-  // onMount(async () => {
-  // })
+  $: name, latitude, longitude, note, logo, type, role, certification;
 
-  // // reactive data bindings
-
-  // let agent: Agent;
-
-  // $: {
-  //   // assign derived values from Agent list API
-  //   let current = agentsQuery && agentsQuery.getCurrentResult()
-  //   if (current) {
-  //     agents = flattenRelayConnection(current.data?.agents)
-  //   }
-  // }
 </script>
-<button on:click={() => {
+<!-- <button on:click={() => {
   handleSubmit({
     name: "fake name",
     image: "https://picsum.photos/200/300",
     note: "This is a test",
   })}
-}>add test agent</button>
+}>create test agent</button> -->
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -109,6 +104,13 @@
                     class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
                     placeholder=""
                     bind:value={name}
+                    on:input={e => {
+                      const input = e.target;
+                      if (input instanceof HTMLInputElement) {
+                        name = input.value;
+                        console.log(name)
+                      }
+                    }}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
@@ -146,6 +148,12 @@
                 <select
                   id="type"
                   name="type"
+                  on:change={e => {
+                    const input = e.target;
+                    if (input instanceof HTMLSelectElement) {
+                      type = input.value;
+                    }
+                  }}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                   <option>Person</option>
@@ -165,6 +173,12 @@
                 <select
                   id="classifiedAs"
                   name="classifiedAs"
+                  on:change={e => {
+                    const input = e.target;
+                    if (input instanceof HTMLSelectElement) {
+                      role = input.value;
+                    }
+                  }}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                   <option selected>Farmer</option>
@@ -187,6 +201,13 @@
                     name="latitude"
                     id="latitude"
                     autocomplete="latitude"
+                    bind:value={latitude}
+                    on:input={e => {
+                      const input = e.target;
+                      if (input instanceof HTMLInputElement) {
+                        latitude = input.value;
+                      }
+                    }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -204,6 +225,13 @@
                     name="longitude"
                     id="longitude"
                     autocomplete="longitude"
+                    bind:value={longitude}
+                    on:input={e => {
+                      const input = e.target;
+                      if (input instanceof HTMLInputElement) {
+                        longitude = input.value;
+                      }
+                    }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -221,6 +249,13 @@
                     id="note"
                     name="note"
                     rows="3"
+                    bind:value={note}
+                    on:input={e => {
+                      const input = e.target;
+                      if (input instanceof HTMLInputElement) {
+                        note = input.value;
+                      }
+                    }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -235,9 +270,26 @@
                 <label
                   for="image"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                  >Logo / Avatar</label
+                  >Logo url</label
                 >
-                <div
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    name="longitude"
+                    id="longitude"
+                    autocomplete="longitude"
+                    placeholder="https://www.example.com/logo.png"
+                    bind:value={logo}
+                    on:input={e => {
+                      const input = e.target;
+                      if (input instanceof HTMLInputElement) {
+                        logo = input.value;
+                      }
+                    }}
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                </div>
+                <!-- <div
                   class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"
                 >
                   <div class="text-center">
@@ -272,13 +324,13 @@
                       PNG, JPG, GIF up to 10MB
                     </p>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
         </div>
 
-        {#each facets as {name}}
+        <!-- {#each facets as {name}}
 
           <div class="mt-4 text-left">
             <div>
@@ -298,11 +350,21 @@
               </select>
             </div>
           </div>
-        {/each}
+        {/each} -->
 
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           <button
             type="button"
+            on:click={() => {
+              handleSubmit({
+                name: name,
+                image: logo,
+                note: note,
+                classifiedAs: [type],
+                // primaryLocation: 'j'
+                // $: name, latitude, longitude, note, logo, type, role, certification;
+              })}
+            }
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             >Create</button
           >

@@ -57,6 +57,7 @@
     let current = agentsQuery && agentsQuery.getCurrentResult()
     if (current) {
       agents = flattenRelayConnection(current.data?.agents)
+      console.log(agents)
     }
   }
 </script>

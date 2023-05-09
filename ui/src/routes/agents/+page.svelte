@@ -15,52 +15,50 @@
   import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
 
-  // const GET_ALL_AGENTS = gql`
-  //   ${AGENT_CORE_FIELDS}
-  //   query {
-  //     agents(last: 100000) {
-  //       edges {
-  //         cursor
-  //         node {
-  //           ...AgentCoreFields
-  //         }
-  //       }
-  //     }
-  //   }
-  // `
+  const GET_ALL_AGENTS = gql`
+    ${AGENT_CORE_FIELDS}
+    query {
+      agents(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...AgentCoreFields
+          }
+        }
+      }
+    }
+  `
 
-  // interface QueryResponse {
-  //   agents: AgentConnection & RelayConn<Agent>
-  // }
+  interface QueryResponse {
+    agents: AgentConnection & RelayConn<Agent>
+  }
 
-  // // map component state
+  // map component state
 
-  // // let panelInfo: any,
-  // //     MapComponent: ComponentType,
-  // //     agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+  let panelInfo: any,
+      MapComponent: ComponentType,
+      agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
-  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+  onMount(async () => {
+    // defer Leaflet map load until rendering, and only in browser environment
+    if (browser) {
+      // MapComponent = (await import('$lib/Map.svelte')).default
+    }
+  })
 
-  // onMount(async () => {
-  //   // defer Leaflet map load until rendering, and only in browser environment
-  //   if (browser) {
-  //     // MapComponent = (await import('$lib/Map.svelte')).default
+  // reactive data bindings
 
-  //   }
-  // })
+  let agents: Agent[]
 
-  // // reactive data bindings
+  $: {
+    // assign derived values from Agent list API
+    let current = agentsQuery && agentsQuery.getCurrentResult()
+    if (current) {
+      agents = flattenRelayConnection(current.data?.agents)
+      console.log(agents)
+    }
+  }
 
-  // let agents: any = []//[...allAgents]
-
-  // $: {
-  //   // assign derived values from Agent list API
-  //   let current = agentsQuery && agentsQuery.getCurrentResult()
-  //   if (current) {
-  //     agents = flattenRelayConnection(current.data?.agents)
-  //     console.log(agents)
-  //   }
-  // }
 </script>
 
 <AgentModal bind:open={modalOpen} bind:name={name} />
