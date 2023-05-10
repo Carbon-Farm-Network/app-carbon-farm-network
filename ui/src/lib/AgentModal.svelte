@@ -10,7 +10,8 @@
   export let certification = "";
   import facets from '$lib/data/facets.json'
   import facetValues from '$lib/data/facet_values.json'
-
+  import { createEventDispatcher } from 'svelte';
+  
   import { onMount } from 'svelte'
   import { gql } from 'graphql-tag'
   import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
@@ -18,6 +19,8 @@
   import type { AgentConnection, Agent, Organization, OrganizationCreateParams } from '@valueflows/vf-graphql'
   import { mutation } from 'svelte-apollo'
   import type { Mutate } from 'svelte-apollo'
+
+  const dispatch = createEventDispatcher();
 
   const ADD_AGENT = gql`
     ${AGENT_CORE_FIELDS},
@@ -35,10 +38,20 @@
 
   let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
 
-  async function handleSubmit(agent: OrganizationCreateParams) {
+  async function handleSubmit() {
+    let agent: OrganizationCreateParams = {
+        name: name,
+        image: logo,
+        note: note,
+        classifiedAs: [latitude, longitude],
+
+        // $: name, latitude, longitude, note, logo, type, role, certification;
+    }
     try {
       const res = await addAgent({ variables: { agent } })
-      console.log(res) 
+      dispatch("submit");
+      open = false;
+      console.log(res)
     } catch (error) {
       console.error(error)
     }
@@ -47,13 +60,6 @@
   $: name, latitude, longitude, note, logo, type, role, certification;
 
 </script>
-<!-- <button on:click={() => {
-  handleSubmit({
-    name: "fake name",
-    image: "https://picsum.photos/200/300",
-    note: "This is a test",
-  })}
-}>create test agent</button> -->
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -356,15 +362,8 @@
           <button
             type="button"
             on:click={() => {
-              handleSubmit({
-                name: name,
-                image: logo,
-                note: note,
-                classifiedAs: [type],
-                // primaryLocation: 'j'
-                // $: name, latitude, longitude, note, logo, type, role, certification;
-              })}
-            }
+              handleSubmit()
+            }}
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             >Create</button
           >

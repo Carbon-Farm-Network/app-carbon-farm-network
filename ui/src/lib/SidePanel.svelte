@@ -188,6 +188,7 @@
               </li>
             </ul>
           </div>
+          {#if panelInfo.offers}
           <p class="ml-8">Offering:</p>
           <div class="mx-8">
             <ul role="list" class="divide-y divide-gray-200">
@@ -217,6 +218,7 @@
               <!-- More items... -->
             </ul>
           </div>
+          {/if}
         </div>
       </div>
     </div>

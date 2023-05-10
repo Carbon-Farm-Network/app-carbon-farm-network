@@ -7,6 +7,7 @@ export const AGENT_CORE_FIELDS = gql`
     name
     image
     note
+    classifiedAs
   }
 `
 export const PERSON_CORE_FIELDS = gql`
@@ -16,6 +17,7 @@ export const PERSON_CORE_FIELDS = gql`
     name
     image
     note
+    classifiedAs
   }
 `
 export const ORGANIZATION_CORE_FIELDS = gql`
@@ -25,5 +27,6 @@ export const ORGANIZATION_CORE_FIELDS = gql`
     name
     image
     note
+    classifiedAs
   }
 `

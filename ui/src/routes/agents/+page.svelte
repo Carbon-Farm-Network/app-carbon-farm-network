@@ -12,17 +12,22 @@
   import { gql } from 'graphql-tag'
   import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
-  import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
+
 
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
+    ${PERSON_CORE_FIELDS}
+    ${ORGANIZATION_CORE_FIELDS}
     query {
       agents(last: 100000) {
         edges {
           cursor
           node {
             ...AgentCoreFields
+            ...PersonCoreFields
+            ...OrganizationCoreFields
           }
         }
       }
@@ -34,34 +39,40 @@
   }
 
   // map component state
+  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
-  let panelInfo: any,
-      MapComponent: ComponentType,
-      agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+  async function fetchAgents() {
+    setTimeout(function(){
+      agentsQuery.refetch().then((r) => {
+        agents = flattenRelayConnection(r.data?.agents).map((a) => {
+          return {
+            ...a,
+            "name": a.name,
+            "imageUrl": a.image,
+            "iconUrl": a.image,
+            "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+            "address": a.note,
+          }
+        })
+        console.log(agents)
+      })
+    }, 100)
+  }
 
   onMount(async () => {
-    // defer Leaflet map load until rendering, and only in browser environment
     if (browser) {
-      // MapComponent = (await import('$lib/Map.svelte')).default
+      agentsQuery.getCurrentResult()
+      fetchAgents()
     }
   })
 
   // reactive data bindings
-
   let agents: Agent[]
 
-  $: {
-    // assign derived values from Agent list API
-    let current = agentsQuery && agentsQuery.getCurrentResult()
-    if (current) {
-      agents = flattenRelayConnection(current.data?.agents)
-      console.log(agents)
-    }
-  }
-
+  $: agents, modalOpen;
 </script>
 
-<AgentModal bind:open={modalOpen} bind:name={name} />
+<AgentModal bind:open={modalOpen} bind:name={name} on:submit={fetchAgents} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -106,7 +117,8 @@
               hi
               {agent.name}
             {/each} -->
-            {#each allAgents as agent, index}
+            {#if agents}
+            {#each agents as agent, index}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
                 class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
@@ -124,6 +136,7 @@
               </td>
             </tr>
             {/each}
+            {/if}
 
             <!-- More people... -->
           </tbody>

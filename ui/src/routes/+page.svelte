@@ -36,7 +36,8 @@
   `
 
   interface QueryResponse {
-    agents: AgentConnection & RelayConn<Agent>
+    // agents: AgentConnection & RelayConn<Agent>
+      agents: AgentConnection & RelayConn<any>
   }
 
   // map component state
@@ -45,9 +46,29 @@
       MapComponent: ComponentType,
       agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
+    async function fetchAgents() {
+    setTimeout(function(){
+      agentsQuery.refetch().then((r) => {
+        agents = flattenRelayConnection(r.data?.agents).map((a) => {
+          return {
+            ...a,
+            "name": a.name,
+            "imageUrl": a.image,
+            "iconUrl": a.image,
+            "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+            "address": a.note,
+          }
+        })
+        console.log(agents)
+      })
+    }, 100)
+  }
+
   onMount(async () => {
     // defer Leaflet map load until rendering, and only in browser environment
     if (browser) {
+      agentsQuery.getCurrentResult()
+      fetchAgents()
       MapComponent = (await import('$lib/Map.svelte')).default
     }
   })
@@ -56,18 +77,12 @@
 
   let agents: Agent[]
 
-  $: {
-    // assign derived values from Agent list API
-    let current = agentsQuery && agentsQuery.getCurrentResult()
-    if (current) {
-      agents = flattenRelayConnection(current.data?.agents)
-      console.log(agents)
-    }
-  }
+  $: agents;
 </script>
 
 <div class="relative h-full w-full">
-  {#if agentsQuery !== undefined}
+  {#if agents && agentsQuery !== undefined}
+    <!-- {JSON.stringify(agents[0].latlng)} -->
     {#if $agentsQuery.loading}
       <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
     {:else if $agentsQuery.error}
