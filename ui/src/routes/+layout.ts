@@ -14,3 +14,6 @@ export async function load() {
     throw error(500, "Holochain connection error")
   }
 }
+
+export const prerender = true
+export const ssr = false
