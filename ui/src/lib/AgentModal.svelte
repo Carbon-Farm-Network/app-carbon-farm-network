@@ -5,9 +5,11 @@
   export let longitude = "";
   export let note = "";
   export let logo = "";
+  export let id = "";
   export let type = "Organization";
   export let role = "Farmer";
   export let certification = "";
+  export let editing = false;
   import facets from '$lib/data/facets.json'
   import facetValues from '$lib/data/facet_values.json'
   import { createEventDispatcher } from 'svelte';
@@ -17,8 +19,9 @@
   import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { AgentConnection, Agent, Organization, OrganizationCreateParams } from '@valueflows/vf-graphql'
-  import { mutation } from 'svelte-apollo'
-  import type { Mutate } from 'svelte-apollo'
+  import { mutation, query } from 'svelte-apollo'
+  import type { Mutate, ReadableQuery } from 'svelte-apollo'
+  // import { AppAgentWebsocket, type AppAgentClient } from '@holochain/client';
 
   const dispatch = createEventDispatcher();
 
@@ -32,11 +35,36 @@
       }
     }
   `
+  const UPDATE_AGENT = gql`
+    ${AGENT_CORE_FIELDS},
+    mutation($agent: OrganizationUpdateParams!){
+      updateOrganization(organization: $agent) {
+        agent {
+          ...AgentCoreFields
+        }
+      }
+    }
+  `
+
+  const GET_AGENT = gql`
+    ${AGENT_CORE_FIELDS},
+    query($o: ID!){
+      organization(id: id
+      ) {
+        ...AgentCoreFields
+      }
+    }
+  `
+
   interface QueryResponse {
     agent: AgentConnection & RelayConn<Agent>
   }
 
   let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
+
+  let getAgent: ReadableQuery<QueryResponse> = query(GET_AGENT)
+
+  // let updateAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
 
   async function handleSubmit() {
     let agent: OrganizationCreateParams = {
@@ -57,9 +85,66 @@
     }
   }
 
-  $: name, latitude, longitude, note, logo, type, role, certification;
+  async function findAgent() {
+    try {
+      getAgent().getCurrentResult().then((r) => {console.log(r)})
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
+  async function handleUpdate() {
+    getAgent();
+    let agent: OrganizationCreateParams = {
+        name: name,
+        image: logo,
+        note: note,
+        classifiedAs: [latitude, longitude],
+
+        // $: name, latitude, longitude, note, logo, type, role, certification;
+    }
+    try {
+      const res = await addAgent({ variables: { agent } })
+      dispatch("submit");
+      open = false;
+      console.log(res)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // async function testFacetsCall() {
+  //   const facetGroupEntry = { 
+  //     group_id: "groupId",
+  //     note: "note",
+  //   };
+  
+  //   try {
+  //     const record = await client.callZome({
+  //       cap_secret: null,
+  //       role_name: 'hc_facets',
+  //       zome_name: 'hc_facets',
+  //       fn_name: 'create_facet_group',
+  //       payload: facetGroupEntry,
+  //     });
+  //   } catch (error) {
+  //     console.error(error)
+  //   }
+  // }
+
+  // let client: AppAgentClient;
+
+  $: name, latitude, longitude, note, logo, type, role, certification, editing; //, client;
+
+  onMount(async () => {
+    findAgent();
+  //   // We pass '' as url because it will dynamically be replaced in launcher environments
+  //   client = await AppAgentWebsocket.connect('', 'acfn');
+  });
 </script>
+<!-- <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={() => testFacetsCall()}>
+  test
+</button> -->
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -90,6 +175,7 @@
       <div
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
       >
+
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
@@ -362,7 +448,11 @@
           <button
             type="button"
             on:click={() => {
-              handleSubmit()
+              if (editing) {
+                handleUpdate()
+              } else {
+                handleSubmit()
+              }
             }}
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             >Create</button

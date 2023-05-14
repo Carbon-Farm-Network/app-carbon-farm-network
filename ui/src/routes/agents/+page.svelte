@@ -2,7 +2,9 @@
   import AgentModal from "$lib/AgentModal.svelte"
   import allAgents from '$lib/data/agents.json'
   let modalOpen = false;
+  let editing = false;
   let name = "";
+  let id = "";
 
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
@@ -69,10 +71,10 @@
   // reactive data bindings
   let agents: Agent[]
 
-  $: agents, modalOpen;
+  $: agents, modalOpen, editing, id;
 </script>
 
-<AgentModal bind:open={modalOpen} bind:name={name} on:submit={fetchAgents} />
+<AgentModal bind:open={modalOpen} bind:name={name} bind:id={id} bind:editing={editing} on:submit={fetchAgents} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -85,7 +87,7 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => (modalOpen = true)}
+        on:click={() => {editing = false; modalOpen = true}}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an agent</button>
     </div>
@@ -107,7 +109,7 @@
                 >Role in network</th
               >
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
-                <span class="sr-only">Edit</span>
+                <span class="sr-only" on:click={() => {editing = true; modalOpen = true;}}>Edit</span>
               </th>
             </tr>
           </thead>
@@ -130,7 +132,7 @@
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {name = agent.name; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                <button type="button" on:click={() => {name = agent.name; id = agent.id; editing = true; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>
