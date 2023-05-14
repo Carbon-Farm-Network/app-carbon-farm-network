@@ -55,6 +55,9 @@ importers:
       '@vf-ui/graphql-client-holochain':
         specifier: ^0.0.1-alpha.21
         version: 0.0.1-alpha.21(@apollo/client@3.7.14)(graphql@15.8.0)(ws@8.13.0)
+      date-picker-svelte:
+        specifier: ^2.4.3
+        version: 2.4.3(svelte@3.59.1)
       graphql:
         specifier: ^15.8.0
         version: 15.8.0
@@ -2253,6 +2256,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.21.5
     dev: true
+
+  /date-picker-svelte@2.4.3(svelte@3.59.1):
+    resolution: {integrity: sha512-aYQzLNc7MfMWYc5InrCQv26geewkTeLg0x4R5Rr3H4YJS1i1VucQxOIvObjaJ64ylCBwVnEpQeO5iBq3semn1A==}
+    peerDependencies:
+      svelte: ^3.24.0
+    dependencies:
+      svelte: 3.59.1
+    dev: false
 
   /debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}

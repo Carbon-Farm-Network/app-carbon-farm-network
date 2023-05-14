@@ -20,6 +20,7 @@
     "@vaadin/date-time-picker": "^23.3.13",
     "@valueflows/vf-graphql": "^0.9.0-alpha.9",
     "@vf-ui/graphql-client-holochain": "^0.0.1-alpha.21",
+    "date-picker-svelte": "^2.4.3",
     "graphql": "^15.8.0",
     "graphql-tag": "^2.12.6",
     "leaflet": "^1.9.3",
