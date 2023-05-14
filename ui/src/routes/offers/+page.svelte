@@ -1,6 +1,6 @@
 <script lang="ts">
   import OfferModal from "$lib/OfferModal.svelte"
-  import offers from '$lib/data/resource_specifications.json'
+  import offers from '$lib/data/offers.json'
   let modalOpen = false;
   let name = "";
 </script>
@@ -33,17 +33,22 @@
               <th
                 scope="col"
                 class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
-                >Originating agent</th
+                >Provider</th
               >
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Name of resource specification</th
+                >Offering</th
               >
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Default unit of effort</th
+                >Available quantity</th
+              >
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >Price per unit</th
               >
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
@@ -52,22 +57,29 @@
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
-            {#each offers as offer, index}
+            {#each offers as {proposed_intents}, index}
+            {@const mainIntent = proposed_intents.find(({reciprocal}) => !reciprocal)}
+            {@const reciprocalIntent = proposed_intents.find(({reciprocal}) => reciprocal)}
+            {@const availableQuantity = mainIntent.intent.available_quantity}
+            {@const resourceQuantity = reciprocalIntent.intent.resource_quantity}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
                 class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                >{offer.name}</td
+                >{mainIntent.intent.provider.name}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{offer.defaultUnitOfResource}</td
+                >{mainIntent.intent.resource_conforms_to.name}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{offer.defaultUnitOfEffort}</td
+                >{availableQuantity.has_numerical_value} {availableQuantity.has_unit.label}</td
+              >
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                >{resourceQuantity.has_numerical_value} {reciprocalIntent.intent.resource_conforms_to.name} / {mainIntent.intent.resource_quantity.has_numerical_value} {mainIntent.intent.resource_quantity.has_unit.label}</td
               >
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {name = offer.name; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                <button type="button" on:click={() => {modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>

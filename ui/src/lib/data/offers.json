@@ -1,0 +1,52 @@
+[
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-05-14T15:55:59Z",
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Brown alpacca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 100,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Lazy Acre Alpacca"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 5,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "receiver": {
+            "name": "Lazy acre alpacca"
+          }
+        }
+      }
+    ]
+  }
+]
