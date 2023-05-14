@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { clickOutside } from '$lib/utils'
   export let open = false;
   export let name = "";
 </script>
@@ -31,6 +32,9 @@
       -->
       <div
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
+        class:hidden={!open}
+        use:clickOutside
+        on:outclick={() => (open = false)}
       >
         <div>
           <div class="mt-3 text-center sm:mt-5">
