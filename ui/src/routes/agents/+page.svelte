@@ -5,6 +5,7 @@
   let editing = false;
   let name = "";
   let id = "";
+  let currentAgent: any;
 
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
@@ -37,7 +38,7 @@
   `
 
   interface QueryResponse {
-    agents: AgentConnection & RelayConn<Agent>
+    agents: AgentConnection & RelayConn<any>
   }
 
   // map component state
@@ -53,6 +54,9 @@
             "imageUrl": a.image,
             "iconUrl": a.image,
             "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+            "lat": a.classifiedAs[0],
+            "long": a.classifiedAs[1],
+            "role": a.classifiedAs[2],
             "address": a.note,
           }
         })
@@ -69,12 +73,12 @@
   })
 
   // reactive data bindings
-  let agents: Agent[]
+  let agents: any[]
 
-  $: agents, modalOpen, editing, id;
+  $: agents, modalOpen, editing, id, currentAgent;
 </script>
 
-<AgentModal bind:open={modalOpen} bind:name={name} bind:id={id} bind:editing={editing} on:submit={fetchAgents} />
+<AgentModal bind:open={modalOpen} bind:name={name} bind:currentAgent={currentAgent} bind:editing={editing} on:submit={fetchAgents} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -87,7 +91,7 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => {editing = false; modalOpen = true}}
+        on:click={() => {editing = false; modalOpen = true; currentAgent = {}}}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an agent</button>
     </div>
@@ -132,7 +136,7 @@
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {name = agent.name; id = agent.id; editing = true; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                <button type="button" on:click={() => {name = agent.name; id = agent.id; currentAgent = agent; editing = true; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>

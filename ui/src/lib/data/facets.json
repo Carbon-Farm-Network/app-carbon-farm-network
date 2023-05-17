@@ -2,5 +2,6 @@
   "id": "climate",
   "name": "Climate beneficial certification",
   "description": "A very detailed description",
-  "order": 1
+  "order": 1,
+  "values": [1,2]
 }]

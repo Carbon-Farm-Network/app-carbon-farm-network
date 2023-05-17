@@ -8,7 +8,7 @@ import { page } from '$app/stores'
 import Nav from '$lib/Nav.svelte'
 
 /** @type {import('./$types').LayoutData} */
-export let data;
+export let data: any;
 if (browser) {
   setClient(data.client)
 }

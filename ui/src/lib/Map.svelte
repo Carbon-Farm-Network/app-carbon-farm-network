@@ -1,9 +1,9 @@
 <script lang="ts">
   import { LeafletMap, TileLayer, Icon, Marker, Popup } from 'svelte-leafletjs'
   import 'leaflet/dist/leaflet.css'
-  import type { Agent } from "globals"
+  // import type { Agent } from "globals"
   const mapOptions = {
-    center: [41.083, -74.042],
+    LatLngExpression: [41.083, -74.042],
     zoom: 5
   }
   const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -14,8 +14,10 @@
     attribution: '© OpenStreetMap contributors'
   }
   let leafletMap
-  export let agents: [Agent]
-  export let panelInfo: Agent | undefined;
+  // export let agents: [Agent]
+  export let agents: [any]
+  // export let panelInfo: Agent | undefined;
+  export let panelInfo: any | undefined;
   const defaultIconOptions = {
     iconSize: [41, 41],
     iconAnchor: [20, 41],

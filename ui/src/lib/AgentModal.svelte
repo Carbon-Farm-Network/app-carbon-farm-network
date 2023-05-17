@@ -1,5 +1,6 @@
 <script lang="ts">
   export let open = false;
+  export let currentAgent: any = {};
   export let name = "";
   export let latitude = "";
   export let longitude = "";
@@ -18,9 +19,9 @@
   import { gql } from 'graphql-tag'
   import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { RelayConn } from '$lib/graphql/helpers'
-  import type { AgentConnection, Agent, Organization, OrganizationCreateParams } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@valueflows/vf-graphql'
   import { mutation, query } from 'svelte-apollo'
-  import type { Mutate, ReadableQuery } from 'svelte-apollo'
+  import type { ReadableQuery } from 'svelte-apollo'
   // import { AppAgentWebsocket, type AppAgentClient } from '@holochain/client';
 
   const dispatch = createEventDispatcher();
@@ -46,32 +47,47 @@
     }
   `
 
-  const GET_AGENT = gql`
+  // const GET_AGENT = gql`
+  //   ${AGENT_CORE_FIELDS},
+  //   query($o: ID!){
+  //     organization(id: id
+  //     ) {
+  //       ...AgentCoreFields
+  //     }
+  //   }
+  // `
+
+  const GET_ORGANIZATION = gql`
     ${AGENT_CORE_FIELDS},
-    query($o: ID!){
-      organization(id: id
-      ) {
-        ...AgentCoreFields
+    query GetOrganization {
+      organization(id: $id) {
+        ...OrganizationCoreFields
       }
-    }
+  }
   `
+
 
   interface QueryResponse {
     agent: AgentConnection & RelayConn<Agent>
   }
 
-  let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
+  let roles = ["Farmer", "Mill", "Designer"]
 
-  let getAgent: ReadableQuery<QueryResponse> = query(GET_AGENT)
+  // let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
+  let addAgent: any= mutation(ADD_AGENT)
 
-  // let updateAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
+
+  let getAgent: ReadableQuery<QueryResponse> = query(GET_ORGANIZATION)
+
+  // let updateAgent: Mutate<QueryResponse> = mutation(UPDATE_AGENT)
+  let updateAgent: any = mutation(UPDATE_AGENT)
 
   async function handleSubmit() {
     let agent: OrganizationCreateParams = {
-        name: name,
-        image: logo,
-        note: note,
-        classifiedAs: [latitude, longitude],
+        name: currentAgent.name,
+        image: currentAgent.imageUrl,
+        note: currentAgent.note,
+        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role],
 
         // $: name, latitude, longitude, note, logo, type, role, certification;
     }
@@ -85,26 +101,30 @@
     }
   }
 
-  async function findAgent() {
+  async function findAgent(id: String) {
     try {
-      getAgent().getCurrentResult().then((r) => {console.log(r)})
+      getAgent.setVariables({ id })
+      getAgent.result().then((r) => {console.log(r)})
     } catch (error) {
       console.error(error)
     }
   }
 
   async function handleUpdate() {
-    getAgent();
-    let agent: OrganizationCreateParams = {
-        name: name,
-        image: logo,
-        note: note,
-        classifiedAs: [latitude, longitude],
+    // getAgent();
+    console.log(currentAgent)
+
+    let agent: OrganizationUpdateParams = {
+        name: currentAgent.name,
+        image: currentAgent.imageUrl,
+        note: currentAgent.note,
+        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role],
+        revisionId: currentAgent.revisionId
 
         // $: name, latitude, longitude, note, logo, type, role, certification;
     }
     try {
-      const res = await addAgent({ variables: { agent } })
+      const res = await updateAgent({ variables: { agent } })
       dispatch("submit");
       open = false;
       console.log(res)
@@ -134,16 +154,19 @@
 
   // let client: AppAgentClient;
 
-  $: name, latitude, longitude, note, logo, type, role, certification, editing; //, client;
+  $: name, type, role, certification, editing, currentAgent; //, client;
+
+  $: isAgentValid = true && currentAgent.lat && currentAgent.long && currentAgent.name && currentAgent.imageUrl && currentAgent.role;
 
   onMount(async () => {
-    findAgent();
+    // console.log("mounted")
+    // findAgent();
   //   // We pass '' as url because it will dynamically be replaced in launcher environments
   //   client = await AppAgentWebsocket.connect('', 'acfn');
   });
 </script>
 <!-- <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={() => testFacetsCall()}>
-  test
+  test`
 </button> -->
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
@@ -189,25 +212,26 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Name</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
+                  <!-- "block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6" -->
                   <input
                     type="text"
                     name="name"
                     id="name"
-                    class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={name}
+                    bind:value={currentAgent.name}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
                         name = input.value;
-                        console.log(name)
+                        // console.log(name)
                       }
                     }}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
                   />
-                  <div
+                  <!-- <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
                   >
                     <svg
@@ -222,14 +246,15 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                  </div>
+                  </div> -->
                 </div>
-                <p class="mt-2 text-sm text-red-600" id="email-error">
+                <!-- <p class="mt-2 text-sm text-red-600" id="email-error">
                   Name is required.
-                </p>
+                </p> -->
               </div>
             </div>
 
+            {#if false}
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -254,28 +279,23 @@
                 </select>
               </div>
             </div>
+            {/if}
 
             <div class="mt-4 text-left">
               <div>
                 <label
                   for="classifiedAs"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                  >Role in the network</label
-                >
+                >Role in the network</label>
                 <select
                   id="classifiedAs"
                   name="classifiedAs"
-                  on:change={e => {
-                    const input = e.target;
-                    if (input instanceof HTMLSelectElement) {
-                      role = input.value;
-                    }
-                  }}
+                  bind:value={currentAgent.role}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
-                  <option selected>Farmer</option>
-                  <option>Mill</option>
-                  <option>Designer</option>
+                  {#each roles as role (role)}
+                    <option {role} selected={role === currentAgent.role}>{role}</option>
+                  {/each}
                 </select>
               </div>
             </div>
@@ -293,11 +313,11 @@
                     name="latitude"
                     id="latitude"
                     autocomplete="latitude"
-                    bind:value={latitude}
+                    bind:value={currentAgent.lat}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        latitude = input.value;
+                        currentAgent.lat = input.value;
                       }
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -317,11 +337,11 @@
                     name="longitude"
                     id="longitude"
                     autocomplete="longitude"
-                    bind:value={longitude}
+                    bind:value={currentAgent.long}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        longitude = input.value;
+                        currentAgent.long = input.value;
                       }
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -341,11 +361,11 @@
                     id="note"
                     name="note"
                     rows="3"
-                    bind:value={note}
+                    bind:value={currentAgent.note}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        note = input.value;
+                        currentAgent.note = input.value;
                       }
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -371,7 +391,7 @@
                     id="longitude"
                     autocomplete="longitude"
                     placeholder="https://www.example.com/logo.png"
-                    bind:value={logo}
+                    bind:value={currentAgent.imageUrl}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
@@ -447,6 +467,7 @@
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           <button
             type="button"
+            disabled={!isAgentValid}
             on:click={() => {
               if (editing) {
                 handleUpdate()
@@ -455,7 +476,13 @@
               }
             }}
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-            >Create</button
+            >
+            {#if editing}
+            Update
+            {:else}
+            Create
+            {/if}
+            </button
           >
           <button
             type="button"
@@ -468,3 +495,7 @@
     </div>
   </div>
 </div>
+
+<style>
+  button:disabled { background-color: lightgray; }
+</style>

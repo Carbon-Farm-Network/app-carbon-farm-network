@@ -1,6 +1,7 @@
 <script lang="ts">
-  import type { Agent } from 'globals'
-  export let panelInfo: Agent | undefined
+  // import type { Agent } from 'globals'
+  // export let panelInfo: Agent | undefined
+  export let panelInfo: any | undefined
   let dropdownOpen = false
 </script>
 
