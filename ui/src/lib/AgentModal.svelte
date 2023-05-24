@@ -2,11 +2,7 @@
   export let open = false;
   export let currentAgent: any = {};
   export let name = "";
-  export let latitude = "";
-  export let longitude = "";
-  export let note = "";
   export let logo = "";
-  export let id = "";
   export let type = "Organization";
   export let role = "Farmer";
   export let certification = "";

@@ -62,7 +62,7 @@
         })
         console.log(agents)
       })
-    }, 100)
+    }, 1000)
   }
 
   onMount(async () => {
