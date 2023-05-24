@@ -21,6 +21,9 @@
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
     ${ORGANIZATION_CORE_FIELDS}
+    fragment FacetCoreFields on Facet {
+      # :TODO:
+    }
     query {
       agents(last: 100000) {
         edges {
@@ -29,6 +32,14 @@
             ...AgentCoreFields
             ...PersonCoreFields
             ...OrganizationCoreFields
+
+            facets(last: 1000) {
+              edges {
+                node {
+                  ...FacetCoreFields
+                }
+              }
+            }
           }
         }
       }
