@@ -47,7 +47,7 @@
       agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
     async function fetchAgents() {
-    setTimeout(function(){
+    setInterval(function(){
       agentsQuery.refetch().then((r) => {
         agents = flattenRelayConnection(r.data?.agents).map((a) => {
           return {
@@ -61,7 +61,7 @@
         })
         console.log(agents)
       })
-    }, 100)
+    }, 10000)
   }
 
   onMount(async () => {
