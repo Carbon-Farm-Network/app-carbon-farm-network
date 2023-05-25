@@ -1,6 +1,6 @@
 <script lang="ts">
   import { gql } from 'graphql-tag'
-  import type { ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
+  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { mutation, query } from 'svelte-apollo'
@@ -65,8 +65,8 @@
     let resource: ResourceSpecificationCreateParams = {
       name: currentResourceSpecification.name,
       // defaultUnitOfEffort: "Administrative work",
-      // defaultUnitOfResource: "pound",
-      note: currentResourceSpecification.description,
+      defaultUnitOfResource: String(hours),
+      note: currentResourceSpecification.note,
       image: currentResourceSpecification.imageUrl,
     }
     try {
@@ -87,7 +87,7 @@
       name: currentResourceSpecification.name,
       // defaultUnitOfEffort: "Administrative work",
       // defaultUnitOfResource: "pound",
-      note: currentResourceSpecification.description,
+      note: currentResourceSpecification.note,
       image: currentResourceSpecification.imageUrl,
       revisionId: currentResourceSpecification.revisionId
     }
@@ -241,11 +241,11 @@
                     name="note"
                     rows="3"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={currentResourceSpecification.description}
+                    bind:value={currentResourceSpecification.note}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.description = input.value;
+                        currentResourceSpecification.note = input.value;
                       }
                     }}
                     />
