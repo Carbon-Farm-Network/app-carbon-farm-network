@@ -1,11 +1,79 @@
 <script lang="ts">
   import ResourceSpecificationModal from "$lib/ResourceSpecificationModal.svelte"
-  import resourceSpecifications from '$lib/data/resource_specifications.json'
+  // import resourceSpecifications from '$lib/data/resource_specifications.json'
   let modalOpen = false;
+  let editing = false;
   let name = "";
+  let id = "";
+  let currentResourceSpecification: any;
+
+  import { browser } from '$app/environment'
+  import { onMount } from 'svelte'
+  import type { ComponentType } from 'svelte'
+  import { query } from 'svelte-apollo'
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { gql } from 'graphql-tag'
+  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+
+  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    query {
+      resourceSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ResourceSpecificationCoreFields
+          }
+        }
+      }
+    }
+  `
+
+  interface QueryResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
+
+  // map component state
+  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  async function fetchResourceSpecifications() {
+    setTimeout(function(){
+      resourceSpecificationsQuery.refetch().then((r) => {
+        resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+          return {
+            ...a,
+            // "name": a.name,
+            // "imageUrl": a.image,
+            // "iconUrl": a.image,
+            // "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+            // "lat": a.classifiedAs[0],
+            // "long": a.classifiedAs[1],
+            // "role": a.classifiedAs[2],
+            // "address": a.note,
+          }
+        })
+        console.log(resourceSpecifications)
+      })
+    }, 1000)
+  }
+
+  onMount(async () => {
+    if (browser) {
+      resourceSpecificationsQuery.getCurrentResult()
+      fetchResourceSpecifications()
+    }
+  })
+
+  // reactive data bindings
+  let resourceSpecifications: any[]
+
+  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification;
 </script>
 
-<ResourceSpecificationModal bind:open={modalOpen} bind:name={name} />
+<ResourceSpecificationModal bind:open={modalOpen} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -18,10 +86,9 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => (modalOpen = true)}
+        on:click={() => {modalOpen = true; editing = false; currentResourceSpecification = {}}}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >Add a resource specification</button
-      >
+        >Add a resource specification</button>
     </div>
   </div>
   <div class="mt-8 flow-root">
@@ -52,6 +119,7 @@
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
+            {#if resourceSpecifications}
             {#each resourceSpecifications as resourceSpecification, index}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
@@ -67,12 +135,13 @@
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {name = resourceSpecification.name; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                <button type="button" on:click={() => {name = resourceSpecification.name; currentResourceSpecification = resourceSpecification; editing=true; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>
             </tr>
             {/each}
+            {/if}
 
             <!-- More people... -->
           </tbody>

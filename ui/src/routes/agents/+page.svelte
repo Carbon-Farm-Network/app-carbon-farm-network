@@ -62,7 +62,7 @@
         })
         console.log(agents)
       })
-    }, 100)
+    }, 1000)
   }
 
   onMount(async () => {
@@ -131,7 +131,7 @@
                 >{agent.name}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >Farmer</td
+                >{agent.role}</td
               >
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
