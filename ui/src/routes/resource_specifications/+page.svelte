@@ -17,6 +17,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import Units from '$lib/Units.svelte'
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -65,6 +66,7 @@
   $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification;
 </script>
 
+<Units></Units>
 <ResourceSpecificationModal bind:open={modalOpen} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
 
 <div class="p-12">

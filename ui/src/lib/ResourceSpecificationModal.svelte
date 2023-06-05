@@ -60,6 +60,7 @@
 
   let addResourceSpecification: any = mutation(ADD_RESOURCE_SPECIFICATION)
   let updateResourceSpecification: any = mutation(UPDATE_RESOURCE_SPECIFICATION)
+  // let retrieveUnits: any = query(GET_UNITS_OF_EFFORT_AND_RESOURCE)
 
   async function handleSubmit() {
     let resource: ResourceSpecificationCreateParams = {
@@ -100,6 +101,8 @@
       console.error(error)
     }
   }
+
+
   onMount(async () => {
     console.log(currentResourceSpecification)
   })
