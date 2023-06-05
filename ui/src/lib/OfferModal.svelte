@@ -1,10 +1,52 @@
 <script lang="ts">
   import { DateInput } from 'date-picker-svelte'
-
+  import { PROPOSAL_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { gql } from 'graphql-tag'
   import { clickOutside } from '$lib/utils'
+  import { onMount } from 'svelte'
+  import { mutation, query } from 'svelte-apollo'
+  import { createEventDispatcher } from 'svelte';
+  import type { ProposalCreateParams } from '@valueflows/vf-graphql'
   export let open = false;
   export let name = "";
   export let date = new Date();
+
+  const dispatch = createEventDispatcher();
+
+  const ADD_PROPOSAL = gql`
+    ${PROPOSAL_CORE_FIELDS},
+    mutation($proposal: ProposalCreateParams!){
+      createProposal(proposal: $proposal) {
+        proposal {
+          ...ProposalFields
+        }
+      }
+    }
+  `;
+
+  let addProposal: any= mutation(ADD_PROPOSAL)
+
+  async function handleSubmit() {
+    var d = new Date(Date.now());
+    let proposal: ProposalCreateParams = {
+      hasBeginning: d,
+      unitBased: true,
+      note: "shearing end of May"
+    }
+    try {
+      const res = await addProposal({ variables: { proposal } })
+      dispatch("submit");
+      open = false;
+      console.log(res)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  onMount(() => {
+    console.log('hello')
+    handleSubmit()
+  })
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
