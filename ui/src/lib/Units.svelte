@@ -10,44 +10,56 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   const dispatch = createEventDispatcher();
 
-  const GET_ALL_UNITS = gql`
-    query {
-      unitsOfEffort {
-        id
-        name
+  const CREATE_UNIT_LB = gql`
+    mutation CreateUnit {
+      createUnit(
+        unit: {
+          label: "pound"
+          symbol: "lb"
+        }
+      ){
+        unit {
+          id
+          label
+          symbol
+        }
       }
-      unitsOfResource {
-        id
-        name
+    }`
+
+  const CREATE_UNIT_1 = gql`
+    mutation CreateUnit {
+      createUnit(
+        unit: {
+          label: "one"
+          symbol: "1"
+        }
+      ){
+        unit {
+          id
+          label
+          symbol
+        }
       }
     }
   `
 
+  let addUnitLb: any = mutation(CREATE_UNIT_LB)
+  let addUnit1: any = mutation(CREATE_UNIT_1)
+
   interface UnitsQueryResponse {
     units: AgentConnection & RelayConn<any>
-  }
-  let unitsQuery: ReadableQuery<UnitsQueryResponse> = query(GET_ALL_UNITS)
-  let units;
-
-  async function fetchUnits() {
-    setTimeout(function(){
-      unitsQuery.refetch().then((r) => {
-        units = flattenRelayConnection(r.data?.units).map((a) => {
-          return {
-            ...a,
-          }
-        })
-        console.log('units v')
-        console.log(units)
-        console.log('units ^')
-      })
-    }, 100)
   }
 
   onMount(async () => {
     if (browser) {
-      unitsQuery.getCurrentResult()
-      fetchUnits()
+      try {
+        const res = await addUnitLb()
+        const res2 = await addUnit1()
+        console.log(res)
+        console.log(res2)
+      } catch (error) {
+        console.error(error)
+      }
     }
     console.log('Units onMount')
   })
