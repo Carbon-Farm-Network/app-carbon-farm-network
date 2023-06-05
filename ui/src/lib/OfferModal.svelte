@@ -22,7 +22,7 @@
         }
       }
     }
-  `;
+  `
 
   let addProposal: any= mutation(ADD_PROPOSAL)
 
