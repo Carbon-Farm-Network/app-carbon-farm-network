@@ -45,19 +45,11 @@
         resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
           return {
             ...a,
-            // "name": a.name,
-            // "imageUrl": a.image,
-            // "iconUrl": a.image,
-            // "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-            // "lat": a.classifiedAs[0],
-            // "long": a.classifiedAs[1],
-            // "role": a.classifiedAs[2],
-            // "address": a.note,
           }
         })
         console.log(resourceSpecifications)
       })
-    }, 1000)
+    }, 100)
   }
 
   onMount(async () => {

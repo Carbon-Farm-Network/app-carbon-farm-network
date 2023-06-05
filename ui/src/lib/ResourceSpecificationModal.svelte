@@ -65,7 +65,7 @@
     let resource: ResourceSpecificationCreateParams = {
       name: currentResourceSpecification.name,
       // defaultUnitOfEffort: "Administrative work",
-      defaultUnitOfResource: String(hours),
+      // defaultUnitOfResource: String(hours),
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.imageUrl,
     }
