@@ -59,3 +59,17 @@ roles:
         quantum_time: ~
       version: ~
       clone_limit: 0
+
+  - name: hc_facets
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "./hc_facets.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      version: ~
+      clone_limit: 0
