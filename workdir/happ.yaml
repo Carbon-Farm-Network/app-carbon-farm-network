@@ -74,6 +74,20 @@ roles:
       version: ~
       clone_limit: 0
 
+  - name: hrea_proposal_0
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "./hrea_proposal.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      version: ~
+      clone_limit: 0
+
   - name: hc_facets
     provisioning:
       strategy: create
