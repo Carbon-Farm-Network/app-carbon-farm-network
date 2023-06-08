@@ -22,7 +22,11 @@
     ${PERSON_CORE_FIELDS}
     ${ORGANIZATION_CORE_FIELDS}
     fragment FacetCoreFields on Facet {
-      # :TODO:
+      id
+      name
+      note
+      image
+      classifiedAs
     }
     query {
       agents(last: 100000) {

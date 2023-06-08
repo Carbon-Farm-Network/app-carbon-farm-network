@@ -57,7 +57,7 @@ export interface FacetValueResponse {
 export default [`
 input FacetGroupParams {
   group_id: ID!
-  note: string
+  note: String
 }
 
 type FacetGroup {
@@ -86,7 +86,8 @@ type FacetValue {
 }
 
 input FacetCreateParams {
-  # :TODO:
+  name: String!
+  note: String
 }
 
 type FacetOptionResponse {
@@ -94,11 +95,11 @@ type FacetOptionResponse {
 }
 
 type Organization implements Agent {
-  facets(): Facet[]
+  facets: [FacetValue]
 }
 
 type ResourceSpecification {
-  facets(): Facet[]
+  facets: [FacetValue]
 }
 
 type Mutation  {
@@ -106,6 +107,6 @@ type Mutation  {
   putFacetGroup(facetGroup: FacetGroupParams!): FacetGroupResponse!
 
   "Create a new facet classification."
-  putFacetOption(facet: FacetOptionCreateParams!): FacetOptionResponse!
+  putFacetOption(facet: FacetOption!): FacetOptionResponse!
 }
 `]
