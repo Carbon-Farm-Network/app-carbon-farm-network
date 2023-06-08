@@ -5,7 +5,7 @@
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   const dispatch = createEventDispatcher();
@@ -43,20 +43,43 @@
     }
   `
 
+  const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
+
   let addUnitLb: any = mutation(CREATE_UNIT_LB)
   let addUnit1: any = mutation(CREATE_UNIT_1)
 
   interface UnitsQueryResponse {
-    units: AgentConnection & RelayConn<any>
+    units: UnitConnection & RelayConn<any>
   }
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
 
   onMount(async () => {
     if (browser) {
       try {
-        const res = await addUnitLb()
-        const res2 = await addUnit1()
-        console.log(res)
-        console.log(res2)
+        await getUnits.getCurrentResult()
+        getUnits.refetch().then((r) => {
+          if (r.data?.units.edges.length > 0) {
+            console.log(r)
+            dispatch('units', r.data?.units)
+          } else {
+            addUnitLb().then(() => {
+              addUnit1()
+            })
+          }
+        })
       } catch (error) {
         console.error(error)
       }
