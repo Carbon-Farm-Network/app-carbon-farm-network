@@ -75,8 +75,8 @@
             console.log(r)
             dispatch('units', r.data?.units)
           } else {
-            addUnitLb().then(() => {
-              addUnit1()
+            addUnit1().then(() => {
+              addUnitLb()
             })
           }
         })
