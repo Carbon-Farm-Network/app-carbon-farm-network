@@ -68,6 +68,14 @@ type FacetGroup {
   options: [FacetOption!]!
 }
 
+type FacetGroupResponse {
+  id: ID!
+  revisionId: ID!
+  name: String!
+  note: String
+  options: [FacetOption!]!
+}
+
 type FacetOption {
   id: ID!
   revisionId: ID!
