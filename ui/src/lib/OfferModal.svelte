@@ -1,12 +1,12 @@
 <script lang="ts">
   import { DateInput } from 'date-picker-svelte'
-  import { PROPOSAL_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
   import { gql } from 'graphql-tag'
   import { clickOutside } from '$lib/utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { ProposalCreateParams } from '@valueflows/vf-graphql'
+  import type { ProposalCreateParams, IntentCreateParams } from '@valueflows/vf-graphql'
   export let open = false;
   export let name = "";
   export let date = new Date();
@@ -18,13 +18,37 @@
     mutation($proposal: ProposalCreateParams!){
       createProposal(proposal: $proposal) {
         proposal {
-          ...ProposalFields
+          ...ProposalCoreFields
+        }
+      }
+    }
+  `
+
+  const ADD_INTENT = gql`
+    ${INTENT_CORE_FIELDS},
+    mutation($intent: IntentCreateParams!){
+      createIntent(intent: $intent) {
+        intent {
+          ...IntentCoreFields
+        }
+      }
+    }
+  `
+
+  const ADD_PROPOSED_INTENT = gql`
+    ${PROPOSED_INTENT_CORE_FIELDS},
+    mutation($proposal: ProposedIntent!){
+      createProposedIntent(proposedIntent: $proposedIntent) {
+        proposal {
+          ...ProposedIntentCoreFields
         }
       }
     }
   `
 
   let addProposal: any= mutation(ADD_PROPOSAL)
+  let addIntent: any= mutation(ADD_INTENT)
+  let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
 
   async function handleSubmit() {
     var d = new Date(Date.now());
@@ -33,6 +57,28 @@
       unitBased: true,
       note: "shearing end of May"
     }
+
+    let intent: IntentCreateParams = {
+      provider: "uhCEklRIkmI3nhepZi4bWgl2L2Cd2TNZV46oWw11Af-KPZNskLLAF:uhC0kk4XetxTAJxYSsm8Z-RRrgfad7VMrOJN45AxB_cA9rMcTW2zr",
+      action: "transfer",
+      resourceConformsTo: "uhCEkAtCeqYLW9TfQinZ3DZRM9Y2pdiqvsTnCAUDH3K-Zg8CDxi1H:uhC0kQ4nL2SS4GBSV6xKDpcLXYQN98Iy3w-PPXeJk7P4OpNYDYwKb",
+      availableQuantity: {
+        hasNumericalValue: 150,
+        hasUnit: "lb:uhC0kQ4nL2SS4GBSV6xKDpcLXYQN98Iy3w-PPXeJk7P4OpNYDYwKb",
+      },
+      resourceQuantity: {
+        hasNumericalValue: 1,
+        hasUnit: "lb:uhC0kQ4nL2SS4GBSV6xKDpcLXYQN98Iy3w-PPXeJk7P4OpNYDYwKb",
+      },
+      note: "darker gray"
+    }
+
+    let proposedIntent: any = {
+      reciprocal: false,
+      publishedIn: "uhCEkoL69h5kzHKpW5Myr5sGqrVw-5RgUK3YinKR5Mt16s8NVVM77:uhC0kQR4R9RqI_64p9sTSSmVuhWuTBObDDBouNWUd6VkowD2JcN6e",
+      publishes: "uhCEkk6ROlMKmW2x30607ApgOraIsRJwBx2jKS-aZAPZuI0lm3yPo:uhC0krhVnZQlEi1GOkBDy7iZarzCTplj-kxSmmXZvw_hja57Ry0gc"
+    }
+
     try {
       const res = await addProposal({ variables: { proposal } })
       dispatch("submit");
