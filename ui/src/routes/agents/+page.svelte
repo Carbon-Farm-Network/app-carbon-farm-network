@@ -45,30 +45,32 @@
   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   async function fetchAgents() {
-    setTimeout(function(){
-      agentsQuery.refetch().then((r) => {
-        agents = flattenRelayConnection(r.data?.agents).map((a) => {
-          return {
-            ...a,
-            "name": a.name,
-            "imageUrl": a.image,
-            "iconUrl": a.image,
-            "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-            "lat": a.classifiedAs[0],
-            "long": a.classifiedAs[1],
-            "role": a.classifiedAs[2],
-            "address": a.note,
-          }
-        })
-        console.log(agents)
+    agentsQuery.refetch().then((r) => {
+      agents = flattenRelayConnection(r.data?.agents).map((a) => {
+        return {
+          ...a,
+          "name": a.name,
+          "imageUrl": a.image,
+          "iconUrl": a.image,
+          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+          "lat": a.classifiedAs[0],
+          "long": a.classifiedAs[1],
+          "role": a.classifiedAs[2],
+          "address": a.note,
+        }
       })
-    }, 1000)
+      console.log(agents)
+    })
   }
 
   onMount(async () => {
     if (browser) {
       agentsQuery.getCurrentResult()
       fetchAgents()
+      setTimeout(function(){
+        console.log(agents)
+        fetchAgents()
+      }, 1000)
     }
   })
 

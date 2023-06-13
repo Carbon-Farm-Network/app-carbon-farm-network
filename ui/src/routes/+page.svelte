@@ -85,18 +85,13 @@
 </script>
 
 <div class="relative h-full w-full">
-  {agents}
   {#if agents && agentsQuery !== undefined}
-    1
     <!-- {JSON.stringify(agents[0].latlng)} -->
     {#if $agentsQuery.loading && false}
-    a
       <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
     {:else if $agentsQuery.error}
-    b
       <ErrorPage status="Problem loading network Agents" error={$agentsQuery.error} />
     {:else if agents}
-    c
       <svelte:component this={MapComponent} agents={agents} bind:panelInfo />
       <Search bind:allData={agents} bind:displayData={agents} />
       {#if panelInfo }
@@ -106,7 +101,6 @@
       <ErrorPage status="Problem loading network Agents" error={new Error("Failed to interpret response")} />
     {/if}
   {:else}
-    2
     <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
   {/if}
   
