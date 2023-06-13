@@ -1,4 +1,10 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+
+  function navigate(location: string) {
+    goto(location);
+  }
+
   export let path: string
   let mobileMenuOpen = false
   let dropdownMenuOpen = false
@@ -89,33 +95,62 @@
           <div class="flex space-x-4">
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
 
-            <a href="/" class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Map</a
-            >
+            <div
+              style="cursor: pointer;"
+              on:click={() => navigate('/')}
+              class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Map
+            </div>
+            <!-- <a href="/"
+            class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default"
+              >Map</a> -->
 
-            <a
+            <div
+              style="cursor: pointer;"
+              on:click={() => navigate('/agents')}
+              class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Agents
+            </div>
+
+            <!-- <a
               href="/agents"
               class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Agents</a
-            >
+              >Agents</a> -->
 
-            <a
+            <div
+              style="cursor: pointer;"
+              on:click={() => navigate('/resource_specifications')}
+              class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Resource Specifications
+            </div>
+            <!-- <a
               href="/resource_specifications"
               class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Resource specifications</a
-            >
+              >Resource specifications</a> -->
 
-            <a
+            <div
+              style="cursor: pointer;"
+              on:click={() => navigate('/facets')}
+              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Facets
+            </div>
+            <!-- <a
               href="/facets"
-              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Facets</a
-            >
+              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Facets
+            </a> -->
 
-            <a
+            <div
+              style="cursor: pointer;"
+              on:click={() => navigate('/offers')}
+              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Offers
+            </div>
+            <!-- <a
               href="/offers"
-              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Offers</a
-            >
+              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Offers
+            </a> -->
           </div>
         </div>
       </div>
