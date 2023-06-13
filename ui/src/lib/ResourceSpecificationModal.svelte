@@ -2,7 +2,7 @@
   import { gql } from 'graphql-tag'
   import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from './graphql/resource_specification.fragments'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   const dispatch = createEventDispatcher();

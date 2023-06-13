@@ -2,7 +2,7 @@
   import { DateInput } from 'date-picker-svelte'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
   import { gql } from 'graphql-tag'
-  import { clickOutside } from '$lib/utils'
+  import { clickOutside } from './utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
@@ -125,7 +125,6 @@
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
         class:hidden={!open}
         use:clickOutside
-        on:outclick={() => (open = false)}
       >
         <div>
           <div class="mt-3 text-center sm:mt-5">

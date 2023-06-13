@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vitest/config';
+// import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
 	plugins: [sveltekit()],
@@ -10,3 +11,12 @@ export default defineConfig({
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	}
 });
+
+// import { defineConfig } from 'vite';
+// import { svelte } from '@sveltejs/vite-plugin-svelte';
+
+// // https://vitejs.dev/config/
+// export default defineConfig({
+//   plugins: [svelte()],
+// });
+

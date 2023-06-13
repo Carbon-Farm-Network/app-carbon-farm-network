@@ -6,8 +6,8 @@
   import { browser } from '$app/environment'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import type { RelayConn } from './graphql/helpers'
+  import { flattenRelayConnection } from './graphql/helpers'
   const dispatch = createEventDispatcher();
 
   const CREATE_UNIT_LB = gql`
