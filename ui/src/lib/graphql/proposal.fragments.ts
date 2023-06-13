@@ -10,7 +10,7 @@ export const PROPOSAL_CORE_FIELDS = gql`
   }
 `
 export const INTENT_CORE_FIELDS = gql`
-  fragment ProposalCoreFields on Intent {
+  fragment IntentCoreFields on Intent {
     id
     provider {
       name
@@ -34,7 +34,7 @@ export const INTENT_CORE_FIELDS = gql`
   }
 `
 export const PROPOSED_INTENT_CORE_FIELDS = gql`
-  fragment ProposalCoreFields on ProposedIntent {
+  fragment ProposedIntentCoreFields on ProposedIntent {
     id
     reciprocal
     publishes {

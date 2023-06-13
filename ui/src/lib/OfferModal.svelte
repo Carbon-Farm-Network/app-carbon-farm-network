@@ -35,20 +35,20 @@
     }
   `
 
-  const ADD_PROPOSED_INTENT = gql`
-    ${PROPOSED_INTENT_CORE_FIELDS},
-    mutation($proposal: ProposedIntent!){
-      createProposedIntent(proposedIntent: $proposedIntent) {
-        proposal {
-          ...ProposedIntentCoreFields
-        }
-      }
-    }
-  `
+  // const ADD_PROPOSED_INTENT = gql`
+  //   ${PROPOSED_INTENT_CORE_FIELDS},
+  //   mutation($proposedIntent: ProposedIntent!){
+  //     createProposedIntent(proposedIntent: $proposedIntent) {
+  //       proposedIntent {
+  //         ...ProposedIntentCoreFields
+  //       }
+  //     }
+  //   }
+  // `
 
   let addProposal: any= mutation(ADD_PROPOSAL)
   let addIntent: any= mutation(ADD_INTENT)
-  let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
+  // let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
 
   async function handleSubmit() {
     var d = new Date(Date.now());
@@ -80,14 +80,17 @@
     }
 
     try {
-      const res = await addProposal({ variables: { proposal } })
+      const res1 = await addProposal({ variables: { proposal } })
+      // const res2 = await addIntent({ variables: { intent } })
+      const res3 = await addProposedIntent({ variables: { proposedIntent } })
       dispatch("submit");
       open = false;
-      console.log(res)
+      console.log(res1)
     } catch (error) {
       console.error(error)
     }
   }
+
 
   onMount(() => {
     console.log('hello')
