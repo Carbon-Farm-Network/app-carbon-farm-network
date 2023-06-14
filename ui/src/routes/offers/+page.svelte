@@ -67,8 +67,7 @@
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white">
-            <!-- Odd row -->
+          <!-- <tbody class="bg-white">
             {#each offers as { proposed_intents }, index}
               {@const mainIntent = proposed_intents.find(({ reciprocal }) => !reciprocal)}
               {@const reciprocalIntent = proposed_intents.find(
@@ -119,8 +118,7 @@
               </tr>
             {/each}
 
-            <!-- More people... -->
-          </tbody>
+          </tbody> -->
         </table>
       </div>
     </div>

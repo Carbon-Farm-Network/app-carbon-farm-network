@@ -18,7 +18,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
-  import Units from '$lib/Units.svelte'
+  // import Units from '$lib/Units.svelte'
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -71,7 +71,7 @@ interface UnitsQueryResponse {
         })
         console.log(resourceSpecifications)
       })
-    }, 100)
+    }, 1000)
   }
 
   onMount(async () => {
@@ -79,14 +79,14 @@ interface UnitsQueryResponse {
       resourceSpecificationsQuery.getCurrentResult()
       fetchResourceSpecifications()
       await getUnits.getCurrentResult()
-        getUnits.refetch().then((r) => {
-          if (r.data?.units.edges.length > 0) {
-            units = flattenRelayConnection(r.data?.units).map((a) => {
-              return {
-                ...a,
-              }
-            })
-          }   
+      getUnits.refetch().then((r) => {
+        if (r.data?.units.edges.length > 0) {
+          units = flattenRelayConnection(r.data?.units).map((a) => {
+            return {
+              ...a,
+            }
+          })
+        }
       })
     }
   })
@@ -97,10 +97,10 @@ interface UnitsQueryResponse {
   $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units;
 </script>
 
-<Units />
-{#if units}
+<!-- <Units /> -->
+<!-- {#if units} -->
 <ResourceSpecificationModal bind:open={modalOpen} bind:units={units} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
-{/if}
+<!-- {/if} -->
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

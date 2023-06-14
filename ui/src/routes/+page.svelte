@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
+  // import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
   import { query } from 'svelte-apollo'
@@ -14,6 +14,7 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import Units from '$lib/Units.svelte'
 
   // query & data bindings
 
@@ -67,14 +68,14 @@
 
   onMount(async () => {
     // defer Leaflet map load until rendering, and only in browser environment
-    if (browser) {
+    // if (browser) {
       agentsQuery.getCurrentResult()
       fetchAgents()
       setInterval(function(){
         fetchAgents()
       }, 20000)
       MapComponent = (await import('$lib/Map.svelte')).default
-    }
+    // }
   })
 
   // reactive data bindings
@@ -83,6 +84,7 @@
 
   $: agents;
 </script>
+<Units />
 
 <div class="relative h-full w-full">
   {#if agents && agentsQuery !== undefined}

@@ -8,7 +8,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:unit": "vitest",
-    "package": "npm run build && cd public && bestzip ../dist.zip *",
+    "package": "npm run build && node zip.js",
     "lint": "prettier --plugin-search-dir . --check .",
     "format": "prettier --plugin-search-dir . --write ."
   },
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-replace": "^4.0.0",
-    "@sveltejs/adapter-auto": "^2.0.1",
+    "@sveltejs/adapter-static": "^2.0.1",
     "@sveltejs/kit": "^1.16.3",
     "@sveltejs/vite-plugin-svelte": "^2.2.0",
     "@tsconfig/svelte": "^3.0.0",
