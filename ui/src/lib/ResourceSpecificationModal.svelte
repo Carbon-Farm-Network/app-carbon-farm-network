@@ -65,16 +65,17 @@
 
   async function handleSubmit() {
     // let unitOfResource = units.find(unit => unit.id === currentResourceSpecification.defaultUnitOfResource).id
-    let unitId = {
-      UnitId: currentResourceSpecification.defaultUnitOfResource
-    }
+    // let unitId = {
+    //   UnitId: currentResourceSpecification.defaultUnitOfResource
+    // }
     let resource: ResourceSpecificationCreateParams = {
       name: currentResourceSpecification.name,
-      defaultUnitOfResource: JSON.stringify(unitId),
+      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResource,
       // defaultUnitOfEffort: "Administrative work",
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.imageUrl,
     }
+    console.log(resource)
     try {
       const res = await addResourceSpecification({ variables: { resource } })
       dispatch("submit");

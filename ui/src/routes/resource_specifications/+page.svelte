@@ -49,7 +49,7 @@ const GET_UNITS = gql`
     }
   `
 
-interface UnitsQueryResponse {
+  interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
   }
   let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
@@ -62,7 +62,7 @@ interface UnitsQueryResponse {
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
   async function fetchResourceSpecifications() {
-    setTimeout(function(){
+    // setTimeout(function(){
       resourceSpecificationsQuery.refetch().then((r) => {
         resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
           return {
@@ -71,7 +71,7 @@ interface UnitsQueryResponse {
         })
         console.log(resourceSpecifications)
       })
-    }, 1000)
+    // }, 1000)
   }
 
   onMount(async () => {
@@ -134,11 +134,11 @@ interface UnitsQueryResponse {
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Default unit of resource</th
               >
-              <th
+              <!-- <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Default unit of effort</th
-              >
+              > -->
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
               </th>
@@ -154,11 +154,12 @@ interface UnitsQueryResponse {
                 >{resourceSpecification.name}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{resourceSpecification.defaultUnitOfResource || ''}</td
+                >
+                {JSON.stringify(resourceSpecification.defaultUnitOfResource) || ''}</td
               >
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+              <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{resourceSpecification.defaultUnitOfEffort || ''}</td
-              >
+              > -->
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >

@@ -31,7 +31,7 @@
       createUnit(
         unit: {
           label: "one"
-          symbol: "1"
+          symbol: "one"
         }
       ){
         unit {
