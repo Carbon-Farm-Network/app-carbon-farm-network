@@ -6,6 +6,7 @@
   let name = "";
   let id = "";
   let currentResourceSpecification: any;
+  let units: any[];
 
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
@@ -13,10 +14,11 @@
   import { query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import Units from '$lib/Units.svelte'
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -31,6 +33,26 @@
       }
     }
   `
+
+const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
+
+interface UnitsQueryResponse {
+    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  }
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
 
   interface QueryResponse {
     resourceSpecifications: AgentConnection & RelayConn<any>
@@ -56,16 +78,29 @@
     if (browser) {
       resourceSpecificationsQuery.getCurrentResult()
       fetchResourceSpecifications()
+      await getUnits.getCurrentResult()
+        getUnits.refetch().then((r) => {
+          if (r.data?.units.edges.length > 0) {
+            units = flattenRelayConnection(r.data?.units).map((a) => {
+              return {
+                ...a,
+              }
+            })
+          }   
+      })
     }
   })
 
   // reactive data bindings
   let resourceSpecifications: any[]
 
-  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification;
+  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units;
 </script>
 
-<ResourceSpecificationModal bind:open={modalOpen} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
+<Units />
+{#if units}
+<ResourceSpecificationModal bind:open={modalOpen} bind:units={units} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/utils'
+  import { clickOutside } from './utils'
   export let open = false
   export let selectedId: string
   let name = ''

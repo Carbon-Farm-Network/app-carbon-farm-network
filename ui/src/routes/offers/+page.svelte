@@ -1,8 +1,15 @@
 <script lang="ts">
   import OfferModal from '$lib/OfferModal.svelte'
   import offers from '$lib/data/offers.json'
+  import { onMount } from 'svelte'
+  import { gql } from 'graphql-tag'
+  import { PROPOSAL_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
   let modalOpen = false
   let name = ''
+
+  onMount(() => {
+    // console.log(offers)
+  })
 </script>
 
 <OfferModal bind:open={modalOpen} bind:name />
@@ -60,8 +67,7 @@
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white">
-            <!-- Odd row -->
+          <!-- <tbody class="bg-white">
             {#each offers as { proposed_intents }, index}
               {@const mainIntent = proposed_intents.find(({ reciprocal }) => !reciprocal)}
               {@const reciprocalIntent = proposed_intents.find(
@@ -112,8 +118,7 @@
               </tr>
             {/each}
 
-            <!-- More people... -->
-          </tbody>
+          </tbody> -->
         </table>
       </div>
     </div>

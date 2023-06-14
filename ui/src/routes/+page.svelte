@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
+  // import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
   import { query } from 'svelte-apollo'
@@ -67,14 +67,14 @@
 
   onMount(async () => {
     // defer Leaflet map load until rendering, and only in browser environment
-    if (browser) {
+    // if (browser) {
       agentsQuery.getCurrentResult()
       fetchAgents()
       setInterval(function(){
         fetchAgents()
       }, 20000)
       MapComponent = (await import('$lib/Map.svelte')).default
-    }
+    // }
   })
 
   // reactive data bindings

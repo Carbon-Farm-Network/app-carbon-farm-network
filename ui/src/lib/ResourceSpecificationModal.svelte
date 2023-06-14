@@ -2,7 +2,7 @@
   import { gql } from 'graphql-tag'
   import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from './graphql/resource_specification.fragments'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   const dispatch = createEventDispatcher();
@@ -11,6 +11,7 @@
   export let editing = false;
   export let currentResourceSpecification: any = {};
   export let name = "";
+  export let units: any[];
   
   const facets = [
      {
@@ -60,12 +61,17 @@
 
   let addResourceSpecification: any = mutation(ADD_RESOURCE_SPECIFICATION)
   let updateResourceSpecification: any = mutation(UPDATE_RESOURCE_SPECIFICATION)
+  // let retrieveUnits: any = query(GET_UNITS_OF_EFFORT_AND_RESOURCE)
 
   async function handleSubmit() {
+    // let unitOfResource = units.find(unit => unit.id === currentResourceSpecification.defaultUnitOfResource).id
+    let unitId = {
+      UnitId: currentResourceSpecification.defaultUnitOfResource
+    }
     let resource: ResourceSpecificationCreateParams = {
       name: currentResourceSpecification.name,
+      defaultUnitOfResource: JSON.stringify(unitId),
       // defaultUnitOfEffort: "Administrative work",
-      // defaultUnitOfResource: String(hours),
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.imageUrl,
     }
@@ -85,8 +91,8 @@
 
     let resource: ResourceSpecificationUpdateParams = {
       name: currentResourceSpecification.name,
-      // defaultUnitOfEffort: "Administrative work",
-      // defaultUnitOfResource: "pound",
+      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResource,
+      // defaultUnitOfEffort: currentResourceSpecification.defaultUnitOfEffort,
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.imageUrl,
       revisionId: currentResourceSpecification.revisionId
@@ -100,11 +106,12 @@
       console.error(error)
     }
   }
+
+
   onMount(async () => {
-    console.log(currentResourceSpecification)
   })
 
-  $: editing, currentResourceSpecification; //, client;
+  $: editing, currentResourceSpecification, units; //, client;
 
   $: isResourceSpecificationValid = true //&& currentAgent.lat && currentAgent.long && currentAgent.name && currentAgent.imageUrl && currentAgent.role;
 
@@ -192,26 +199,46 @@
                 </p> -->
               </div>
             </div>
-
+            
+            {#if units}
             <div class="mt-4 text-left">
               <div>
                 <label
                   for="defaultUnitOfResource"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                  >Default unit of resource</label
-                >
+                  >Default unit of resource</label>
+
                 <select
+                  id="classifiedAs"
+                  name="classifiedAs"
+                  bind:value={currentResourceSpecification.defaultUnitOfResource}
+                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  on:click={e => {
+                    console.log(currentResourceSpecification.defaultUnitOfResource)
+                  }}
+                  >
+                  {#each units as unit}
+                    {#if unit.label === "pound"}
+                      <option selected value={unit.id}>Pound</option>
+                    {:else if unit.label === "one"}
+                      <option value={unit.id}>Each</option>
+                    {/if}
+                  {/each}
+                </select>
+
+                <!-- <select
                   id="defaultUnitOfResource"
                   name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                   <option selected>Pound</option>
                   <option>Each</option>
-                </select>
+                </select> -->
               </div>
             </div>
+            {/if}
 
-            <div class="mt-4 text-left">
+            <!-- <div class="mt-4 text-left">
               <div>
                 <label
                   for="defaultUnitOfEffort"
@@ -227,7 +254,7 @@
                   <option>Delivery work</option>
                 </select>
               </div>
-            </div>
+            </div> -->
 
             <div class="mt-4 text-left">
               <div class="col-span-full">
