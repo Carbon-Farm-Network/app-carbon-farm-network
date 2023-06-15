@@ -1,11 +1,163 @@
 <script lang="ts">
   import OfferModal from '$lib/OfferModal.svelte'
-  import offers from '$lib/data/offers.json'
+  import offers from '$lib/data/offers.json'  
+  import { DateInput } from 'date-picker-svelte'
+  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import { gql } from 'graphql-tag'
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { onMount } from 'svelte'
+  import { mutation, query } from 'svelte-apollo'
+  import { createEventDispatcher } from 'svelte';
+  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification } from '@valueflows/vf-graphql'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import { browser } from '$app/environment'
+  let units: Unit[];
+  let resourceSpecifications: ResourceSpecification[];
+  let agents: any[];
+  let currentProposal: ProposalCreateParams = {};
+  let currentIntent: IntentCreateParams = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
+  let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
+  let currentProposedIntent: any = {};
+
   let modalOpen = false
   let name = ''
+
+  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    query {
+      resourceSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ResourceSpecificationCoreFields
+          }
+        }
+      }
+    }
+  `
+
+  const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
+
+  interface UnitsQueryResponse {
+    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  }
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+
+  interface QueryResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
+
+  // map component state
+  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  async function fetchResourceSpecifications() {
+    resourceSpecificationsQuery.getCurrentResult()
+    // setTimeout(function(){
+    resourceSpecificationsQuery.refetch().then((r) => {
+      resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+        return {
+          ...a,
+        }
+      })
+      console.log(resourceSpecifications)
+    })
+    // }, 1000)
+  }
+
+  const GET_ALL_AGENTS = gql`
+    ${AGENT_CORE_FIELDS}
+    ${PERSON_CORE_FIELDS}
+    ${ORGANIZATION_CORE_FIELDS}
+    query {
+      agents(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...AgentCoreFields
+            ...PersonCoreFields
+            ...OrganizationCoreFields
+          }
+        }
+      }
+    }
+  `
+
+  interface QueryResponse {
+    agents: AgentConnection & RelayConn<any>
+  }
+
+  // map component state
+  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+
+  async function fetchAgents() {
+    agentsQuery.refetch().then((r) => {
+      agents = flattenRelayConnection(r.data?.agents).map((a) => {
+        return {
+          ...a,
+          "name": a.name,
+          "imageUrl": a.image,
+          "iconUrl": a.image,
+          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+          "lat": a.classifiedAs[0],
+          "long": a.classifiedAs[1],
+          "role": a.classifiedAs[2],
+          "address": a.note,
+        }
+      })
+      console.log(agents)
+    })
+  }
+
+  function fetchUnits() {
+    getUnits.getCurrentResult()
+    getUnits.refetch().then((r) => {
+      if (r.data?.units.edges.length > 0) {
+        units = flattenRelayConnection(r.data?.units).map((a) => {
+          return {
+            ...a,
+          }
+        })
+        console.log(units)
+      }
+    })
+  }
+
+  onMount(() => {
+    if (browser) {
+      fetchResourceSpecifications()
+      fetchAgents()
+      fetchUnits()
+      // setInterval(function(){
+      //   if (!units) {
+      //     fetchUnits()
+      //   } else {
+          
+      //   }
+      // }, 10000)
+      // console.log(offers)
+    }
+  })
+
+  $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications
 </script>
 
-<OfferModal bind:open={modalOpen} bind:name />
+<OfferModal bind:open={modalOpen} bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -15,6 +167,7 @@
         The goods or services you are offering within the network, now or generally.
       </p>
     </div>
+    {#if agents && resourceSpecifications && units}
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
@@ -23,6 +176,14 @@
         >Add an offer</button
       >
     </div>
+    {:else}
+    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+      <button
+        type="button"
+        class="block rounded-md bg-indigo-300 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >Loading data...</button
+      ></div>
+    {/if}
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -60,8 +221,7 @@
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white">
-            <!-- Odd row -->
+          <!-- <tbody class="bg-white">
             {#each offers as { proposed_intents }, index}
               {@const mainIntent = proposed_intents.find(({ reciprocal }) => !reciprocal)}
               {@const reciprocalIntent = proposed_intents.find(
@@ -112,8 +272,7 @@
               </tr>
             {/each}
 
-            <!-- More people... -->
-          </tbody>
+          </tbody> -->
         </table>
       </div>
     </div>

@@ -6,6 +6,7 @@
   let name = "";
   let id = "";
   let currentResourceSpecification: any;
+  let units: any[];
 
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
@@ -13,10 +14,11 @@
   import { query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
+  // import Units from '$lib/Units.svelte'
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -32,6 +34,26 @@
     }
   `
 
+const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
+
+  interface UnitsQueryResponse {
+    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  }
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+
   interface QueryResponse {
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
@@ -40,40 +62,45 @@
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
   async function fetchResourceSpecifications() {
-    setTimeout(function(){
+    // setTimeout(function(){
       resourceSpecificationsQuery.refetch().then((r) => {
         resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
           return {
             ...a,
-            // "name": a.name,
-            // "imageUrl": a.image,
-            // "iconUrl": a.image,
-            // "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-            // "lat": a.classifiedAs[0],
-            // "long": a.classifiedAs[1],
-            // "role": a.classifiedAs[2],
-            // "address": a.note,
           }
         })
         console.log(resourceSpecifications)
       })
-    }, 1000)
+    // }, 1000)
   }
 
   onMount(async () => {
     if (browser) {
       resourceSpecificationsQuery.getCurrentResult()
       fetchResourceSpecifications()
+      await getUnits.getCurrentResult()
+      getUnits.refetch().then((r) => {
+        if (r.data?.units.edges.length > 0) {
+          units = flattenRelayConnection(r.data?.units).map((a) => {
+            return {
+              ...a,
+            }
+          })
+        }
+      })
     }
   })
 
   // reactive data bindings
   let resourceSpecifications: any[]
 
-  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification;
+  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units;
 </script>
 
-<ResourceSpecificationModal bind:open={modalOpen} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
+<!-- <Units /> -->
+<!-- {#if units} -->
+<ResourceSpecificationModal bind:open={modalOpen} bind:units={units} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
+<!-- {/if} -->
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -107,11 +134,11 @@
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Default unit of resource</th
               >
-              <th
+              <!-- <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Default unit of effort</th
-              >
+              > -->
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
               </th>
@@ -127,11 +154,12 @@
                 >{resourceSpecification.name}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{resourceSpecification.defaultUnitOfResource || ''}</td
+                >
+                {JSON.stringify(resourceSpecification.defaultUnitOfResource) || ''}</td
               >
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+              <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{resourceSpecification.defaultUnitOfEffort || ''}</td
-              >
+              > -->
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >

@@ -3,7 +3,8 @@
   import 'leaflet/dist/leaflet.css'
   // import type { Agent } from "globals"
   const mapOptions = {
-    LatLngExpression: [41.083, -74.042],
+    // LatLngExpression: [41.083, -74.042],
+    center: [41.083, -74.042] as [number, number],
     zoom: 5
   }
   const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'

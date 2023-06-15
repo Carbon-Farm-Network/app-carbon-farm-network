@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
+  // import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
   import { query } from 'svelte-apollo'
@@ -14,6 +14,7 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import Units from '$lib/Units.svelte'
 
   // query & data bindings
 
@@ -62,7 +63,7 @@
       agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
     async function fetchAgents() {
-    setInterval(function(){
+    // setInterval(function(){
       agentsQuery.refetch().then((r) => {
         agents = flattenRelayConnection(r.data?.agents).map((a) => {
           return {
@@ -75,17 +76,21 @@
           }
         })
         console.log(agents)
+        console.log(agentsQuery)
       })
-    }, 10000)
+    // }, 20000)
   }
 
   onMount(async () => {
     // defer Leaflet map load until rendering, and only in browser environment
-    if (browser) {
+    // if (browser) {
       agentsQuery.getCurrentResult()
       fetchAgents()
+      setInterval(function(){
+        fetchAgents()
+      }, 20000)
       MapComponent = (await import('$lib/Map.svelte')).default
-    }
+    // }
   })
 
   // reactive data bindings
@@ -94,11 +99,12 @@
 
   $: agents;
 </script>
+<Units />
 
 <div class="relative h-full w-full">
   {#if agents && agentsQuery !== undefined}
     <!-- {JSON.stringify(agents[0].latlng)} -->
-    {#if $agentsQuery.loading}
+    {#if $agentsQuery.loading && false}
       <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
     {:else if $agentsQuery.error}
       <ErrorPage status="Problem loading network Agents" error={$agentsQuery.error} />
@@ -114,4 +120,5 @@
   {:else}
     <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
   {/if}
+  
 </div>

@@ -1,10 +1,155 @@
 <script lang="ts">
   import { DateInput } from 'date-picker-svelte'
-
-  import { clickOutside } from '$lib/utils'
+  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import { gql } from 'graphql-tag'
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { clickOutside } from './utils'
+  import { onMount } from 'svelte'
+  import { mutation, query } from 'svelte-apollo'
+  import { createEventDispatcher } from 'svelte';
+  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs } from '@valueflows/vf-graphql'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import { browser } from '$app/environment'
   export let open = false;
   export let name = "";
+  export let resourceSpecifications: any[];
+  export let units: any[];
+  export let agents: any[];
   export let date = new Date();
+  export let currentProposal: ProposalCreateParams;
+  export let currentIntent: IntentCreateParams;
+  export let currentReciprocalIntent: IntentCreateParams;
+  export let currentProposedIntent: any;
+
+  const dispatch = createEventDispatcher();
+
+  const ADD_PROPOSAL = gql`
+    ${PROPOSAL_CORE_FIELDS},
+    mutation($proposal: ProposalCreateParams!){
+      createProposal(proposal: $proposal) {
+        proposal {
+          ...ProposalCoreFields
+        }
+      }
+    }
+  `
+
+  const ADD_INTENT = gql`
+    ${INTENT_CORE_FIELDS},
+    mutation($intent: IntentCreateParams!){
+      createIntent(intent: $intent) {
+        intent {
+          ...IntentCoreFields
+        }
+      }
+    }
+  `
+
+  const ADD_PROPOSED_INTENT = gql`
+    ${PROPOSED_INTENT_CORE_FIELDS},
+    mutation($proposeIntent: MutationProposeIntentArgs!){
+      proposeIntent(proposeIntent: $proposeIntent) {
+        proposeIntent {
+          ...ProposedIntentCoreFields
+        }
+      }
+    }
+  `
+
+
+
+
+  let addProposal: any= mutation(ADD_PROPOSAL)
+  let addIntent: any= mutation(ADD_INTENT)
+  let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
+
+  async function test(){console.log('test')}
+
+  async function handleSubmit() {
+    console.log(currentProposal)
+    console.log(currentIntent)
+    console.log(currentReciprocalIntent)
+    console.log(currentProposedIntent)
+    try {
+      // create proposal
+      var d = new Date(Date.now());
+      let proposal: ProposalCreateParams = {
+        hasBeginning: d,
+        unitBased: true,
+        note: "shearing end of May"
+      }
+      const res1 = await addProposal({ variables: { proposal } })
+      const res1ID = res1.data.createProposal.proposal.id
+      
+      // create intent
+      let intent: IntentCreateParams = {
+        provider: currentIntent.provider,
+        action: "transfer",
+        resourceConformsTo: currentIntent.resourceConformsTo,
+        availableQuantity: {
+          hasNumericalValue: currentIntent.availableQuantity?.hasNumericalValue,
+          hasUnit: currentIntent.availableQuantity?.hasUnit,
+        },
+        resourceQuantity: {
+          hasNumericalValue: currentIntent.resourceQuantity?.hasNumericalValue,
+          // hasUnit: currentIntent.resourceQuantity?.hasUnit,
+        },
+        note: currentIntent.note
+      }
+      const res2 = await addIntent({ variables: { intent } });
+      const res2ID = res2.data.createIntent.intent.id
+      console.log(res2);
+
+      intent = {
+        provider: currentIntent.provider,
+        action: "transfer",
+        resourceConformsTo: currentIntent.resourceConformsTo,
+        availableQuantity: {
+          hasNumericalValue: currentIntent.availableQuantity?.hasNumericalValue,
+          hasUnit: currentIntent.availableQuantity?.hasUnit,
+        },
+        resourceQuantity: {
+          hasNumericalValue: currentIntent.resourceQuantity?.hasNumericalValue,
+          hasUnit: currentIntent.resourceQuantity?.hasUnit,
+        },
+        note: currentIntent.note
+      }
+      const res3 = await addIntent({ variables: { intent } })
+      const res3ID = res3.data.createIntent.intent.id
+      
+      // create proposed intent
+      let proposeIntent: any = {
+      reciprocal: false,
+        publishedIn: res1ID,
+        publishes: res2ID
+      }
+      const res4 = await addProposedIntent({ variables: { proposeIntent } })
+      
+      proposeIntent = {
+      reciprocal: true,
+        publishedIn: res1ID,
+        publishes: res3ID
+      }
+      const res5 = await addProposedIntent({ variables: { proposeIntent } })
+      
+      dispatch("submit");
+      open = false;
+      console.log(res1)
+      console.log(res1)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+
+  onMount(() => {
+    if (browser) {
+      console.log('hello')
+    }
+    // handleSubmit()
+  })
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
@@ -37,7 +182,6 @@
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
         class:hidden={!open}
         use:clickOutside
-        on:outclick={() => (open = false)}
       >
         <div>
           <div class="mt-3 text-center sm:mt-5">
@@ -56,9 +200,15 @@
                   id="defaultUnitOfResource"
                   name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  bind:value={currentIntent.provider}
                 >
-                  <option selected>Lazy Acre Alpacca</option>
-                  <option>Woodland meadow farm</option>
+                {#if agents}
+                {#each agents as agent}
+                  <option selected value={agent.id}>{agent.name}</option>
+                {/each}
+                {/if}
+                  <!-- <option selected>Lazy Acre Alpacca</option>
+                  <option>Woodland meadow farm</option> -->
                 </select>
               </div>
             </div>
@@ -74,10 +224,16 @@
                   id="defaultUnitOfResource"
                   name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  bind:value={currentIntent.resourceConformsTo}
                 >
-                  <option selected>Brown alpacca dirty</option>
+                {#if resourceSpecifications}
+                {#each resourceSpecifications as rs}
+                  <option selected value={rs.id}>{rs.name}</option>
+                {/each}
+                {/if}
+                <!-- <option selected>Brown alpacca dirty</option>
                   <option>White alpacca dirty</option>
-                  <option>White wool dirty</option>
+                  <option>White wool dirty</option> -->
                 </select>
               </div>
             </div>
@@ -90,18 +246,21 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Available quantity</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
+                  <!-- for required:  class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"-->
+                  {#if currentIntent.availableQuantity}
                   <input
                     type="text"
                     name="name"
                     id="name"
-                    class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={name}
+                    bind:value={currentIntent.availableQuantity.hasNumericalValue}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
                   />
-                  <div
+                  {/if}
+                  <!-- <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
                   >
                     <svg
@@ -116,11 +275,11 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                  </div>
+                  </div> -->
                 </div>
-                <p class="mt-2 text-sm text-red-600" id="email-error">
+                <!-- <p class="mt-2 text-sm text-red-600" id="email-error">
                   Quantity is required.
-                </p>
+                </p> -->
               </div>
 
               <div>
@@ -129,13 +288,25 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
+                {#if currentIntent.availableQuantity}
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                >
-                  <option selected>lb</option>
+                  bind:value={currentIntent.availableQuantity.hasUnit}
+                  >
+                {#if units}
+                {#each units as unit}
+                  {#if unit.label === "pound"}
+                    <option selected value={unit.id}>Pound</option>
+                  {:else if unit.label === "one"}
+                    <option value={unit.id}>Each</option>
+                  {/if}
+                {/each}
+                {/if}
+                  <!-- <option selected>lb</option> -->
                 </select>
+                {/if}
               </div>
 
             </div>
@@ -145,21 +316,24 @@
               <div class="text-left">
                 <label
                   for="name"
-                  class="block text-sm font-medium leading-6 text-gray-900">Price</label
-                >
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                  >Price</label
+                  >
                 <div class="relative mt-2 rounded-md shadow-sm">
+                  {#if currentReciprocalIntent.resourceQuantity}
                   <input
                     type="text"
                     name="name"
                     id="name"
-                    class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={name}
+                    bind:value={currentReciprocalIntent.resourceQuantity.hasNumericalValue}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
                   />
-                  <div
+                  {/if}
+                  <!-- <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
                   >
                     <svg
@@ -174,11 +348,11 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                  </div>
+                  </div> -->
                 </div>
-                <p class="mt-2 text-sm text-red-600" id="email-error">
+                <!-- <p class="mt-2 text-sm text-red-600" id="email-error">
                   Price is required.
-                </p>
+                </p> -->
               </div>
 
               <div>
@@ -187,13 +361,17 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Currency</label
                 >
+                USD
+                <!-- {#if currentIntent.resourceQuantity}
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                >
+                  bind:value={currentIntent.resourceQuantity.hasUnit}
+                  >
                   <option selected>USD</option>
                 </select>
+                {/if} -->
               </div>
             </div>
 
@@ -209,18 +387,20 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Quantity</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
+                  {#if currentIntent.resourceQuantity}
                   <input
                     type="text"
                     name="name"
                     id="name"
-                    class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={name}
+                    bind:value={currentIntent.resourceQuantity.hasNumericalValue}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
                   />
-                  <div
+                  {/if}
+                  <!-- <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
                   >
                     <svg
@@ -235,11 +415,11 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                  </div>
+                  </div> -->
                 </div>
-                <p class="mt-2 text-sm text-red-600" id="email-error">
+                <!-- <p class="mt-2 text-sm text-red-600" id="email-error">
                   Quantity is required.
-                </p>
+                </p> -->
               </div>
 
               <div>
@@ -248,13 +428,25 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
+                {#if currentIntent.resourceQuantity}
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  bind:value={currentIntent.resourceQuantity.hasUnit}
                 >
-                  <option selected>lb</option>
+                {#if units}
+                {#each units as unit}
+                  {#if unit.label === "pound"}
+                    <option selected value={unit.id}>Pound</option>
+                  {:else if unit.label === "one"}
+                    <option value={unit.id}>Each</option>
+                  {/if}
+                {/each}
+                {/if}
+                  <!-- <option selected>lb</option> -->
                 </select>
+                {/if}
               </div>
             </div>
 
@@ -264,7 +456,7 @@
                 class="block text-sm font-medium leading-6 text-gray-900"
                 >Date available</label
               >
-              <DateInput bind:value={date} />
+              <DateInput bind:value={currentProposal.hasBeginning} />
             </div>
 
             <div class="mt-4 text-left">
@@ -279,7 +471,8 @@
                     name="note"
                     rows="3"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
+                    bind:value={currentIntent.note}
+                    />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
@@ -293,6 +486,7 @@
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+            on:click={()=>{handleSubmit()}}
             >Create</button
           >
           <button
