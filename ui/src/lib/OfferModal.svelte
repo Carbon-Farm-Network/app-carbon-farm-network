@@ -50,8 +50,8 @@
   const ADD_PROPOSED_INTENT = gql`
     ${PROPOSED_INTENT_CORE_FIELDS},
     mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
-      proposeIntent(proposeIntent: $proposeIntent) {
-        proposeIntent {
+      proposeIntent(reciprocal: $reciprocal, publishedIn: $publishedIn, publishes: $publishes) {
+        proposedIntent {
           ...ProposedIntentCoreFields
         }
       }
@@ -120,7 +120,13 @@
       //   publishedIn: res1ID,
       //   publishes: res2ID
       // }
-      // const res4 = await addProposedIntent({ variables: { proposeIntent } })
+      
+      let reciprocal: Boolean = true
+      let publishedIn = res1ID
+      let publishes = res3ID
+      
+      const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+      console.log(res4)
       
       // proposeIntent = {
       // console.log('hihihi')
@@ -139,9 +145,9 @@
       
       dispatch("submit");
       open = false;
-      console.log(res1)
-      console.log(res2)
-      console.log(res3)
+      // console.log(res1)
+      // console.log(res2)
+      // console.log(res3)
       // console.log(res4)
     } catch (error) {
       console.error(error)
