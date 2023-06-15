@@ -1,4 +1,8 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 importers:
 
@@ -86,9 +90,9 @@ importers:
       '@rollup/plugin-replace':
         specifier: ^4.0.0
         version: 4.0.0(rollup@2.79.1)
-      '@sveltejs/adapter-auto':
+      '@sveltejs/adapter-static':
         specifier: ^2.0.1
-        version: 2.0.1(@sveltejs/kit@1.20.0)
+        version: 2.0.2(@sveltejs/kit@1.20.0)
       '@sveltejs/kit':
         specifier: ^1.16.3
         version: 1.20.0(svelte@3.59.1)(vite@4.3.9)
@@ -1019,13 +1023,12 @@ packages:
       rollup: 2.79.1
     dev: true
 
-  /@sveltejs/adapter-auto@2.0.1(@sveltejs/kit@1.20.0):
-    resolution: {integrity: sha512-anxxYMcQy7HWSKxN4YNaVcgNzCHtNFwygq72EA1Xv7c+5gSECOJ1ez1PYoLciPiFa7A3XBvMDQXUFJ2eqLDtAA==}
+  /@sveltejs/adapter-static@2.0.2(@sveltejs/kit@1.20.0):
+    resolution: {integrity: sha512-9wYtf6s6ew7DHUHMrt55YpD1FgV7oWql2IGsW5BXquLxqcY9vjrqCFo0TzzDpo+ZPZkW/v77k0eOP6tsAb8HmQ==}
     peerDependencies:
-      '@sveltejs/kit': ^1.0.0
+      '@sveltejs/kit': ^1.5.0
     dependencies:
       '@sveltejs/kit': 1.20.0(svelte@3.59.1)(vite@4.3.9)
-      import-meta-resolve: 3.0.0
     dev: true
 
   /@sveltejs/kit@1.20.0(svelte@3.59.1)(vite@4.3.9):
@@ -2858,10 +2861,6 @@ packages:
     dependencies:
       parent-module: 1.0.1
       resolve-from: 4.0.0
-    dev: true
-
-  /import-meta-resolve@3.0.0:
-    resolution: {integrity: sha512-4IwhLhNNA8yy445rPjD/lWh++7hMDOml2eHtd58eG7h+qK3EryMuuRbsHGPikCoAgIkkDnckKfWSk2iDla/ejg==}
     dev: true
 
   /imurmurhash@0.1.4:
