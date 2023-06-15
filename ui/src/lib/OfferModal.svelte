@@ -9,7 +9,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs, Scalars } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   export let open = false;
@@ -49,7 +49,7 @@
 
   const ADD_PROPOSED_INTENT = gql`
     ${PROPOSED_INTENT_CORE_FIELDS},
-    mutation($proposeIntent: MutationProposeIntentArgs!){
+    mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
       proposeIntent(proposeIntent: $proposeIntent) {
         proposeIntent {
           ...ProposedIntentCoreFields
@@ -58,14 +58,9 @@
     }
   `
 
-
-
-
   let addProposal: any= mutation(ADD_PROPOSAL)
   let addIntent: any= mutation(ADD_INTENT)
   let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
-
-  async function test(){console.log('test')}
 
   async function handleSubmit() {
     console.log(currentProposal)
@@ -81,7 +76,7 @@
         note: "shearing end of May"
       }
       const res1 = await addProposal({ variables: { proposal } })
-      const res1ID = res1.data.createProposal.proposal.id
+      const res1ID: String = String(res1.data.createProposal.proposal.id)
       
       // create intent
       let intent: IntentCreateParams = {
@@ -117,27 +112,37 @@
         note: currentIntent.note
       }
       const res3 = await addIntent({ variables: { intent } })
-      const res3ID = res3.data.createIntent.intent.id
+      const res3ID: String = String(res3.data.createIntent.intent.id)
       
-      // create proposed intent
-      let proposeIntent: any = {
-      reciprocal: false,
-        publishedIn: res1ID,
-        publishes: res2ID
-      }
-      const res4 = await addProposedIntent({ variables: { proposeIntent } })
+      // // create proposed intent
+      // let proposeIntent = {
+      //   reciprocal: false,
+      //   publishedIn: res1ID,
+      //   publishes: res2ID
+      // }
+      // const res4 = await addProposedIntent({ variables: { proposeIntent } })
       
-      proposeIntent = {
-      reciprocal: true,
-        publishedIn: res1ID,
-        publishes: res3ID
-      }
-      const res5 = await addProposedIntent({ variables: { proposeIntent } })
+      // proposeIntent = {
+      // console.log('hihihi')
+      // let reciprocal: Boolean = true
+      // let publishedIn = res1ID
+      // let publishes = res3ID
+      // // }
+      // console.log('hohohoho')
+      // console.log(publishedIn)
+      // const res5 = await addProposedIntent( reciprocal, publishedIn, publishes )
+
+      
+
+
+
       
       dispatch("submit");
       open = false;
       console.log(res1)
-      console.log(res1)
+      console.log(res2)
+      console.log(res3)
+      // console.log(res4)
     } catch (error) {
       console.error(error)
     }
@@ -145,6 +150,8 @@
 
 
   onMount(() => {
+    // let x = cri1()
+    // console.log(x)
     if (browser) {
       console.log('hello')
     }

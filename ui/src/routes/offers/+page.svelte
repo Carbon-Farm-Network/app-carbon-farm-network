@@ -2,7 +2,7 @@
   import OfferModal from '$lib/OfferModal.svelte'
   import offers from '$lib/data/offers.json'  
   import { DateInput } from 'date-picker-svelte'
-  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { RelayConn } from '$lib/graphql/helpers'
@@ -53,6 +53,24 @@
       }
     }
   `
+
+  const GET_All_PROPOSALS = gql`
+    ${PROPOSAL_RETURN_FIELDS}
+    query {
+      proposals(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ProposalReturnFields
+          }
+        }
+      }
+    }
+  `
+
+  interface ProposalsQueryResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
 
   interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined

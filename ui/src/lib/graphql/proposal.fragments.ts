@@ -51,3 +51,48 @@ export const PROPOSED_INTENT_CORE_FIELDS = gql`
     }
   }
 `
+
+export const PROPOSAL_RETURN_FIELDS = gql`
+  fragment ProposalReturnFields on Proposal {
+    id
+    name
+    hasEnd
+    unitBased
+    publishes {
+      reciprocal
+      publishes {
+        resourceConformsTo {
+          name
+          defaultUnitOfResource {
+            label
+            symbol
+          }
+        }
+        resourceQuantity {
+          hasNumericalValue
+          hasUnit {
+            label
+            symbol
+          }
+        }
+        availableQuantity {
+          hasNumericalValue
+          hasUnit {
+            label
+            symbol
+          }
+        }
+        provider {
+          id
+          name
+        }
+        receiver {
+          id
+          name
+        }
+        finished
+        note
+      }
+    }
+  }
+`
