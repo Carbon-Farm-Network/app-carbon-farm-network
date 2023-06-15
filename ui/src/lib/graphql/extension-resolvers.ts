@@ -13,9 +13,9 @@ import type { DNAIdMappings } from '@valueflows/vf-graphql-holochain'
 
 import type { Organization, ResourceSpecification } from '@valueflows/vf-graphql'
 import type {
-  FacetGroup, FacetOption, FacetValue,
-  FacetGroupParams, FacetOptionParams, FacetValueParams,
-  FacetGroupResponse, FacetOptionResponse, FacetValueResponse,
+  FacetGroup, Facet, FacetValue,
+  FacetGroupParams, FacetParams, FacetValueParams,
+  FacetGroupResponse, FacetResponse, FacetValueResponse,
   RawRecordIdentifierMeta,
 } from './extension-schemas'
 
@@ -46,14 +46,14 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
 {
   // zome write API
   const runCreateGroup = mapZomeFn<FacetGroupParams, FacetGroupResponse>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_group')
-  const runCreateOption = mapZomeFn<FacetOptionParams, FacetOptionResponse>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_option')
+  const runCreateOption = mapZomeFn<FacetParams, FacetResponse>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_option')
   const runCreateValue = mapZomeFn<FacetValueParams, FacetValueResponse>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_value')
 
   // :TODO: deletions API
 
   // zome read API
   const readFacetGroups = mapZomeFn<Record<string, never>, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_groups')
-  const readFacetOptions = mapZomeFn<ByEntryHash, FacetOption[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
+  const readFacets = mapZomeFn<ByEntryHash, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
   const readFacetValues = mapZomeFn<ByEntryHash | ByIdentifier, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_values')
 
   // declare and return all resolver callbacks for GraphQL engine
@@ -65,14 +65,14 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
         res.facetGroup = encodeIdentifiers<FacetGroup>(res.facetGroup)
         return res
       },
-      putFacet: async function (_root: any, args: FacetOptionParams): Promise<FacetOptionResponse> {
+      putFacet: async function (_root: any, args: FacetParams): Promise<FacetResponse> {
         const res = await runCreateOption({
           ...args,
           facetGroupId: decodeHashFromBase64(args.facetGroupId),
         })
         res.facetOption = {
           // @ts-ignore
-          ...encodeIdentifiers<FacetOption>(res.facetOption),
+          ...encodeIdentifiers<Facet>(res.facetOption),
           // @ts-ignore
           facetGroupId: encodeHashToBase64(res.facetOption.facetGroupId),
         }
@@ -105,32 +105,32 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
       },
     },
     FacetGroup: {
-      options: async function (record: FacetGroup): Promise<FacetOption[]> {
+      facets: async function (record: FacetGroup): Promise<Facet[]> {
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
-        const res = await readFacetOptions({ group_hash: decodeHashFromBase64(record.id) })
+        const res = await readFacets({ group_hash: decodeHashFromBase64(record.id) })
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
     },
-    FacetOption: {
-      group: async function (record: FacetOption): Promise<FacetGroup> {
+    Facet: {
+      group: async function (record: Facet): Promise<FacetGroup> {
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
         const res = await readFacetGroups({ has_option_hash: decodeHashFromBase64(record.id) })
         // @ts-ignore
         return encodeIdentifiers<FacetGroup>(res.pop() as FacetGroup)
       },
-      values: async function (record: FacetOption): Promise<FacetValue[]> {
+      values: async function (record: Facet): Promise<FacetValue[]> {
         const res = await readFacetValues({ option_hash: decodeHashFromBase64(record.id) })
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
     },
     FacetValue: {
-      option: async function (record: FacetValue): Promise<FacetOption> {
+      facet: async function (record: FacetValue): Promise<Facet> {
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
-        const res = await readFacetOptions({ has_value_hash: decodeHashFromBase64(record.id) })
+        const res = await readFacets({ has_value_hash: decodeHashFromBase64(record.id) })
         // @ts-ignore
-        return encodeIdentifiers<FacetGroup>(res.pop() as FacetOption)
+        return encodeIdentifiers<FacetGroup>(res.pop() as Facet)
       },
     },
     Organization: {

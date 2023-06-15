@@ -10,14 +10,14 @@ export interface FacetGroupParams {
   note: string;
 }
 
-export interface FacetOptionParams {
+export interface FacetParams {
   facetGroupId: EntryHashB64
   option: string
 }
 
 export interface FacetValueParams {
   facetOptionId: EntryHashB64
-  value: string // must match a stored `FacetOption.option`
+  value: string // must match a stored `Facet.option`
   note: string
 }
 
@@ -34,7 +34,7 @@ export interface RawRecordIdentifierMeta {
 }
 
 export type FacetGroup = FacetGroupParams & RecordIdentifierMeta
-export type FacetOption = FacetOptionParams & RecordIdentifierMeta
+export type Facet = FacetParams & RecordIdentifierMeta
 export type FacetValue = FacetValueParams & RecordIdentifierMeta
 
 // mutation API output structs
@@ -43,20 +43,19 @@ export interface FacetGroupResponse {
   facetGroup: FacetGroup
 }
 
-export interface FacetOptionResponse {
-  facetOption: FacetOption
+export interface FacetResponse {
+  facetOption: Facet
 }
 
 export interface FacetValueResponse {
-  facetValue: FacetOption
+  facetValue: FacetValue
 }
 
-// :TODO: The below needs to be updated to marry with above TypeScript declarations
-//        and spec in https://github.com/Carbon-Farm-Network/holochain-facets/issues/1
-
-export default [`
+export default [
+// Facet groupings (record type associations)
+`
 input FacetGroupParams {
-  group_id: ID!
+  name: String!
   note: String
 }
 
@@ -65,18 +64,23 @@ type FacetGroup {
   revisionId: ID!
   name: String!
   note: String
-  options: [FacetOption!]!
+  facets: [Facet!]!
 }
 
 type FacetGroupResponse {
-  id: ID!
-  revisionId: ID!
-  name: String!
-  note: String
-  options: [FacetOption!]!
+  facetGroup: FacetGroup!
 }
 
-type FacetOption {
+`,// Facets (available facets for each record type)
+`
+
+input FacetParams {
+  facetGroupId: ID!
+  name: String!
+  note: String
+}
+
+type Facet {
   id: ID!
   revisionId: ID!
   group: FacetGroup!
@@ -85,36 +89,72 @@ type FacetOption {
   values: [FacetValue!]!
 }
 
-type FacetValue {
-  id: ID!
-  revisionId: ID!
-  option: FacetOption!
+type FacetResponse {
+  facet: Facet!
+}
+
+`,// Facet values (allowed values per Facet)
+`
+
+input FacetValueParams {
+  facetId: ID!
   value: String!
   note: String
 }
 
-input FacetCreateParams {
-  name: String!
+type FacetValue {
+  id: ID!
+  revisionId: ID!
+  facet: Facet!
+  value: String!
   note: String
 }
 
-type FacetOptionResponse {
-  facet: FacetOption
+type FacetValueResponse {
+  facetValue: FacetValue!
 }
 
+`,// Query API
+`
+
 type Organization implements Agent {
-  facets: [FacetValue]
+  facets: [FacetValue!]!
 }
 
 type ResourceSpecification {
-  facets: [FacetValue]
+  facets: [FacetValue!]!
 }
 
+type Query {
+  facetGroups: [FacetGroup!]!
+}
+
+`,// Mutation API
+`
+
 type Mutation  {
-  "Create a new facet grouping."
+  "Create a new facet grouping to define available facets per record type."
   putFacetGroup(facetGroup: FacetGroupParams!): FacetGroupResponse!
 
-  "Create a new facet classification."
-  putFacetOption(facet: FacetOption!): FacetOptionResponse!
+  "Delete a facet grouping via its revisionId."
+  deleteFacetGroup(revisionId: ID!): Boolean!
+
+  "Create a new facet available to a record type."
+  putFacet(facet: FacetParams!): FacetResponse!
+
+  "Delete a facet via its revisionId"
+  deleteFacet(revisionId: ID!): Boolean!
+
+  "Create a new facet value to define possible values for a facet."
+  putFacetValue(facetValue: FacetValueParams!): FacetValueResponse!
+
+  "Delete a facet value via its revisionId"
+  deleteFacetValue(revisionId: ID!): Boolean!
+
+  "Associate a facet value with an externally located record via its identifier."
+  associateFacetValue(identifier: ID!, facetValueId: ID!): Boolean!
+
+  "Remove an associated facet value from a record."
+  deassociateFacetValue(identifier: ID!, facetValueId: ID!): Boolean!
 }
 `]
