@@ -8,7 +8,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "pnpm run download-hrea-obs && pnpm run download-hrea-specification && pnpm run download-hrea-agent && pnpm run download-hrea-planning && pnpm run download-hrea-proposal",
-    "start": "AGENTS=2 pnpm run network",
+    "start": "AGENTS=1 pnpm run network",
     "network": "hc s clean && pnpm run build:happ && UI_PORT=8888 concurrently \"cd ui && pnpm start\" \"pnpm run launch:happ\" \"holochain-playground\"",
     "test": "pnpm run build:zomes && hc app pack workdir && cd tests && pnpm t",
     "launch:happ": "echo \"pass\" | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/acfn.happ --ui-port $UI_PORT network mdns",

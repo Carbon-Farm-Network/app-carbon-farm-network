@@ -11,9 +11,10 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
+  import { loop_guard } from 'svelte/internal'
   let units: Unit[];
   let resourceSpecifications: ResourceSpecification[];
   let agents: any[];
@@ -21,8 +22,9 @@
   let currentIntent: IntentCreateParams = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
   let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
   let currentProposedIntent: any = {};
-
+  let offersList: any = [];
   let modalOpen = false
+  let editing = false;
   let name = ''
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
@@ -81,6 +83,12 @@
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
 
+  interface OffersQueryResponse {
+    proposals: ProposalConnection & RelayConn<any>
+  }
+
+  let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
+
   // map component state
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
@@ -138,11 +146,11 @@
           "address": a.note,
         }
       })
-      console.log(agents)
+      // console.log(agents)
     })
   }
 
-  function fetchUnits() {
+  async function fetchUnits() {
     getUnits.getCurrentResult()
     getUnits.refetch().then((r) => {
       if (r.data?.units.edges.length > 0) {
@@ -151,7 +159,21 @@
             ...a,
           }
         })
-        console.log(units)
+        // console.log(units)
+      }
+    })
+  }
+
+  async function fetchOffers() {
+    getOffers.getCurrentResult()
+    getOffers.refetch().then((r) => {
+      if (r.data?.proposals.edges.length > 0) {
+        offersList = flattenRelayConnection(r.data?.proposals).map((a) => {
+          return {
+            ...a,
+          }
+        })
+        console.log(offersList)
       }
     })
   }
@@ -161,6 +183,7 @@
       fetchResourceSpecifications()
       fetchAgents()
       fetchUnits()
+      fetchOffers()
       // setInterval(function(){
       //   if (!units) {
       //     fetchUnits()
@@ -172,10 +195,10 @@
     }
   })
 
-  $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications
+  $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
 </script>
 
-<OfferModal bind:open={modalOpen} bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<OfferModal bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -189,7 +212,13 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => (modalOpen = true)}
+        on:click={() => {
+          currentProposal = {hasBeginning: new Date()};
+          currentIntent = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
+          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
+          currentProposedIntent = {};
+          modalOpen = true
+        }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an offer</button
       >
@@ -239,31 +268,34 @@
               </th>
             </tr>
           </thead>
-          <!-- <tbody class="bg-white">
-            {#each offers as { proposed_intents }, index}
-              {@const mainIntent = proposed_intents.find(({ reciprocal }) => !reciprocal)}
-              {@const reciprocalIntent = proposed_intents.find(
+          <tbody class="bg-white">
+            <!-- {#each offers as { proposed_intents }, index} -->
+            {#if offersList}
+            {#each offersList as proposal, index}
+              {@const mainIntent = proposal.publishes.find(({ reciprocal }) => !reciprocal)}
+              {#if mainIntent}
+              {@const reciprocalIntent = proposal.publishes.find(
                 ({ reciprocal }) => reciprocal
               )}
-              {@const availableQuantity = mainIntent.intent.available_quantity}
-              {@const resourceQuantity = reciprocalIntent.intent.resource_quantity}
+              {@const availableQuantity = mainIntent.publishes.availableQuantity}
+              {@const resourceQuantity = reciprocalIntent.publishes.resourceQuantity}
+              {#if mainIntent && reciprocalIntent && availableQuantity && resourceQuantity}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td
                   class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                  >{mainIntent.intent.provider.name}</td
+                  >{mainIntent.publishes.provider.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{mainIntent.intent.resource_conforms_to.name}</td
+                  >{mainIntent.publishes.resourceConformsTo.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{availableQuantity.has_numerical_value}
-                  {availableQuantity.has_unit.label}</td
+                  >{availableQuantity.hasNumericalValue}
+                  {availableQuantity.hasUnit.label}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{resourceQuantity.has_numerical_value}
-                  {reciprocalIntent.intent.resource_conforms_to.name} / {mainIntent.intent
-                    .resource_quantity.has_numerical_value}
-                  {mainIntent.intent.resource_quantity.has_unit.label}</td
+                  >{resourceQuantity.hasNumericalValue}
+                  {reciprocalIntent.publishes.resourceConformsTo.name} / {mainIntent.publishes.resourceQuantity.hasNumericalValue}
+                  {resourceQuantity.hasUnit.label}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <input
@@ -271,26 +303,45 @@
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
-                    checked
+                    checked={!proposal.hasEnd}
                     class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
                 </td>
                 <td
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                 >
-                  <button
-                    type="button"
-                    on:click={() => {
-                      modalOpen = true
-                    }}
-                    class="text-indigo-600 hover:text-indigo-900"
-                    >Edit<span class="sr-only">, Lindsay Walton</span></button
-                  >
+                <button type="button" on:click={() => {
+                  currentProposal = {hasBeginning: new Date(proposal.hasBeginning)};
+                  currentIntent = {        
+                    provider: mainIntent.publishes.provider.id,
+                    action: "transfer",
+                    resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
+                    availableQuantity: {
+                      hasNumericalValue: availableQuantity.hasNumericalValue,
+                      hasUnit: availableQuantity.hasUnit.id,
+                    },
+                    resourceQuantity: {
+                      hasNumericalValue: resourceQuantity.hasNumericalValue,
+                      hasUnit: resourceQuantity.hasUnit.id,
+                    },
+                    note: mainIntent.publishes.note
+                  };
+                  console.log(currentIntent)
+                  currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
+                  currentProposedIntent = {};
+
+                  modalOpen = true;
+                  editing = true;
+                }}  class="text-indigo-600 hover:text-indigo-900"
+                  >Edit<span class="sr-only">, Lindsay Walton</span></button
+                >
                 </td>
               </tr>
+              {/if}
+              {/if}
             {/each}
-
-          </tbody> -->
+            {/if}
+          </tbody>
         </table>
       </div>
     </div>

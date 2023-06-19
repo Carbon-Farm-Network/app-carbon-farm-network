@@ -67,6 +67,7 @@ const GET_UNITS = gql`
         resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
           return {
             ...a,
+            defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
           }
         })
         console.log(resourceSpecifications)
@@ -155,7 +156,7 @@ const GET_UNITS = gql`
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >
-                {JSON.stringify(resourceSpecification.defaultUnitOfResource) || ''}</td
+                {resourceSpecification.defaultUnitOfResource.label || ''}</td
               >
               <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{resourceSpecification.defaultUnitOfEffort || ''}</td

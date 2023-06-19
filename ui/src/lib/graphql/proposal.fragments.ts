@@ -56,15 +56,17 @@ export const PROPOSAL_RETURN_FIELDS = gql`
   fragment ProposalReturnFields on Proposal {
     id
     name
-    hasEnd
+    hasBeginning
     unitBased
     publishes {
       reciprocal
       publishes {
         resourceConformsTo {
           name
+          id
           defaultUnitOfResource {
             label
+            id
             symbol
           }
         }
@@ -72,6 +74,7 @@ export const PROPOSAL_RETURN_FIELDS = gql`
           hasNumericalValue
           hasUnit {
             label
+            id
             symbol
           }
         }
@@ -79,6 +82,7 @@ export const PROPOSAL_RETURN_FIELDS = gql`
           hasNumericalValue
           hasUnit {
             label
+            id
             symbol
           }
         }

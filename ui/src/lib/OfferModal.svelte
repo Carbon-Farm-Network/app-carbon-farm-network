@@ -22,6 +22,7 @@
   export let currentIntent: IntentCreateParams;
   export let currentReciprocalIntent: IntentCreateParams;
   export let currentProposedIntent: any;
+  export let editing: boolean;
 
   const dispatch = createEventDispatcher();
 
@@ -114,33 +115,20 @@
       const res3 = await addIntent({ variables: { intent } })
       const res3ID: String = String(res3.data.createIntent.intent.id)
       
-      // // create proposed intent
-      // let proposeIntent = {
-      //   reciprocal: false,
-      //   publishedIn: res1ID,
-      //   publishes: res2ID
-      // }
       
-      let reciprocal: Boolean = true
+      let reciprocal: Boolean = false
       let publishedIn = res1ID
-      let publishes = res3ID
+      let publishes = res2ID
       
       const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
       console.log(res4)
+
+      reciprocal = true
+      publishedIn = res1ID
+      publishes = res3ID
       
-      // proposeIntent = {
-      // console.log('hihihi')
-      // let reciprocal: Boolean = true
-      // let publishedIn = res1ID
-      // let publishes = res3ID
-      // // }
-      // console.log('hohohoho')
-      // console.log(publishedIn)
-      // const res5 = await addProposedIntent( reciprocal, publishedIn, publishes )
-
-      
-
-
+      const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+      console.log(res4)
 
       
       dispatch("submit");
@@ -226,6 +214,7 @@
               </div>
             </div>
 
+            {#if resourceSpecifications}
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -239,17 +228,16 @@
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   bind:value={currentIntent.resourceConformsTo}
                 >
-                {#if resourceSpecifications}
                 {#each resourceSpecifications as rs}
-                  <option selected value={rs.id}>{rs.name}</option>
+                  <option value={rs.id}>{rs.name}</option>
                 {/each}
-                {/if}
                 <!-- <option selected>Brown alpacca dirty</option>
                   <option>White alpacca dirty</option>
                   <option>White wool dirty</option> -->
                 </select>
               </div>
             </div>
+            {/if}
 
             <div class="mt-4 text-left flex justify-between">
 
