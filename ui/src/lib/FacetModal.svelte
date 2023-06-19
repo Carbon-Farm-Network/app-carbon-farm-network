@@ -1,9 +1,50 @@
 <script lang="ts">
   import { clickOutside } from './utils'
+  import gql from 'graphql-tag'
+  import { mutation } from 'svelte-apollo';
+  import { onMount } from 'svelte'
+  import type { FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
   export let open = false
   export let selectedId: string
+  export let groups: any[];
   let name = ''
   let description = ''
+
+  const CREATE_FACET = gql`
+    mutation($facet: FacetParams!){
+      putFacet(facet: $facet) {
+        facet {
+          name
+          note
+          id
+          revisionId
+        }
+      }
+    }
+  `
+  let addFacet: any = mutation(CREATE_FACET)
+
+  onMount(async () => {
+    console.log('groups: ')
+    console.log(groups)
+    let groupID: String = groups[0].id
+    // let f: FacetParams = {
+    //   name: "facet 1",
+    //   note: "note",
+    //   groupId: groupID
+    // }
+    let z = await addFacet({
+      variables: {
+        facet: {
+          name: "facet 1",
+          note: "note",
+          facetGroupId: groups[0].id
+        }
+      }
+    })
+    console.log(z)
+  })
+
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">

@@ -58,29 +58,55 @@
     }
   `
 
+  const CREATE_FACET_GROUP = gql`
+    mutation PutFacetGroup {
+      putFacetGroup(
+        facetGroup: {
+          name: "agent"
+          note: "agent note"
+        }
+      ){
+        facetGroup {
+          id
+          revisionId
+          name
+        }
+      }
+      putFacetGroup(
+        facetGroup: {
+          name: "resourceSpecification"
+        }
+      ){
+        facetGroup {
+          id
+          revisionId
+          name
+        }
+      }
+    }
+  `
+
   let units: any;
   let addUnitLb: any = mutation(CREATE_UNIT_LB)
   let addUnit1: any = mutation(CREATE_UNIT_1)
+  let addFacetGroup: any = mutation(CREATE_FACET_GROUP)
 
   interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<any>
   }
   let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
 
-  function addUnits() {
+  async function addUnits() {
     try {
-      addUnit1().then(() => {
-      addUnitLb().then(() => {
-        getUnits.refetch().then((r) => {
-          if (r.data?.units.edges.length > 0) {
-            units = flattenRelayConnection(r.data?.units)
-            console.log(r)
-            console.log('hh')
-            dispatch('units', r.data?.units)
-          }
-        })
-      })
-    })
+      await addUnit1()
+      await addUnitLb()
+      const r = await getUnits.refetch()
+      if (r.data?.units.edges.length > 0) {
+        units = flattenRelayConnection(r.data?.units)
+        dispatch('units', r.data?.units)
+      }
+      let c = await addFacetGroup()
+      console.log(c)
     } catch(e) {
       console.log(e)
     }
@@ -109,6 +135,6 @@
 
 </script>
 
-{#if !units}
+{#if !units || true}
   <button on:click={() => {addUnits()}} >No units found. Click to generate.</button>
 {/if}

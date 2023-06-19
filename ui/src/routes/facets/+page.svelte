@@ -2,11 +2,71 @@
   import FacetModal from "$lib/FacetModal.svelte"
   import allFacetGroups from '$lib/data/facet_groups.json'
   import facets from '$lib/data/facets.json'
+  import type { FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { mutation, query } from 'svelte-apollo'
+  import gql from 'graphql-tag'
+  import { onMount } from 'svelte'
   let modalOpen = false;
   let selectedId: string;
+  let groups: any[];
+
+
+  const GET_FACET_GROUPS = gql`
+    query GetFacets {
+      facetGroups {
+        id
+        revisionId
+        name
+        note
+      }
+    }
+  `
+
+// facets {
+//           id
+//           revisionId
+//           name
+//           note
+//           group {
+//             id
+//           }
+//         }
+// values {
+//   id
+//   revisionId
+//   value
+//   note
+//   facet {
+//     id
+//   }
+// }
+
+
+
+  interface FacetGroupResponse {
+    facetGroups: FacetGroup[]
+  }
+  let facetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+  
+  // let addFacet: any = mutation(CREATE_FACET)
+
+  onMount(async () => {
+    let x = await facetGroups.getCurrentResult()
+    console.log(x)
+    let y = await facetGroups.refetch()
+    console.log(y)
+    groups = y.data.facetGroups
+    console.log(groups)
+  })
+
+  $: groups;
+
 </script>
 
-<FacetModal bind:open={modalOpen} {selectedId} />
+{#if groups}
+<FacetModal bind:groups bind:open={modalOpen} {selectedId} />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

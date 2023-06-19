@@ -36,7 +36,6 @@ function encodeIdentifiers<T>(data: RawRecordIdentifierMeta & T): T {
   return {
     ...data,
     id: encodeHashToBase64(data.id),
-    revisionId: encodeHashToBase64(data.revisionId),
   }
 }
 
@@ -52,24 +51,35 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   // :TODO: deletions API
 
   // zome read API
-  const readFacetGroups = mapZomeFn<Record<string, never>, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_groups')
+  // const readFacetGroups = mapZomeFn<Record<string, never>, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
+  const readFacetGroups = mapZomeFn<never, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
   const readFacets = mapZomeFn<ByEntryHash, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
   const readFacetValues = mapZomeFn<ByEntryHash | ByIdentifier, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_values')
 
   // declare and return all resolver callbacks for GraphQL engine
   return {
     Mutation: {
-      putFacetGroup: async function (_root: any, args: FacetGroupParams): Promise<FacetGroupResponse> {
-        const res = await runCreateGroup(args)
+      putFacetGroup: async function (_root: any, args: {facetGroup: FacetGroupParams}): Promise<FacetGroupResponse> {
+        console.log(args)
+        const res = await runCreateGroup(args.facetGroup)
+        console.log(res)
         // @ts-ignore
-        res.facetGroup = encodeIdentifiers<FacetGroup>(res.facetGroup)
-        return res
+        return {facetGroup: encodeIdentifiers<FacetGroup>(res)}
       },
-      putFacet: async function (_root: any, args: FacetParams): Promise<FacetResponse> {
-        const res = await runCreateOption({
-          ...args,
-          facetGroupId: decodeHashFromBase64(args.facetGroupId),
+      putFacet: async function (_root: any, args: {facet: FacetParams}): Promise<FacetResponse> {
+        console.log('starting put facet')
+        console.log(args.facet.facetGroupId)
+        console.log({
+          name: args.facet.name,
+          note: args.facet.note,
+          facetGroupId: decodeHashFromBase64(args.facet.facetGroupId),
         })
+        console.log(decodeHashFromBase64(args.facet.facetGroupId))
+        const res = await runCreateOption({
+          ...args.facet,
+          facetGroupId: decodeHashFromBase64(args.facet.facetGroupId),
+        })
+        console.log("2")
         res.facetOption = {
           // @ts-ignore
           ...encodeIdentifiers<Facet>(res.facetOption),
@@ -97,11 +107,17 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
       // instead of adding the previously proposed `associationId` field to `FacetValue`.
     },
     Query: {
-      facetGroups: async (_root: unknown, args: Record<string, never>): Promise<FacetGroup[]> => {
+      facetGroups: async (args: never): Promise<FacetGroup[]> => {
         const res = await readFacetGroups(args)
         // :TODO: presuming you are returning from the zome API as a flat array here, but adjust accordingly
         // @ts-ignore
-        return res.map(encodeIdentifiers)
+        console.log(res)
+        // return res//.map(encodeIdentifiers)
+        let output = res.map((g) => {
+          return encodeIdentifiers<FacetGroup>(g)
+        })
+        return output
+        // return {facetGroup: encodeIdentifiers<FacetGroup>(res)}
       },
     },
     FacetGroup: {

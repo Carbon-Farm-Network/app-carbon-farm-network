@@ -12,11 +12,12 @@ export interface FacetGroupParams {
 
 export interface FacetParams {
   facetGroupId: EntryHashB64
-  option: string
+  name: string
+  note: string
 }
 
 export interface FacetValueParams {
-  facetOptionId: EntryHashB64
+  facetId: EntryHashB64
   value: string // must match a stored `Facet.option`
   note: string
 }
