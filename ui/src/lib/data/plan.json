@@ -1,0 +1,51 @@
+{
+  "id": "plan_id",
+  "name": "2023 season",
+  "process_specifications": [
+    {
+      "id": "process_specification_id",
+      "name": "Pick up and combine",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpacca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 20,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Woodland Meadow"
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpacca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon farm network"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

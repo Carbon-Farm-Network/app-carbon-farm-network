@@ -151,6 +151,13 @@
               class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default">
               Offers
             </a> -->
+
+            <div
+              style="cursor: pointer;"
+              on:click={() => navigate('/planning')}
+              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default">
+              Planning
+            </div>
           </div>
         </div>
       </div>
