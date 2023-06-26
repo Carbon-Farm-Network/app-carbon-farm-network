@@ -18,9 +18,9 @@
   let units: Unit[];
   let resourceSpecifications: ResourceSpecification[];
   let agents: any[];
-  let currentProposal: ProposalCreateParams = {};
-  let currentIntent: IntentCreateParams = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-  let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
+  let currentProposal: any = {};
+  let currentIntent: any = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
+  let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
   let currentProposedIntent: any = {};
   let offersList: any = [];
   let modalOpen = false
@@ -103,9 +103,12 @@
       })
       console.log(resourceSpecifications)
     })
-    // }, 1000)
-  }
 
+    if (currentReciprocalIntent.resourceQuantity) {
+      let usd = resourceSpecifications?.find((r) => r.id === "usd");
+      currentReciprocalIntent.resourceConformsTo = usd?.id;
+    }
+  }
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
@@ -215,9 +218,10 @@
         on:click={() => {
           currentProposal = {hasBeginning: new Date()};
           currentIntent = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
+          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
           currentProposedIntent = {};
           modalOpen = true
+          editing = false
         }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an offer</button
@@ -311,8 +315,15 @@
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                 >
                 <button type="button" on:click={() => {
-                  currentProposal = {hasBeginning: new Date(proposal.hasBeginning)};
+                  currentProposal = {
+                    revisionId: proposal.revisionId,
+                    hasBeginning: new Date(proposal.hasBeginning),
+                    note: proposal.note
+                  };
+                  // console.log('test')
+                  // console.log(mainIntent.publishes.resourceConformsTo)
                   currentIntent = {        
+                    revisionId: proposal.revisionId,
                     provider: mainIntent.publishes.provider.id,
                     action: "transfer",
                     resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
@@ -326,8 +337,9 @@
                     },
                     note: mainIntent.publishes.note
                   };
-                  console.log(currentIntent)
-                  currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
+                  console.log(reciprocalIntent.publishes.resourceQuantity.hasNumericalValue)
+                  // currentReciprocalIntent = reciprocalIntent.publishes
+                  currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: reciprocalIntent.publishes.resourceQuantity.hasNumericalValue, hasUnit: reciprocalIntent.publishes.hasUnit}, resourceConformsTo: reciprocalIntent.publishes.resourceConformsTo.id};
                   currentProposedIntent = {};
 
                   modalOpen = true;

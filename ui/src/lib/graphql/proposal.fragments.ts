@@ -55,6 +55,7 @@ export const PROPOSED_INTENT_CORE_FIELDS = gql`
 export const PROPOSAL_RETURN_FIELDS = gql`
   fragment ProposalReturnFields on Proposal {
     id
+    revisionId
     name
     hasBeginning
     unitBased
