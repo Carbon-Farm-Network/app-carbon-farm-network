@@ -11,7 +11,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
@@ -25,6 +25,7 @@
   let offersList: any = [];
   let modalOpen = false
   let editing = false;
+  let usdId: string;
   let name = ''
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
@@ -97,6 +98,9 @@
     // setTimeout(function(){
     resourceSpecificationsQuery.refetch().then((r) => {
       resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+        if (a.name === "USD") {
+          usdId = a.id
+        }
         return {
           ...a,
         }
@@ -126,6 +130,18 @@
       }
     }
   `
+
+  const UPDATE_PROPOSAL = gql`
+    ${PROPOSAL_CORE_FIELDS},
+    mutation($proposal: ProposalUpdateParams!){
+      updateProposal(proposal: $proposal) {
+        proposal {
+          ...ProposalCoreFields
+        }
+      }
+    }
+  `
+  let updateProposal: any = mutation(UPDATE_PROPOSAL)
 
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
@@ -201,7 +217,7 @@
   $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
 </script>
 
-<OfferModal bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<OfferModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -218,10 +234,12 @@
         on:click={() => {
           currentProposal = {hasBeginning: new Date()};
           currentIntent = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
+          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: usdId};
           currentProposedIntent = {};
           modalOpen = true
           editing = false
+          console.log('usd')
+          console.log(usdId)
         }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an offer</button
@@ -275,10 +293,10 @@
           <tbody class="bg-white">
             <!-- {#each offers as { proposed_intents }, index} -->
             {#if offersList}
-            {#each offersList as proposal, index}
-              {@const mainIntent = proposal.publishes.find(({ reciprocal }) => !reciprocal)}
+            {#each offersList as p, index}
+              {@const mainIntent = p.publishes.find(({ reciprocal }) => !reciprocal)}
               {#if mainIntent}
-              {@const reciprocalIntent = proposal.publishes.find(
+              {@const reciprocalIntent = p.publishes.find(
                 ({ reciprocal }) => reciprocal
               )}
               {@const availableQuantity = mainIntent.publishes.availableQuantity}
@@ -303,11 +321,42 @@
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <input
+                    on:change={(e) => {
+                      console.log(e.target.checked)
+                      if (e.target.checked) {
+
+                        let proposal = {
+                          revisionId: p.revisionId,
+                          hasBeginning: p.hasBeginning,
+                          hasEnd: null,
+                        };
+
+                        console.log(proposal)
+
+                        updateProposal({ variables: { proposal: proposal } });
+
+                        fetchOffers();
+                      } else {
+                        console.log(p)
+
+                        let proposal = {
+                          revisionId: p.revisionId,
+                          hasBeginning: p.hasBeginning,
+                          hasEnd: new Date(),
+                        };
+
+                        console.log(proposal)
+
+                        updateProposal({ variables: { proposal: proposal } });
+
+                        fetchOffers();
+                      }
+                    }}
                     id="candidates"
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
-                    checked={!proposal.hasEnd}
+                    checked={!p.hasEnd || Date.now() < new Date(p.hasEnd)}
                     class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
                 </td>
@@ -316,14 +365,14 @@
                 >
                 <button type="button" on:click={() => {
                   currentProposal = {
-                    revisionId: proposal.revisionId,
-                    hasBeginning: new Date(proposal.hasBeginning),
-                    note: proposal.note
+                    revisionId: p.revisionId,
+                    hasBeginning: new Date(p.hasBeginning),
+                    note: p.note
                   };
                   // console.log('test')
                   // console.log(mainIntent.publishes.resourceConformsTo)
                   currentIntent = {        
-                    revisionId: proposal.revisionId,
+                    revisionId: p.revisionId,
                     provider: mainIntent.publishes.provider.id,
                     action: "transfer",
                     resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
