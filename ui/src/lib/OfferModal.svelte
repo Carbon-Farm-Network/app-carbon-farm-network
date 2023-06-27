@@ -9,7 +9,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs, Scalars } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   export let open = false;
@@ -18,10 +18,11 @@
   export let units: any[];
   export let agents: any[];
   export let date = new Date();
-  export let currentProposal: ProposalCreateParams;
+  export let currentProposal: any;
   export let currentIntent: IntentCreateParams;
   export let currentReciprocalIntent: IntentCreateParams;
   export let currentProposedIntent: any;
+  export let editing: boolean;
 
   const dispatch = createEventDispatcher();
 
@@ -29,6 +30,17 @@
     ${PROPOSAL_CORE_FIELDS},
     mutation($proposal: ProposalCreateParams!){
       createProposal(proposal: $proposal) {
+        proposal {
+          ...ProposalCoreFields
+        }
+      }
+    }
+  `
+
+  const UPDATE_PROPOSAL = gql`
+    ${PROPOSAL_CORE_FIELDS},
+    mutation($proposal: ProposalUpdateParams!){
+      updateProposal(proposal: $proposal) {
         proposal {
           ...ProposalCoreFields
         }
@@ -47,25 +59,33 @@
     }
   `
 
+  const UPDATE_INTENT = gql`
+    ${INTENT_CORE_FIELDS},
+    mutation($intent: IntentUpdateParams!){
+      updateIntent(intent: $intent) {
+        intent {
+          ...IntentCoreFields
+        }
+      }
+    }
+  `
+
   const ADD_PROPOSED_INTENT = gql`
     ${PROPOSED_INTENT_CORE_FIELDS},
-    mutation($proposeIntent: MutationProposeIntentArgs!){
-      proposeIntent(proposeIntent: $proposeIntent) {
-        proposeIntent {
+    mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
+      proposeIntent(reciprocal: $reciprocal, publishedIn: $publishedIn, publishes: $publishes) {
+        proposedIntent {
           ...ProposedIntentCoreFields
         }
       }
     }
   `
 
-
-
-
   let addProposal: any= mutation(ADD_PROPOSAL)
+  let updateProposal: any= mutation(UPDATE_PROPOSAL)
   let addIntent: any= mutation(ADD_INTENT)
+  let updateIntent: any= mutation(UPDATE_INTENT)
   let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
-
-  async function test(){console.log('test')}
 
   async function handleSubmit() {
     console.log(currentProposal)
@@ -81,7 +101,7 @@
         note: "shearing end of May"
       }
       const res1 = await addProposal({ variables: { proposal } })
-      const res1ID = res1.data.createProposal.proposal.id
+      const res1ID: String = String(res1.data.createProposal.proposal.id)
       
       // create intent
       let intent: IntentCreateParams = {
@@ -89,12 +109,13 @@
         action: "transfer",
         resourceConformsTo: currentIntent.resourceConformsTo,
         availableQuantity: {
-          hasNumericalValue: currentIntent.availableQuantity?.hasNumericalValue,
+          hasNumericalValue: parseFloat(currentIntent.availableQuantity?.hasNumericalValue),
           hasUnit: currentIntent.availableQuantity?.hasUnit,
         },
         resourceQuantity: {
-          hasNumericalValue: currentIntent.resourceQuantity?.hasNumericalValue,
-          // hasUnit: currentIntent.resourceQuantity?.hasUnit,
+          hasNumericalValue: parseFloat(currentIntent.resourceQuantity?.hasNumericalValue),
+          // available quantity and resource quantity should have the same unit
+          hasUnit: currentIntent.availableQuantity?.hasUnit,
         },
         note: currentIntent.note
       }
@@ -102,54 +123,67 @@
       const res2ID = res2.data.createIntent.intent.id
       console.log(res2);
 
+      // create reciprocal intent
+      let each = units.find(u => u.label === "one")
       intent = {
         provider: currentIntent.provider,
         action: "transfer",
-        resourceConformsTo: currentIntent.resourceConformsTo,
-        availableQuantity: {
-          hasNumericalValue: currentIntent.availableQuantity?.hasNumericalValue,
-          hasUnit: currentIntent.availableQuantity?.hasUnit,
-        },
+        resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
         resourceQuantity: {
-          hasNumericalValue: currentIntent.resourceQuantity?.hasNumericalValue,
-          hasUnit: currentIntent.resourceQuantity?.hasUnit,
-        },
-        note: currentIntent.note
+          hasNumericalValue: parseFloat(currentReciprocalIntent.resourceQuantity?.hasNumericalValue),
+          hasUnit: each.id,
+        }
       }
       const res3 = await addIntent({ variables: { intent } })
-      const res3ID = res3.data.createIntent.intent.id
+      const res3ID: String = String(res3.data.createIntent.intent.id)
       
-      // create proposed intent
-      let proposeIntent: any = {
-      reciprocal: false,
-        publishedIn: res1ID,
-        publishes: res2ID
-      }
-      const res4 = await addProposedIntent({ variables: { proposeIntent } })
       
-      proposeIntent = {
-      reciprocal: true,
-        publishedIn: res1ID,
-        publishes: res3ID
-      }
-      const res5 = await addProposedIntent({ variables: { proposeIntent } })
+      let reciprocal: Boolean = false
+      let publishedIn = res1ID
+      let publishes = res2ID
+      
+      const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+      console.log(res4)
+
+      reciprocal = true
+      publishedIn = res1ID
+      publishes = res3ID
+      
+      const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+      console.log(res4)
+
       
       dispatch("submit");
       open = false;
-      console.log(res1)
-      console.log(res1)
+      // console.log(res1)
+      // console.log(res2)
+      // console.log(res3)
+      // console.log(res4)
     } catch (error) {
       console.error(error)
     }
   }
 
+  async function handleUpdate() {
+    console.log(currentProposal)
+    let proposal = currentProposal
+    updateProposal({ variables: { proposal: proposal } })
+    let intent = currentIntent
+    updateIntent({ variables: { intent: intent } })
+  }
+
 
   onMount(() => {
+    // let x = cri1()
+    // console.log(x)
     if (browser) {
       console.log('hello')
     }
     // handleSubmit()
   })
+
+  $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent
+  $: isOfferValid = true && currentProposal.hasBeginning && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
@@ -213,6 +247,7 @@
               </div>
             </div>
 
+            {#if resourceSpecifications}
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -225,18 +260,28 @@
                   name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   bind:value={currentIntent.resourceConformsTo}
+                  on:change={(e) => {
+                    let id = e.target.value
+                    let selectedResource = resourceSpecifications.find((rs) => rs.id === id)
+                    console.log(selectedResource)
+                    console.log("hi")
+                    if (currentIntent.availableQuantity) {currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id}
+                    // currentIntent.availableQuantity.hasUnit = d.target.value
+                    // if (currentIntent.availableQuantity) {
+                    //   currentIntent.availableQuantity.hasUnit = d.target.value.defaultUnitOfResource.id
+                    // }
+                  }}
                 >
-                {#if resourceSpecifications}
                 {#each resourceSpecifications as rs}
-                  <option selected value={rs.id}>{rs.name}</option>
+                  <option value={rs.id}>{rs.name}</option>
                 {/each}
-                {/if}
                 <!-- <option selected>Brown alpacca dirty</option>
                   <option>White alpacca dirty</option>
                   <option>White wool dirty</option> -->
                 </select>
               </div>
             </div>
+            {/if}
 
             <div class="mt-4 text-left flex justify-between">
 
@@ -361,17 +406,26 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Currency</label
                 >
-                USD
-                <!-- {#if currentIntent.resourceQuantity}
+                <!-- USD -->
+                <!-- {JSON.stringify(currentReciprocalIntent.resourceConformsTo != "undefined")} -->
+                {#if currentReciprocalIntent.resourceConformsTo != "undefined"}
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.resourceQuantity.hasUnit}
+                  bind:value={currentReciprocalIntent.resourceConformsTo}
                   >
-                  <option selected>USD</option>
+
+                  {#if resourceSpecifications}
+                  {#each resourceSpecifications as r}
+                    {JSON.stringify(r)}
+                    {#if r.name === "USD"}
+                      <option selected value={r.id}>USD</option>
+                    {/if}
+                  {/each}
+                  {/if}
                 </select>
-                {/if} -->
+                {/if}
               </div>
             </div>
 
@@ -428,12 +482,12 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
-                {#if currentIntent.resourceQuantity}
+                {#if currentIntent.availableQuantity}
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.resourceQuantity.hasUnit}
+                  bind:value={currentIntent.availableQuantity.hasUnit}
                 >
                 {#if units}
                 {#each units as unit}
@@ -486,8 +540,20 @@
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-            on:click={()=>{handleSubmit()}}
-            >Create</button
+            disabled={!isOfferValid}
+            on:click={() => {
+              if (editing) {
+                handleUpdate()
+              } else {
+                handleSubmit()
+              }
+            }}            >
+            {#if editing}
+            Update
+            {:else}
+            Create
+            {/if}
+            </button
           >
           <button
             type="button"

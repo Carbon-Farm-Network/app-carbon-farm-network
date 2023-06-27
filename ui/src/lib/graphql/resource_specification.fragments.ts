@@ -7,7 +7,12 @@ export const RESOURCE_SPECIFICATION_CORE_FIELDS = gql`
     name
     image
     note
-    defaultUnitOfResource
+    defaultUnitOfResource {
+      id
+      label
+      symbol
+      revisionId
+    }
     resourceClassifiedAs
   }
 `

@@ -70,10 +70,10 @@
     // }
     let resource: ResourceSpecificationCreateParams = {
       name: currentResourceSpecification.name,
-      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResource,
+      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
       // defaultUnitOfEffort: "Administrative work",
       note: currentResourceSpecification.note,
-      image: currentResourceSpecification.imageUrl,
+      image: currentResourceSpecification.image,
     }
     console.log(resource)
     try {
@@ -92,10 +92,10 @@
 
     let resource: ResourceSpecificationUpdateParams = {
       name: currentResourceSpecification.name,
-      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResource,
+      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
       // defaultUnitOfEffort: currentResourceSpecification.defaultUnitOfEffort,
       note: currentResourceSpecification.note,
-      image: currentResourceSpecification.imageUrl,
+      image: currentResourceSpecification.image,
       revisionId: currentResourceSpecification.revisionId
     }
     try {
@@ -114,7 +114,7 @@
 
   $: editing, currentResourceSpecification, units; //, client;
 
-  $: isResourceSpecificationValid = true //&& currentAgent.lat && currentAgent.long && currentAgent.name && currentAgent.imageUrl && currentAgent.role;
+  $: isResourceSpecificationValid = true && currentResourceSpecification.name && currentResourceSpecification.defaultUnitOfResourceId && currentResourceSpecification.note && currentResourceSpecification.image;
 
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -212,10 +212,10 @@
                 <select
                   id="classifiedAs"
                   name="classifiedAs"
-                  bind:value={currentResourceSpecification.defaultUnitOfResource}
+                  bind:value={currentResourceSpecification.defaultUnitOfResourceId}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   on:click={e => {
-                    console.log(currentResourceSpecification.defaultUnitOfResource)
+                    console.log(currentResourceSpecification.defaultUnitOfResourceId)
                   }}
                   >
                   {#each units as unit}
@@ -298,11 +298,11 @@
                     id="longitude"
                     autocomplete="longitude"
                     placeholder="https://www.example.com/logo.png"
-                    bind:value={currentResourceSpecification.imageUrl}
+                    bind:value={currentResourceSpecification.image}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.imageUrl = input.value;
+                        currentResourceSpecification.image = input.value;
                       }
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -415,3 +415,7 @@
     </div>
   </div>
 </div>
+
+<style>
+  button:disabled { background-color: lightgray; }
+</style>

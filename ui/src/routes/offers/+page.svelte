@@ -2,7 +2,7 @@
   import OfferModal from '$lib/OfferModal.svelte'
   import offers from '$lib/data/offers.json'  
   import { DateInput } from 'date-picker-svelte'
-  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { RelayConn } from '$lib/graphql/helpers'
@@ -11,18 +11,21 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
+  import { loop_guard } from 'svelte/internal'
   let units: Unit[];
   let resourceSpecifications: ResourceSpecification[];
   let agents: any[];
-  let currentProposal: ProposalCreateParams = {};
-  let currentIntent: IntentCreateParams = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-  let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: "USD"}};
+  let currentProposal: any = {};
+  let currentIntent: any = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
+  let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
   let currentProposedIntent: any = {};
-
+  let offersList: any = [];
   let modalOpen = false
+  let editing = false;
+  let usdId: string;
   let name = ''
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
@@ -54,6 +57,24 @@
     }
   `
 
+  const GET_All_PROPOSALS = gql`
+    ${PROPOSAL_RETURN_FIELDS}
+    query {
+      proposals(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ProposalReturnFields
+          }
+        }
+      }
+    }
+  `
+
+  interface ProposalsQueryResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
+
   interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
   }
@@ -63,6 +84,12 @@
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
 
+  interface OffersQueryResponse {
+    proposals: ProposalConnection & RelayConn<any>
+  }
+
+  let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
+
   // map component state
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
@@ -71,15 +98,21 @@
     // setTimeout(function(){
     resourceSpecificationsQuery.refetch().then((r) => {
       resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+        if (a.name === "USD") {
+          usdId = a.id
+        }
         return {
           ...a,
         }
       })
       console.log(resourceSpecifications)
     })
-    // }, 1000)
-  }
 
+    if (currentReciprocalIntent.resourceQuantity) {
+      let usd = resourceSpecifications?.find((r) => r.id === "usd");
+      currentReciprocalIntent.resourceConformsTo = usd?.id;
+    }
+  }
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
@@ -97,6 +130,18 @@
       }
     }
   `
+
+  const UPDATE_PROPOSAL = gql`
+    ${PROPOSAL_CORE_FIELDS},
+    mutation($proposal: ProposalUpdateParams!){
+      updateProposal(proposal: $proposal) {
+        proposal {
+          ...ProposalCoreFields
+        }
+      }
+    }
+  `
+  let updateProposal: any = mutation(UPDATE_PROPOSAL)
 
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
@@ -120,11 +165,11 @@
           "address": a.note,
         }
       })
-      console.log(agents)
+      // console.log(agents)
     })
   }
 
-  function fetchUnits() {
+  async function fetchUnits() {
     getUnits.getCurrentResult()
     getUnits.refetch().then((r) => {
       if (r.data?.units.edges.length > 0) {
@@ -133,7 +178,21 @@
             ...a,
           }
         })
-        console.log(units)
+        // console.log(units)
+      }
+    })
+  }
+
+  async function fetchOffers() {
+    getOffers.getCurrentResult()
+    getOffers.refetch().then((r) => {
+      if (r.data?.proposals.edges.length > 0) {
+        offersList = flattenRelayConnection(r.data?.proposals).map((a) => {
+          return {
+            ...a,
+          }
+        })
+        console.log(offersList)
       }
     })
   }
@@ -143,6 +202,7 @@
       fetchResourceSpecifications()
       fetchAgents()
       fetchUnits()
+      fetchOffers()
       // setInterval(function(){
       //   if (!units) {
       //     fetchUnits()
@@ -154,10 +214,10 @@
     }
   })
 
-  $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications
+  $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
 </script>
 
-<OfferModal bind:open={modalOpen} bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<OfferModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -171,7 +231,16 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => (modalOpen = true)}
+        on:click={() => {
+          currentProposal = {hasBeginning: new Date()};
+          currentIntent = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
+          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: usdId};
+          currentProposedIntent = {};
+          modalOpen = true
+          editing = false
+          console.log('usd')
+          console.log(usdId)
+        }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an offer</button
       >
@@ -221,58 +290,119 @@
               </th>
             </tr>
           </thead>
-          <!-- <tbody class="bg-white">
-            {#each offers as { proposed_intents }, index}
-              {@const mainIntent = proposed_intents.find(({ reciprocal }) => !reciprocal)}
-              {@const reciprocalIntent = proposed_intents.find(
+          <tbody class="bg-white">
+            <!-- {#each offers as { proposed_intents }, index} -->
+            {#if offersList}
+            {#each offersList as p, index}
+              {@const mainIntent = p.publishes.find(({ reciprocal }) => !reciprocal)}
+              {#if mainIntent}
+              {@const reciprocalIntent = p.publishes.find(
                 ({ reciprocal }) => reciprocal
               )}
-              {@const availableQuantity = mainIntent.intent.available_quantity}
-              {@const resourceQuantity = reciprocalIntent.intent.resource_quantity}
+              {@const availableQuantity = mainIntent.publishes.availableQuantity}
+              {@const resourceQuantity = reciprocalIntent.publishes.resourceQuantity}
+              {#if mainIntent && reciprocalIntent && availableQuantity && resourceQuantity}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td
                   class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                  >{mainIntent.intent.provider.name}</td
+                  >{mainIntent.publishes.provider.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{mainIntent.intent.resource_conforms_to.name}</td
+                  >{mainIntent.publishes.resourceConformsTo.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{availableQuantity.has_numerical_value}
-                  {availableQuantity.has_unit.label}</td
+                  >{availableQuantity.hasNumericalValue}
+                  {availableQuantity.hasUnit.label}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{resourceQuantity.has_numerical_value}
-                  {reciprocalIntent.intent.resource_conforms_to.name} / {mainIntent.intent
-                    .resource_quantity.has_numerical_value}
-                  {mainIntent.intent.resource_quantity.has_unit.label}</td
+                  >{resourceQuantity.hasNumericalValue}
+                  {reciprocalIntent.publishes.resourceConformsTo.name} / {mainIntent.publishes.resourceQuantity.hasNumericalValue}
+                  {resourceQuantity.hasUnit.label}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <input
+                    on:change={(e) => {
+                      console.log(e.target.checked)
+                      if (e.target.checked) {
+
+                        let proposal = {
+                          revisionId: p.revisionId,
+                          hasBeginning: p.hasBeginning,
+                          hasEnd: null,
+                        };
+
+                        console.log(proposal)
+
+                        updateProposal({ variables: { proposal: proposal } });
+
+                        fetchOffers();
+                      } else {
+                        console.log(p)
+
+                        let proposal = {
+                          revisionId: p.revisionId,
+                          hasBeginning: p.hasBeginning,
+                          hasEnd: new Date(),
+                        };
+
+                        console.log(proposal)
+
+                        updateProposal({ variables: { proposal: proposal } });
+
+                        fetchOffers();
+                      }
+                    }}
                     id="candidates"
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
-                    checked
+                    checked={!p.hasEnd || Date.now() < new Date(p.hasEnd)}
                     class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
                 </td>
                 <td
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                 >
-                  <button
-                    type="button"
-                    on:click={() => {
-                      modalOpen = true
-                    }}
-                    class="text-indigo-600 hover:text-indigo-900"
-                    >Edit<span class="sr-only">, Lindsay Walton</span></button
-                  >
+                <button type="button" on:click={() => {
+                  currentProposal = {
+                    revisionId: p.revisionId,
+                    hasBeginning: new Date(p.hasBeginning),
+                    note: p.note
+                  };
+                  // console.log('test')
+                  // console.log(mainIntent.publishes.resourceConformsTo)
+                  currentIntent = {        
+                    revisionId: p.revisionId,
+                    provider: mainIntent.publishes.provider.id,
+                    action: "transfer",
+                    resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
+                    availableQuantity: {
+                      hasNumericalValue: availableQuantity.hasNumericalValue,
+                      hasUnit: availableQuantity.hasUnit.id,
+                    },
+                    resourceQuantity: {
+                      hasNumericalValue: resourceQuantity.hasNumericalValue,
+                      hasUnit: resourceQuantity.hasUnit.id,
+                    },
+                    note: mainIntent.publishes.note
+                  };
+                  console.log(reciprocalIntent.publishes.resourceQuantity.hasNumericalValue)
+                  // currentReciprocalIntent = reciprocalIntent.publishes
+                  currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: reciprocalIntent.publishes.resourceQuantity.hasNumericalValue, hasUnit: reciprocalIntent.publishes.hasUnit}, resourceConformsTo: reciprocalIntent.publishes.resourceConformsTo.id};
+                  currentProposedIntent = {};
+
+                  modalOpen = true;
+                  editing = true;
+                }}  class="text-indigo-600 hover:text-indigo-900"
+                  >Edit<span class="sr-only">, Lindsay Walton</span></button
+                >
                 </td>
               </tr>
+              {/if}
+              {/if}
             {/each}
-
-          </tbody> -->
+            {/if}
+          </tbody>
         </table>
       </div>
     </div>
