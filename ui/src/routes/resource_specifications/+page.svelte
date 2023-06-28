@@ -99,9 +99,9 @@ const GET_UNITS = gql`
 </script>
 
 <!-- <Units /> -->
-<!-- {#if units} -->
+{#if units}
 <ResourceSpecificationModal bind:open={modalOpen} bind:units={units} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
-<!-- {/if} -->
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

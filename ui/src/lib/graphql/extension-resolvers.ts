@@ -149,11 +149,11 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
         // @ts-ignore
         return encodeIdentifiers<FacetGroup>(res.pop() as FacetGroup)
       },
-      // values: async function (record: Facet): Promise<FacetValue[]> {
-      //   const res = await readFacetValues({ identifier: record.id })
-      //   // @ts-ignore
-      //   return res.map(encodeIdentifiers)
-      // },
+      values: async function (record: Facet): Promise<FacetValue[]> {
+        const res = await readFacetValues({ identifier: record.id })
+        // @ts-ignore
+        return res.map(encodeIdentifiers)
+      },
     },
     FacetValue: {
       facet: async function (record: FacetValue): Promise<Facet> {
@@ -165,17 +165,18 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
     },
     Organization: {
       facets: async function (record: Organization): Promise<FacetValue[]> {
+        // const res = await readFacetValues({ identifier: record.id })
+        // // @ts-ignore
+        // return res.map(encodeIdentifiers)
+        return []
+      },
+    },
+    ResourceSpecification: {
+      facets: async function (record: ResourceSpecification): Promise<FacetValue[]> {
         const res = await readFacetValues({ identifier: record.id })
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
-    },
-    ResourceSpecification: {
-      // facets: async function (record: ResourceSpecification): Promise<FacetValue[]> {
-      //   const res = await readFacetValues({ identifier: record.id })
-      //   // @ts-ignore
-      //   return res.map(encodeIdentifiers)
-      // },
     }
   }
 }

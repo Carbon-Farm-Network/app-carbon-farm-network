@@ -14,7 +14,7 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-  // import Initialize from '$lib/Initialize.svelte'
+  import Initialize from '$lib/Initialize.svelte'
 
   // query & data bindings
 
@@ -99,7 +99,7 @@
 
   $: agents;
 </script>
-<!-- <Initialize /> -->
+<Initialize />
 
 <div class="relative h-full w-full">
   {#if agents && agentsQuery !== undefined}
