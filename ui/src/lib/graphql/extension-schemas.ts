@@ -45,7 +45,7 @@ export interface FacetGroupResponse {
 }
 
 export interface FacetResponse {
-  facetOption: Facet
+  facet: Facet
 }
 
 export interface FacetValueResponse {

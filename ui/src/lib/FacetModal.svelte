@@ -3,7 +3,8 @@
   import gql from 'graphql-tag'
   import { mutation } from 'svelte-apollo';
   import { onMount } from 'svelte'
-  import type { FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
+  import type { FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
+  // import { FACET_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   export let open = false
   export let selectedId: string
   export let groups: any[];
@@ -22,27 +23,49 @@
       }
     }
   `
+  const CREATE_VALUE = gql`
+    mutation($facetValue: FacetValueParams!){
+      putFacet(facetValue: $facetValue) {
+        facetValue {
+          value
+          note
+          id
+          revisionId
+        }
+      }
+    }
+  `
   let addFacet: any = mutation(CREATE_FACET)
+  let addValue: any = mutation(CREATE_VALUE)
 
   onMount(async () => {
     console.log('groups: ')
     console.log(groups)
     let groupID: String = groups[0].id
-    // let f: FacetParams = {
-    //   name: "facet 1",
-    //   note: "note",
-    //   groupId: groupID
-    // }
-    let z = await addFacet({
-      variables: {
-        facet: {
-          name: "facet 1",
-          note: "note",
-          facetGroupId: groups[0].id
-        }
-      }
-    })
-    console.log(z)
+
+    // let f = await addFacet({
+    //   variables: {
+    //     facet: {
+    //       name: "facet 1",
+    //       note: "note",
+    //       facetGroupId: groups[0].id
+    //     }
+    //   }
+    // })
+    // console.log(f)
+    // let facetId: string = f.data.putFacet.facet.id
+    // console.log(facetId)
+
+    // let v = await addValue({
+    //   variables: {
+    //     facetValue: {
+    //       value: "value 1",
+    //       note: "note",
+    //       facetId: facetId,
+    //     }
+    //   }
+    // })
+    // console.log(v)
   })
 
 </script>

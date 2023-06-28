@@ -23,6 +23,18 @@
     }
   `
 
+
+  // const GET_FACETS = gql`
+  //   query GetFacets {
+  //     facetGroups {
+  //       id
+  //       revisionId
+  //       name
+  //       note
+  //     }
+  //   }
+  // `
+
 // facets {
 //           id
 //           revisionId

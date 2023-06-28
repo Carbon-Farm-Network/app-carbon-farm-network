@@ -62,7 +62,7 @@
     mutation PutFacetGroup {
       putFacetGroup(
         facetGroup: {
-          name: "agent"
+          name: "Agent"
           note: "agent note"
         }
       ){
@@ -74,7 +74,7 @@
       }
       putFacetGroup(
         facetGroup: {
-          name: "resourceSpecification"
+          name: "Resource Specification"
         }
       ){
         facetGroup {
@@ -135,6 +135,6 @@
 
 </script>
 
-{#if !units || true}
+{#if !units || false}
   <button on:click={() => {addUnits()}} >No units found. Click to generate.</button>
 {/if}

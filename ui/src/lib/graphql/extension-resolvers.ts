@@ -54,7 +54,7 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   // const readFacetGroups = mapZomeFn<Record<string, never>, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
   const readFacetGroups = mapZomeFn<never, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
   const readFacets = mapZomeFn<ByEntryHash, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
-  const readFacetValues = mapZomeFn<ByEntryHash | ByIdentifier, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_values')
+  const readFacetValues = mapZomeFn<ByEntryHash | ByIdentifier, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
 
   // declare and return all resolver callbacks for GraphQL engine
   return {
@@ -69,26 +69,40 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
       putFacet: async function (_root: any, args: {facet: FacetParams}): Promise<FacetResponse> {
         console.log('starting put facet')
         console.log(args.facet.facetGroupId)
+        console.log(args)
         console.log({
           name: args.facet.name,
           note: args.facet.note,
           facetGroupId: decodeHashFromBase64(args.facet.facetGroupId),
         })
         console.log(decodeHashFromBase64(args.facet.facetGroupId))
-        const res = await runCreateOption({
-          ...args.facet,
-          facetGroupId: decodeHashFromBase64(args.facet.facetGroupId),
-        })
-        console.log("2")
-        res.facetOption = {
-          // @ts-ignore
-          ...encodeIdentifiers<Facet>(res.facetOption),
-          // @ts-ignore
-          facetGroupId: encodeHashToBase64(res.facetOption.facetGroupId),
+        try {
+          const res = await runCreateOption({
+            ...args.facet,
+            // facetGroupId: decodeHashFromBase64(args.facet.facetGroupId),
+          })
+
+          console.log("2")
+          console.log(res)
+          return {facet: encodeIdentifiers<Facet>(res)}
+
+          // res.facetOption = {
+            // @ts-ignore
+            // ...encodeIdentifiers<Facet>(res),
+            // @ts-ignore
+            // facetGroupId: encodeHashToBase64(res.facetOption.facetGroupId),
+          // }
+          // return res
+        } catch (e) {
+          console.log("error")
+          console.log(e)
+          console.log(e.data.data)
         }
-        return res
+
+        // return {facet: {id: "error", name: "error", note: "error", facetGroupId: "error"}}
       },
       putFacetValue: async function (_root: any, args: FacetValueParams): Promise<FacetValueResponse> {
+        console.log(args)
         const res = await runCreateValue({
           ...args,
           facetOptionId: decodeHashFromBase64(args.facetOptionId),
@@ -135,11 +149,11 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
         // @ts-ignore
         return encodeIdentifiers<FacetGroup>(res.pop() as FacetGroup)
       },
-      values: async function (record: Facet): Promise<FacetValue[]> {
-        const res = await readFacetValues({ option_hash: decodeHashFromBase64(record.id) })
-        // @ts-ignore
-        return res.map(encodeIdentifiers)
-      },
+      // values: async function (record: Facet): Promise<FacetValue[]> {
+      //   const res = await readFacetValues({ identifier: record.id })
+      //   // @ts-ignore
+      //   return res.map(encodeIdentifiers)
+      // },
     },
     FacetValue: {
       facet: async function (record: FacetValue): Promise<Facet> {
@@ -157,11 +171,11 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
       },
     },
     ResourceSpecification: {
-      facets: async function (record: ResourceSpecification): Promise<FacetValue[]> {
-        const res = await readFacetValues({ identifier: record.id })
-        // @ts-ignore
-        return res.map(encodeIdentifiers)
-      },
+      // facets: async function (record: ResourceSpecification): Promise<FacetValue[]> {
+      //   const res = await readFacetValues({ identifier: record.id })
+      //   // @ts-ignore
+      //   return res.map(encodeIdentifiers)
+      // },
     }
   }
 }
