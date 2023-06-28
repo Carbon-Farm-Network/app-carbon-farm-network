@@ -1,7 +1,8 @@
 [
   {
     "id": "proposal_id",
-    "has_begining": "2023-05-14T15:55:59Z",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
     "proposed_intents": [
       {
         "id": "proposed_intent_id",
@@ -9,10 +10,10 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown alpacca dirty"
+            "name": "Brown alpaca dirty"
           },
           "available_quantity": {
-            "has_numerical_value": 100,
+            "has_numerical_value": 120,
             "has_unit": {
               "label": "lb"
             }
@@ -24,7 +25,7 @@
             }
           },
           "provider": {
-            "name": "Lazy Acre Alpacca"
+            "name": "Lazy Acre Alpaca"
           }
         }
       },
@@ -40,10 +41,655 @@
             }
           },
           "resource_conforms_to": {
-            "name": "USD"
+            "name": "US Dollar"
           },
           "receiver": {
-            "name": "Lazy acre alpacca"
+            "name": "Lazy Acre Alpaca"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Brown alpaca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 20,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Woodland Meadow Farm"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 8,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Woodland Meadow Farm"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Brown alpaca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 19,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Faraway Farm"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 8,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Faraway Farm"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Gray/black alpaca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 10,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Woodland Meadow Farm"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 8,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Woodland Meadow Farm"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Gray/black alpaca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 10,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Faraway Farm"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 8,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Faraway Farm"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Gray/black alpaca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 100,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Lazy Acre Alpaca"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 5,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Lazy Acre Alpaca"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "White alpaca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 50,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Woodland Meadow Farm"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 8,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Woodland Meadow Farm"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "White alpaca dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 100,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Lazy Acre Alpaca"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 5,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Lazy Acre Alpaca"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "White wool dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 420,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Pine Croft"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 2,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Pine Croft"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "White wool dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 100,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Stone Barns"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 2,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Stone Barns"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "White wool dirty"
+          },
+          "available_quantity": {
+            "has_numerical_value": 55,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "provider": {
+            "name": "Cabbage Hill"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 3,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Cabbage Hill"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Scouring service"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "provider": {
+            "name": "Bainton"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 2,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Bainton"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Shipping service"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "provider": {
+            "name": "UPS"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 1.5,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Bainton"
+          }
+        }
+      }
+    ]
+  },
+    {
+    "id": "proposal_id",
+    "has_beginning": "2023-05-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Spinning service"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "provider": {
+            "name": "Battenkill"
+          }
+        }
+      },
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": true,
+        "intent": {
+          "id": "intent_id",
+          "resource_quantity": {
+            "has_numerical_value": 18,
+            "has_unit": {
+              "label": "one"
+            }
+          },
+          "resource_conforms_to": {
+            "name": "US Dollar"
+          },
+          "receiver": {
+            "name": "Battenkill"
           }
         }
       }

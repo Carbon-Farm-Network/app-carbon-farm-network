@@ -1,7 +1,8 @@
 [
   {
     "id": "proposal_id",
-    "has_begining": "2023-05-14T15:55:59Z",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
     "proposed_intents": [
       {
         "id": "proposed_intent_id",
@@ -19,6 +20,292 @@
           },
           "receiver": {
             "name": "wolhide"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Brown 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 80,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Vincent James"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Brown 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 50,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Textile Lab"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Brown 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 40,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Manymoons"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Grey 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 38,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "wolhide"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Grey 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 38,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Vincent James"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Grey 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 50,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Textile Lab"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Grey 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 40,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Manymoons"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Ivory 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 57,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "wolhide"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Ivory 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 50,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Vincent James"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Ivory 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 50,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Textile Lab"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "proposal_id",
+    "has_begining": "2023-02-14T15:55:59Z",
+    "unit_based": true,
+    "proposed_intents": [
+      {
+        "id": "proposed_intent_id",
+        "reciprocal": false,
+        "intent": {
+          "id": "intent_id",
+          "resource_conforms_to": {
+            "name": "Ivory 50-50 yarn"
+          },
+          "resource_quantity": {
+            "has_numerical_value": 40,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "receiver": {
+            "name": "Manymoons"
           }
         }
       }
