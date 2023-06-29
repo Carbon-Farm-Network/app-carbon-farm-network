@@ -11,7 +11,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
@@ -31,7 +31,7 @@
 
   // Valueflows data state
   let currentProposal: any = {};
-  let currentIntent: Intent = makeEmptyIntent()
+  let currentIntent: IntentUpdateParams = makeEmptyIntent()
   let currentReciprocalIntent: IntentCreateParams = {
     action: "transfer",
     resourceQuantity:  { hasNumericalValue: 0 },
@@ -109,30 +109,16 @@
 
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
-  function makeEmptyIntent(): Intent {
+  function makeEmptyIntent(): IntentUpdateParams {
     return {
-      action: { id: 'transfer', label: 'transfer', onhandEffect: 'incrementDecrement', resourceEffect: 'incrementDecrement' },
-      availableQuantity: {
-        hasNumericalValue: 0,
-        //@ts-ignore
-        hasUnit: { id: "" },
-      },
-      effortQuantity: {
-        hasNumericalValue: 0,
-        //@ts-ignore
-        hasUnit: { id: "" },
-      },
-      resourceQuantity: {
-        hasNumericalValue: 0,
-        //@ts-ignore
-        hasUnit: { id: "" },
-      },
-      //@ts-ignore
-      provider: { id: "" },
-      //@ts-ignore
-      receiver: { id: "" },
-      //@ts-ignore
-      resourceConformsTo: { id: "" },
+      revisionId: '',
+      action: 'transfer',
+      availableQuantity: { hasNumericalValue: 0 },
+      effortQuantity: { hasNumericalValue: 0 },
+      resourceQuantity: { hasNumericalValue: 0 },
+      provider: "",
+      receiver: "",
+      resourceConformsTo: "",
     }
   }
 
@@ -410,25 +396,50 @@
                     hasBeginning: p.hasBeginning,
                     note: p.note
                   };
-                  currentIntent = mainIntent.publishes
+                  const mi = mainIntent.publishes
+                  currentIntent = {
+                    ...mi,
+                    action: mi.action?.id,
+                    atLocation: mi.atLocation?.id || currentReciprocalIntent.atLocation,
+                    availableQuantity: mi.availableQuantity ? {
+                      hasNumericalValue: mi.availableQuantity.hasNumericalValue,
+                      hasUnit: mi.availableQuantity.hasUnit?.id,
+                    } : undefined,
+                    effortQuantity: mi.effortQuantity ? {
+                      hasNumericalValue: mi.effortQuantity.hasNumericalValue,
+                      hasUnit: mi.effortQuantity.hasUnit?.id,
+                    } : undefined,
+                    resourceQuantity: mi.resourceQuantity ? {
+                      hasNumericalValue: mi.resourceQuantity.hasNumericalValue,
+                      hasUnit: mi.resourceQuantity.hasUnit?.id,
+                    } : undefined,
+                    inScopeOf: (mi.inScopeOf || []).map(s => s.id),
+                    inputOf: mi.inputOf?.id,
+                    outputOf: mi.outputOf?.id,
+                    provider: mi.provider?.id,
+                    receiver: mi.receiver?.id,
+                    resourceConformsTo: mi.resourceConformsTo?.id,
+                    resourceInventoriedAs: mi.resourceInventoriedAs?.id,
+                  }
+                  console.log('SET TO', currentIntent)
                   if (proposedReciprocalIntent) {
                     const pi = proposedReciprocalIntent.publishes
                     currentReciprocalIntent = {
                       ...pi,
                       action: pi.action?.id || currentReciprocalIntent.action,
                       atLocation: pi.atLocation?.id || currentReciprocalIntent.atLocation,
-                      availableQuantity: {
-                        hasNumericalValue: pi.availableQuantity?.hasNumericalValue,
-                        hasUnit: pi.availableQuantity?.hasUnit?.id,
-                      },
-                      effortQuantity: {
-                        hasNumericalValue: pi.effortQuantity?.hasNumericalValue,
-                        hasUnit: pi.effortQuantity?.hasUnit?.id,
-                      },
-                      resourceQuantity: {
-                        hasNumericalValue: pi.resourceQuantity?.hasNumericalValue,
-                        hasUnit: pi.resourceQuantity?.hasUnit?.id,
-                      },
+                      availableQuantity: pi.availableQuantity ? {
+                        hasNumericalValue: pi.availableQuantity.hasNumericalValue,
+                        hasUnit: pi.availableQuantity.hasUnit?.id,
+                      } : undefined,
+                      effortQuantity: pi.effortQuantity ? {
+                        hasNumericalValue: pi.effortQuantity.hasNumericalValue,
+                        hasUnit: pi.effortQuantity.hasUnit?.id,
+                      } : undefined,
+                      resourceQuantity: pi.resourceQuantity ? {
+                        hasNumericalValue: pi.resourceQuantity.hasNumericalValue,
+                        hasUnit: pi.resourceQuantity.hasUnit?.id,
+                      } : undefined,
                       inScopeOf: (pi.inScopeOf || []).map(s => s.id),
                       inputOf: pi.inputOf?.id,
                       outputOf: pi.outputOf?.id,

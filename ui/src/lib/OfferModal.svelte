@@ -9,7 +9,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification } from '@valueflows/vf-graphql'
+  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import ResourceSpecificationModal from './ResourceSpecificationModal.svelte'
@@ -22,7 +22,7 @@
   export let agents: any[];
   export let date = new Date();
   export let currentProposal: any;
-  export let currentIntent: Intent & { provider: Agent, resourceConformsTo: ResourceSpecification };
+  export let currentIntent: IntentUpdateParams;
   export let currentReciprocalIntent: IntentCreateParams;
   export let currentProposedIntent: any;
   export let editing: boolean;
@@ -92,6 +92,12 @@
   let updateIntent: any= mutation(UPDATE_INTENT)
   let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
 
+  // helper to workaround direct bind:value syntax coercing things to strings
+  function parseFormValues(val: IMeasure) {
+    if (val.hasNumericalValue || val.hasNumericalValue === "0") val.hasNumericalValue = parseFloat(val.hasNumericalValue)
+    return val
+  }
+
   async function handleSubmit() {
     console.log(currentProposal)
     console.log(currentIntent)
@@ -110,19 +116,17 @@
 
       // create intent
       const intent: IntentCreateParams = {
-        provider: currentIntent.provider.id,
-        action: "transfer",
-        resourceConformsTo: currentIntent.resourceConformsTo.id,
-        availableQuantity: {
-          hasNumericalValue: parseFloat(currentIntent.availableQuantity?.hasNumericalValue),
-          hasUnit: currentIntent.availableQuantity?.hasUnit?.id,
-        },
-        resourceQuantity: {
-          hasNumericalValue: parseFloat(currentIntent.resourceQuantity?.hasNumericalValue),
-          // available quantity and resource quantity should have the same unit
-          hasUnit: currentIntent.availableQuantity?.hasUnit?.id,
-        },
-        note: currentIntent.note
+        action: currentIntent.action as string,
+        resourceConformsTo: currentIntent.resourceConformsTo || undefined,
+        resourceInventoriedAs: currentIntent.resourceInventoriedAs || undefined,
+        inScopeOf: currentIntent.inScopeOf || undefined,
+        inputOf: currentIntent.inputOf || undefined,
+        outputOf: currentIntent.outputOf || undefined,
+        provider: currentIntent.provider || undefined,
+        receiver: currentIntent.receiver || undefined,
+        resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
+        availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
+        effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
       }
       console.info(intent)
       const res2 = await addIntent({ variables: { intent } });
@@ -131,13 +135,10 @@
 
       // create reciprocal intent
       const recipIntent = {
-        provider: currentIntent.provider.id,
+        provider: currentIntent.provider,
         action: "transfer",
         resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
-        resourceQuantity: {
-          hasNumericalValue: parseFloat(currentReciprocalIntent.resourceQuantity?.hasNumericalValue),
-          hasUnit: null,
-        },
+        resourceQuantity: currentReciprocalIntent.resourceQuantity,
       }
       console.info(recipIntent)
       const res3 = await addIntent({ variables: { intent: recipIntent } })
@@ -177,10 +178,22 @@
     updateProposal({ variables: { proposal: proposal } })
     // let intent = currentIntent
     let intent = {
-      revisionId: currentIntent.revisionId
+      revisionId: currentIntent.revisionId,
+      action: currentIntent.action as string,
+      resourceConformsTo: currentIntent.resourceConformsTo || undefined,
+      resourceInventoriedAs: currentIntent.resourceInventoriedAs || undefined,
+      inScopeOf: currentIntent.inScopeOf || undefined,
+      inputOf: currentIntent.inputOf || undefined,
+      outputOf: currentIntent.outputOf || undefined,
+      provider: currentIntent.provider || undefined,
+      receiver: currentIntent.receiver || undefined,
+      resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
+      availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
+      effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
     }
     console.log(intent)
-    updateIntent({ variables: { intent: intent } })
+    const res = await updateIntent({ variables: { intent: intent } })
+    console.log(res)
   }
 
 
@@ -246,7 +259,7 @@
                   id="provider"
                   name="provider"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.provider.id}
+                  bind:value={currentIntent.provider}
                 >
                 {#if agents}
                 {#each agents as agent}
@@ -271,12 +284,12 @@
                   id="defaultUnitOfResource"
                   name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.resourceConformsTo.id}
+                  bind:value={currentIntent.resourceConformsTo}
                   on:change={(e) => {
                     let id = e.target.value
                     let selectedResource = resourceSpecifications.find((rs) => rs.id === id)
                     if (currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit) {
-                      currentIntent.availableQuantity.hasUnit.id = selectedResource.defaultUnitOfResource.id
+                      currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id
                     }
                   }}
                 >
@@ -346,7 +359,7 @@
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.availableQuantity.hasUnit.id}
+                  bind:value={currentIntent.availableQuantity.hasUnit}
                   >
                 {#if units}
                 {#each units as unit}
