@@ -101,20 +101,26 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
 
         // return {facet: {id: "error", name: "error", note: "error", facetGroupId: "error"}}
       },
-      putFacetValue: async function (_root: any, args: FacetValueParams): Promise<FacetValueResponse> {
+
+      putFacetValue: async function (_root: any, args: any): Promise<String> {
         console.log(args)
-        const res = await runCreateValue({
-          ...args,
-          facetOptionId: decodeHashFromBase64(args.facetOptionId),
-        })
-        res.facetValue = {
-          // @ts-ignore
-          ...encodeIdentifiers<FacetValue>(res.facetValue),
-          // @ts-ignore
-          facetOptionId: encodeHashToBase64(res.facetValue.facetOptionId),
-        }
-        return res
+        return "hi"
       },
+
+      // putFacetValue: async function (_root: any, args: FacetValueParams): Promise<FacetValueResponse> {
+      //   console.log(args)
+      //   const res = await runCreateValue({
+      //     ...args,
+      //     facetOptionId: decodeHashFromBase64(args.facetOptionId),
+      //   })
+      //   res.facetValue = {
+      //     // @ts-ignore
+      //     ...encodeIdentifiers<FacetValue>(res.facetValue),
+      //     // @ts-ignore
+      //     facetOptionId: encodeHashToBase64(res.facetValue.facetOptionId),
+      //   }
+      //   return res
+      // },
       // :TODO: delete APIs & resolvers
       // I suspect you can parameterise the API like
       //     deleteFacetValue: async function (_root: any, args: { identifier: string, value: string }): Promise<bool>

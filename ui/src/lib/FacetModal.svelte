@@ -43,29 +43,33 @@
     console.log(groups)
     let groupID: String = groups[0].id
 
-    // let f = await addFacet({
-    //   variables: {
-    //     facet: {
-    //       name: "facet 1",
-    //       note: "note",
-    //       facetGroupId: groups[0].id
-    //     }
-    //   }
-    // })
-    // console.log(f)
-    // let facetId: string = f.data.putFacet.facet.id
-    // console.log(facetId)
+    let f = await addFacet({
+      variables: {
+        facet: {
+          name: "facet 1",
+          note: "note",
+          facetGroupId: groups[0].id
+        }
+      }
+    })
+    console.log(f)
+    let facetId: string = f.data.putFacet.facet.id
+    console.log(facetId)
 
-    // let v = await addValue({
-    //   variables: {
-    //     facetValue: {
-    //       value: "value 1",
-    //       note: "note",
-    //       facetId: facetId,
-    //     }
-    //   }
-    // })
-    // console.log(v)
+    try {
+      let v = await addValue({
+        variables: {
+          facetValue: {
+            value: "value 1",
+            note: "note",
+            facetId: "facetId",
+          }
+        }
+      })
+      console.log(v)
+    } catch (e) {
+      console.log(e)
+    }
   })
 
 </script>
