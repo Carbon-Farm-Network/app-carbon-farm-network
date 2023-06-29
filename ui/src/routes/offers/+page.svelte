@@ -11,7 +11,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
@@ -19,8 +19,8 @@
   let resourceSpecifications: ResourceSpecification[];
   let agents: any[];
   let currentProposal: any = {};
-  let currentIntent: any = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-  let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
+  let currentIntent: Intent;// = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
+  let currentReciprocalIntent: Intent;// = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
   let currentProposedIntent: any = {};
   let offersList: any = [];
   let modalOpen = false
@@ -108,9 +108,11 @@
       console.log(resourceSpecifications)
     })
 
-    if (currentReciprocalIntent.resourceQuantity) {
+    if (currentReciprocalIntent && currentReciprocalIntent.resourceQuantity && currentReciprocalIntent.resourceConformsTo) {
       let usd = resourceSpecifications?.find((r) => r.id === "usd");
-      currentReciprocalIntent.resourceConformsTo = usd?.id;
+      if (usd) {
+        currentReciprocalIntent.resourceConformsTo.id = usd.id;
+      }
     }
   }
   const GET_ALL_AGENTS = gql`
@@ -233,13 +235,17 @@
         type="button"
         on:click={() => {
           currentProposal = {hasBeginning: new Date()};
-          currentIntent = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: usdId};
+          currentIntent = {id: "", revisionId: "", meta: {retrievedRevision: {id: ""}},action: {id: "transfer", label: "transfer", onhandEffect: "decrementIncrement", resourceEffect: "decrementIncrement"}, availableQuantity: {hasUnit: {id: "", label: "", meta: {}}, hasNumericalValue: 0}, resourceQuantity: {hasNumericalValue: 0}};
+          // currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: usdId};
+          currentReciprocalIntent = currentIntent;
+          if (currentReciprocalIntent.resourceConformsTo) {
+            currentReciprocalIntent.resourceConformsTo.id = usdId
+          }
           currentProposedIntent = {};
           modalOpen = true
           editing = false
-          console.log('usd')
-          console.log(usdId)
+          // console.log('usd')
+          // console.log(usdId)
         }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an offer</button
@@ -371,24 +377,25 @@
                   };
                   // console.log('test')
                   // console.log(mainIntent.publishes.resourceConformsTo)
-                  currentIntent = {        
-                    revisionId: p.revisionId,
-                    provider: mainIntent.publishes.provider.id,
-                    action: "transfer",
-                    resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
-                    availableQuantity: {
-                      hasNumericalValue: availableQuantity.hasNumericalValue,
-                      hasUnit: availableQuantity.hasUnit.id,
-                    },
-                    resourceQuantity: {
-                      hasNumericalValue: resourceQuantity.hasNumericalValue,
-                      hasUnit: resourceQuantity.hasUnit.id,
-                    },
-                    note: mainIntent.publishes.note
-                  };
+                  currentIntent = structuredClone(mainIntent)
+                  // currentIntent = {
+                  //   revisionId: p.revisionId,
+                  //   provider: mainIntent.publishes.provider.id,
+                  //   action: "transfer",
+                  //   resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
+                  //   availableQuantity: {
+                  //     hasNumericalValue: availableQuantity.hasNumericalValue,
+                  //     hasUnit: availableQuantity.hasUnit.id,
+                  //   },
+                  //   resourceQuantity: {
+                  //     hasNumericalValue: resourceQuantity.hasNumericalValue,
+                  //     hasUnit: resourceQuantity.hasUnit.id,
+                  //   },
+                  //   note: mainIntent.publishes.note
+                  // };
                   console.log(reciprocalIntent.publishes.resourceQuantity.hasNumericalValue)
                   // currentReciprocalIntent = reciprocalIntent.publishes
-                  currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: reciprocalIntent.publishes.resourceQuantity.hasNumericalValue, hasUnit: reciprocalIntent.publishes.hasUnit}, resourceConformsTo: reciprocalIntent.publishes.resourceConformsTo.id};
+                  currentReciprocalIntent = structuredClone(reciprocalIntent)//{action: "", resourceQuantity: {hasNumericalValue: reciprocalIntent.publishes.resourceQuantity.hasNumericalValue, hasUnit: reciprocalIntent.publishes.hasUnit}, resourceConformsTo: reciprocalIntent.publishes.resourceConformsTo.id};
                   currentProposedIntent = {};
 
                   modalOpen = true;

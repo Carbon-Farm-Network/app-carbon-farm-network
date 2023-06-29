@@ -9,7 +9,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs, Scalars } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs, Scalars, Intent, IntentUpdateParams } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   export let open = false;
@@ -19,8 +19,8 @@
   export let agents: any[];
   export let date = new Date();
   export let currentProposal: any;
-  export let currentIntent: IntentCreateParams;
-  export let currentReciprocalIntent: IntentCreateParams;
+  export let currentIntent: Intent;
+  export let currentReciprocalIntent: Intent;
   export let currentProposedIntent: any;
   export let editing: boolean;
 
@@ -105,17 +105,17 @@
       
       // create intent
       let intent: IntentCreateParams = {
-        provider: currentIntent.provider,
+        provider: currentIntent.provider?.id,
         action: "transfer",
-        resourceConformsTo: currentIntent.resourceConformsTo,
+        resourceConformsTo: currentIntent.resourceConformsTo?.id,
         availableQuantity: {
           hasNumericalValue: parseFloat(currentIntent.availableQuantity?.hasNumericalValue),
-          hasUnit: currentIntent.availableQuantity?.hasUnit,
+          hasUnit: currentIntent.availableQuantity?.hasUnit?.id,
         },
         resourceQuantity: {
           hasNumericalValue: parseFloat(currentIntent.resourceQuantity?.hasNumericalValue),
           // available quantity and resource quantity should have the same unit
-          hasUnit: currentIntent.availableQuantity?.hasUnit,
+          hasUnit: currentIntent.availableQuantity?.hasUnit?.id,
         },
         note: currentIntent.note
       }
@@ -126,9 +126,9 @@
       // create reciprocal intent
       let each = units.find(u => u.label === "one")
       intent = {
-        provider: currentIntent.provider,
+        provider: currentIntent.provider?.id,
         action: "transfer",
-        resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
+        resourceConformsTo: currentReciprocalIntent.resourceConformsTo?.id,
         resourceQuantity: {
           hasNumericalValue: parseFloat(currentReciprocalIntent.resourceQuantity?.hasNumericalValue),
           hasUnit: each.id,
@@ -165,10 +165,14 @@
   }
 
   async function handleUpdate() {
-    console.log(currentProposal)
+    // console.log(currentProposal)
     let proposal = currentProposal
     updateProposal({ variables: { proposal: proposal } })
-    let intent = currentIntent
+    // let intent = currentIntent
+    let intent = {
+      revisionId: currentIntent.revisionId
+    }
+    console.log(intent)
     updateIntent({ variables: { intent: intent } })
   }
 
@@ -185,6 +189,7 @@
   $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent
   $: isOfferValid = true && currentProposal.hasBeginning && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
 </script>
+{#if currentIntent && currentReciprocalIntent}
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -265,7 +270,7 @@
                     let selectedResource = resourceSpecifications.find((rs) => rs.id === id)
                     console.log(selectedResource)
                     console.log("hi")
-                    if (currentIntent.availableQuantity) {currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id}
+                    if (currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit) {currentIntent.availableQuantity.hasUnit.id = selectedResource.defaultUnitOfResource.id}
                     // currentIntent.availableQuantity.hasUnit = d.target.value
                     // if (currentIntent.availableQuantity) {
                     //   currentIntent.availableQuantity.hasUnit = d.target.value.defaultUnitOfResource.id
@@ -292,7 +297,7 @@
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
                   <!-- for required:  class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"-->
-                  {#if currentIntent.availableQuantity}
+                  {#if currentIntent && currentIntent.availableQuantity}
                   <input
                     type="text"
                     name="name"
@@ -333,12 +338,12 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
-                {#if currentIntent.availableQuantity}
+                {#if currentIntent && currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit}
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.availableQuantity.hasUnit}
+                  bind:value={currentIntent.availableQuantity.hasUnit.id}
                   >
                 {#if units}
                 {#each units as unit}
@@ -365,7 +370,7 @@
                   >Price</label
                   >
                 <div class="relative mt-2 rounded-md shadow-sm">
-                  {#if currentReciprocalIntent.resourceQuantity}
+                  {#if currentReciprocalIntent && currentReciprocalIntent.resourceQuantity}
                   <input
                     type="text"
                     name="name"
@@ -408,12 +413,12 @@
                 >
                 <!-- USD -->
                 <!-- {JSON.stringify(currentReciprocalIntent.resourceConformsTo != "undefined")} -->
-                {#if currentReciprocalIntent.resourceConformsTo != "undefined"}
+                {#if currentReciprocalIntent && currentReciprocalIntent.resourceConformsTo}
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentReciprocalIntent.resourceConformsTo}
+                  bind:value={currentReciprocalIntent.resourceConformsTo.id}
                   >
 
                   {#if resourceSpecifications}
@@ -441,7 +446,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Quantity</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
-                  {#if currentIntent.resourceQuantity}
+                  {#if currentIntent && currentIntent.resourceQuantity}
                   <input
                     type="text"
                     name="name"
@@ -482,7 +487,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
-                {#if currentIntent.availableQuantity}
+                {#if currentIntent && currentIntent.availableQuantity}
                 <select
                   id="unit"
                   name="unit"
@@ -566,3 +571,4 @@
     </div>
   </div>
 </div>
+{/if}
