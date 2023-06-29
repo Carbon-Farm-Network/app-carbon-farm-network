@@ -9,9 +9,10 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs, Scalars, Intent, IntentUpdateParams } from '@valueflows/vf-graphql'
+  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
+  import ResourceSpecificationModal from './ResourceSpecificationModal.svelte'
 
   // public CustomElement attributes
   export let open = false;
@@ -21,7 +22,7 @@
   export let agents: any[];
   export let date = new Date();
   export let currentProposal: any;
-  export let currentIntent: Intent | null;
+  export let currentIntent: Intent & { provider: Agent, resourceConformsTo: ResourceSpecification };
   export let currentReciprocalIntent: IntentCreateParams;
   export let currentProposedIntent: any;
   export let editing: boolean;
@@ -108,10 +109,10 @@
       const res1ID: String = String(res1.data.createProposal.proposal.id)
 
       // create intent
-      let intent: IntentCreateParams = {
-        provider: currentIntent.provider?.id,
+      const intent: IntentCreateParams = {
+        provider: currentIntent.provider.id,
         action: "transfer",
-        resourceConformsTo: currentIntent.resourceConformsTo?.id,
+        resourceConformsTo: currentIntent.resourceConformsTo.id,
         availableQuantity: {
           hasNumericalValue: parseFloat(currentIntent.availableQuantity?.hasNumericalValue),
           hasUnit: currentIntent.availableQuantity?.hasUnit?.id,
@@ -123,23 +124,25 @@
         },
         note: currentIntent.note
       }
+      console.info(intent)
       const res2 = await addIntent({ variables: { intent } });
       const res2ID = res2.data.createIntent.intent.id
       console.log(res2);
 
       // create reciprocal intent
-      let each = units.find(u => u.label === "one")
-      intent = {
-        provider: currentIntent.provider?.id,
+      const recipIntent = {
+        provider: currentIntent.provider.id,
         action: "transfer",
         resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
         resourceQuantity: {
           hasNumericalValue: parseFloat(currentReciprocalIntent.resourceQuantity?.hasNumericalValue),
-          hasUnit: each.id,
-        }
+          hasUnit: null,
+        },
       }
-      const res3 = await addIntent({ variables: { intent } })
+      console.info(recipIntent)
+      const res3 = await addIntent({ variables: { intent: recipIntent } })
       const res3ID: String = String(res3.data.createIntent.intent.id)
+      console.log(res3);
 
 
       let reciprocal: Boolean = false
@@ -154,7 +157,7 @@
       publishes = res3ID
 
       const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
-      console.log(res4)
+      console.log(res5)
 
 
       dispatch("submit");
@@ -191,7 +194,7 @@
   })
 
   $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent
-  $: isOfferValid = true && currentProposal.hasBeginning && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
+  $: isOfferValid = true && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -235,15 +238,15 @@
             <div class="mt-4 text-left">
               <div>
                 <label
-                  for="defaultUnitOfResource"
+                  for="provider"
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Provider</label
                 >
                 <select
-                  id="defaultUnitOfResource"
-                  name="defaultUnitOfResource"
+                  id="provider"
+                  name="provider"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.provider}
+                  bind:value={currentIntent.provider.id}
                 >
                 {#if agents}
                 {#each agents as agent}
@@ -268,17 +271,13 @@
                   id="defaultUnitOfResource"
                   name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentIntent.resourceConformsTo}
+                  bind:value={currentIntent.resourceConformsTo.id}
                   on:change={(e) => {
                     let id = e.target.value
                     let selectedResource = resourceSpecifications.find((rs) => rs.id === id)
-                    console.log(selectedResource)
-                    console.log("hi")
-                    if (currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit) {currentIntent.availableQuantity.hasUnit.id = selectedResource.defaultUnitOfResource.id}
-                    // currentIntent.availableQuantity.hasUnit = d.target.value
-                    // if (currentIntent.availableQuantity) {
-                    //   currentIntent.availableQuantity.hasUnit = d.target.value.defaultUnitOfResource.id
-                    // }
+                    if (currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit) {
+                      currentIntent.availableQuantity.hasUnit.id = selectedResource.defaultUnitOfResource.id
+                    }
                   }}
                 >
                 {#each resourceSpecifications as rs}
@@ -301,7 +300,7 @@
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
                   <!-- for required:  class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"-->
-                  {#if currentIntent && currentIntent.availableQuantity}
+                  {#if currentIntent.availableQuantity}
                   <input
                     type="text"
                     name="name"
@@ -342,7 +341,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
-                {#if currentIntent && currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit}
+                {#if currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit}
                 <select
                   id="unit"
                   name="unit"
@@ -450,7 +449,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Quantity</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
-                  {#if currentIntent && currentIntent.resourceQuantity}
+                  {#if currentIntent.resourceQuantity}
                   <input
                     type="text"
                     name="name"
@@ -491,7 +490,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
-                {#if currentIntent && currentIntent.availableQuantity}
+                {#if currentIntent.availableQuantity}
                 <select
                   id="unit"
                   name="unit"

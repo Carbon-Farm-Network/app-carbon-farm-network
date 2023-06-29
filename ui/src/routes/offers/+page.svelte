@@ -26,16 +26,16 @@
   // component UI state
   let modalOpen = false
   let editing = false;
-  let usdId: string | undefined;
+  let usdRSpecId: string | undefined;
   let name = ''
 
   // Valueflows data state
   let currentProposal: any = {};
-  let currentIntent: Intent | null
+  let currentIntent: Intent = makeEmptyIntent()
   let currentReciprocalIntent: IntentCreateParams = {
     action: "transfer",
     resourceQuantity:  { hasNumericalValue: 0 },
-    resourceConformsTo: "USD",  // set upon assigning `usdId`
+    resourceConformsTo: "USD",  // set upon assigning `usdRSpecId`
   };
   let _defaultReciprocalIntent: IntentCreateParams = {
     ...currentReciprocalIntent,
@@ -109,10 +109,37 @@
 
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
+  function makeEmptyIntent(): Intent {
+    return {
+      action: { id: 'transfer', label: 'transfer', onhandEffect: 'incrementDecrement', resourceEffect: 'incrementDecrement' },
+      availableQuantity: {
+        hasNumericalValue: 0,
+        //@ts-ignore
+        hasUnit: { id: "" },
+      },
+      effortQuantity: {
+        hasNumericalValue: 0,
+        //@ts-ignore
+        hasUnit: { id: "" },
+      },
+      resourceQuantity: {
+        hasNumericalValue: 0,
+        //@ts-ignore
+        hasUnit: { id: "" },
+      },
+      //@ts-ignore
+      provider: { id: "" },
+      //@ts-ignore
+      receiver: { id: "" },
+      //@ts-ignore
+      resourceConformsTo: { id: "" },
+    }
+  }
+
   // helper to assign `Unit` identifiers to `Intent` data after binding to pre-created `Unit` records from GraphQL
   function assignUSDId(intent: IntentCreateParams) {
-    if (intent.resourceConformsTo === "USD" && intent.resourceQuantity) {
-      intent.resourceQuantity.hasUnit = usdId
+    if (intent.resourceConformsTo === "USD") {
+      intent.resourceConformsTo = usdRSpecId
     }
   }
 
@@ -124,14 +151,13 @@
       resourceSpecifications.forEach((a) => {
         // assign USD `Unit` identifiers when loaded
         if (a.name === "USD") {
-          usdId = a.id
+          usdRSpecId = a.id
 
           // override / set USD reference in Intent data payloads
           assignUSDId(_defaultReciprocalIntent)
           assignUSDId(currentReciprocalIntent)
         }
       })
-      console.log(resourceSpecifications)
     })
   }
 
@@ -245,7 +271,7 @@
         type="button"
         on:click={() => {
           currentProposal = {hasBeginning: new Date()};
-          currentIntent = null
+          currentIntent = makeEmptyIntent()
           currentReciprocalIntent = _defaultReciprocalIntent
           currentProposedIntent = {}
           modalOpen = true
@@ -312,7 +338,7 @@
               {@const availableQuantity = mainIntent.publishes.availableQuantity}
               {@const resourceQuantity = (proposedReciprocalIntent && proposedReciprocalIntent.publishes) ? proposedReciprocalIntent.publishes.resourceQuantity : {
                 ...currentReciprocalIntent.resourceQuantity,
-                hasUnit: usdId,
+                hasUnit: null,  // previously 'each' in older VF (< 0.6) spec
               }}
               {#if mainIntent && availableQuantity && resourceQuantity}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
@@ -371,7 +397,7 @@
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
-                    checked={!p.hasEnd || Date.now() < new Date(p.hasEnd)}
+                    checked={!p.hasEnd || (new Date() < p.hasEnd)}
                     class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
                 </td>
@@ -381,11 +407,37 @@
                 <button type="button" on:click={() => {
                   currentProposal = {
                     revisionId: p.revisionId,
-                    hasBeginning: new Date(p.hasBeginning),
+                    hasBeginning: p.hasBeginning,
                     note: p.note
                   };
-                  currentIntent = mainIntent
-                  currentReciprocalIntent = reciprocalIntent
+                  currentIntent = mainIntent.publishes
+                  if (proposedReciprocalIntent) {
+                    const pi = proposedReciprocalIntent.publishes
+                    currentReciprocalIntent = {
+                      ...pi,
+                      action: pi.action?.id || currentReciprocalIntent.action,
+                      atLocation: pi.atLocation?.id || currentReciprocalIntent.atLocation,
+                      availableQuantity: {
+                        hasNumericalValue: pi.availableQuantity?.hasNumericalValue,
+                        hasUnit: pi.availableQuantity?.hasUnit?.id,
+                      },
+                      effortQuantity: {
+                        hasNumericalValue: pi.effortQuantity?.hasNumericalValue,
+                        hasUnit: pi.effortQuantity?.hasUnit?.id,
+                      },
+                      resourceQuantity: {
+                        hasNumericalValue: pi.resourceQuantity?.hasNumericalValue,
+                        hasUnit: pi.resourceQuantity?.hasUnit?.id,
+                      },
+                      inScopeOf: (pi.inScopeOf || []).map(s => s.id),
+                      inputOf: pi.inputOf?.id,
+                      outputOf: pi.outputOf?.id,
+                      provider: pi.provider?.id,
+                      receiver: pi.receiver?.id,
+                      resourceConformsTo: pi.resourceConformsTo?.id,
+                      resourceInventoriedAs: pi.resourceInventoriedAs?.id,
+                    }
+                  }
                   currentProposedIntent = {}
 
                   modalOpen = true;
