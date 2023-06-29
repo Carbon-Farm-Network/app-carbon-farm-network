@@ -1,6 +1,6 @@
 <script lang="ts">
   import OfferModal from '$lib/OfferModal.svelte'
-  import offers from '$lib/data/offers.json'  
+  import offers from '$lib/data/offers.json'
   import { DateInput } from 'date-picker-svelte'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
@@ -11,22 +11,39 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
+  import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
+
+  // externally provided data
   let units: Unit[];
   let resourceSpecifications: ResourceSpecification[];
-  let agents: any[];
-  let currentProposal: any = {};
-  let currentIntent: Intent;// = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-  let currentReciprocalIntent: Intent;// = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
-  let currentProposedIntent: any = {};
-  let offersList: any = [];
+  let agents: Agent[];
+  let offersList: Proposal[] = [];
+
+  // component UI state
   let modalOpen = false
   let editing = false;
-  let usdId: string;
+  let usdId: string | undefined;
   let name = ''
+
+  // Valueflows data state
+  let currentProposal: any = {};
+  let currentIntent: Intent | null
+  let currentReciprocalIntent: IntentCreateParams = {
+    action: "transfer",
+    resourceQuantity:  { hasNumericalValue: 0 },
+    resourceConformsTo: "USD",  // set upon assigning `usdId`
+  };
+  let _defaultReciprocalIntent: IntentCreateParams = {
+    ...currentReciprocalIntent,
+    resourceQuantity: Object.assign({}, currentReciprocalIntent.resourceQuantity),
+  }
+  let currentProposedIntent: any = {};
+
+  // GraphQL bindings
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -90,31 +107,34 @@
 
   let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
 
-  // map component state
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  // helper to assign `Unit` identifiers to `Intent` data after binding to pre-created `Unit` records from GraphQL
+  function assignUSDId(intent: IntentCreateParams) {
+    if (intent.resourceConformsTo === "USD" && intent.resourceQuantity) {
+      intent.resourceQuantity.hasUnit = usdId
+    }
+  }
 
   async function fetchResourceSpecifications() {
     resourceSpecificationsQuery.getCurrentResult()
-    // setTimeout(function(){
+
     resourceSpecificationsQuery.refetch().then((r) => {
-      resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+      resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications)
+      resourceSpecifications.forEach((a) => {
+        // assign USD `Unit` identifiers when loaded
         if (a.name === "USD") {
           usdId = a.id
-        }
-        return {
-          ...a,
+
+          // override / set USD reference in Intent data payloads
+          assignUSDId(_defaultReciprocalIntent)
+          assignUSDId(currentReciprocalIntent)
         }
       })
       console.log(resourceSpecifications)
     })
-
-    if (currentReciprocalIntent && currentReciprocalIntent.resourceQuantity && currentReciprocalIntent.resourceConformsTo) {
-      let usd = resourceSpecifications?.find((r) => r.id === "usd");
-      if (usd) {
-        currentReciprocalIntent.resourceConformsTo.id = usd.id;
-      }
-    }
   }
+
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
@@ -175,12 +195,7 @@
     getUnits.getCurrentResult()
     getUnits.refetch().then((r) => {
       if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units).map((a) => {
-          return {
-            ...a,
-          }
-        })
-        // console.log(units)
+        units = flattenRelayConnection(r.data?.units)
       }
     })
   }
@@ -189,12 +204,7 @@
     getOffers.getCurrentResult()
     getOffers.refetch().then((r) => {
       if (r.data?.proposals.edges.length > 0) {
-        offersList = flattenRelayConnection(r.data?.proposals).map((a) => {
-          return {
-            ...a,
-          }
-        })
-        console.log(offersList)
+        offersList = flattenRelayConnection(r.data?.proposals)
       }
     })
   }
@@ -209,7 +219,7 @@
       //   if (!units) {
       //     fetchUnits()
       //   } else {
-          
+
       //   }
       // }, 10000)
       // console.log(offers)
@@ -235,17 +245,11 @@
         type="button"
         on:click={() => {
           currentProposal = {hasBeginning: new Date()};
-          currentIntent = {id: "", revisionId: "", meta: {retrievedRevision: {id: ""}},action: {id: "transfer", label: "transfer", onhandEffect: "decrementIncrement", resourceEffect: "decrementIncrement"}, availableQuantity: {hasUnit: {id: "", label: "", meta: {}}, hasNumericalValue: 0}, resourceQuantity: {hasNumericalValue: 0}};
-          // currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: usdId};
-          currentReciprocalIntent = currentIntent;
-          if (currentReciprocalIntent.resourceConformsTo) {
-            currentReciprocalIntent.resourceConformsTo.id = usdId
-          }
-          currentProposedIntent = {};
+          currentIntent = null
+          currentReciprocalIntent = _defaultReciprocalIntent
+          currentProposedIntent = {}
           modalOpen = true
           editing = false
-          // console.log('usd')
-          // console.log(usdId)
         }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an offer</button
@@ -300,30 +304,35 @@
             <!-- {#each offers as { proposed_intents }, index} -->
             {#if offersList}
             {#each offersList as p, index}
-              {@const mainIntent = p.publishes.find(({ reciprocal }) => !reciprocal)}
+              {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
               {#if mainIntent}
-              {@const reciprocalIntent = p.publishes.find(
+              {@const proposedReciprocalIntent = p.publishes?.find(
                 ({ reciprocal }) => reciprocal
               )}
               {@const availableQuantity = mainIntent.publishes.availableQuantity}
-              {@const resourceQuantity = reciprocalIntent.publishes.resourceQuantity}
-              {#if mainIntent && reciprocalIntent && availableQuantity && resourceQuantity}
+              {@const resourceQuantity = (proposedReciprocalIntent && proposedReciprocalIntent.publishes) ? proposedReciprocalIntent.publishes.resourceQuantity : {
+                ...currentReciprocalIntent.resourceQuantity,
+                hasUnit: usdId,
+              }}
+              {#if mainIntent && availableQuantity && resourceQuantity}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td
                   class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                  >{mainIntent.publishes.provider.name}</td
+                  >{mainIntent.publishes.provider?.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{mainIntent.publishes.resourceConformsTo.name}</td
+                  >{mainIntent.publishes.resourceConformsTo?.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{availableQuantity.hasNumericalValue}
-                  {availableQuantity.hasUnit.label}</td
+                  {availableQuantity.hasUnit?.label}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{resourceQuantity.hasNumericalValue}
-                  {reciprocalIntent.publishes.resourceConformsTo.name} / {mainIntent.publishes.resourceQuantity.hasNumericalValue}
-                  {resourceQuantity.hasUnit.label}</td
+                  {proposedReciprocalIntent?.publishes.resourceConformsTo?.name} / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
+                  {proposedReciprocalIntent?.publishes.resourceQuantity?.hasUnit?.id || "USD"}
+                  <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
+                  </td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <input
@@ -375,28 +384,9 @@
                     hasBeginning: new Date(p.hasBeginning),
                     note: p.note
                   };
-                  // console.log('test')
-                  // console.log(mainIntent.publishes.resourceConformsTo)
-                  currentIntent = structuredClone(mainIntent)
-                  // currentIntent = {
-                  //   revisionId: p.revisionId,
-                  //   provider: mainIntent.publishes.provider.id,
-                  //   action: "transfer",
-                  //   resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
-                  //   availableQuantity: {
-                  //     hasNumericalValue: availableQuantity.hasNumericalValue,
-                  //     hasUnit: availableQuantity.hasUnit.id,
-                  //   },
-                  //   resourceQuantity: {
-                  //     hasNumericalValue: resourceQuantity.hasNumericalValue,
-                  //     hasUnit: resourceQuantity.hasUnit.id,
-                  //   },
-                  //   note: mainIntent.publishes.note
-                  // };
-                  console.log(reciprocalIntent.publishes.resourceQuantity.hasNumericalValue)
-                  // currentReciprocalIntent = reciprocalIntent.publishes
-                  currentReciprocalIntent = structuredClone(reciprocalIntent)//{action: "", resourceQuantity: {hasNumericalValue: reciprocalIntent.publishes.resourceQuantity.hasNumericalValue, hasUnit: reciprocalIntent.publishes.hasUnit}, resourceConformsTo: reciprocalIntent.publishes.resourceConformsTo.id};
-                  currentProposedIntent = {};
+                  currentIntent = mainIntent
+                  currentReciprocalIntent = reciprocalIntent
+                  currentProposedIntent = {}
 
                   modalOpen = true;
                   editing = true;
