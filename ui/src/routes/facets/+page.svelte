@@ -9,7 +9,7 @@
   import { onMount } from 'svelte'
   let modalOpen = false;
   let selectedId: string;
-  let groups: any[];
+  let facetGroups: FacetGroup[];
 
 
   const GET_FACET_GROUPS = gql`
@@ -59,30 +59,30 @@
   interface FacetGroupResponse {
     facetGroups: FacetGroup[]
   }
-  let facetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
-  
+  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+
   // let addFacet: any = mutation(CREATE_FACET)
 
   onMount(async () => {
-    let x = await facetGroups.getCurrentResult()
+    let x = await queryFacetGroups.getCurrentResult()
     console.log(x)
-    let y = await facetGroups.refetch()
+    let y = await queryFacetGroups.refetch()
     console.log(y)
-    groups = y.data.facetGroups
-    console.log(groups)
+    facetGroups = y.data.facetGroups
+    console.log('GGG', facetGroups)
   })
 
-  $: groups;
+  $: facetGroups;
 
 </script>
 
-{#if groups}
-<FacetModal bind:groups bind:open={modalOpen} {selectedId} />
+{#if facetGroups}
+<FacetModal bind:facetGroups bind:open={modalOpen} {selectedId} />
 {/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
-    
+
     <div class="sm:flex-auto">
 
       <div>

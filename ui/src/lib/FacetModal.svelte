@@ -7,7 +7,7 @@
   // import { FACET_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   export let open = false
   export let selectedId: string
-  export let groups: any[];
+  export let facetGroups: FacetGroup[];
   let name = ''
   let description = ''
 
@@ -40,15 +40,15 @@
 
   onMount(async () => {
     console.log('groups: ')
-    console.log(groups)
-    let groupID: String = groups[0].id
+    console.log(facetGroups)
+    let groupID: String = facetGroups[0].id
 
     let f = await addFacet({
       variables: {
         facet: {
           name: "facet 1",
           note: "note",
-          facetGroupId: groups[0].id
+          facetGroupId: facetGroups[0].id
         }
       }
     })
