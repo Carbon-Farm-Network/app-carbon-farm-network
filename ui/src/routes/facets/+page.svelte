@@ -19,42 +19,27 @@
         revisionId
         name
         note
+        facets {
+          id
+          revisionId
+          name
+          note
+          # group {
+          #   id
+          # }
+          values {
+            id
+            revisionId
+            value
+            note
+            # facet {
+            #   id
+            # }
+          }
+        }
       }
     }
   `
-
-
-  // const GET_FACETS = gql`
-  //   query GetFacets {
-  //     facetGroups {
-  //       id
-  //       revisionId
-  //       name
-  //       note
-  //     }
-  //   }
-  // `
-
-// facets {
-//           id
-//           revisionId
-//           name
-//           note
-//           group {
-//             id
-//           }
-//         }
-// values {
-//   id
-//   revisionId
-//   value
-//   note
-//   facet {
-//     id
-//   }
-// }
-
-
 
   interface FacetGroupResponse {
     facetGroups: FacetGroup[]
