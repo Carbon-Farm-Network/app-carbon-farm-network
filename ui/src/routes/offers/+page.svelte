@@ -113,12 +113,13 @@
     return {
       revisionId: '',
       action: 'transfer',
-      availableQuantity: { hasNumericalValue: 0 },
+      availableQuantity: { hasNumericalValue: 0, hasUnit: "null" },
       effortQuantity: { hasNumericalValue: 0 },
       resourceQuantity: { hasNumericalValue: 0 },
       provider: "",
       receiver: "",
       resourceConformsTo: "",
+      note: "",
     }
   }
 

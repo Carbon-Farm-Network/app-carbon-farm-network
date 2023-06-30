@@ -202,6 +202,7 @@
     // console.log(x)
     if (browser) {
       console.log('hello')
+      console.log(currentIntent)
     }
     // handleSubmit()
   })
@@ -289,7 +290,10 @@
                     let id = e.target.value
                     let selectedResource = resourceSpecifications.find((rs) => rs.id === id)
                     if (currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit) {
+                      console.log(currentIntent.availableQuantity.hasUnit)
                       currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id
+                    } else {
+                      console.log(currentIntent.availableQuantity)
                     }
                   }}
                 >
