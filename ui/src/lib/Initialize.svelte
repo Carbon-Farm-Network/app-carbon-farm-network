@@ -113,7 +113,7 @@
   }
 
   onMount(async () => {
-    await addUnits()
+    // await addUnits()
     console.log('Units onMount')
   })
 

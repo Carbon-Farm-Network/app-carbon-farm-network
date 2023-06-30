@@ -19,24 +19,24 @@
         revisionId
         name
         note
-        facets {
-          id
-          revisionId
-          name
-          note
+        #facets {
+          #id
+          #revisionId
+          #name
+          #note
           # group {
           #   id
           # }
-          values {
-            id
-            revisionId
-            value
-            note
+          #values {
+            #id
+            #revisionId
+            #value
+            #note
             # facet {
             #   id
             # }
-          }
-        }
+          #}
+        #}
       }
     }
   `
