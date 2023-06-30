@@ -44,60 +44,53 @@ function encodeIdentifiers<T>(data: RawRecordIdentifierMeta & T): T {
 const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string) =>
 {
   // zome write API
-  const runCreateGroup = mapZomeFn<{ facet_group: FacetGroupParams }, FacetGroup>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_group')
-  const runCreateOption = mapZomeFn<{ facet_option: FacetParamsRaw }, Facet>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_option')
-  const runCreateValue = mapZomeFn<{ facet_value: FacetValueParams }, FacetValue>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_value')
+  const runCreateGroup = mapZomeFn<FacetGroupParams, FacetGroup>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_group')
+  const runCreateOption = mapZomeFn<FacetParamsRaw, Facet>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_option')
+  const runCreateValue = mapZomeFn<FacetValueParamsRaw, FacetValue>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_value')
 
   // :TODO: deletions API
 
   // zome read API
   // const readFacetGroups = mapZomeFn<Record<string, never>, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
   const readFacetGroups = mapZomeFn<never, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
-  const readFacets = mapZomeFn<{ facet_group_hash: EntryHash }, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
-  const readFacetValues = mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
+  const readFacets = mapZomeFn<EntryHash, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
+  const readFacetValues = mapZomeFn<EntryHash, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
 
   // declare and return all resolver callbacks for GraphQL engine
   return {
     Mutation: {
       putFacetGroup: async function (_root: any, args: { facetGroup: FacetGroupParams }): Promise<FacetGroupResponse> {
 console.info('NEW GROUP', args.facetGroup)
-        const res = await runCreateGroup({ facet_group: args.facetGroup })
-console.info(res)
+        const res = await runCreateGroup(args.facetGroup)
+console.log(res)
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
         return res && { facetGroup: encodeIdentifiers<FacetGroup>(res) } as FacetGroupResponse
       },
-      putFacet: async function (_root: any, args: { facet: FacetParams }): Promise<FacetResponse> {
-        const res = await runCreateOption({
-          facet_option: {
-            name: args.facet.name,
-            note: args.facet.note,
-            facet_group_id: decodeHashFromBase64(args.facet.facetGroupId),
-          }
-        })
 
+      putFacet: async function (_root: any, args: { facet: FacetParams }): Promise<FacetResponse> {
+console.info('NEW FACET', args.facet)
+        const res = await runCreateOption({
+          name: args.facet.name,
+          note: args.facet.note,
+          facet_group_id: decodeHashFromBase64(args.facet.facetGroupId),
+        })
+console.log(res)
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
         return res && { facet: encodeIdentifiers<Facet>(res) } as FacetResponse
       },
 
       putFacetValue: async function (_root: any, args: { facetValue: FacetValueParams }): Promise<FacetValueResponse> {
-        console.log(args)
-        return "hi"
+console.info('NEW VALUE', args.facetValue)
+        const res = await runCreateValue({ facet_value: {
+          value: args.facetValue.value,
+          note: args.facetValue.note,
+          facet_id: decodeHashFromBase64(args.facetValue.facetId),
+        } })
+console.log(encodeIdentifiers<FacetValue>(res))
+        //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
+        return res && { facet: encodeIdentifiers<FacetValue>(res) } as FacetValueResponse
       },
 
-      // putFacetValue: async function (_root: any, args: FacetValueParams): Promise<FacetValueResponse> {
-      //   console.log(args)
-      //   const res = await runCreateValue({
-      //     ...args,
-      //     facetOptionId: decodeHashFromBase64(args.facetOptionId),
-      //   })
-      //   res.facetValue = {
-      //     // @ts-ignore
-      //     ...encodeIdentifiers<FacetValue>(res.facetValue),
-      //     // @ts-ignore
-      //     facetOptionId: encodeHashToBase64(res.facetValue.facetOptionId),
-      //   }
-      //   return res
-      // },
       // :TODO: delete APIs & resolvers
       // I suspect you can parameterise the API like
       //     deleteFacetValue: async function (_root: any, args: { identifier: string, value: string }): Promise<bool>
@@ -106,7 +99,6 @@ console.info(res)
     Query: {
       facetGroups: async (args: never): Promise<FacetGroup[]> => {
         const res = await readFacetGroups(args)
-        console.log(res)
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
