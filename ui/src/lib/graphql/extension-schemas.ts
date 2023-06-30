@@ -10,14 +10,15 @@ export interface FacetGroupParams {
   note: string;
 }
 
-export interface FacetParams {
-  facetGroupId: EntryHashB64
+interface FacetParamsBase {
   name: string
   note: string
 }
+export type FacetParams = FacetParamsBase & { facetGroupId: EntryHashB64 }
+export type FacetParamsRaw = FacetParamsBase & { facet_group_id: EntryHash }
 
 export interface FacetValueParams {
-  facetId: EntryHashB64
+  facetId: EntryHash
   value: string // must match a stored `Facet.option`
   note: string
 }
@@ -35,8 +36,8 @@ export interface RawRecordIdentifierMeta {
 }
 
 export type FacetGroup = FacetGroupParams & RecordIdentifierMeta
-export type Facet = FacetParams & RecordIdentifierMeta
-export type FacetValue = FacetValueParams & RecordIdentifierMeta
+export type Facet = FacetParams & RecordIdentifierMeta & { facetGroupId: EntryHashB64 }
+export type FacetValue = FacetValueParams & RecordIdentifierMeta & { facetId: EntryHashB64 }
 
 // mutation API output structs
 

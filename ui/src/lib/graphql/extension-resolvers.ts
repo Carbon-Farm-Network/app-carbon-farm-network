@@ -13,9 +13,9 @@ import type { DNAIdMappings } from '@valueflows/vf-graphql-holochain'
 
 import type { Organization, ResourceSpecification } from '@valueflows/vf-graphql'
 import type {
-  FacetGroup, Facet, FacetValue,
-  FacetGroupParams, FacetParams, FacetValueParams,
-  FacetGroupResponse, FacetResponse, FacetValueResponse,
+  FacetGroupParams, FacetGroup, FacetGroupResponse,
+  FacetParams, FacetParamsRaw, Facet, FacetResponse,
+  FacetValueParams, FacetValueParamsRaw, FacetValue, FacetValueResponse,
   RawRecordIdentifierMeta,
 } from './extension-schemas'
 
@@ -44,65 +44,42 @@ function encodeIdentifiers<T>(data: RawRecordIdentifierMeta & T): T {
 const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string) =>
 {
   // zome write API
-  const runCreateGroup = mapZomeFn<FacetGroupParams, FacetGroupResponse>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_group')
-  const runCreateOption = mapZomeFn<FacetParams, FacetResponse>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_option')
-  const runCreateValue = mapZomeFn<FacetValueParams, FacetValueResponse>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_value')
+  const runCreateGroup = mapZomeFn<{ facet_group: FacetGroupParams }, FacetGroup>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_group')
+  const runCreateOption = mapZomeFn<{ facet_option: FacetParamsRaw }, Facet>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_option')
+  const runCreateValue = mapZomeFn<{ facet_value: FacetValueParams }, FacetValue>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_value')
 
   // :TODO: deletions API
 
   // zome read API
   // const readFacetGroups = mapZomeFn<Record<string, never>, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
   const readFacetGroups = mapZomeFn<never, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
-  const readFacets = mapZomeFn<ByEntryHash, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
-  const readFacetValues = mapZomeFn<ByEntryHash | ByIdentifier, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
+  const readFacets = mapZomeFn<{ facet_group_hash: EntryHash }, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
+  const readFacetValues = mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
 
   // declare and return all resolver callbacks for GraphQL engine
   return {
     Mutation: {
-      putFacetGroup: async function (_root: any, args: {facetGroup: FacetGroupParams}): Promise<FacetGroupResponse> {
-        console.log(args)
-        const res = await runCreateGroup(args.facetGroup)
-        console.log(res)
-        // @ts-ignore
-        return {facetGroup: encodeIdentifiers<FacetGroup>(res)}
+      putFacetGroup: async function (_root: any, args: { facetGroup: FacetGroupParams }): Promise<FacetGroupResponse> {
+console.info('NEW GROUP', args.facetGroup)
+        const res = await runCreateGroup({ facet_group: args.facetGroup })
+console.info(res)
+        //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
+        return res && { facetGroup: encodeIdentifiers<FacetGroup>(res) } as FacetGroupResponse
       },
-      putFacet: async function (_root: any, args: {facet: FacetParams}): Promise<FacetResponse> {
-        console.log('starting put facet')
-        console.log(args.facet.facetGroupId)
-        console.log(args)
-        console.log({
-          name: args.facet.name,
-          note: args.facet.note,
-          facetGroupId: decodeHashFromBase64(args.facet.facetGroupId),
+      putFacet: async function (_root: any, args: { facet: FacetParams }): Promise<FacetResponse> {
+        const res = await runCreateOption({
+          facet_option: {
+            name: args.facet.name,
+            note: args.facet.note,
+            facet_group_id: decodeHashFromBase64(args.facet.facetGroupId),
+          }
         })
-        console.log(decodeHashFromBase64(args.facet.facetGroupId))
-        try {
-          const res = await runCreateOption({
-            ...args.facet,
-            // facetGroupId: decodeHashFromBase64(args.facet.facetGroupId),
-          })
 
-          console.log("2")
-          console.log(res)
-          return {facet: encodeIdentifiers<Facet>(res)}
-
-          // res.facetOption = {
-            // @ts-ignore
-            // ...encodeIdentifiers<Facet>(res),
-            // @ts-ignore
-            // facetGroupId: encodeHashToBase64(res.facetOption.facetGroupId),
-          // }
-          // return res
-        } catch (e) {
-          console.log("error")
-          console.log(e)
-          console.log(e.data.data)
-        }
-
-        // return {facet: {id: "error", name: "error", note: "error", facetGroupId: "error"}}
+        //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
+        return res && { facet: encodeIdentifiers<Facet>(res) } as FacetResponse
       },
 
-      putFacetValue: async function (_root: any, args: any): Promise<String> {
+      putFacetValue: async function (_root: any, args: { facetValue: FacetValueParams }): Promise<FacetValueResponse> {
         console.log(args)
         return "hi"
       },
@@ -129,41 +106,40 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
     Query: {
       facetGroups: async (args: never): Promise<FacetGroup[]> => {
         const res = await readFacetGroups(args)
-        // :TODO: presuming you are returning from the zome API as a flat array here, but adjust accordingly
-        // @ts-ignore
         console.log(res)
-        // return res//.map(encodeIdentifiers)
-        let output = res.map((g) => {
-          return encodeIdentifiers<FacetGroup>(g)
-        })
-        return output
-        // return {facetGroup: encodeIdentifiers<FacetGroup>(res)}
+        // @ts-ignore
+        return res.map(encodeIdentifiers)
       },
     },
     FacetGroup: {
       facets: async function (record: FacetGroup): Promise<Facet[]> {
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
-        const res = await readFacets({ group_hash: decodeHashFromBase64(record.id) })
+        const res = await readFacets({ facet_group_hash: decodeHashFromBase64(record.id) })
+        console.log(res)
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
     },
     Facet: {
+      /*
       group: async function (record: Facet): Promise<FacetGroup> {
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
         const res = await readFacetGroups({ has_option_hash: decodeHashFromBase64(record.id) })
         // @ts-ignore
         return encodeIdentifiers<FacetGroup>(res.pop() as FacetGroup)
       },
+      */
       values: async function (record: Facet): Promise<FacetValue[]> {
-        const res = await readFacetValues({ identifier: record.id })
+        const res = await readFacetValues({ facet_option_hash: decodeHashFromBase64(record.id) })
+        console.log(res)
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
     },
+    /*
     FacetValue: {
       facet: async function (record: FacetValue): Promise<Facet> {
-        // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
+        // :TODO: this kind of reverse filtering is not yet implemented in the API?
         const res = await readFacets({ has_value_hash: decodeHashFromBase64(record.id) })
         // @ts-ignore
         return encodeIdentifiers<FacetGroup>(res.pop() as Facet)
@@ -184,6 +160,7 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
         return res.map(encodeIdentifiers)
       },
     }
+    */
   }
 }
 
