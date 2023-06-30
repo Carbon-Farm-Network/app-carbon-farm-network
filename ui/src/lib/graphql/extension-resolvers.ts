@@ -53,8 +53,8 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   // zome read API
   // const readFacetGroups = mapZomeFn<Record<string, never>, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
   const readFacetGroups = mapZomeFn<never, FacetGroup[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups')
-  const readFacets = mapZomeFn<EntryHash, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
-  const readFacetValues = mapZomeFn<EntryHash, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
+  const readFacets = mapZomeFn<{ facet_group_hash: EntryHash }, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
+  const readFacetValues = mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
 
   // declare and return all resolver callbacks for GraphQL engine
   return {
