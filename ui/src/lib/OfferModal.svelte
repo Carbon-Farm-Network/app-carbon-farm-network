@@ -23,7 +23,7 @@
   export let date = new Date();
   export let currentProposal: any;
   export let currentIntent: IntentUpdateParams;
-  export let currentReciprocalIntent: IntentCreateParams;
+  export let currentReciprocalIntent: IntentUpdateParams;
   export let currentProposedIntent: any;
   export let editing: boolean;
 
@@ -124,6 +124,7 @@
         outputOf: currentIntent.outputOf || undefined,
         provider: currentIntent.provider || undefined,
         receiver: currentIntent.receiver || undefined,
+        note: currentIntent.note || undefined,
         resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
         availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
         effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
@@ -135,10 +136,10 @@
 
       // create reciprocal intent
       const recipIntent = {
-        provider: currentIntent.provider,
+        receiver: currentIntent.provider,
         action: "transfer",
         resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
-        resourceQuantity: currentReciprocalIntent.resourceQuantity,
+        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
       }
       console.info(recipIntent)
       const res3 = await addIntent({ variables: { intent: recipIntent } })
@@ -154,7 +155,6 @@
       console.log(res4)
 
       reciprocal = true
-      publishedIn = res1ID
       publishes = res3ID
 
       const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
@@ -186,7 +186,7 @@
       inputOf: currentIntent.inputOf || undefined,
       outputOf: currentIntent.outputOf || undefined,
       provider: currentIntent.provider || undefined,
-      receiver: currentIntent.receiver || undefined,
+      note: currentIntent.note || undefined,
       resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
       availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
       effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
@@ -194,6 +194,17 @@
     console.log(intent)
     const res = await updateIntent({ variables: { intent: intent } })
     console.log(res)
+
+    let intent2 = {
+      receiver: currentIntent.provider,
+        revisionId: currentReciprocalIntent.revisionId,
+        action: currentReciprocalIntent.action as string,
+        resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
+        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
+    }
+    console.log(intent2)
+    const res2 = await updateIntent({ variables: { intent: intent2 } })
+    console.log(res2)
   }
 
 
@@ -387,8 +398,7 @@
                 <label
                   for="name"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                  >Price</label
-                  >
+                  >Price</label>
                 <div class="relative mt-2 rounded-md shadow-sm">
                   {#if currentReciprocalIntent && currentReciprocalIntent.resourceQuantity}
                   <input
@@ -432,7 +442,6 @@
                   >Currency</label
                 >
                 <!-- USD -->
-                <!-- {JSON.stringify(currentReciprocalIntent.resourceConformsTo != "undefined")} -->
                 {#if currentReciprocalIntent && currentReciprocalIntent.resourceConformsTo}
                 <select
                   id="unit"
@@ -443,7 +452,6 @@
 
                   {#if resourceSpecifications}
                   {#each resourceSpecifications as r}
-                    {JSON.stringify(r)}
                     {#if r.name === "USD"}
                       <option selected value={r.id}>USD</option>
                     {/if}
@@ -551,7 +559,7 @@
                     rows="3"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={currentIntent.note}
-                    />
+                  />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field

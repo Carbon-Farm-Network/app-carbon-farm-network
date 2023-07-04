@@ -32,12 +32,13 @@
   // Valueflows data state
   let currentProposal: any = {};
   let currentIntent: IntentUpdateParams = makeEmptyIntent()
-  let currentReciprocalIntent: IntentCreateParams = {
-    action: "transfer",
-    resourceQuantity:  { hasNumericalValue: 0 },
-    resourceConformsTo: "USD",  // set upon assigning `usdRSpecId`
-  };
-  let _defaultReciprocalIntent: IntentCreateParams = {
+  let currentReciprocalIntent: IntentUpdateParams = makeEmptyIntent()
+  // let currentReciprocalIntent: IntentCreateParams = {
+  //   action: "transfer",
+  //   resourceQuantity:  { hasNumericalValue: 0 },
+  //   resourceConformsTo: "USD",  // set upon assigning `usdRSpecId`
+  // };
+  let _defaultReciprocalIntent: IntentUpdateParams = {
     ...currentReciprocalIntent,
     resourceQuantity: Object.assign({}, currentReciprocalIntent.resourceQuantity),
   }
@@ -123,12 +124,12 @@
     }
   }
 
-  // helper to assign `Unit` identifiers to `Intent` data after binding to pre-created `Unit` records from GraphQL
-  function assignUSDId(intent: IntentCreateParams) {
-    if (intent.resourceConformsTo === "USD") {
-      intent.resourceConformsTo = usdRSpecId
-    }
-  }
+  // // helper to assign `Unit` identifiers to `Intent` data after binding to pre-created `Unit` records from GraphQL
+  // function assignUSDId(intent: IntentUpdateParams) {
+  //   if (intent.resourceConformsTo === "USD") {
+  //     intent.resourceConformsTo = usdRSpecId
+  //   }
+  // }
 
   async function fetchResourceSpecifications() {
     resourceSpecificationsQuery.getCurrentResult()
@@ -141,8 +142,10 @@
           usdRSpecId = a.id
 
           // override / set USD reference in Intent data payloads
-          assignUSDId(_defaultReciprocalIntent)
-          assignUSDId(currentReciprocalIntent)
+          // assignUSDId(_defaultReciprocalIntent)
+          // assignUSDId(currentReciprocalIntent)
+          _defaultReciprocalIntent.resourceConformsTo = usdRSpecId;
+          currentReciprocalIntent.resourceConformsTo = usdRSpecId;
         }
       })
     })
@@ -218,6 +221,7 @@
     getOffers.refetch().then((r) => {
       if (r.data?.proposals.edges.length > 0) {
         offersList = flattenRelayConnection(r.data?.proposals)
+        console.log(offersList)
       }
     })
   }
@@ -342,8 +346,10 @@
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{resourceQuantity.hasNumericalValue}
-                  {proposedReciprocalIntent?.publishes.resourceConformsTo?.name} / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
                   {proposedReciprocalIntent?.publishes.resourceQuantity?.hasUnit?.id || "USD"}
+                
+                  / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
+                  {availableQuantity.hasUnit?.label}
                   <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
                   </td
                 >
