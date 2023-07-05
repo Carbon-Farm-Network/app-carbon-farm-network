@@ -15,14 +15,14 @@ interface FacetParamsBase {
   note: string
 }
 export type FacetParams = FacetParamsBase & { facetGroupId: EntryHashB64 }
-export type FacetParamsRaw = FacetParamsBase & { facet_group_id: EntryHash }
+export type FacetParamsRaw = FacetParamsBase & { facetGroupId: EntryHash }
 
 export interface FacetValueParamsBase {
   value: string // must match a stored `Facet.option`
   note: string
 }
 export type FacetValueParams = FacetValueParamsBase & { facetId: EntryHashB64 }
-export type FacetValueParamsRaw = FacetValueParamsBase & { facet_id: EntryHash }
+export type FacetValueParamsRaw = FacetValueParamsBase & { facetId: EntryHash }
 
 // zome API record types
 

@@ -80,15 +80,21 @@ console.log(res)
       },
 
       putFacetValue: async function (_root: any, args: { facetValue: FacetValueParams }): Promise<FacetValueResponse> {
-console.info('NEW VALUE', args.facetValue)
-        const res = await runCreateValue({ facet_value: {
+        console.info('NEW VALUE', args.facetValue)
+        console.log({
           value: args.facetValue.value,
           note: args.facetValue.note,
-          facet_id: decodeHashFromBase64(args.facetValue.facetId),
-        } })
-console.log(encodeIdentifiers<FacetValue>(res))
+          facetId: decodeHashFromBase64(args.facetValue.facetId),
+        })
+        const res = await runCreateValue({
+          value: args.facetValue.value,
+          note: args.facetValue.note,
+          facetId: decodeHashFromBase64(args.facetValue.facetId),
+        })
+
+        console.log(encodeIdentifiers<FacetValue>(res))
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
-        return res && { facet: encodeIdentifiers<FacetValue>(res) } as FacetValueResponse
+        return res && { facetValue: encodeIdentifiers<FacetValue>(res) } as FacetValueResponse
       },
 
       // :TODO: delete APIs & resolvers

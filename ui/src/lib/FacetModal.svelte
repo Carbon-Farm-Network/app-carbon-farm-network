@@ -25,7 +25,7 @@
   `
   const CREATE_VALUE = gql`
     mutation($facetValue: FacetValueParams!){
-      putFacet(facetValue: $facetValue) {
+      putFacetValue(facetValue: $facetValue) {
         facetValue {
           value
           note
@@ -62,7 +62,7 @@
           facetValue: {
             value: "value 1",
             note: "note",
-            facetId: "facetId",
+            facetId,
           }
         }
       })
