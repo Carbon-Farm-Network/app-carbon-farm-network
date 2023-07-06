@@ -5,6 +5,7 @@
   export let panelInfo: any | undefined
   let dropdownOpen = false
   import offers from '$lib/data/offers.json'
+  import agent_facet_values from '$lib/data/agent_facet_values.json'
 </script>
 
 <!-- Background overlay, show/hide based on slide-over state. -->
@@ -176,23 +177,23 @@
         </div>
         <div class="px-4 pt-5 pb-5 sm:px-0 sm:pt-0">
           <div class="ml-8 my-4 mr-12">
-            <ul class="divide-y divide-gray-100">
-              <li class="py-4">
-                <div class="flex items-center gap-x-3">
-                  <h3
-                    class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900"
-                  >
-                    Certified Climate Beneficial
-                  </h3>
-                  <p
-                    class="flex-none">yes</p
-                  >
+            <ul role="list" class="">
+              {#each agent_facet_values.facet_values as {name, facet}}
+              <li class="flex items-center justify-between gap-x-6 py-1">
+                <div class="min-w-0">
+                  <div class="flex items-start gap-x-3">
+                    <p class="text-sm font-semibold leading-6 text-gray-900">{facet.name}</p>
+                  </div>
                 </div>
-              </li>
+                <div class="flex flex-none items-center gap-x-4">
+                  <p class="text-sm leading-6 text-gray-900">{name}</p>
+                </div>
+             </li>
+             {/each}
             </ul>
           </div>
           {#if panelInfo.offers}
-          <p class="ml-8">Offering:</p>
+          <p class="ml-8 mt-12">Offering:</p>
           <div class="mx-8">
             <ul role="list" class="divide-y divide-gray-200">
               <!-- Remember to replace with something coming from panel info -->
@@ -200,7 +201,7 @@
               {@const mainIntent = offer.proposed_intents.find(it => !it.reciprocal)}
               {@const reciprocalIntent = offer.proposed_intents.find(it => it.reciprocal)}
               {@const availableOn = dayjs(offer.has_beginning).format("YYYY MMM DD")}
-                <li class="flex items-center justify-between gap-x-6 py-5">
+                <li class="flex items-center justify-between gap-x-6 py-2">
                   <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
                       <p class="text-sm font-semibold leading-6 text-gray-900">{mainIntent.intent.resource_conforms_to.name}</p>

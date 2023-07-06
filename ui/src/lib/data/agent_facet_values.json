@@ -1,0 +1,19 @@
+{
+  "facet_values": [{
+    "id": "facet_value_id",
+    "name": "pending",
+    "order": 1,
+    "facet": {
+      "id": "facet_id",
+      "name": "Climate beneficial certified"
+    }
+  },{
+    "id": "facet_value_id_2",
+    "name": "test face value",
+    "order": 2,
+    "facet": {
+      "id": "facet_id_2",
+      "name": "Test facet"
+    }
+  }]
+}
