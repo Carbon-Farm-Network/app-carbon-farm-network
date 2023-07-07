@@ -26,6 +26,8 @@
   export let currentReciprocalIntent: IntentUpdateParams;
   export let currentProposedIntent: any;
   export let editing: boolean;
+  
+  let submitting: boolean = false;
 
   const dispatch = createEventDispatcher();
 
@@ -99,6 +101,7 @@
   }
 
   async function handleSubmit() {
+    submitting = true;
     console.log(currentProposal)
     console.log(currentIntent)
     console.log(currentReciprocalIntent)
@@ -162,6 +165,7 @@
 
 
       dispatch("submit");
+      submitting = false;
       open = false;
       // console.log(res1)
       // console.log(res2)
@@ -173,6 +177,7 @@
   }
 
   async function handleUpdate() {
+    submitting = true;
     // console.log(currentProposal)
     let proposal = currentProposal
     updateProposal({ variables: { proposal: proposal } })
@@ -205,6 +210,8 @@
     console.log(intent2)
     const res2 = await updateIntent({ variables: { intent: intent2 } })
     console.log(res2)
+    submitting = false;
+    open = false;
   }
 
 
@@ -218,8 +225,8 @@
     // handleSubmit()
   })
 
-  $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent
-  $: isOfferValid = true && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
+  $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting
+  $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
