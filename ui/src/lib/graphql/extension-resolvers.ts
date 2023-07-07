@@ -68,12 +68,19 @@ console.log(res)
       },
 
       putFacet: async function (_root: any, args: { facet: FacetParams }): Promise<FacetResponse> {
-console.info('NEW FACET', args.facet)
-        const res = await runCreateOption({
-          name: args.facet.name,
-          note: args.facet.note,
-          facet_group_id: decodeHashFromBase64(args.facet.facetGroupId),
-        })
+      console.info('NEW FACET', args.facet)
+      console.log({
+        name: args.facet.name,
+        note: args.facet.note,
+        facet_group_id: decodeHashFromBase64(args.facet.facetGroupId),
+      })
+    
+      const res = await runCreateOption({
+        name: args.facet.name,
+        note: args.facet.note,
+        facet_group_id: decodeHashFromBase64(args.facet.facetGroupId),
+      })
+
 console.log(res)
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
         return res && { facet: encodeIdentifiers<Facet>(res) } as FacetResponse
@@ -92,9 +99,9 @@ console.log(res)
           facetId: decodeHashFromBase64(args.facetValue.facetId),
         })
 
-        console.log(encodeIdentifiers<FacetValue>(res))
+        // console.log(encodeIdentifiers<FacetValue>(res))
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
-        return res && { facetValue: encodeIdentifiers<FacetValue>(res) } as FacetValueResponse
+        // return res && { facetValue: encodeIdentifiers<FacetValue>(res) } as FacetValueResponse
       },
 
       // :TODO: delete APIs & resolvers
