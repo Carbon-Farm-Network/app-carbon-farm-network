@@ -9,9 +9,12 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, MutationProposeIntentArgs, Scalars } from '@valueflows/vf-graphql'
+  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
+  import ResourceSpecificationModal from './ResourceSpecificationModal.svelte'
+
+  // public CustomElement attributes
   export let open = false;
   export let name = "";
   export let resourceSpecifications: any[];
@@ -19,12 +22,16 @@
   export let agents: any[];
   export let date = new Date();
   export let currentProposal: any;
-  export let currentIntent: IntentCreateParams;
-  export let currentReciprocalIntent: IntentCreateParams;
+  export let currentIntent: IntentUpdateParams;
+  export let currentReciprocalIntent: IntentUpdateParams;
   export let currentProposedIntent: any;
   export let editing: boolean;
+  
+  let submitting: boolean = false;
 
   const dispatch = createEventDispatcher();
+
+  // GraphQL query bindings
 
   const ADD_PROPOSAL = gql`
     ${PROPOSAL_CORE_FIELDS},
@@ -87,7 +94,14 @@
   let updateIntent: any= mutation(UPDATE_INTENT)
   let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
 
+  // helper to workaround direct bind:value syntax coercing things to strings
+  function parseFormValues(val: IMeasure) {
+    if (val.hasNumericalValue || val.hasNumericalValue === "0") val.hasNumericalValue = parseFloat(val.hasNumericalValue)
+    return val
+  }
+
   async function handleSubmit() {
+    submitting = true;
     console.log(currentProposal)
     console.log(currentIntent)
     console.log(currentReciprocalIntent)
@@ -102,58 +116,56 @@
       }
       const res1 = await addProposal({ variables: { proposal } })
       const res1ID: String = String(res1.data.createProposal.proposal.id)
-      
+
       // create intent
-      let intent: IntentCreateParams = {
-        provider: currentIntent.provider,
-        action: "transfer",
-        resourceConformsTo: currentIntent.resourceConformsTo,
-        availableQuantity: {
-          hasNumericalValue: parseFloat(currentIntent.availableQuantity?.hasNumericalValue),
-          hasUnit: currentIntent.availableQuantity?.hasUnit,
-        },
-        resourceQuantity: {
-          hasNumericalValue: parseFloat(currentIntent.resourceQuantity?.hasNumericalValue),
-          // available quantity and resource quantity should have the same unit
-          hasUnit: currentIntent.availableQuantity?.hasUnit,
-        },
-        note: currentIntent.note
+      const intent: IntentCreateParams = {
+        action: currentIntent.action as string,
+        resourceConformsTo: currentIntent.resourceConformsTo || undefined,
+        resourceInventoriedAs: currentIntent.resourceInventoriedAs || undefined,
+        inScopeOf: currentIntent.inScopeOf || undefined,
+        inputOf: currentIntent.inputOf || undefined,
+        outputOf: currentIntent.outputOf || undefined,
+        provider: currentIntent.provider || undefined,
+        receiver: currentIntent.receiver || undefined,
+        note: currentIntent.note || undefined,
+        resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
+        availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
+        effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
       }
+      console.info(intent)
       const res2 = await addIntent({ variables: { intent } });
       const res2ID = res2.data.createIntent.intent.id
       console.log(res2);
 
       // create reciprocal intent
-      let each = units.find(u => u.label === "one")
-      intent = {
-        provider: currentIntent.provider,
+      const recipIntent = {
+        receiver: currentIntent.provider,
         action: "transfer",
         resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
-        resourceQuantity: {
-          hasNumericalValue: parseFloat(currentReciprocalIntent.resourceQuantity?.hasNumericalValue),
-          hasUnit: each.id,
-        }
+        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
       }
-      const res3 = await addIntent({ variables: { intent } })
+      console.info(recipIntent)
+      const res3 = await addIntent({ variables: { intent: recipIntent } })
       const res3ID: String = String(res3.data.createIntent.intent.id)
-      
-      
+      console.log(res3);
+
+
       let reciprocal: Boolean = false
       let publishedIn = res1ID
       let publishes = res2ID
-      
+
       const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
       console.log(res4)
 
       reciprocal = true
-      publishedIn = res1ID
       publishes = res3ID
-      
-      const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
-      console.log(res4)
 
-      
+      const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+      console.log(res5)
+
+
       dispatch("submit");
+      submitting = false;
       open = false;
       // console.log(res1)
       // console.log(res2)
@@ -165,11 +177,41 @@
   }
 
   async function handleUpdate() {
-    console.log(currentProposal)
+    submitting = true;
+    // console.log(currentProposal)
     let proposal = currentProposal
     updateProposal({ variables: { proposal: proposal } })
-    let intent = currentIntent
-    updateIntent({ variables: { intent: intent } })
+    // let intent = currentIntent
+    let intent = {
+      revisionId: currentIntent.revisionId,
+      action: currentIntent.action as string,
+      resourceConformsTo: currentIntent.resourceConformsTo || undefined,
+      resourceInventoriedAs: currentIntent.resourceInventoriedAs || undefined,
+      inScopeOf: currentIntent.inScopeOf || undefined,
+      inputOf: currentIntent.inputOf || undefined,
+      outputOf: currentIntent.outputOf || undefined,
+      provider: currentIntent.provider || undefined,
+      note: currentIntent.note || undefined,
+      resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
+      availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
+      effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
+    }
+    console.log(intent)
+    const res = await updateIntent({ variables: { intent: intent } })
+    console.log(res)
+
+    let intent2 = {
+      receiver: currentIntent.provider,
+        revisionId: currentReciprocalIntent.revisionId,
+        action: currentReciprocalIntent.action as string,
+        resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
+        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
+    }
+    console.log(intent2)
+    const res2 = await updateIntent({ variables: { intent: intent2 } })
+    console.log(res2)
+    submitting = false;
+    open = false;
   }
 
 
@@ -178,13 +220,15 @@
     // console.log(x)
     if (browser) {
       console.log('hello')
+      console.log(currentIntent)
     }
     // handleSubmit()
   })
 
-  $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent
-  $: isOfferValid = true && currentProposal.hasBeginning && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
+  $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting
+  $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
 </script>
+
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -226,13 +270,13 @@
             <div class="mt-4 text-left">
               <div>
                 <label
-                  for="defaultUnitOfResource"
+                  for="provider"
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Provider</label
                 >
                 <select
-                  id="defaultUnitOfResource"
-                  name="defaultUnitOfResource"
+                  id="provider"
+                  name="provider"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   bind:value={currentIntent.provider}
                 >
@@ -263,13 +307,12 @@
                   on:change={(e) => {
                     let id = e.target.value
                     let selectedResource = resourceSpecifications.find((rs) => rs.id === id)
-                    console.log(selectedResource)
-                    console.log("hi")
-                    if (currentIntent.availableQuantity) {currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id}
-                    // currentIntent.availableQuantity.hasUnit = d.target.value
-                    // if (currentIntent.availableQuantity) {
-                    //   currentIntent.availableQuantity.hasUnit = d.target.value.defaultUnitOfResource.id
-                    // }
+                    if (currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit) {
+                      console.log(currentIntent.availableQuantity.hasUnit)
+                      currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id
+                    } else {
+                      console.log(currentIntent.availableQuantity)
+                    }
                   }}
                 >
                 {#each resourceSpecifications as rs}
@@ -333,7 +376,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Unit</label
                 >
-                {#if currentIntent.availableQuantity}
+                {#if currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit}
                 <select
                   id="unit"
                   name="unit"
@@ -362,10 +405,9 @@
                 <label
                   for="name"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                  >Price</label
-                  >
+                  >Price</label>
                 <div class="relative mt-2 rounded-md shadow-sm">
-                  {#if currentReciprocalIntent.resourceQuantity}
+                  {#if currentReciprocalIntent && currentReciprocalIntent.resourceQuantity}
                   <input
                     type="text"
                     name="name"
@@ -407,8 +449,7 @@
                   >Currency</label
                 >
                 <!-- USD -->
-                <!-- {JSON.stringify(currentReciprocalIntent.resourceConformsTo != "undefined")} -->
-                {#if currentReciprocalIntent.resourceConformsTo != "undefined"}
+                {#if currentReciprocalIntent && currentReciprocalIntent.resourceConformsTo}
                 <select
                   id="unit"
                   name="unit"
@@ -418,7 +459,6 @@
 
                   {#if resourceSpecifications}
                   {#each resourceSpecifications as r}
-                    {JSON.stringify(r)}
                     {#if r.name === "USD"}
                       <option selected value={r.id}>USD</option>
                     {/if}
@@ -526,7 +566,7 @@
                     rows="3"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={currentIntent.note}
-                    />
+                  />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field

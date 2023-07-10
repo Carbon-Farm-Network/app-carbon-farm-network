@@ -286,6 +286,19 @@
                   id="classifiedAs"
                   name="classifiedAs"
                   bind:value={currentAgent.role}
+                  on:change={e => {
+                    const input = e.target;
+                    if (input instanceof HTMLSelectElement) {
+                      let role = input.value;
+                      if (role == "Farmer") {
+                        currentAgent.imageUrl = "farm.svg"
+                      } else if (role == "Mill") {
+                        currentAgent.imageUrl = "mill.svg"
+                      } else if (role == "Designer") {
+                        currentAgent.imageUrl = "knitting.svg"
+                      }
+                    }
+                  }}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                   {#each roles as role (role)}
@@ -387,12 +400,6 @@
                     autocomplete="longitude"
                     placeholder="https://www.example.com/logo.png"
                     bind:value={currentAgent.imageUrl}
-                    on:input={e => {
-                      const input = e.target;
-                      if (input instanceof HTMLInputElement) {
-                        logo = input.value;
-                      }
-                    }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>

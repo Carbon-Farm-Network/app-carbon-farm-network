@@ -1,6 +1,6 @@
 <script lang="ts">
   import OfferModal from '$lib/OfferModal.svelte'
-  import offers from '$lib/data/offers.json'  
+  import offers from '$lib/data/offers.json'
   import { DateInput } from 'date-picker-svelte'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
@@ -11,22 +11,40 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Unit, AgentConnection, Agent, ProposalCreateParams, IntentCreateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
+  import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
+
+  // externally provided data
   let units: Unit[];
   let resourceSpecifications: ResourceSpecification[];
-  let agents: any[];
-  let currentProposal: any = {};
-  let currentIntent: any = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-  let currentReciprocalIntent: IntentCreateParams = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: ""};
-  let currentProposedIntent: any = {};
-  let offersList: any = [];
+  let agents: Agent[];
+  let offersList: Proposal[] = [];
+
+  // component UI state
   let modalOpen = false
   let editing = false;
-  let usdId: string;
+  let usdRSpecId: string | undefined;
   let name = ''
+
+  // Valueflows data state
+  let currentProposal: any = {};
+  let currentIntent: IntentUpdateParams = makeEmptyIntent()
+  let currentReciprocalIntent: IntentUpdateParams = makeEmptyIntent()
+  // let currentReciprocalIntent: IntentCreateParams = {
+  //   action: "transfer",
+  //   resourceQuantity:  { hasNumericalValue: 0 },
+  //   resourceConformsTo: "USD",  // set upon assigning `usdRSpecId`
+  // };
+  let _defaultReciprocalIntent: IntentUpdateParams = {
+    ...currentReciprocalIntent,
+    resourceQuantity: Object.assign({}, currentReciprocalIntent.resourceQuantity),
+  }
+  let currentProposedIntent: any = {};
+
+  // GraphQL bindings
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -90,29 +108,49 @@
 
   let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
 
-  // map component state
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  function makeEmptyIntent(): IntentUpdateParams {
+    return {
+      revisionId: '',
+      action: 'transfer',
+      availableQuantity: { hasNumericalValue: 0, hasUnit: "null" },
+      effortQuantity: { hasNumericalValue: 0 },
+      resourceQuantity: { hasNumericalValue: 0 },
+      provider: "",
+      receiver: "",
+      resourceConformsTo: "",
+      note: "",
+    }
+  }
+
+  // // helper to assign `Unit` identifiers to `Intent` data after binding to pre-created `Unit` records from GraphQL
+  // function assignUSDId(intent: IntentUpdateParams) {
+  //   if (intent.resourceConformsTo === "USD") {
+  //     intent.resourceConformsTo = usdRSpecId
+  //   }
+  // }
 
   async function fetchResourceSpecifications() {
     resourceSpecificationsQuery.getCurrentResult()
-    // setTimeout(function(){
+
     resourceSpecificationsQuery.refetch().then((r) => {
-      resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+      resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications)
+      resourceSpecifications.forEach((a) => {
+        // assign USD `Unit` identifiers when loaded
         if (a.name === "USD") {
-          usdId = a.id
-        }
-        return {
-          ...a,
+          usdRSpecId = a.id
+
+          // override / set USD reference in Intent data payloads
+          // assignUSDId(_defaultReciprocalIntent)
+          // assignUSDId(currentReciprocalIntent)
+          _defaultReciprocalIntent.resourceConformsTo = usdRSpecId;
+          currentReciprocalIntent.resourceConformsTo = usdRSpecId;
         }
       })
-      console.log(resourceSpecifications)
     })
-
-    if (currentReciprocalIntent.resourceQuantity) {
-      let usd = resourceSpecifications?.find((r) => r.id === "usd");
-      currentReciprocalIntent.resourceConformsTo = usd?.id;
-    }
   }
+
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
@@ -173,12 +211,7 @@
     getUnits.getCurrentResult()
     getUnits.refetch().then((r) => {
       if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units).map((a) => {
-          return {
-            ...a,
-          }
-        })
-        // console.log(units)
+        units = flattenRelayConnection(r.data?.units)
       }
     })
   }
@@ -187,11 +220,7 @@
     getOffers.getCurrentResult()
     getOffers.refetch().then((r) => {
       if (r.data?.proposals.edges.length > 0) {
-        offersList = flattenRelayConnection(r.data?.proposals).map((a) => {
-          return {
-            ...a,
-          }
-        })
+        offersList = flattenRelayConnection(r.data?.proposals)
         console.log(offersList)
       }
     })
@@ -207,7 +236,7 @@
       //   if (!units) {
       //     fetchUnits()
       //   } else {
-          
+
       //   }
       // }, 10000)
       // console.log(offers)
@@ -233,13 +262,11 @@
         type="button"
         on:click={() => {
           currentProposal = {hasBeginning: new Date()};
-          currentIntent = {action: "", availableQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}};
-          currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: 0, hasUnit: ""}, resourceConformsTo: usdId};
-          currentProposedIntent = {};
+          currentIntent = makeEmptyIntent()
+          currentReciprocalIntent = _defaultReciprocalIntent
+          currentProposedIntent = {}
           modalOpen = true
           editing = false
-          console.log('usd')
-          console.log(usdId)
         }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an offer</button
@@ -294,30 +321,37 @@
             <!-- {#each offers as { proposed_intents }, index} -->
             {#if offersList}
             {#each offersList as p, index}
-              {@const mainIntent = p.publishes.find(({ reciprocal }) => !reciprocal)}
+              {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
               {#if mainIntent}
-              {@const reciprocalIntent = p.publishes.find(
+              {@const proposedReciprocalIntent = p.publishes?.find(
                 ({ reciprocal }) => reciprocal
               )}
               {@const availableQuantity = mainIntent.publishes.availableQuantity}
-              {@const resourceQuantity = reciprocalIntent.publishes.resourceQuantity}
-              {#if mainIntent && reciprocalIntent && availableQuantity && resourceQuantity}
+              {@const resourceQuantity = (proposedReciprocalIntent && proposedReciprocalIntent.publishes) ? proposedReciprocalIntent.publishes.resourceQuantity : {
+                ...currentReciprocalIntent.resourceQuantity,
+                hasUnit: null,  // previously 'each' in older VF (< 0.6) spec
+              }}
+              {#if mainIntent && availableQuantity && resourceQuantity}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td
                   class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                  >{mainIntent.publishes.provider.name}</td
+                  >{mainIntent.publishes.provider?.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{mainIntent.publishes.resourceConformsTo.name}</td
+                  >{mainIntent.publishes.resourceConformsTo?.name}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{availableQuantity.hasNumericalValue}
-                  {availableQuantity.hasUnit.label}</td
+                  {availableQuantity.hasUnit?.label}</td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{resourceQuantity.hasNumericalValue}
-                  {reciprocalIntent.publishes.resourceConformsTo.name} / {mainIntent.publishes.resourceQuantity.hasNumericalValue}
-                  {resourceQuantity.hasUnit.label}</td
+                  {proposedReciprocalIntent?.publishes.resourceQuantity?.hasUnit?.id || "USD"}
+                
+                  / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
+                  {availableQuantity.hasUnit?.label}
+                  <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
+                  </td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <input
@@ -356,7 +390,7 @@
                     aria-describedby="candidates-description"
                     name="candidates"
                     type="checkbox"
-                    checked={!p.hasEnd || Date.now() < new Date(p.hasEnd)}
+                    checked={!p.hasEnd || (new Date() < p.hasEnd)}
                     class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
                 </td>
@@ -366,30 +400,63 @@
                 <button type="button" on:click={() => {
                   currentProposal = {
                     revisionId: p.revisionId,
-                    hasBeginning: new Date(p.hasBeginning),
+                    hasBeginning: p.hasBeginning,
                     note: p.note
                   };
-                  // console.log('test')
-                  // console.log(mainIntent.publishes.resourceConformsTo)
-                  currentIntent = {        
-                    revisionId: p.revisionId,
-                    provider: mainIntent.publishes.provider.id,
-                    action: "transfer",
-                    resourceConformsTo: mainIntent.publishes.resourceConformsTo.id,
-                    availableQuantity: {
-                      hasNumericalValue: availableQuantity.hasNumericalValue,
-                      hasUnit: availableQuantity.hasUnit.id,
-                    },
-                    resourceQuantity: {
-                      hasNumericalValue: resourceQuantity.hasNumericalValue,
-                      hasUnit: resourceQuantity.hasUnit.id,
-                    },
-                    note: mainIntent.publishes.note
-                  };
-                  console.log(reciprocalIntent.publishes.resourceQuantity.hasNumericalValue)
-                  // currentReciprocalIntent = reciprocalIntent.publishes
-                  currentReciprocalIntent = {action: "", resourceQuantity: {hasNumericalValue: reciprocalIntent.publishes.resourceQuantity.hasNumericalValue, hasUnit: reciprocalIntent.publishes.hasUnit}, resourceConformsTo: reciprocalIntent.publishes.resourceConformsTo.id};
-                  currentProposedIntent = {};
+                  const mi = mainIntent.publishes
+                  currentIntent = {
+                    ...mi,
+                    action: mi.action?.id,
+                    atLocation: mi.atLocation?.id || currentReciprocalIntent.atLocation,
+                    availableQuantity: mi.availableQuantity ? {
+                      hasNumericalValue: mi.availableQuantity.hasNumericalValue,
+                      hasUnit: mi.availableQuantity.hasUnit?.id,
+                    } : undefined,
+                    effortQuantity: mi.effortQuantity ? {
+                      hasNumericalValue: mi.effortQuantity.hasNumericalValue,
+                      hasUnit: mi.effortQuantity.hasUnit?.id,
+                    } : undefined,
+                    resourceQuantity: mi.resourceQuantity ? {
+                      hasNumericalValue: mi.resourceQuantity.hasNumericalValue,
+                      hasUnit: mi.resourceQuantity.hasUnit?.id,
+                    } : undefined,
+                    inScopeOf: (mi.inScopeOf || []).map(s => s.id),
+                    inputOf: mi.inputOf?.id,
+                    outputOf: mi.outputOf?.id,
+                    provider: mi.provider?.id,
+                    receiver: mi.receiver?.id,
+                    resourceConformsTo: mi.resourceConformsTo?.id,
+                    resourceInventoriedAs: mi.resourceInventoriedAs?.id,
+                  }
+                  console.log('SET TO', currentIntent)
+                  if (proposedReciprocalIntent) {
+                    const pi = proposedReciprocalIntent.publishes
+                    currentReciprocalIntent = {
+                      ...pi,
+                      action: pi.action?.id || currentReciprocalIntent.action,
+                      atLocation: pi.atLocation?.id || currentReciprocalIntent.atLocation,
+                      availableQuantity: pi.availableQuantity ? {
+                        hasNumericalValue: pi.availableQuantity.hasNumericalValue,
+                        hasUnit: pi.availableQuantity.hasUnit?.id,
+                      } : undefined,
+                      effortQuantity: pi.effortQuantity ? {
+                        hasNumericalValue: pi.effortQuantity.hasNumericalValue,
+                        hasUnit: pi.effortQuantity.hasUnit?.id,
+                      } : undefined,
+                      resourceQuantity: pi.resourceQuantity ? {
+                        hasNumericalValue: pi.resourceQuantity.hasNumericalValue,
+                        hasUnit: pi.resourceQuantity.hasUnit?.id,
+                      } : undefined,
+                      inScopeOf: (pi.inScopeOf || []).map(s => s.id),
+                      inputOf: pi.inputOf?.id,
+                      outputOf: pi.outputOf?.id,
+                      provider: pi.provider?.id,
+                      receiver: pi.receiver?.id,
+                      resourceConformsTo: pi.resourceConformsTo?.id,
+                      resourceInventoriedAs: pi.resourceInventoriedAs?.id,
+                    }
+                  }
+                  currentProposedIntent = {}
 
                   modalOpen = true;
                   editing = true;

@@ -14,7 +14,7 @@ export const INTENT_CORE_FIELDS = gql`
     id
     provider {
       name
-    }   
+    }
     action {
       label
     }
@@ -63,6 +63,7 @@ export const PROPOSAL_RETURN_FIELDS = gql`
     publishes {
       reciprocal
       publishes {
+        revisionId
         resourceConformsTo {
           name
           id
