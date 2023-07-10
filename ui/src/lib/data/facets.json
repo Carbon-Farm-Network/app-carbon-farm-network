@@ -1,7 +1,38 @@
- [{
+[{
   "id": "climate",
   "name": "Climate beneficial certification",
-  "description": "A very detailed description",
+  "note": "A very detailed description",
   "order": 1,
-  "values": [1,2]
+  "facet_values": [{
+    "id": "no",
+    "name": "No",
+    "order": 1,
+    "note": "Haven't started"
+  },{
+    "id": "pending",
+    "name": "Pending",
+    "order": 2,
+    "note": "In process"
+  },{
+    "id": "certified",
+    "name": "Certified",
+    "order": 3,
+    "note": "Awarded"
+  }]
+},{
+  "id": "another_facet",
+  "name": "Another facet",
+  "note": "A very detailed description",
+  "order": 2,
+  "facet_values": [{
+    "id": "whatever",
+    "name": "Whatever",
+    "order": 1,
+    "note": "Haven't started"
+  },{
+    "id": "whatever_else",
+    "name": "whatever else",
+    "order": 2,
+    "note": "In process"
+  }]
 }]

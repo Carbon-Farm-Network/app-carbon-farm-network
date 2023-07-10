@@ -1,8 +1,11 @@
 <script lang="ts">
+  import dayjs from "dayjs";
   // import type { Agent } from 'globals'
   // export let panelInfo: Agent | undefined
   export let panelInfo: any | undefined
   let dropdownOpen = false
+  import offers from '$lib/data/offers.json'
+  import agent_facet_values from '$lib/data/agent_facet_values.json'
 </script>
 
 <!-- Background overlay, show/hide based on slide-over state. -->
@@ -174,43 +177,40 @@
         </div>
         <div class="px-4 pt-5 pb-5 sm:px-0 sm:pt-0">
           <div class="ml-8 my-4 mr-12">
-            <ul class="divide-y divide-gray-100">
-              <li class="py-4">
-                <div class="flex items-center gap-x-3">
-                  <h3
-                    class="flex-auto truncate text-sm font-semibold leading-6 text-gray-900"
-                  >
-                    Certified Climate Beneficial
-                  </h3>
-                  <p
-                    class="flex-none">yes</p
-                  >
+            <ul role="list" class="">
+              {#each agent_facet_values.facet_values as {name, facet}}
+              <li class="flex items-center justify-between gap-x-6 py-1">
+                <div class="min-w-0">
+                  <div class="flex items-start gap-x-3">
+                    <p class="text-sm font-semibold leading-6 text-gray-900">{facet.name}</p>
+                  </div>
                 </div>
-              </li>
+                <div class="flex flex-none items-center gap-x-4">
+                  <p class="text-sm leading-6 text-gray-900">{name}</p>
+                </div>
+             </li>
+             {/each}
             </ul>
           </div>
           {#if panelInfo.offers}
-          <p class="ml-8">Offering:</p>
+          <p class="ml-8 mt-12">Offering:</p>
           <div class="mx-8">
             <ul role="list" class="divide-y divide-gray-200">
-              {#each panelInfo.offers as { name, availableDate, price, priceUnit, quantity, quantityUnit }}
-                <li class="py-4">
-                  <div class="flex space-x-3">
-                    <img
-                      class="h-6 w-6 rounded-full"
-                      src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80"
-                      alt=""
-                    />
-                    <div class="flex-1 space-y-1">
-                      <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-medium">{name}</h3>
-                        <p class="text-sm text-gray-500">From: {availableDate}</p>
-                      </div>
-                      <p class="text-sm text-gray-500">
-                        {quantity}
-                        {quantityUnit} @ {price}
-                        {priceUnit}
-                      </p>
+              <!-- Remember to replace with something coming from panel info -->
+              {#each offers as offer}
+              {@const mainIntent = offer.proposed_intents.find(it => !it.reciprocal)}
+              {@const reciprocalIntent = offer.proposed_intents.find(it => it.reciprocal)}
+              {@const availableOn = dayjs(offer.has_beginning).format("YYYY MMM DD")}
+                <li class="flex items-center justify-between gap-x-6 py-2">
+                  <div class="min-w-0">
+                    <div class="flex items-start gap-x-3">
+                      <p class="text-sm font-semibold leading-6 text-gray-900">{mainIntent.intent.resource_conforms_to.name}</p>
+                    </div>
+                    <div class="flex items-start gap-x-3">
+                      <p class="text-sm leading-6 text-gray-500">Price: {reciprocalIntent.intent.resource_quantity.has_numerical_value} {reciprocalIntent.intent.resource_conforms_to.name}</p>
+                    </div>
+                    <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
+                      <p class="whitespace-nowrap">Available {mainIntent.intent.available_quantity?.has_numerical_value} {mainIntent.intent.available_quantity?.has_unit?.label} on <time datetime={offer.has_beginning}>{availableOn}</time></p>
                     </div>
                   </div>
                 </li>

@@ -1,0 +1,2204 @@
+{
+  "id": "plan_id",
+  "name": "2023 Season",
+  "process_specifications": [
+    {
+      "id": "process_specification_id",
+      "name": "Pick Up and Combine",
+      "image": "",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 20,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Woodland Meadow"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 20,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 20,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 19,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Faraway Farm"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 19,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 19,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 120,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Lazy Acre Alpaca"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 120,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 120,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 10,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Woodland Meadow"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 10,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 10,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 3,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Faraway Farm"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 3,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 3,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Lazy Acre Alpaca"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 3,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 3,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 3,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Woodland Meadow"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Lazy Acre Alpaca"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 420,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Pine Croft"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 420,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 420,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Stone Barns"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 100,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 55,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Cabbage Hill"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 55,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 55,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 420,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Pine Croft"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 420,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 420,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Truck and Gas"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 1,
+                "has_unit": {
+                  "label": "ea"
+                }
+              },
+              "provider": {
+                "name": "Textile Lab"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 1,
+                "has_unit": {
+                  "label": "ea"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 1,
+                "has_unit": {
+                  "label": "ea"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 554,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "process_specification_id",
+      "name": "Ship to Scour",
+      "image": "",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 554,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 554,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Shipping Service"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 957,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "UPS"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 957,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 957,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "process_specification_id",
+      "name": "Scour",
+      "image": "",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 141,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 138,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 124,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 554,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Scouring Service"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Bainton"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 544,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "process_specification_id",
+      "name": "Ship to Spin",
+      "image": "",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Shipping Service"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 644,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "UPS"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 644,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 644,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "process_specification_id",
+      "name": "Spin",
+      "image": "",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 113,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 110,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Grey/black alpaca dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 99,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "White wool dirty"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 322,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Spinning Service"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 578,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Battenkill"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 578,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 578,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "process_specification_id",
+      "name": "Ship to Knit",
+      "image": "",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Shipping Service"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 578,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Bainton"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 578,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 578,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "process_specification_id",
+      "name": "Split Up Yarn",
+      "image": "",
+      "processes": [
+        {
+          "id": "process_id",
+          "inputs": [
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 203,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 197,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "input_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "provider": {
+                "name": "Carbon Farm Network"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 178,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 33,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "wolhide"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 33,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 33,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 80,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Vincent James"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 80,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 80,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Textile Lab"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Brown 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Manymoons"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 57,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "wolhide"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 57,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 57,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Vincent James"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Textile Lab"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Ivory 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Manymoons"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 38,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "wolhide"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 38,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 38,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Vincent James"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Textile Lab"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 50,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            },
+            {
+              "id": "output_id",
+              "type": "Commitment",
+              "resource_conforms_to": {
+                "name": "Gray 50/50 Yarn"
+              },
+              "resource_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "receiver": {
+                "name": "Manymoons"
+              },
+              "supply_driven_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              },
+              "demand_driven_quantity": {
+                "has_numerical_value": 40,
+                "has_unit": {
+                  "label": "lb"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
