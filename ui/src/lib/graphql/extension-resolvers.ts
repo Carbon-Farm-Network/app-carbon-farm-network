@@ -88,20 +88,17 @@ console.log(res)
 
       putFacetValue: async function (_root: any, args: { facetValue: FacetValueParams }): Promise<FacetValueResponse> {
         console.info('NEW VALUE', args.facetValue)
-        console.log({
+        let x = {
           value: args.facetValue.value,
           note: args.facetValue.note,
-          facetId: decodeHashFromBase64(args.facetValue.facetId),
-        })
-        const res = await runCreateValue({
-          value: args.facetValue.value,
-          note: args.facetValue.note,
-          facetId: decodeHashFromBase64(args.facetValue.facetId),
-        })
+          facetId: args.facetValue.facetId,
+        }
+        console.log(x)
+        const res = await runCreateValue(x)
 
         // console.log(encodeIdentifiers<FacetValue>(res))
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
-        // return res && { facetValue: encodeIdentifiers<FacetValue>(res) } as FacetValueResponse
+        return res && { facetValue: encodeIdentifiers<FacetValue>(res) } as FacetValueResponse
       },
 
       // :TODO: delete APIs & resolvers
@@ -118,9 +115,14 @@ console.log(res)
     },
     FacetGroup: {
       facets: async function (record: FacetGroup): Promise<Facet[]> {
+        console.log('FACET GROUP', record)
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
-        const res = await readFacets({ facet_group_hash: decodeHashFromBase64(record.id) })
-        console.log(res)
+        let x = {
+          facet_group_hash: decodeHashFromBase64(record.id),
+        }
+        console.log("readFacet params", x)
+        const res = await readFacets(x)
+        // console.log(res)
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
