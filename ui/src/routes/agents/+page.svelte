@@ -17,6 +17,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
 
 
   const GET_ALL_AGENTS = gql`

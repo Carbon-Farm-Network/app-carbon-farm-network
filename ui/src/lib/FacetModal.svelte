@@ -58,35 +58,36 @@
   onMount(async () => {
     console.log('groups: ')
     console.log(facetGroups)
-    // let groupID: String = facetGroups[0].id
+    let groupID: String = facetGroups[0].id
 
-    // let f = await addFacet({
-    //   variables: {
-    //     facet: {
-    //       name: "facet 1",
-    //       note: "note",
-    //       facetGroupId: facetGroups[0].id
-    //     }
-    //   }
-    // })
-    // console.log(f)
-    // let facetId: string = f.data.putFacet.facet.id
-    // console.log(facetId)
+    let f = await addFacet({
+      variables: {
+        facet: {
+          name: "facet 1",
+          note: "note",
+          facetGroupId: facetGroups[0].id
+        }
+      }
+    })
+    console.log(f)
+    let facetId: string = f.data.putFacet.facet.id
+    console.log(facetId)
 
-    // try {
-    //   let v = await addValue({
-    //     variables: {
-    //       facetValue: {
-    //         value: "value 1",
-    //         note: "note",
-    //         facetId,
-    //       }
-    //     }
-    //   })
-    //   console.log(v)
-    // } catch (e) {
-    //   console.log(e)
-    // }
+    try {
+      let v = await addValue({
+        variables: {
+          facetValue: {
+            value: "value 1",
+            note: "note",
+            facetId,
+          }
+        }
+      })
+      console.log(v)
+    } catch (e) {
+      console.log(e)
+    }
+    
   })
 
 </script>

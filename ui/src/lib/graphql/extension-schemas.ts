@@ -24,6 +24,9 @@ export interface FacetValueParamsBase {
 export type FacetValueParams = FacetValueParamsBase & { facetId: EntryHashB64 }
 export type FacetValueParamsRaw = FacetValueParamsBase & { facetId: EntryHash }
 
+export interface AssociateFacetValue { identifier: string, facetValueId: EntryHashB64 }
+export type DeassociateFacetValue = AssociateFacetValue
+
 // zome API record types
 
 interface RecordIdentifierMeta {
@@ -36,9 +39,9 @@ export interface RawRecordIdentifierMeta {
   revisionId: ActionHash // ActionHash from `create_entry`
 }
 
-export type FacetGroup = FacetGroupParams & RecordIdentifierMeta
-export type Facet = FacetParams & RecordIdentifierMeta & { facetGroupId: EntryHashB64 }
-export type FacetValue = FacetValueParams & RecordIdentifierMeta & { facetId: EntryHashB64 }
+export type FacetGroup = FacetGroupParams & RecordIdentifierMeta & { facets?: Facet[] }
+export type Facet = FacetParams & RecordIdentifierMeta & { facetGroupId: EntryHashB64; values?: FacetValue[], group?: FacetGroup }
+export type FacetValue = FacetValueParams & RecordIdentifierMeta & { facetId: EntryHashB64; facet?: Facet }
 
 // mutation API output structs
 

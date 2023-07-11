@@ -18,9 +18,39 @@
   import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@valueflows/vf-graphql'
   import { mutation, query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
+  import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
   // import { AppAgentWebsocket, type AppAgentClient } from '@holochain/client';
 
   const dispatch = createEventDispatcher();
+
+  const GET_FACET_GROUPS = gql`
+    query GetFacets {
+      facetGroups {
+        id
+        revisionId
+        name
+        note
+        facets {
+          id
+          revisionId
+          name
+          note
+          #group {
+          #   id
+          #}
+          values {
+            id
+            revisionId
+            value
+            note
+            # facet {
+            #   id
+            # }
+          }
+        }
+      }
+    }
+  `
 
   const ADD_AGENT = gql`
     ${AGENT_CORE_FIELDS},
@@ -32,6 +62,18 @@
       }
     }
   `
+
+  const ASSOCIATE_AGENT_AND_FACET_VALUE = gql`
+    ${AGENT_CORE_FIELDS},
+    mutation($agent: OrganizationCreateParams!){
+      associateFacetValue(organization: $agent) {
+        agent {
+          ...AgentCoreFields
+        }
+      }
+    }
+  `
+
   const UPDATE_AGENT = gql`
     ${AGENT_CORE_FIELDS},
     mutation($agent: OrganizationUpdateParams!){
@@ -62,6 +104,11 @@
   }
   `
 
+  interface FacetGroupResponse {
+    facetGroups: FacetGroup[]
+  }
+  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+
 
   interface QueryResponse {
     agent: AgentConnection & RelayConn<Agent>
@@ -71,7 +118,7 @@
 
   // let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
   let addAgent: any= mutation(ADD_AGENT)
-
+  let associateAgentWithValue: any = mutation(ASSOCIATE_AGENT_AND_FACET_VALUE)
 
   let getAgent: ReadableQuery<QueryResponse> = query(GET_ORGANIZATION)
 
@@ -89,6 +136,11 @@
     }
     try {
       const res = await addAgent({ variables: { agent } })
+      const groups = (await queryFacetGroups.result())
+      console.log(groups)
+      const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
+      console.log(value_id)
+      const res2 = await associateAgentWithValue({ identifier: res.data.createOrganization.agent.id, facet_value_id: value_id })
       dispatch("submit");
       open = false;
       console.log(res)
