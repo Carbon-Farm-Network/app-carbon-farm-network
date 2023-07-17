@@ -62,7 +62,9 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   // const readFacetOfValue = mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_with_facet_value')
 
   async function readFacetValuesWithIdentifier (record: {id: String}): Promise<FacetValue[]> {
-    const res = await readFacetValuesWithIdentifierCallback({ identifier: record.id })
+    console.log("identifier id", record)
+    // :SHONK: workaround special identifier handling in hREA connection lib
+    const res = await readFacetValuesWithIdentifierCallback({ identifier: "id:" + record.id })
     // @ts-ignore
     return res.map(encodeIdentifiers)
   }
@@ -99,6 +101,7 @@ console.log(res)
       },
 
       associateFacetValue: async function (_root: any, args: AssociateFacetValue): Promise<boolean> {
+        args.identifier = "id:" + args.identifier
         console.info('NEW ASSOCIATION', args)
         const res = await runAssociateFacetValue(args)
         console.log(res)

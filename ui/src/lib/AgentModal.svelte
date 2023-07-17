@@ -65,9 +65,7 @@
 
   const ASSOCIATE_AGENT_AND_FACET_VALUE = gql`
     mutation($identifier: String, $facetValueId: ID!){
-      associateFacetValue(identifier: $identifier, facetValueId: $facetValueId) {
-        boolean
-      }
+      associateFacetValue(identifier: $identifier, facetValueId: $facetValueId)
     }
   `
 
@@ -137,7 +135,7 @@
       console.log(groups)
       const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
       console.log(value_id)
-      const identifier = JSON.stringify(res.data.createOrganization.agent.id)
+      const identifier = res.data.createOrganization.agent.id
       console.log(identifier)
       const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: value_id }})
       console.log("associate", res2)
