@@ -31,9 +31,9 @@
           #}
           values {
             id
-            revisionId
-            value
-            note
+            #revisionId
+            #value
+           # note
             # facet {
             #   id
             # }

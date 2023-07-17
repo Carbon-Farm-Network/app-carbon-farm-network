@@ -1,5 +1,14 @@
 import { gql } from 'graphql-tag'
 
+// export const FACET_VALUE_CORE_FIELDS = gql`
+//   fragment FacetValueCoreFields on FacetValue {
+//     id
+//     revisionId
+//     value
+//     note
+//   }
+// `
+
 // export const FACET_CORE_FIELDS = gql`
 //   fragment FacetCoreFields on Facet {
 //     name

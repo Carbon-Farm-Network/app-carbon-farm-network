@@ -58,6 +58,7 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   const readFacets = mapZomeFn<{ facet_group_hash: EntryHashB64 }, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
   const readFacetValues = mapZomeFn<{ facet_option_hash: EntryHashB64 }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
   const readFacetValuesWithIdentifierCallback = mapZomeFn<{ identifier: String }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_values')
+  
   // const readFacetOfValue = mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_with_facet_value')
 
   async function readFacetValuesWithIdentifier (record: {id: String}): Promise<FacetValue[]> {

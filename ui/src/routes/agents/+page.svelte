@@ -38,6 +38,33 @@
     }
   `
 
+  const GET_FACET_VALUES_FOR_AGENT = gql`
+    query {
+      readFacetValuesWithIdentifier(id: $agentId) {
+        edges {
+          cursor
+          node {
+            id
+            value
+            note
+            facet {
+              id
+              name
+              note
+              facetGroupId
+            }
+          }
+        }
+      }
+    }
+  `
+
+  interface FacetResponse {
+    facetGroups: FacetGroup[]
+  }
+  let queryFacets: ReadableQuery<FacetResponse> = query(GET_FACET_VALUES_FOR_AGENT)
+
+
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
   }
@@ -48,6 +75,9 @@
   async function fetchAgents() {
     agentsQuery.refetch().then((r) => {
       agents = flattenRelayConnection(r.data?.agents).map((a) => {
+        let facets = queryFacets.refetch({agentId: a.id}).then((r) => {
+          console.log(r)
+        })
         return {
           ...a,
           "name": a.name,
