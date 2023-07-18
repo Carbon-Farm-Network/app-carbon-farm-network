@@ -15,6 +15,7 @@
   import { gql } from 'graphql-tag'
   import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
+  import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
@@ -24,6 +25,7 @@
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
     ${ORGANIZATION_CORE_FIELDS}
+    ${FACET_VALUE_CORE_FIELDS}
     query {
       agents(last: 100000) {
         edges {
@@ -33,19 +35,7 @@
             ...PersonCoreFields
             ...OrganizationCoreFields
             facets {
-              id
-              value
-              note
-              facet {
-                id
-                name
-                note
-                group {
-                  id
-                  name
-                  note
-                }
-              }
+              ...FacetValueCoreFields
             }
           }
         }
