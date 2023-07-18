@@ -68,6 +68,7 @@
 <FacetModal bind:facetGroups bind:open={modalOpen} bind:currentFacetGroup bind:currentFacet />
 {/if}
 
+{#if false}
 <div class="p-12">
   <div class="sm:flex sm:items-center">
 
@@ -174,3 +175,4 @@
     </div>
   </div>
 </div>
+{/if}
