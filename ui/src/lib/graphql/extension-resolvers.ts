@@ -59,6 +59,7 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   const readFacetValues = mapZomeFn<{ facet_option_hash: EntryHashB64 }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
   const readFacetValuesWithIdentifierCallback = mapZomeFn<{ identifier: String }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_values')
   const readFacetOfValue = mapZomeFn<{ facet_value_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_option_for_facet_value')
+  const readFacetGroupsOfFacet= mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups_for_facet_option')
 
   async function readFacetValuesWithIdentifier (record: {id: String}): Promise<FacetValue[]> {
     console.log("identifier id", record)
@@ -133,14 +134,13 @@ console.log(res)
       },
     },
     Facet: {
-      /*
       group: async function (record: Facet): Promise<FacetGroup> {
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
-        const res = await readFacetGroups({ has_option_hash: decodeHashFromBase64(record.id) })
+        const res = await readFacetGroupsOfFacet({ facet_option_hash: record.id })
         // @ts-ignore
         return encodeIdentifiers<FacetGroup>(res.pop() as FacetGroup)
       },
-      */
+      
       values: async function (record: Facet): Promise<FacetValue[]> {
         console.log(record)
         const res = await readFacetValues({ facet_option_hash: record.id })

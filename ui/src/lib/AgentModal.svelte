@@ -35,17 +35,11 @@
           revisionId
           name
           note
-          #group {
-          #   id
-          #}
           values {
             id
             revisionId
             value
             note
-            # facet {
-            #   id
-            # }
           }
         }
       }

@@ -40,6 +40,11 @@
                 id
                 name
                 note
+                group {
+                  id
+                  name
+                  note
+                }
               }
             }
           }
