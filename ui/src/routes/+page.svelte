@@ -14,7 +14,7 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-  import Units from '$lib/Units.svelte'
+  import Initialize from '$lib/Initialize.svelte'
 
   // query & data bindings
 
@@ -22,6 +22,13 @@
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
     ${ORGANIZATION_CORE_FIELDS}
+    fragment FacetCoreFields on Facet {
+      id
+      name
+      note
+      image
+      classifiedAs
+    }
     query {
       agents(last: 100000) {
         edges {
@@ -30,6 +37,14 @@
             ...AgentCoreFields
             ...PersonCoreFields
             ...OrganizationCoreFields
+
+            facets(last: 1000) {
+              edges {
+                node {
+                  ...FacetCoreFields
+                }
+              }
+            }
           }
         }
       }
@@ -84,7 +99,7 @@
 
   $: agents;
 </script>
-<Units />
+<Initialize />
 
 <div class="relative h-full w-full">
   {#if agents && agentsQuery !== undefined}

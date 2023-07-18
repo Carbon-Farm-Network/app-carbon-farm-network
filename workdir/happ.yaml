@@ -88,7 +88,7 @@ roles:
       version: ~
       clone_limit: 0
 
-  - name: hc_facets
+  - name: hrea_facets_0
     provisioning:
       strategy: create
       deferred: false

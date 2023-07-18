@@ -17,6 +17,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
 
 
   const GET_ALL_AGENTS = gql`
@@ -31,7 +32,38 @@
             ...AgentCoreFields
             ...PersonCoreFields
             ...OrganizationCoreFields
+            facets {
+              id
+              value
+              note
+              facet {
+                id
+                name
+                note
+                group {
+                  id
+                  name
+                  note
+                }
+              }
+            }
           }
+        }
+      }
+    }
+  `
+
+  const GET_FACET_VALUES_FOR_AGENT = gql`
+    query {
+      readFacetValuesWithIdentifier(id: $agentId) {
+        id
+        value
+        note
+        facet {
+          id
+          name
+          note
+          facetGroupId
         }
       }
     }
@@ -45,22 +77,23 @@
   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   async function fetchAgents() {
-    agentsQuery.refetch().then((r) => {
-      agents = flattenRelayConnection(r.data?.agents).map((a) => {
-        return {
-          ...a,
-          "name": a.name,
-          "imageUrl": a.image,
-          "iconUrl": a.image,
-          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-          "lat": a.classifiedAs[0],
-          "long": a.classifiedAs[1],
-          "role": a.classifiedAs[2],
-          "address": a.note,
-        }
-      })
-      console.log(agents)
+    await agentsQuery.getCurrentResult()
+    const a = await agentsQuery.refetch()
+    const agents = flattenRelayConnection(a.data?.agents).map((a) => {
+      return {
+        ...a,
+        "name": a.name,
+        "imageUrl": a.image,
+        "iconUrl": a.image,
+        "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+        "lat": a.classifiedAs[0],
+        "long": a.classifiedAs[1],
+        "role": a.classifiedAs[2],
+        "address": a.note,
+        "facets": a.facets
+      }
     })
+    console.log(agents)
   }
 
   onMount(async () => {

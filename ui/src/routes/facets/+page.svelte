@@ -2,23 +2,86 @@
   import FacetModal from "$lib/FacetModal.svelte"
   import allFacetGroups from '$lib/data/facet_groups.json'
   import facets from '$lib/data/facets.json'
+  import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { mutation, query } from 'svelte-apollo'
+  import gql from 'graphql-tag'
+  import { onMount } from 'svelte'
   let modalOpen = false;
   let selectedId: string;
+  let currentFacetGroup: FacetGroup;
+  let facetGroups: FacetGroup[];
+  let currentFacet: any = {name: '', note: ''};
+
+
+  const GET_FACET_GROUPS = gql`
+    query GetFacets {
+      facetGroups {
+        id
+        revisionId
+        name
+        note
+        facets {
+          id
+          revisionId
+          name
+          note
+          #group {
+          #   id
+          #}
+          values {
+            id
+            #revisionId
+            #value
+           # note
+            # facet {
+            #   id
+            # }
+          }
+        }
+      }
+    }
+  `
+
+  interface FacetGroupResponse {
+    facetGroups: FacetGroup[]
+  }
+  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+
+  // let addFacet: any = mutation(CREATE_FACET)
+
+  onMount(async () => {
+    let x = await queryFacetGroups.getCurrentResult()
+    console.log(x)
+    let y = await queryFacetGroups.refetch()
+    console.log(y)
+    facetGroups = y.data.facetGroups
+    currentFacetGroup = facetGroups[0]
+    // console.log('GGG', facetGroups)
+  })
+
+  $: facetGroups, currentFacetGroup;
+
 </script>
 
-<FacetModal bind:open={modalOpen} {selectedId} />
+{#if facetGroups && currentFacetGroup}
+<FacetModal bind:facetGroups bind:open={modalOpen} bind:currentFacetGroup bind:currentFacet />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
-    
+
     <div class="sm:flex-auto">
 
       <div>
         <label for="facetGroup" class="block text-sm font-medium leading-6 text-gray-900">Facet group</label>
-        <select id="facetGroup" name="location" class="mt-2 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 w-48">
-          {#each allFacetGroups as facetGroup}
-            <option>{facetGroup}</option>
+        <select id="facetGroup" name="location" class="mt-2 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 w-48"
+        bind:value={currentFacetGroup}>
+          {#if facetGroups}
+          {#each facetGroups as facetGroup}
+            <option value={facetGroup}>{facetGroup.name}</option>
           {/each}
+          {/if}
         </select>
       </div>
 

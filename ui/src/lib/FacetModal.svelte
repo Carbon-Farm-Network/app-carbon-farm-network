@@ -1,9 +1,95 @@
 <script lang="ts">
   import { clickOutside } from './utils'
+  import gql from 'graphql-tag'
+  import { mutation } from 'svelte-apollo';
+  import { onMount } from 'svelte'
+  import type { FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
+  // import { FACET_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   export let open = false
-  export let selectedId: string
+  export let facetGroups: FacetGroup[];
+  export let currentFacetGroup: FacetGroup;
+  export let currentFacet: any;
   let name = ''
   let description = ''
+
+  const CREATE_FACET = gql`
+    mutation($facet: FacetParams!){
+      putFacet(facet: $facet) {
+        facet {
+          name
+          note
+          id
+          revisionId
+        }
+      }
+    }
+  `
+  const CREATE_VALUE = gql`
+    mutation($facetValue: FacetValueParams!){
+      putFacetValue(facetValue: $facetValue) {
+        facetValue {
+          value
+          note
+          id
+          revisionId
+        }
+      }
+    }
+  `
+  let addFacet: any = mutation(CREATE_FACET)
+  let addValue: any = mutation(CREATE_VALUE)
+
+  async function submit() {
+    let groupID: String = facetGroups[0].id
+
+    let f = await addFacet({
+      variables: {
+        facet: {
+          name: currentFacet.name,
+          note: currentFacet.note,
+          facetGroupId: currentFacetGroup.id
+        }
+      }
+    })
+    console.log(f)
+    open = false
+  }
+
+  onMount(async () => {
+    console.log('groups: ')
+    console.log(facetGroups)
+    let groupID: String = facetGroups[0].id
+
+    let f = await addFacet({
+      variables: {
+        facet: {
+          name: "facet 1",
+          note: "note",
+          facetGroupId: facetGroups[0].id
+        }
+      }
+    })
+    console.log(f)
+    let facetId: string = f.data.putFacet.facet.id
+    console.log(facetId)
+
+    try {
+      let v = await addValue({
+        variables: {
+          facetValue: {
+            value: "value 1",
+            note: "note",
+            facetId,
+          }
+        }
+      })
+      console.log(v)
+    } catch (e) {
+      console.log(e)
+    }
+    
+  })
+
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -64,14 +150,14 @@
                     type="text"
                     name="name"
                     id="name"
-                    class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={name}
+                    bind:value={currentFacet.name}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
                   />
-                  <div
+                  <!-- <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
                   >
                     <svg
@@ -86,11 +172,11 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                  </div>
+                  </div> -->
                 </div>
-                <p class="mt-2 text-sm text-red-600" id="email-error">
+                <!-- <p class="mt-2 text-sm text-red-600" id="email-error">
                   Name is required.
-                </p>
+                </p> -->
               </div>
             </div>
 
@@ -104,6 +190,7 @@
                 <div class="mt-2">
                   <textarea
                     id="note"
+                    bind:value={currentFacet.note}
                     name="note"
                     rows="3"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -120,6 +207,7 @@
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+            on:click={submit}
             >Create</button
           >
           <button
