@@ -113,7 +113,21 @@
   }
 
   onMount(async () => {
-    // await addUnits()
+    if (browser) {
+      try {
+        await getUnits.getCurrentResult()
+        getUnits.refetch().then((r) => {
+          if (r.data?.units.edges.length > 0) {
+            units = flattenRelayConnection(r.data?.units)
+            console.log(r)
+            console.log('hh')
+            dispatch('units', r.data?.units)
+          }
+        })
+      } catch (error) {
+        console.error(error)
+      }
+    }
     console.log('Units onMount')
   })
 
