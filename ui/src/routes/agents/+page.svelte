@@ -36,6 +36,11 @@
               id
               value
               note
+              facet {
+                id
+                name
+                note
+              }
             }
           }
         }

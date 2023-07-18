@@ -58,8 +58,7 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   const readFacets = mapZomeFn<{ facet_group_hash: EntryHashB64 }, Facet[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_for_facet_group')
   const readFacetValues = mapZomeFn<{ facet_option_hash: EntryHashB64 }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_values_for_facet_option')
   const readFacetValuesWithIdentifierCallback = mapZomeFn<{ identifier: String }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'retrieve_facet_values')
-  
-  // const readFacetOfValue = mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_options_with_facet_value')
+  const readFacetOfValue = mapZomeFn<{ facet_value_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_option_for_facet_value')
 
   async function readFacetValuesWithIdentifier (record: {id: String}): Promise<FacetValue[]> {
     console.log("identifier id", record)
@@ -151,14 +150,18 @@ console.log(res)
       },
     },
     
-    // FacetValue: {
-    //   facet: async function (record: FacetValue): Promise<Facet> {
-    //     // :TODO: this kind of reverse filtering is not yet implemented in the API?
-    //     const res = await readFacets({ has_value_hash: record.id })
-    //     // @ts-ignore
-    //     return encodeIdentifiers<FacetGroup>(res.pop() as Facet)
-    //   },
-    // },
+    FacetValue: {
+      facet: async function (record: FacetValue): Promise<Facet> {
+        // :TODO: this kind of reverse filtering is not yet implemented in the API?
+        console.log(record)
+        // let decoded = decodeHashFromBase64(record.id)
+        // console.log(decoded)
+        // debugger
+        const res = await readFacetOfValue({ facet_value_hash: record.id })
+        // @ts-ignore
+        return encodeIdentifiers<FacetGroup>(res as Facet)
+      },
+    },
     Organization: {
       facets: readFacetValuesWithIdentifier,
     },
