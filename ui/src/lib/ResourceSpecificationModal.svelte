@@ -1,55 +1,46 @@
 <script lang="ts">
   import { gql } from 'graphql-tag'
-  import type {
-    RecordMeta,
-    ResourceSpecification,
-    ResourceSpecificationCreateParams,
-    ResourceSpecificationUpdateParams
-  } from '@valueflows/vf-graphql'
-  import { createEventDispatcher } from 'svelte'
+  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
+  import { createEventDispatcher } from 'svelte';
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from './graphql/resource_specification.fragments'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
-  const dispatch = createEventDispatcher()
-
-  export let open = false
-  export let editing = false
-  export let currentResourceSpecification: any = {}
-  export let name = ''
-  export let units: any[]
-
+  const dispatch = createEventDispatcher();
+  
+  export let open = false;
+  export let editing = false;
+  export let currentResourceSpecification: any = {};
+  export let name = "";
+  export let units: any[];
+  
   const facets = [
-    {
-      id: 'color',
-      name: 'Color',
-      description: 'A very detailed description',
-      order: 1
+     {
+      "id": "color",
+      "name": "Color",
+      "description": "A very detailed description",
+      "order": 1,
     }
   ]
-  const facetValues = [
-    {
-      id: 'white',
-      value: 'White',
-      order: 1,
-      description: 'like snow'
-    },
-    {
-      id: 'brown',
-      value: 'Brown',
-      order: 2,
-      description: 'like chocolate'
-    },
-    {
-      id: 'gray',
-      value: 'Gray',
-      order: 3,
-      description: 'like smoke'
-    }
-  ]
+  const facetValues =  [{
+    "id": "white",
+    "value": "White",
+    "order": 1,
+    "description": "like snow"
+  },{
+    "id": "brown",
+    "value": "Brown",
+    "order": 2,
+    "description": "like chocolate"
+  },{
+    "id": "gray",
+    "value": "Gray",
+    "order": 3,
+    "description": "like smoke"
+  }]
 
   const ADD_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    mutation ($resource: ResourceSpecificationCreateParams!) {
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS},
+    mutation($resource: ResourceSpecificationCreateParams!){
       createResourceSpecification(resourceSpecification: $resource) {
         resourceSpecification {
           ...ResourceSpecificationCoreFields
@@ -58,8 +49,8 @@
     }
   `
   const UPDATE_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    mutation ($resource: ResourceSpecificationUpdateParams!) {
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS},
+    mutation($resource: ResourceSpecificationUpdateParams!){
       updateResourceSpecification(resourceSpecification: $resource) {
         resourceSpecification {
           ...ResourceSpecificationCoreFields
@@ -82,13 +73,13 @@
       defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
       // defaultUnitOfEffort: "Administrative work",
       note: currentResourceSpecification.note,
-      image: currentResourceSpecification.image
+      image: currentResourceSpecification.image,
     }
     console.log(resource)
     try {
       const res = await addResourceSpecification({ variables: { resource } })
-      dispatch('submit')
-      open = false
+      dispatch("submit");
+      open = false;
       console.log(res)
     } catch (error) {
       console.error(error)
@@ -109,26 +100,23 @@
     }
     try {
       const res = await updateResourceSpecification({ variables: { resource } })
-      dispatch('submit')
-      open = false
+      dispatch("submit");
+      open = false;
       console.log(res)
     } catch (error) {
       console.error(error)
     }
   }
 
-  onMount(async () => {})
 
-  $: editing, currentResourceSpecification, units //, client;
+  onMount(async () => {
+  })
 
-  $: isResourceSpecificationValid =
-    true &&
-    currentResourceSpecification.name &&
-    currentResourceSpecification.defaultUnitOfResourceId &&
-    currentResourceSpecification.note &&
-    currentResourceSpecification.image
+  $: editing, currentResourceSpecification, units; //, client;
+
+  $: isResourceSpecificationValid = true && currentResourceSpecification.name && currentResourceSpecification.defaultUnitOfResourceId && currentResourceSpecification.note && currentResourceSpecification.image;
+
 </script>
-
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -140,10 +128,7 @@
       From: "opacity-100"
       To: "opacity-0"
   -->
-  <div
-    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-    class:hidden={!open}
-  />
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" class:hidden={!open}/>
 
   <div class="fixed inset-0 z-10 overflow-y-auto" class:hidden={!open}>
     <div
@@ -183,9 +168,9 @@
                     placeholder=""
                     bind:value={currentResourceSpecification.name}
                     on:input={e => {
-                      const input = e.target
+                      const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.name = input.value
+                        currentResourceSpecification.name = input.value;
                         // console.log(name)
                       }
                     }}
@@ -215,35 +200,34 @@
                 </p> -->
               </div>
             </div>
-
+            
             {#if units}
-              <div class="mt-4 text-left">
-                <div>
-                  <label
-                    for="defaultUnitOfResource"
-                    class="block text-sm font-medium leading-6 text-gray-900"
-                    >Default unit of resource</label
-                  >
+            <div class="mt-4 text-left">
+              <div>
+                <label
+                  for="defaultUnitOfResource"
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                  >Default unit of resource</label>
 
-                  <select
-                    id="classifiedAs"
-                    name="classifiedAs"
-                    bind:value={currentResourceSpecification.defaultUnitOfResourceId}
-                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    on:click={e => {
-                      console.log(currentResourceSpecification.defaultUnitOfResourceId)
-                    }}
+                <select
+                  id="classifiedAs"
+                  name="classifiedAs"
+                  bind:value={currentResourceSpecification.defaultUnitOfResourceId}
+                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  on:click={e => {
+                    console.log(currentResourceSpecification.defaultUnitOfResourceId)
+                  }}
                   >
-                    {#each units as unit}
-                      {#if unit.label === 'pound'}
-                        <option selected value={unit.id}>Pound</option>
-                      {:else if unit.label === 'one'}
-                        <option value={unit.id}>Each</option>
-                      {/if}
-                    {/each}
-                  </select>
+                  {#each units as unit}
+                    {#if unit.label === "pound"}
+                      <option selected value={unit.id}>Pound</option>
+                    {:else if unit.label === "one"}
+                      <option value={unit.id}>Each</option>
+                    {/if}
+                  {/each}
+                </select>
 
-                  <!-- <select
+                <!-- <select
                   id="defaultUnitOfResource"
                   name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -251,8 +235,8 @@
                   <option selected>Pound</option>
                   <option>Each</option>
                 </select> -->
-                </div>
               </div>
+            </div>
             {/if}
 
             <!-- <div class="mt-4 text-left">
@@ -277,8 +261,7 @@
               <div class="col-span-full">
                 <label
                   for="note"
-                  class="block text-sm font-medium leading-6 text-gray-900"
-                  >Description</label
+                  class="block text-sm font-medium leading-6 text-gray-900">Description</label
                 >
                 <div class="mt-2">
                   <textarea
@@ -288,12 +271,12 @@
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={currentResourceSpecification.note}
                     on:input={e => {
-                      const input = e.target
+                      const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.note = input.value
+                        currentResourceSpecification.note = input.value;
                       }
                     }}
-                  />
+                    />
                 </div>
                 <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
@@ -317,9 +300,9 @@
                     placeholder="https://www.example.com/logo.png"
                     bind:value={currentResourceSpecification.image}
                     on:input={e => {
-                      const input = e.target
+                      const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.image = input.value
+                        currentResourceSpecification.image = input.value;
                       }
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -330,7 +313,8 @@
           </div>
         </div>
 
-        <!-- <div class="mt-4 text-left">
+
+            <!-- <div class="mt-4 text-left">
               <div class="col-span-full">
                 <label
                   for="image"
@@ -375,13 +359,16 @@
                 </div>
               </div>
             </div> -->
-        <!-- </div>
+          <!-- </div>
         </div> -->
 
-        {#each facets as { name }}
+        {#each facets as {name}}
+
           <div class="mt-4 text-left">
             <div>
-              <label for="type" class="block text-sm font-medium leading-6 text-gray-900"
+              <label
+                for="type"
+                class="block text-sm font-medium leading-6 text-gray-900"
                 >{name}</label
               >
               <select
@@ -389,7 +376,7 @@
                 name="type"
                 class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
               >
-                {#each facetValues as { value }}
+                {#each facetValues as {value}}
                   <option>{value}</option>
                 {/each}
               </select>
@@ -409,13 +396,14 @@
               }
             }}
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-          >
+            >
             {#if editing}
-              Update
+            Update
             {:else}
-              Create
+            Create
             {/if}
-          </button>
+            </button
+          >
           <button
             type="button"
             on:click={() => (open = false)}
@@ -429,7 +417,5 @@
 </div>
 
 <style>
-  button:disabled {
-    background-color: lightgray;
-  }
+  button:disabled { background-color: lightgray; }
 </style>
