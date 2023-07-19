@@ -5,7 +5,7 @@
   import { query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, ProposalConnection } from '@valueflows/vf-graphql'
 
   import ErrorPage from './__error.svelte'
   import Search from '$lib/Search.svelte'
@@ -14,21 +14,52 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import { PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import Initialize from '$lib/Initialize.svelte'
 
+  let offersList: any[] = [];
+
   // query & data bindings
+
+  // const GET_ALL_AGENTS = gql`
+  //   ${AGENT_CORE_FIELDS}
+  //   ${PERSON_CORE_FIELDS}
+  //   ${ORGANIZATION_CORE_FIELDS}
+  //   fragment FacetCoreFields on Facet {
+  //     id
+  //     name
+  //     note
+  //     image
+  //     classifiedAs
+  //   }
+  //   query {
+  //     agents(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           ...AgentCoreFields
+  //           ...PersonCoreFields
+  //           ...OrganizationCoreFields
+
+  //           facets(last: 1000) {
+  //             edges {
+  //               node {
+  //                 ...FacetCoreFields
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     ${PERSON_CORE_FIELDS}
     ${ORGANIZATION_CORE_FIELDS}
-    fragment FacetCoreFields on Facet {
-      id
-      name
-      note
-      image
-      classifiedAs
-    }
+    ${FACET_VALUE_CORE_FIELDS}
     query {
       agents(last: 100000) {
         edges {
@@ -37,13 +68,8 @@
             ...AgentCoreFields
             ...PersonCoreFields
             ...OrganizationCoreFields
-
-            facets(last: 1000) {
-              edges {
-                node {
-                  ...FacetCoreFields
-                }
-              }
+            facets {
+              ...FacetValueCoreFields
             }
           }
         }
@@ -64,7 +90,7 @@
 
     async function fetchAgents() {
     // setInterval(function(){
-      agentsQuery.refetch().then((r) => {
+      await agentsQuery.refetch().then((r) => {
         agents = flattenRelayConnection(r.data?.agents).map((a) => {
           return {
             ...a,
@@ -73,19 +99,51 @@
             "iconUrl": a.image,
             "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
             "address": a.note,
+            "offers": offersList?.filter((o) => o.publishes[1].publishes.provider.id === a.id),
           }
         })
-        console.log(agents)
-        console.log(agentsQuery)
       })
     // }, 20000)
   }
 
+  // ===============GET OFFERS===============
+  const GET_All_PROPOSALS = gql`
+    ${PROPOSAL_RETURN_FIELDS}
+    query {
+      proposals(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ProposalReturnFields
+          }
+        }
+      }
+    }
+  `
+
+  interface OffersQueryResponse {
+    proposals: ProposalConnection & RelayConn<any>
+  }
+
+  let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
+
+  async function fetchOffers() {
+    await getOffers.getCurrentResult()
+    await getOffers.refetch().then((r) => {
+      if (r.data?.proposals.edges.length > 0) {
+        offersList = flattenRelayConnection(r.data?.proposals)
+        offersList = [...offersList]
+      }
+    })
+  }
+  // ===============GET OFFERS ENDS==========
+
   onMount(async () => {
     // defer Leaflet map load until rendering, and only in browser environment
     // if (browser) {
-      agentsQuery.getCurrentResult()
-      fetchAgents()
+      await fetchOffers()
+      await agentsQuery.getCurrentResult()
+      await fetchAgents()
       setInterval(function(){
         fetchAgents()
       }, 20000)
@@ -97,7 +155,7 @@
 
   let agents: Agent[]
 
-  $: agents;
+  $: agents, offersList;
 </script>
 <Initialize />
 

@@ -6,6 +6,15 @@
   let dropdownOpen = false
   import offers from '$lib/data/offers.json'
   import agent_facet_values from '$lib/data/agent_facet_values.json'
+  // import { onMount } from "svelte"
+
+  // assign to allFacets a unique array of facets listed in each facet value in panelInfo
+  let allFacets = [...new Set(panelInfo.facets.map(facet => facet.facet.name))];
+
+  // onMount(() => {
+  //   allFacets = [...new Set(panelInfo.facets.map(facet => facet.facet.name))]
+  //   console.log(allFacets)
+  // })
 </script>
 
 <!-- Background overlay, show/hide based on slide-over state. -->
@@ -92,6 +101,7 @@
                 <p>{panelInfo && panelInfo.address}</p>
               </div>
             </div>
+            {#if false}
             <div class="mt-6 px-4 sm:mt-8 sm:flex sm:items-end sm:px-6">
               <div class="sm:flex-1">
                 <div class="mt-5 flex flex-wrap space-y-3 sm:space-y-0 sm:space-x-3">
@@ -173,20 +183,22 @@
                 </div>
               </div>
             </div>
+            {/if}
           </div>
         </div>
         <div class="px-4 pt-5 pb-5 sm:px-0 sm:pt-0">
           <div class="ml-8 my-4 mr-12">
             <ul role="list" class="">
-              {#each agent_facet_values.facet_values as {name, facet}}
+              {#each allFacets as facetOption}
+              {@const facet = panelInfo.facets.findLast(facet => facet.facet.name === facetOption)}
               <li class="flex items-center justify-between gap-x-6 py-1">
                 <div class="min-w-0">
                   <div class="flex items-start gap-x-3">
-                    <p class="text-sm font-semibold leading-6 text-gray-900">{facet.name}</p>
+                    <p class="text-sm font-semibold leading-6 text-gray-900">{facet.facet.name}</p>
                   </div>
                 </div>
                 <div class="flex flex-none items-center gap-x-4">
-                  <p class="text-sm leading-6 text-gray-900">{name}</p>
+                  <p class="text-sm leading-6 text-gray-900">{facet.value}</p>
                 </div>
              </li>
              {/each}
@@ -197,20 +209,24 @@
           <div class="mx-8">
             <ul role="list" class="divide-y divide-gray-200">
               <!-- Remember to replace with something coming from panel info -->
-              {#each offers as offer}
-              {@const mainIntent = offer.proposed_intents.find(it => !it.reciprocal)}
-              {@const reciprocalIntent = offer.proposed_intents.find(it => it.reciprocal)}
-              {@const availableOn = dayjs(offer.has_beginning).format("YYYY MMM DD")}
+              <!-- {JSON.stringify(panelInfo.offers[0])} -->
+              {#each panelInfo.offers as offer}
+              {@const mainIntent = offer.publishes.find(it => !it.reciprocal)}
+              {@const reciprocalIntent = offer.publishes.find(it => it.reciprocal)}
+              {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
                 <li class="flex items-center justify-between gap-x-6 py-2">
                   <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
-                      <p class="text-sm font-semibold leading-6 text-gray-900">{mainIntent.intent.resource_conforms_to.name}</p>
+                      <p class="text-sm font-semibold leading-6 text-gray-900">{mainIntent.publishes.resourceConformsTo.name}</p>
                     </div>
                     <div class="flex items-start gap-x-3">
-                      <p class="text-sm leading-6 text-gray-500">Price: {reciprocalIntent.intent.resource_quantity.has_numerical_value} {reciprocalIntent.intent.resource_conforms_to.name}</p>
+                      <p class="text-sm leading-6 text-gray-500">Price: {reciprocalIntent.publishes.resourceQuantity.hasNumericalValue} {reciprocalIntent.publishes.resourceConformsTo.name} per {mainIntent.publishes.resourceQuantity.hasNumericalValue} {mainIntent.publishes.availableQuantity.hasUnit.label}</p>
                     </div>
                     <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-                      <p class="whitespace-nowrap">Available {mainIntent.intent.available_quantity?.has_numerical_value} {mainIntent.intent.available_quantity?.has_unit?.label} on <time datetime={offer.has_beginning}>{availableOn}</time></p>
+                      <!-- {JSON.stringify(mainIntent.publishes.availableQuantity.hasNumericalValue)} -->
+                      <!-- {JSON.stringify(mainIntent.publishes.availableQuantity.hasUnit.label)} -->
+                      <!-- {JSON.stringify(offer)} -->
+                      <p class="whitespace-nowrap">Available {mainIntent.publishes.availableQuantity.hasNumericalValue} {mainIntent.publishes.availableQuantity.hasUnit.label} on <time datetime={offer.hasBeginning}>{availableOn}</time></p>
                     </div>
                   </div>
                 </li>

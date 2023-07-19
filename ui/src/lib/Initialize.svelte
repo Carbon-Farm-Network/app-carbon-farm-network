@@ -134,8 +134,6 @@
         getUnits.refetch().then((r) => {
           if (r.data?.units.edges.length > 0) {
             units = flattenRelayConnection(r.data?.units)
-            console.log(r)
-            console.log('hh')
             dispatch('units', r.data?.units)
           }
         })
@@ -143,7 +141,7 @@
         console.error(error)
       }
     }
-    console.log('Units onMount')
+    // console.log('Units onMount')
   })
 
   $: units
