@@ -1,18 +1,95 @@
 <script lang="ts">
   import FacetValueModal from "$lib/FacetValueModal.svelte"
-  import facetValues from '$lib/data/facet_values.json'
+  // import facetValues from '$lib/data/facet_values.json'
+  import { gql } from 'graphql-tag'
+  import { onMount } from 'svelte'
+  import { query } from 'svelte-apollo'
+  import { FACET_GROUP_CORE_FIELDS  } from "$lib/graphql/facet.fragments"
+  import type { ReadableQuery } from 'svelte-apollo'
+  import type { Facet, FacetGroup, FacetParams, FacetValue } from "$lib/graphql/extension-schemas"
+  import { page } from "$app/stores"
   let modalOpen = false;
   let selectedId: string;
+  let localFacet: Facet;
+  let facetValues: any[] = [];
+  let currentValue: FacetValue;
+  // export let facetId;
+
+  // const GET_FACET_VALUES = gql`
+  //   query GetFacetValues {
+  //     facetValues {
+  //       id
+  //       revisionId
+  //       value
+  //       note
+  //     }
+  //   }
+  // `
+
+  // let facetValuesQuery = query(GET_FACET_VALUES, {
+  //   variables: {
+  //     facetId
+  //   }
+  // })
+
+  const GET_FACET_GROUPS = gql`
+    ${FACET_GROUP_CORE_FIELDS}
+    query GetFacets {
+      facetGroups {
+        ...FacetGroupCoreFields
+      }
+    }
+  `
+  interface FacetGroupResponse {
+    facetGroups: FacetGroup[]
+  }
+  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+
+  async function fetchValues() {
+    console.log('starting')
+    let facetId = $page.params.facet_id
+    console.log($page.params)
+    await queryFacetGroups.getCurrentResult()
+    let y = await queryFacetGroups.refetch()
+    let facetGroups = y.data.facetGroups
+    for (let facetGroup of facetGroups) {
+        if (facetGroup.facets) {
+          for (let facet of facetGroup.facets) {
+              if (facet.id === facetId) {
+                  localFacet = facet
+                  currentValue = {value: "", note: "", facetId: localFacet.id, id: "", revisionId: ""}
+              }
+          }
+        }
+    }
+    if (localFacet.values) {
+      facetValues = localFacet.values;
+    }
+  }
+
+  onMount(async () => {
+    // await facetValuesQuery.getCurrentResult();
+    // let facetValues = await facetValuesQuery.refetch();
+    // console.log(facetValues)
+    await fetchValues()
+  })
+
+  $: currentValue, localFacet, facetValues;
 </script>
 
-<FacetValueModal bind:open={modalOpen} {selectedId} />
+<FacetValueModal bind:open={modalOpen} {currentValue} on:submit={fetchValues}/>
+
+{#if localFacet}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
     
     <div class="sm:flex-auto">
 
-      <h1 class="text-base font-semibold leading-6 text-gray-900 pt-6">Facet `insert facet name here`</h1>
+      <h1 class="text-base font-semibold leading-6 text-gray-900 pt-6">
+        Facet 
+        {localFacet.name}
+      </h1>
       <p class="mt-2 text-sm text-gray-700">
         A list of all the values for the facet.
       </p>
@@ -20,7 +97,7 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => (modalOpen = true)}
+        on:click={() => {modalOpen = true; currentValue = {facetId: localFacet.id, note: "", value: "", id: "", revisionId: ""}}}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a facet value</button
       >
@@ -42,14 +119,14 @@
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Description</th
               >
-              <th
+              <!-- <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Order</th
-              >
-              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+              > -->
+              <!-- <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
-              </th>
+              </th> -->
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Delete</span>
               </th>
@@ -57,22 +134,22 @@
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
-            {#each facetValues as {id, value, description, order}, index}
+            {#each facetValues as {id, value, note, order}, index}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
                 class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
                 >{value}</td
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{description}</td
+                >{note}</td
               >
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+              <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{order}</td
-              >
-              <td
+              > -->
+              <!-- <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {selectedId = id; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                <button type="button" on:click={() => {selectedId = id; modalOpen = true; currentValue = value}}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>
@@ -82,7 +159,7 @@
                 <button type="button" class="text-indigo-600 hover:text-indigo-900"
                   >Delete<span class="sr-only">, Lindsay Walton</span></button
                 >
-              </td>
+              </td> -->
             </tr>
             {/each}
 
@@ -93,3 +170,4 @@
     </div>
   </div>
 </div>
+{/if}

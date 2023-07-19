@@ -1,44 +1,30 @@
 <script lang="ts">
   import FacetModal from "$lib/FacetModal.svelte"
-  import allFacetGroups from '$lib/data/facet_groups.json'
-  import facets from '$lib/data/facets.json'
+  // import allFacetGroups from '$lib/data/facet_groups.json'
+  // import facets from '$lib/data/facets.json'
+  import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
   import type { ReadableQuery } from 'svelte-apollo'
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
   import { onMount } from 'svelte'
+  import { map } from "leaflet"
+  import { goto } from '$app/navigation';
+  function navigate(location: string) {
+    goto(location);
+  }
   let modalOpen = false;
   let selectedId: string;
-  let currentFacetGroup: FacetGroup;
+  let currentFacetGroup: FacetGroup | undefined;
   let facetGroups: FacetGroup[];
   let currentFacet: any = {name: '', note: ''};
 
 
   const GET_FACET_GROUPS = gql`
+    ${FACET_GROUP_CORE_FIELDS}
     query GetFacets {
       facetGroups {
-        id
-        revisionId
-        name
-        note
-        facets {
-          id
-          revisionId
-          name
-          note
-          #group {
-          #   id
-          #}
-          values {
-            id
-            #revisionId
-            #value
-           # note
-            # facet {
-            #   id
-            # }
-          }
-        }
+        ...FacetGroupCoreFields
       }
     }
   `
@@ -50,14 +36,25 @@
 
   // let addFacet: any = mutation(CREATE_FACET)
 
-  onMount(async () => {
+  async function fetchFacets() {
     let x = await queryFacetGroups.getCurrentResult()
     console.log(x)
     let y = await queryFacetGroups.refetch()
     console.log(y)
+    let selectedGroupId: String;
+    if (currentFacetGroup) {
+      selectedGroupId = currentFacetGroup.id;
+    } else {
+      selectedGroupId = y.data.facetGroups[0].id
+    }
     facetGroups = y.data.facetGroups
+    currentFacetGroup = facetGroups.find((g) => {return g.id == selectedGroupId})
+    console.log('GGG', facetGroups)
+  }
+
+  onMount(async () => {
+    await fetchFacets()
     currentFacetGroup = facetGroups[0]
-    // console.log('GGG', facetGroups)
   })
 
   $: facetGroups, currentFacetGroup;
@@ -65,10 +62,10 @@
 </script>
 
 {#if facetGroups && currentFacetGroup}
-<FacetModal bind:facetGroups bind:open={modalOpen} bind:currentFacetGroup bind:currentFacet />
+<FacetModal bind:facetGroups bind:open={modalOpen} bind:currentFacetGroup bind:currentFacet on:submit={fetchFacets} />
 {/if}
 
-{#if false}
+{#if true}
 <div class="p-12">
   <div class="sm:flex sm:items-center">
 
@@ -94,7 +91,10 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => (modalOpen = true)}
+        on:click={() => {
+          modalOpen = true;
+          currentFacet = {name: '', note: ''};
+        }}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a facet</button
       >
@@ -116,11 +116,11 @@
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Description</th
               >
-              <th
+              <!-- <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Order</th
-              >
+              > -->
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -134,6 +134,57 @@
               </th>
             </tr>
           </thead>
+          <tbody class="bg-white">
+            <!-- Odd row -->
+            <!-- {#each facets as {id, name, description, order, values}, index} -->
+            {#if currentFacetGroup && currentFacetGroup.facets}
+            {#each currentFacetGroup.facets as facet, index}
+            
+            <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
+              <td
+                class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
+                >{facet.name}</td
+              >
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                >{facet.note}</td
+              >
+              <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                >{order}</td
+              >-->
+              <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                >{values.join(", ")}</td
+              > -->
+              {#if facet.values}
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                >{facet.values.map((v) => {return v.value}).join(', ')}</td
+              >
+              {/if}
+              <!-- <td
+                class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+              >
+                <button type="button" on:click={() => {
+                  modalOpen = true;
+                  currentFacet = facet;
+                }}
+                class="text-indigo-600 hover:text-indigo-900"
+                  >Edit facet<span class="sr-only">, Lindsay Walton</span></button
+                >
+              </td> -->
+              <td
+                class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+              >
+              <a on:click={() => navigate('/facet_values/' + facet.id + '')}
+                class="text-indigo-600 hover:text-indigo-900" style="cursor: pointer"
+                  >Edit values<span class="sr-only">, Lindsay Walton</span></a
+                >
+              </td>
+            </tr>
+            {/each}
+            {/if}
+
+            <!-- More people... -->
+          </tbody>
+          {#if false}
           <tbody class="bg-white">
             <!-- Odd row -->
             {#each facets as {id, name, description, order, values}, index}
@@ -170,6 +221,7 @@
 
             <!-- More people... -->
           </tbody>
+          {/if}
         </table>
       </div>
     </div>

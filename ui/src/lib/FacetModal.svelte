@@ -4,6 +4,7 @@
   import { mutation } from 'svelte-apollo';
   import { onMount } from 'svelte'
   import type { FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
+  import { createEventDispatcher } from 'svelte';
   // import { FACET_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   export let open = false
   export let facetGroups: FacetGroup[];
@@ -11,6 +12,8 @@
   export let currentFacet: any;
   let name = ''
   let description = ''
+
+  const dispatch = createEventDispatcher();
 
   const CREATE_FACET = gql`
     mutation($facet: FacetParams!){
@@ -52,41 +55,42 @@
       }
     })
     console.log(f)
+    dispatch("submit")
     open = false
   }
 
   onMount(async () => {
-    console.log('groups: ')
-    console.log(facetGroups)
-    let groupID: String = facetGroups[0].id
+    // console.log('groups: ')
+    // console.log(facetGroups)
+    // let groupID: String = facetGroups[0].id
 
-    let f = await addFacet({
-      variables: {
-        facet: {
-          name: "facet 1",
-          note: "note",
-          facetGroupId: facetGroups[0].id
-        }
-      }
-    })
-    console.log(f)
-    let facetId: string = f.data.putFacet.facet.id
-    console.log(facetId)
+    // let f = await addFacet({
+    //   variables: {
+    //     facet: {
+    //       name: "facet 1",
+    //       note: "note",
+    //       facetGroupId: facetGroups[0].id
+    //     }
+    //   }
+    // })
+    // console.log(f)
+    // let facetId: string = f.data.putFacet.facet.id
+    // console.log(facetId)
 
-    try {
-      let v = await addValue({
-        variables: {
-          facetValue: {
-            value: "value 1",
-            note: "note",
-            facetId,
-          }
-        }
-      })
-      console.log(v)
-    } catch (e) {
-      console.log(e)
-    }
+    // try {
+    //   let v = await addValue({
+    //     variables: {
+    //       facetValue: {
+    //         value: "value 1",
+    //         note: "note",
+    //         facetId,
+    //       }
+    //     }
+    //   })
+    //   console.log(v)
+    // } catch (e) {
+    //   console.log(e)
+    // }
     
   })
 

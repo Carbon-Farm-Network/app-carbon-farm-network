@@ -62,7 +62,6 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   const readFacetGroupsOfFacet= mapZomeFn<{ facet_option_hash: EntryHash }, FacetValue[]>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'get_facet_groups_for_facet_option')
 
   async function readFacetValuesWithIdentifier (record: {id: String}): Promise<FacetValue[]> {
-    console.log("identifier id", record)
     // :SHONK: workaround special identifier handling in hREA connection lib
     const res = await readFacetValuesWithIdentifierCallback({ identifier: "id:" + record.id })
     // @ts-ignore
@@ -94,6 +93,7 @@ console.log(res)
       putFacetValue: async function (_root: any, args: { facetValue: FacetValueParams }): Promise<FacetValueResponse> {
         console.info('NEW VALUE', args.facetValue)
         const res = await runCreateValue(args.facetValue)
+        console.log(res)
 
         // console.log(encodeIdentifiers<FacetValue>(res))
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
@@ -121,14 +121,11 @@ console.log(res)
     },
     FacetGroup: {
       facets: async function (record: FacetGroup): Promise<Facet[]> {
-        console.log('FACET GROUP', record)
         // :TODO: not sure if this kind of reverse filtering is implemented in the API but is needed for a complete impl
         let x = {
           facet_group_hash: record.id,
         }
-        console.log("readFacet params", x)
         const res = await readFacets(x)
-        console.log(res)
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
@@ -142,9 +139,7 @@ console.log(res)
       },
       
       values: async function (record: Facet): Promise<FacetValue[]> {
-        console.log(record)
         const res = await readFacetValues({ facet_option_hash: record.id })
-        console.log("res", res)
         // @ts-ignore
         return res.map(encodeIdentifiers)
       },
@@ -153,7 +148,7 @@ console.log(res)
     FacetValue: {
       facet: async function (record: FacetValue): Promise<Facet> {
         // :TODO: this kind of reverse filtering is not yet implemented in the API?
-        console.log(record)
+        // console.log(record)
         // let decoded = decodeHashFromBase64(record.id)
         // console.log(decoded)
         // debugger
@@ -165,9 +160,9 @@ console.log(res)
     Organization: {
       facets: readFacetValuesWithIdentifier,
     },
-    ResourceSpecification: {
-      facets: readFacetValuesWithIdentifier,
-    }
+    // ResourceSpecification: {
+    //   facets: readFacetValuesWithIdentifier,
+    // }
     
   }
 }

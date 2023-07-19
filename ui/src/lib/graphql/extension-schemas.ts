@@ -133,6 +133,7 @@ type ResourceSpecification {
 
 type Query {
   facetGroups: [FacetGroup!]!
+  facetValues: [FacetValue!]!
 }
 
 `,// Mutation API

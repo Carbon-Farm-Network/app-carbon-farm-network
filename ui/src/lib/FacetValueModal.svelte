@@ -1,12 +1,52 @@
 <script lang="ts">
   import { clickOutside } from './utils'
+  import type { FacetValue, FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
+  import { mutation } from 'svelte-apollo';
   export let open = false
-  export let selectedId: string
+  // export let selectedId: string
+  export let currentValue: FacetValue;
+  import { createEventDispatcher } from 'svelte';
+  import gql from 'graphql-tag'
   let name = ''
   let description = ''
   let order = 0
+
+  const dispatch = createEventDispatcher();
+
+  const CREATE_VALUE = gql`
+    mutation($facetValue: FacetValueParams!){
+      putFacetValue(facetValue: $facetValue) {
+        facetValue {
+          value
+          note
+          id
+          revisionId
+        }
+      }
+    }
+  `
+  let addValue: any = mutation(CREATE_VALUE)
+
+  async function submit() {
+    console.log(currentValue)
+    let f = await addValue({
+      variables: {
+        facetValue: {
+          value: currentValue.value,
+          note: currentValue.note,
+          facetId: currentValue.facetId,
+        }
+      }
+    })
+    console.log(f)
+    dispatch("submit")
+    open = false
+  }
+
+  $: currentValue;
 </script>
 
+{#if currentValue}
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -62,12 +102,12 @@
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
                   <input
+                    bind:value={currentValue.value}
                     type="text"
                     name="name"
                     id="name"
-                    class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={name}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
@@ -75,7 +115,7 @@
                   <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
                   >
-                    <svg
+                    <!-- <svg
                       class="h-5 w-5 text-red-500"
                       viewBox="0 0 20 20"
                       fill="currentColor"
@@ -86,16 +126,16 @@
                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
                         clip-rule="evenodd"
                       />
-                    </svg>
+                    </svg> -->
                   </div>
                 </div>
-                <p class="mt-2 text-sm text-red-600" id="email-error">
+                <!-- <p class="mt-2 text-sm text-red-600" id="email-error">
                   Name is required.
-                </p>
+                </p> -->
               </div>
             </div>
 
-            <div class="mt-4">
+            <!-- <div class="mt-4">
               <div class="text-left">
                 <label
                   for="name"
@@ -134,7 +174,7 @@
                   Order is required.
                 </p>
               </div>
-            </div>
+            </div> -->
 
             <div class="mt-4 text-left">
               <div class="col-span-full">
@@ -145,6 +185,7 @@
                 </label>
                 <div class="mt-2">
                   <textarea
+                    bind:value={currentValue.note}
                     id="note"
                     name="note"
                     rows="3"
@@ -162,6 +203,7 @@
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+            on:click={submit}
             >Create</button
           >
           <button
@@ -175,3 +217,4 @@
     </div>
   </div>
 </div>
+{/if}

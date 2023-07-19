@@ -43,21 +43,21 @@
     }
   `
 
-  const GET_FACET_VALUES_FOR_AGENT = gql`
-    query {
-      readFacetValuesWithIdentifier(id: $agentId) {
-        id
-        value
-        note
-        facet {
-          id
-          name
-          note
-          facetGroupId
-        }
-      }
-    }
-  `
+  // const GET_FACET_VALUES_FOR_AGENT = gql`
+  //   query {
+  //     readFacetValuesWithIdentifier(id: $agentId) {
+  //       id
+  //       value
+  //       note
+  //       facet {
+  //         id
+  //         name
+  //         note
+  //         facetGroupId
+  //       }
+  //     }
+  //   }
+  // `
 
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>

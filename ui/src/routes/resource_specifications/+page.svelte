@@ -30,9 +30,9 @@
           cursor
           node {
             ...ResourceSpecificationCoreFields
-            facets {
-              ...FacetValueCoreFields
-            }
+            #facets {
+            #  ...FacetValueCoreFields
+            #}
           }
         }
       }
