@@ -37,10 +37,8 @@
   // let addFacet: any = mutation(CREATE_FACET)
 
   async function fetchFacets() {
-    let x = await queryFacetGroups.getCurrentResult()
-    console.log(x)
+    await queryFacetGroups.getCurrentResult()
     let y = await queryFacetGroups.refetch()
-    console.log(y)
     let selectedGroupId: String;
     if (currentFacetGroup) {
       selectedGroupId = currentFacetGroup.id;
@@ -49,7 +47,6 @@
     }
     facetGroups = y.data.facetGroups
     currentFacetGroup = facetGroups.find((g) => {return g.id == selectedGroupId})
-    console.log('GGG', facetGroups)
   }
 
   onMount(async () => {

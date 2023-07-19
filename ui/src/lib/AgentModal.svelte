@@ -7,9 +7,10 @@
   export let role = "Farmer";
   export let certification = "";
   export let editing = false;
-  import facets from '$lib/data/facets.json'
+  export let facets: Facet[] | undefined;
+  export let selectedFacets: any;
+  // import facets from '$lib/data/facets.json'
   import { createEventDispatcher } from 'svelte';
-  
   import { onMount } from 'svelte'
   import { gql } from 'graphql-tag'
   import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
@@ -19,6 +20,8 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
   // import { AppAgentWebsocket, type AppAgentClient } from '@holochain/client';
+
+  // let selectedFacets: any = {};
 
   const dispatch = createEventDispatcher();
 
@@ -126,12 +129,19 @@
       const res = await addAgent({ variables: { agent } })
       const groups = (await queryFacetGroups.result())
       console.log(groups)
-      const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
-      console.log(value_id)
+      // const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
+      // console.log(value_id)
       const identifier = res.data.createOrganization.agent.id
       console.log(identifier)
-      const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: value_id }})
-      console.log("associate", res2)
+      // for each facet in selectedFacets, associate the agent with the selected value
+      for (let facet in selectedFacets) {
+        console.log(facet)
+        console.log(selectedFacets[facet])
+        const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
+        console.log("associate", res2)
+      }
+      // const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: value_id }})
+      // console.log("associate", res2)
       dispatch("submit");
       open = false;
       console.log(res)
@@ -164,6 +174,18 @@
     }
     try {
       const res = await updateAgent({ variables: { agent } })
+
+      const identifier = res.data.updateOrganization.agent.id
+      console.log(identifier)
+      // for each facet in selectedFacets, associate the agent with the selected value
+      for (let facet in selectedFacets) {
+        console.log(facet)
+        console.log(selectedFacets[facet])
+        const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
+        console.log("associate", res2)
+      }
+ 
+
       dispatch("submit");
       open = false;
       console.log(res)
@@ -488,7 +510,8 @@
           </div>
         </div>
 
-        {#each facets as {name, facet_values}}
+        {#if facets && selectedFacets}
+        {#each facets as {id, name, values}}
           <div class="mt-4 text-left">
             <div>
               <label
@@ -497,17 +520,24 @@
                 >{name}</label
               >
               <select
+                bind:value={selectedFacets[id]}
+                on:change={(e) => {
+                  console.log(selectedFacets)
+                }}
                 id="type"
                 name="type"
                 class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
               >
-                {#each facet_values as {name}}
-                  <option>{name}</option>
+              {#if values}
+                {#each values as {id, value}}
+                  <option value={id}>{value}</option>
                 {/each}
+              {/if}
               </select>
             </div>
           </div>
         {/each}
+        {/if}
 
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           <button

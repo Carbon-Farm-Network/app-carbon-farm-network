@@ -1,12 +1,6 @@
 <script lang="ts">
   import AgentModal from "$lib/AgentModal.svelte"
   import allAgents from '$lib/data/agents.json'
-  let modalOpen = false;
-  let editing = false;
-  let name = "";
-  let id = "";
-  let currentAgent: any;
-
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
@@ -17,9 +11,39 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
 
+  let modalOpen = false;
+  let editing = false;
+  let name = "";
+  let id = "";
+  let currentAgent: any;
+  let agents: any[]
+  let facets: Facet[] | undefined;
+  let selectedFacets: any = {};
+
+  const GET_FACET_GROUPS = gql`
+    ${FACET_GROUP_CORE_FIELDS}
+    query GetFacets {
+      facetGroups {
+        ...FacetGroupCoreFields
+      }
+    }
+  `
+
+  interface FacetGroupResponse {
+    facetGroups: FacetGroup[]
+  }
+  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+
+  async function fetchFacets() {
+    await queryFacetGroups.getCurrentResult()
+    let y = await queryFacetGroups.refetch()
+    let facetGroups = y.data.facetGroups
+    facets = facetGroups.find((g) => {return g.name == "Agent"})?.facets
+  }
 
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
@@ -43,22 +67,6 @@
     }
   `
 
-  // const GET_FACET_VALUES_FOR_AGENT = gql`
-  //   query {
-  //     readFacetValuesWithIdentifier(id: $agentId) {
-  //       id
-  //       value
-  //       note
-  //       facet {
-  //         id
-  //         name
-  //         note
-  //         facetGroupId
-  //       }
-  //     }
-  //   }
-  // `
-
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
   }
@@ -69,7 +77,7 @@
   async function fetchAgents() {
     await agentsQuery.getCurrentResult()
     const a = await agentsQuery.refetch()
-    const agents = flattenRelayConnection(a.data?.agents).map((a) => {
+    agents = flattenRelayConnection(a.data?.agents).map((a) => {
       return {
         ...a,
         "name": a.name,
@@ -87,23 +95,15 @@
   }
 
   onMount(async () => {
-    if (browser) {
-      agentsQuery.getCurrentResult()
-      fetchAgents()
-      setTimeout(function(){
-        console.log(agents)
-        fetchAgents()
-      }, 1000)
-    }
+    await fetchAgents();
+    await fetchFacets();
   })
 
   // reactive data bindings
-  let agents: any[]
-
-  $: agents, modalOpen, editing, id, currentAgent;
+  $: agents, modalOpen, editing, id, currentAgent, selectedFacets;
 </script>
 
-<AgentModal bind:open={modalOpen} bind:name={name} bind:currentAgent={currentAgent} bind:editing={editing} on:submit={fetchAgents} />
+<AgentModal bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={fetchAgents} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -137,6 +137,16 @@
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Role in network</th
               >
+              <!-- for each facet, create th -->
+              {#if facets}
+                {#each facets as facet}
+                  <th
+                    scope="col"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >{facet.name}</th
+                  >
+                {/each}
+              {/if}
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only" on:click={() => {editing = true; modalOpen = true;}}>Edit</span>
               </th>
@@ -158,10 +168,26 @@
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{agent.role}</td
               >
+              {#if facets}
+                {#each facets as facet}
+                  <th
+                    scope="col"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
+                    {agent.facets.findLast((f) => {return f.facet.id == facet.id})?.value}
+                </th>
+                {/each}
+              {/if}
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {name = agent.name; id = agent.id; currentAgent = agent; editing = true; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                <button type="button" on:click={() => {
+                  name = agent.name; id = agent.id; currentAgent = agent; editing = true; modalOpen = true;
+                  selectedFacets = {};
+                  agent.facets.map((f) => {
+                    selectedFacets[f.facet.id] = f.id
+                  })
+                  }}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>
