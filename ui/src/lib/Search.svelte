@@ -2,6 +2,8 @@
   let dropdownOpen = false
   export let allData: any[]
   export let displayData: any[]
+  export let panelInfo: any | undefined;
+
   let searchInput = ""
   function filter() {
     displayData = allData.filter(datum => matchObject(searchInput, datum))
@@ -60,8 +62,9 @@
 
         Highlighted: "text-white bg-indigo-600", Not Highlighted: "text-gray-900"
       -->
-        {#each displayData as {name}}
+        {#each displayData as agent}
         <li
+        on:click={() => {panelInfo = agent}}
           class="text-gray-900 cursor-default select-none relative py-2 pl-3 pr-9"
           id="listbox-option-0"
           role="option"
@@ -74,7 +77,7 @@
             />
             <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
             <span class="font-normal ml-3 block truncate">
-              {name}
+              {agent.name}
               <span class="sr-only"> is online</span>
             </span>
           </div>

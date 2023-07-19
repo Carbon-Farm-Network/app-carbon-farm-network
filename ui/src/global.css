@@ -5,3 +5,4 @@
 @tailwind utilities;
 
 button:disabled { background-color: lightgray; }
+button:disabled:hover { background-color: lightgray; }

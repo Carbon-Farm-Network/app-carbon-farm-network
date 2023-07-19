@@ -77,10 +77,21 @@
     }
   `
 
+  const ADD_RESOURCE_SPECIFICATION = gql`
+    mutation($resource: ResourceSpecificationCreateParams!){
+      createResourceSpecification(resourceSpecification: $resource) {
+        resourceSpecification {
+          id
+        }
+      }
+    }
+  `
+
   let units: Unit[];
   let addUnitLb: any = mutation(CREATE_UNIT_LB)
   let addUnit1: any = mutation(CREATE_UNIT_1)
   let addFacetGroups: any = mutation(CREATE_FACET_GROUPS)
+  let addResourceSpecification: any = mutation(ADD_RESOURCE_SPECIFICATION)
 
   interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<any>
@@ -107,6 +118,10 @@
         },
       }})
       console.log('FacetGroups', c)
+      await addResourceSpecification({ variables: {resource: {
+        name: "USD",
+        defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
+      }}})
     } catch(e) {
       console.log(e)
     }
@@ -135,5 +150,8 @@
 </script>
 
 {#if !units || false}
-  <button on:click={addUnits} >No units found. Click to generate.</button>
+  <button type="button"
+  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+  style="width: 100px; position: absolute; z-index: 999999"
+  on:click={addUnits} >Click here if this is a new app.</button>
 {/if}

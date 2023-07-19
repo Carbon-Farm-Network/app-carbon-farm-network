@@ -63,7 +63,7 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
 
   async function readFacetValuesWithIdentifier (record: {id: String}): Promise<FacetValue[]> {
     // :SHONK: workaround special identifier handling in hREA connection lib
-    const res = await readFacetValuesWithIdentifierCallback({ identifier: "id:" + record.id })
+    const res = await readFacetValuesWithIdentifierCallback({ identifier: "identifier-" + record.id })
     // @ts-ignore
     return res.map(encodeIdentifiers)
   }
@@ -101,7 +101,7 @@ console.log(res)
       },
 
       associateFacetValue: async function (_root: any, args: AssociateFacetValue): Promise<boolean> {
-        args.identifier = "id:" + args.identifier
+        args.identifier = "identifier-" + args.identifier
         console.info('NEW ASSOCIATION', args)
         const res = await runAssociateFacetValue(args)
         console.log(res)

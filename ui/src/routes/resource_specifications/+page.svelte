@@ -1,13 +1,6 @@
 <script lang="ts">
   import ResourceSpecificationModal from "$lib/ResourceSpecificationModal.svelte"
   // import resourceSpecifications from '$lib/data/resource_specifications.json'
-  let modalOpen = false;
-  let editing = false;
-  let name = "";
-  let id = "";
-  let currentResourceSpecification: any;
-  let units: any[];
-
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
@@ -16,11 +9,28 @@
   import { gql } from 'graphql-tag'
   import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
-  import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
+  import { FACET_VALUE_CORE_FIELDS, FACET_GROUP_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
-  // import Units from '$lib/Units.svelte'
+  import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
 
+  let modalOpen = false;
+  let editing = false;
+  let name = "";
+  let id = "";
+  let currentResourceSpecification: any;
+  let units: any[];
+  let facets: Facet[] | undefined;
+
+  const GET_FACET_GROUPS = gql`
+    ${FACET_GROUP_CORE_FIELDS}
+    query GetFacets {
+      facetGroups {
+        ...FacetGroupCoreFields
+      }
+    }
+  `
+  
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
     ${FACET_VALUE_CORE_FIELDS}
@@ -67,8 +77,11 @@ const GET_UNITS = gql`
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
   async function fetchResourceSpecifications() {
+    await resourceSpecificationsQuery.getCurrentResult()
+    let x = await resourceSpecificationsQuery.refetch()
+    console.log(x)
     // setTimeout(function(){
-      resourceSpecificationsQuery.refetch().then((r) => {
+    await resourceSpecificationsQuery.refetch().then((r) => {
         resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
           return {
             ...a,
@@ -80,11 +93,21 @@ const GET_UNITS = gql`
     // }, 1000)
   }
 
-  onMount(async () => {
-    if (browser) {
-      resourceSpecificationsQuery.getCurrentResult()
-      fetchResourceSpecifications()
-      await getUnits.getCurrentResult()
+  interface FacetGroupResponse {
+    facetGroups: FacetGroup[]
+  }
+  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+
+  async function fetchFacets() {
+    await queryFacetGroups.getCurrentResult()
+    let y = await queryFacetGroups.refetch()
+    let facetGroups = y.data.facetGroups
+    facets = facetGroups.find((g) => {return g.name == "Resource Specification"})?.facets
+    console.log(facets)
+  }
+
+  async function fetchUnits() {
+    await getUnits.getCurrentResult()
       getUnits.refetch().then((r) => {
         if (r.data?.units.edges.length > 0) {
           units = flattenRelayConnection(r.data?.units).map((a) => {
@@ -94,6 +117,13 @@ const GET_UNITS = gql`
           })
         }
       })
+  }
+
+  onMount(async () => {
+    if (browser) {
+      await fetchResourceSpecifications()
+      await fetchFacets()
+      await fetchUnits()
     }
   })
 
@@ -105,7 +135,7 @@ const GET_UNITS = gql`
 
 <!-- <Units /> -->
 {#if units}
-<ResourceSpecificationModal bind:open={modalOpen} bind:units={units} bind:name={name} bind:editing={editing} bind:currentResourceSpecification={currentResourceSpecification} on:submit={fetchResourceSpecifications} />
+<ResourceSpecificationModal bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} on:submit={fetchResourceSpecifications} />
 {/if}
 
 <div class="p-12">

@@ -110,7 +110,7 @@
       <ErrorPage status="Problem loading network Agents" error={$agentsQuery.error} />
     {:else if agents}
       <svelte:component this={MapComponent} agents={agents} bind:panelInfo />
-      <Search bind:allData={agents} bind:displayData={agents} />
+      <Search bind:allData={agents} bind:displayData={agents} bind:panelInfo/>
       {#if panelInfo }
         <SidePanel bind:panelInfo />
       {/if}
