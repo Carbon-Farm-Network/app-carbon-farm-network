@@ -221,8 +221,8 @@
   }
 
   async function fetchOffers() {
-    getOffers.getCurrentResult()
-    getOffers.refetch().then((r) => {
+    await getOffers.getCurrentResult()
+    await getOffers.refetch().then((r) => {
       if (r.data?.proposals.edges.length > 0) {
         offersList = flattenRelayConnection(r.data?.proposals)
         console.log(offersList)
@@ -250,7 +250,7 @@
   $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
 </script>
 
-<OfferModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<OfferModal on:submit={await fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

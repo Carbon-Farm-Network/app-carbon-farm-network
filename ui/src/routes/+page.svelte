@@ -89,6 +89,7 @@
 
     async function fetchAgents() {
     // setInterval(function(){
+      await agentsQuery.getCurrentResult()
       await agentsQuery.refetch().then((r) => {
         agents = flattenRelayConnection(r.data?.agents).map((a) => {
           return {
@@ -141,11 +142,11 @@
     // defer Leaflet map load until rendering, and only in browser environment
     // if (browser) {
       await fetchOffers()
-      await agentsQuery.getCurrentResult()
+      // await agentsQuery.getCurrentResult()
       await fetchAgents()
-      setInterval(function(){
-        fetchAgents()
-      }, 20000)
+      // setInterval(function(){
+      //   fetchAgents()
+      // }, 20000)
       MapComponent = (await import('$lib/Map.svelte')).default
     // }
   })

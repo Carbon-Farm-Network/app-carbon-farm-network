@@ -209,6 +209,7 @@
     }
     console.log(intent2)
     const res2 = await updateIntent({ variables: { intent: intent2 } })
+    dispatch("submit");
     console.log(res2)
     submitting = false;
     open = false;
