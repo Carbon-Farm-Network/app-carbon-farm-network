@@ -16,7 +16,6 @@
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
-  import Initialize from '$lib/Initialize.svelte'
 
   let offersList: any[] = [];
 
@@ -158,7 +157,6 @@
   $: agents, offersList;
 </script>
 
-<Initialize>
 <div class="relative h-full w-full">
   {#if agents && agentsQuery !== undefined}
     <!-- {JSON.stringify(agents[0].latlng)} -->
@@ -178,6 +176,4 @@
   {:else}
     <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
   {/if}
-
 </div>
-</Initialize>

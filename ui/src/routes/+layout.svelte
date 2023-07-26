@@ -5,6 +5,7 @@ import { setClient } from 'svelte-apollo'
 import "../global.css"
 import { page } from '$app/stores'
 
+import Initialize from '$lib/Initialize.svelte'
 import Nav from '$lib/Nav.svelte'
 
 /** @type {import('./$types').LayoutData} */
@@ -28,9 +29,11 @@ if (browser) {
       <Nav path={$page.url.pathname} />
     </nav>
 
-    <main class="main h-full">
-      <slot />
-    </main>
+    <Initialize>
+      <main class="main h-full">
+        <slot />
+      </main>
+    </Initialize>
   </div>
 {/if}
 
