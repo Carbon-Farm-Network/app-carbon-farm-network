@@ -10,7 +10,7 @@
   import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { FACET_VALUE_CORE_FIELDS, FACET_GROUP_CORE_FIELDS } from '$lib/graphql/facet.fragments'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS, MEASURE_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
 
@@ -30,19 +30,23 @@
       }
     }
   `
-  
+
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
     ${FACET_VALUE_CORE_FIELDS}
+    ${MEASURE_CORE_FIELDS}
     query {
       resourceSpecifications(last: 100000) {
         edges {
           cursor
           node {
             ...ResourceSpecificationCoreFields
-            #facets {
-            #  ...FacetValueCoreFields
-            #}
+            defaultUnitOfResource {
+              ...MeasureCoreFields
+            }
+            facets {
+              ...FacetValueCoreFields
+            }
           }
         }
       }
