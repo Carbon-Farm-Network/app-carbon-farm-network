@@ -211,9 +211,10 @@
               <!-- Remember to replace with something coming from panel info -->
               <!-- {JSON.stringify(panelInfo.offers[0])} -->
               {#each panelInfo.offers as offer}
-              {@const mainIntent = offer.publishes.find(it => !it.reciprocal)}
-              {@const reciprocalIntent = offer.publishes.find(it => it.reciprocal)}
-              {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
+              {#if !offer.hasEnd || (new Date() < offer.hasEnd)}
+                {@const mainIntent = offer.publishes.find(it => !it.reciprocal)}
+                {@const reciprocalIntent = offer.publishes.find(it => it.reciprocal)}
+                {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
                 <li class="flex items-center justify-between gap-x-6 py-2">
                   <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
@@ -230,6 +231,7 @@
                     </div>
                   </div>
                 </li>
+              {/if}
               {/each}
 
               <!-- More items... -->

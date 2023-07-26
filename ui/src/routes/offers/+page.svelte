@@ -3,7 +3,7 @@
   import offers from '$lib/data/offers.json'
   import { DateInput } from 'date-picker-svelte'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { gql } from 'graphql-tag'
@@ -48,12 +48,16 @@
 
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    ${UNIT_CORE_FIELDS}
     query {
       resourceSpecifications(last: 100000) {
         edges {
           cursor
           node {
             ...ResourceSpecificationCoreFields
+            defaultUnitOfResource {
+              ...UnitCoreFields
+            }
           }
         }
       }

@@ -172,7 +172,7 @@
                 {#each facets as facet}
                   <th
                     scope="col"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
                     >
                     {agent.facets.findLast((f) => {return f.facet.id == facet.id})?.value}
                 </th>
