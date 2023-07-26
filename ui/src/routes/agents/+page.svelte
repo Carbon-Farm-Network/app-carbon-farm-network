@@ -110,7 +110,7 @@
     <div class="sm:flex-auto">
       <h1 class="text-base font-semibold leading-6 text-gray-900">Agents</h1>
       <p class="mt-2 text-sm text-gray-700">
-        A list of all the people, organizations and ecological agents in the network.
+        A list of all the people, organizations and ecological agents related to the network.
       </p>
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">

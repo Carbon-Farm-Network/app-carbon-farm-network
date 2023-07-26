@@ -568,9 +568,9 @@
                     bind:value={currentIntent.note}
                   />
                 </div>
-                <p class="mt-3 text-sm leading-6 text-gray-600">
+                <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
-                </p>
+                </p> -->
               </div>
             </div>
 

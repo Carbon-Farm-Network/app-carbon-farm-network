@@ -152,7 +152,7 @@
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
-              Add a resource specification
+              Resource Specification
             </h3>
 
             <div class="mt-4">
@@ -280,9 +280,9 @@
                     }}
                     />
                 </div>
-                <p class="mt-3 text-sm leading-6 text-gray-600">
+                <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
-                </p>
+                </p> -->
               </div>
             </div>
 
