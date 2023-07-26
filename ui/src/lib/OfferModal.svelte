@@ -227,7 +227,7 @@
   })
 
   $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting
-  $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
+  $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo; // && currentIntent.note;
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
