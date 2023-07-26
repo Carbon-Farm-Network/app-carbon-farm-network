@@ -157,8 +157,8 @@
 
   $: agents, offersList;
 </script>
-<Initialize />
 
+<Initialize>
 <div class="relative h-full w-full">
   {#if agents && agentsQuery !== undefined}
     <!-- {JSON.stringify(agents[0].latlng)} -->
@@ -178,5 +178,6 @@
   {:else}
     <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
   {/if}
-  
+
 </div>
+</Initialize>

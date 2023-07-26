@@ -3,64 +3,44 @@
   import { createEventDispatcher } from 'svelte';
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
-  import { browser } from '$app/environment'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { AgentConnection, Agent, Unit, UnitConnection } from '@valueflows/vf-graphql'
-  import type { RelayConn } from './graphql/helpers'
-  import { flattenRelayConnection } from './graphql/helpers'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  const dispatch = createEventDispatcher();
+  import type { Unit, UnitConnection } from '@valueflows/vf-graphql'
 
-  const CREATE_UNIT_LB = gql`
-    mutation CreateUnit {
-      createUnit(
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+
+  const INITIALIZE_UNITS = gql`
+    ${UNIT_CORE_FIELDS}
+    mutation {
+      unitLb: createUnit(
         unit: {
           label: "pound"
           symbol: "lb"
         }
       ){
         unit {
-          id
-          label
-          symbol
+          ...UnitCoreFields
         }
       }
-    }`
-
-  const CREATE_UNIT_1 = gql`
-    mutation CreateUnit {
-      createUnit(
+      unitEa: createUnit(
         unit: {
           label: "one"
           symbol: "one"
         }
       ){
         unit {
-          id
-          label
-          symbol
+          ...UnitCoreFields
         }
       }
     }
   `
 
-  const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
-        }
-      }
-    }
-  `
+  const INITIALIZE_GLOBAL_RECORDS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    ${UNIT_CORE_FIELDS}
+    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!) {
 
-  const CREATE_FACET_GROUPS = gql`
-    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!) {
       g1: putFacetGroup(facetGroup: $g1) {
         facetGroup {
           id
@@ -75,14 +55,8 @@
           name
         }
       }
-    }
-  `
 
-  const ADD_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    mutation($resource: ResourceSpecificationCreateParams!){
-      createResourceSpecification(resourceSpecification: $resource) {
+      rs: createResourceSpecification(resourceSpecification: $resource) {
         resourceSpecification {
           ...ResourceSpecificationCoreFields
           defaultUnitOfResource {
@@ -90,30 +64,42 @@
           }
         }
       }
+
     }
   `
 
-  let units: Unit[];
-  let addUnitLb: any = mutation(CREATE_UNIT_LB)
-  let addUnit1: any = mutation(CREATE_UNIT_1)
-  let addFacetGroups: any = mutation(CREATE_FACET_GROUPS)
-  let addResourceSpecification: any = mutation(ADD_RESOURCE_SPECIFICATION)
+  const GET_UNITS = gql`
+    ${UNIT_CORE_FIELDS}
+    query {
+      units {
+        edges {
+          cursor
+          node {
+            ...UnitCoreFields
+          }
+        }
+      }
+    }
+  `
+
+  let dependenciesOk: boolean | null = null
+
+  const initUnits = mutation<{ unitEa: { unit: Unit }, unitLb: { unit: Unit } }, {}>(INITIALIZE_UNITS)
+  const initData = mutation(INITIALIZE_GLOBAL_RECORDS)
 
   interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any>
+    units: UnitConnection & RelayConn<Unit>
   }
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+  const getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
 
-  async function addUnits() {
+  // :NOTE: assumes that FacetGroups & ResourceSpecification are not yet created if Units aren't
+  async function runInitialization() {
+    let units: Unit[] = []
     try {
-      await addUnit1()
-      await addUnitLb()
-      const r = await getUnits.refetch()
-      if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units)
-        dispatch('units', units)
-      }
-      let c = await addFacetGroups({ variables: {
+      const created = await initUnits({})
+      units = [created.data?.unitEa.unit as Unit, created.data?.unitLb.unit as Unit]
+
+      const rs = await initData({ variables: {
         g1: {
           name: "Agent",
           note: "All facet classifications relevant to Agent records.",
@@ -122,40 +108,38 @@
           name: "Resource Specification",
           note: "All facet classifications relevant to types of resources.",
         },
+        resource: {
+          name: "USD",
+          defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
+        },
       }})
-      console.log('FacetGroups', c)
-      await addResourceSpecification({ variables: {resource: {
-        name: "USD",
-        defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
-      }}})
     } catch(e) {
       console.log(e)
     }
+    return units
   }
 
   onMount(async () => {
-    if (browser) {
-      try {
-        await getUnits.getCurrentResult()
-        getUnits.refetch().then((r) => {
-          if (r.data?.units.edges.length > 0) {
-            units = flattenRelayConnection(r.data?.units)
-            dispatch('units', r.data?.units)
-          }
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    }
-    // console.log('Units onMount')
-  })
+    const res = await getUnits.refetch()
+    let units = flattenRelayConnection(res.data?.units)
 
-  $: units
+    if (units.length === 0) {
+      units = await runInitialization()
+    }
+    if (units.length > 0) {
+      dependenciesOk = true
+    } else {
+      dependenciesOk = false
+    }
+  })
 </script>
 
-{#if !units || false}
-  <button type="button"
-  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-  style="width: 100px; position: absolute; z-index: 999999"
-  on:click={addUnits} >Click here if this is a new app.</button>
+{#if dependenciesOk === true}
+  <slot></slot>
+{:else if dependenciesOk === false}
+  <h1>Error initializing shared data.</h1>
+  <p>The operation may have timed out. Try freeing up some system resources and restart the app.</p>
+{:else}
+  <h1>Loading data...</h1>
+  <p>(This may take a while the first time the app is opened.)</p>
 {/if}
