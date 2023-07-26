@@ -8,6 +8,7 @@
   import type { AgentConnection, Agent, Unit, UnitConnection } from '@valueflows/vf-graphql'
   import type { RelayConn } from './graphql/helpers'
   import { flattenRelayConnection } from './graphql/helpers'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   const dispatch = createEventDispatcher();
 
   const CREATE_UNIT_LB = gql`
@@ -78,10 +79,15 @@
   `
 
   const ADD_RESOURCE_SPECIFICATION = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    ${UNIT_CORE_FIELDS}
     mutation($resource: ResourceSpecificationCreateParams!){
       createResourceSpecification(resourceSpecification: $resource) {
         resourceSpecification {
-          id
+          ...ResourceSpecificationCoreFields
+          defaultUnitOfResource {
+            ...UnitCoreFields
+          }
         }
       }
     }

@@ -11,8 +11,8 @@ export const RESOURCE_SPECIFICATION_CORE_FIELDS = gql`
   }
 `
 
-export const MEASURE_CORE_FIELDS = gql`
-  fragment MeasureCoreFields on Measure {
+export const UNIT_CORE_FIELDS = gql`
+  fragment UnitCoreFields on Unit {
     id
     label
     symbol
