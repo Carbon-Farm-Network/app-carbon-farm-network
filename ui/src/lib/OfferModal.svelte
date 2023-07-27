@@ -209,6 +209,7 @@
     }
     console.log(intent2)
     const res2 = await updateIntent({ variables: { intent: intent2 } })
+    dispatch("submit");
     console.log(res2)
     submitting = false;
     open = false;
@@ -226,7 +227,7 @@
   })
 
   $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting
-  $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.note;
+  $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo; // && currentIntent.note;
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -568,9 +569,9 @@
                     bind:value={currentIntent.note}
                   />
                 </div>
-                <p class="mt-3 text-sm leading-6 text-gray-600">
+                <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
-                </p>
+                </p> -->
               </div>
             </div>
 

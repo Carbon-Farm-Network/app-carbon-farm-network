@@ -40,6 +40,8 @@
     >
       {#if agent.iconUrl }
         <Icon options={{iconUrl: agent.iconUrl}} />
+        <!-- <img class="h-20 w-20" src={agent.iconUrl} alt="" /> -->
+
       {/if}
       {#if agent.popup }
       <Popup><b>{agent.popup}</b></Popup>

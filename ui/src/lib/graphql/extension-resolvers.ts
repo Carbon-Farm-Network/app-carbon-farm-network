@@ -160,9 +160,9 @@ console.log(res)
     Organization: {
       facets: readFacetValuesWithIdentifier,
     },
-    ResourceSpecification: {
-      facets: readFacetValuesWithIdentifier,
-    }
+    // ResourceSpecification: {
+    //   facets: readFacetValuesWithIdentifier,
+    // }
 
   }
 }

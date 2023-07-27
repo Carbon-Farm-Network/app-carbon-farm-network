@@ -80,7 +80,7 @@
               -->
               <div class="ml-8">
                 {#if panelInfo && panelInfo.imageUrl}
-                  <img class="h-20 w-40" src={panelInfo.imageUrl} alt="" />
+                  <img class="h-20 w-20" src={panelInfo.imageUrl} alt="" />
                 {:else}
                   <span
                     class="inline-block h-14 w-14 rounded-full overflow-hidden bg-gray-100"
@@ -211,9 +211,10 @@
               <!-- Remember to replace with something coming from panel info -->
               <!-- {JSON.stringify(panelInfo.offers[0])} -->
               {#each panelInfo.offers as offer}
-              {@const mainIntent = offer.publishes.find(it => !it.reciprocal)}
-              {@const reciprocalIntent = offer.publishes.find(it => it.reciprocal)}
-              {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
+              {#if !offer.hasEnd || (new Date() < offer.hasEnd)}
+                {@const mainIntent = offer.publishes.find(it => !it.reciprocal)}
+                {@const reciprocalIntent = offer.publishes.find(it => it.reciprocal)}
+                {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
                 <li class="flex items-center justify-between gap-x-6 py-2">
                   <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
@@ -230,6 +231,7 @@
                     </div>
                   </div>
                 </li>
+              {/if}
               {/each}
 
               <!-- More items... -->

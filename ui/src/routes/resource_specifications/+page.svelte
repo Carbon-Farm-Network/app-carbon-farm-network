@@ -44,9 +44,9 @@
             defaultUnitOfResource {
               ...UnitCoreFields
             }
-            facets {
-              ...FacetValueCoreFields
-            }
+            #facets {
+              #...FacetValueCoreFields
+            #}
           }
         }
       }
