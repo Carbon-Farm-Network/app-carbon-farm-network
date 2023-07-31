@@ -105,7 +105,24 @@
     agent: AgentConnection & RelayConn<Agent>
   }
 
-  let roles = ["Farmer", "Mill", "Designer"]
+  let roles = [
+    "Farmer",
+    "Scouring Mill",
+    "Spinning Mill",
+    "Knitting Factory",
+    "Weaving Factory",
+    "Designer",
+    "Shipping",
+  ]
+  let roleImages = {
+    "Farmer": "farm.svg",
+    "Scouring Mill": "mill.svg",
+    "Spinning Mill": "mill.svg",
+    "Knitting Factory": "mill.svg",
+    "Weaving Factory": "mill.svg",
+    "Designer": "knitting.svg",
+    "Shipping": "truck.svg",
+  }
 
   // let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
   let addAgent: any= mutation(ADD_AGENT)
@@ -187,7 +204,7 @@
         const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
         console.log("associate", res2)
       }
- 
+
 
       dispatch("submit");
       open = false;
@@ -198,11 +215,11 @@
   }
 
   // async function testFacetsCall() {
-  //   const facetGroupEntry = { 
+  //   const facetGroupEntry = {
   //     group_id: "groupId",
   //     note: "note",
   //   };
-  
+
   //   try {
   //     const record = await client.callZome({
   //       cap_secret: null,
@@ -358,14 +375,9 @@
                   on:change={e => {
                     const input = e.target;
                     if (input instanceof HTMLSelectElement) {
-                      let role = input.value;
-                      if (role == "Farmer") {
-                        currentAgent.imageUrl = "farm.svg"
-                      } else if (role == "Mill") {
-                        currentAgent.imageUrl = "mill.svg"
-                      } else if (role == "Designer") {
-                        currentAgent.imageUrl = "knitting.svg"
-                      }
+                      const role = input.value;
+                      //@ts-ignore
+                      currentAgent.imageUrl = roleImages[role] || 'profile.png'
                     }
                   }}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
