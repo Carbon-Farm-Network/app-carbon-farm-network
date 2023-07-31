@@ -60,11 +60,11 @@ importers:
         specifier: ^0.9.0-alpha.9
         version: 0.9.0-alpha.9(graphql@15.8.0)
       '@valueflows/vf-graphql-holochain':
-        specifier: ^0.0.1-alpha.21
-        version: 0.0.1-alpha.21(graphql@15.8.0)(ws@8.13.0)
+        specifier: ^0.0.1-alpha.22
+        version: 0.0.1-alpha.22(graphql@15.8.0)(ws@8.13.0)
       '@vf-ui/graphql-client-holochain':
-        specifier: ^0.0.1-alpha.21
-        version: 0.0.1-alpha.21(@apollo/client@3.7.15)(graphql@15.8.0)(ws@8.13.0)
+        specifier: ^0.0.1-alpha.22
+        version: 0.0.1-alpha.22(@apollo/client@3.7.15)(graphql@15.8.0)(ws@8.13.0)
       date-picker-svelte:
         specifier: ^2.4.3
         version: 2.4.3(svelte@3.59.1)
@@ -1490,8 +1490,8 @@ packages:
       '@vaadin/vaadin-development-mode-detector': 2.0.6
     dev: false
 
-  /@valueflows/vf-graphql-holochain@0.0.1-alpha.21(graphql@15.8.0)(ws@8.13.0):
-    resolution: {integrity: sha512-hMUibAFegL98Azcov0z/iUa4UaARQetw8NnWRtHMuoLYsEmO6Yv3h0yYz4s0+EK/oX1usqXkhnCTzGWhvHFXAA==}
+  /@valueflows/vf-graphql-holochain@0.0.1-alpha.22(graphql@15.8.0)(ws@8.13.0):
+    resolution: {integrity: sha512-mtESbfoOgCYlxeKOGxcMdYquzPJkoARGqn3stkrIwts5zgGVYY9oW4mAB8mPEbDjNKOz/fCIkwkaR+eQRC/LcQ==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
@@ -1503,6 +1503,7 @@ packages:
       buffer: 6.0.3
       dataloader: 1.4.0
       deep-for-each: 3.0.0
+      deepmerge: 4.3.1
       fecha: 4.2.3
       graphql: 15.8.0
       graphql-scalars: 1.21.3(graphql@15.8.0)
@@ -1520,15 +1521,15 @@ packages:
       '@graphql-tools/merge': 8.4.1(graphql@15.8.0)
       graphql: 15.8.0
 
-  /@vf-ui/graphql-client-holochain@0.0.1-alpha.21(@apollo/client@3.7.15)(graphql@15.8.0)(ws@8.13.0):
-    resolution: {integrity: sha512-46POQWy7fmnEaHdBkCU6yXxA59+xsB7tLtzCX66mXRrEBxEwn1W2UtBtxWt/R7eQ+E3ATruZ+72PaTtpbo+5ag==}
+  /@vf-ui/graphql-client-holochain@0.0.1-alpha.22(@apollo/client@3.7.15)(graphql@15.8.0)(ws@8.13.0):
+    resolution: {integrity: sha512-3U1zuGIkSSB3yCvuv/bHLhCrDrRxgzSQUA3+LtSE/H9Tg86hiB6gsJVSd9zA9Pardx5x271gSnOpUUC+B96Ovw==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '>=14'
     dependencies:
       '@apollo/client': 3.7.15(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(graphql@15.8.0)
-      '@valueflows/vf-graphql-holochain': 0.0.1-alpha.21(graphql@15.8.0)(ws@8.13.0)
+      '@valueflows/vf-graphql-holochain': 0.0.1-alpha.22(graphql@15.8.0)(ws@8.13.0)
       graphql: 15.8.0
       tslib: 2.5.0
     transitivePeerDependencies:
@@ -2351,7 +2352,6 @@ packages:
   /deepmerge@4.3.1:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
     engines: {node: '>=0.10.0'}
-    dev: true
 
   /detect-indent@6.1.0:
     resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
