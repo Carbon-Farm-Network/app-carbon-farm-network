@@ -1,19 +1,19 @@
 <script lang="ts">
   let dropdownOpen = false
   export let allData: any[]
-  export let displayData: any[]
+  export let matchedData: any[] = []
   export let panelInfo: any | undefined;
 
   let searchInput = ""
   function filter() {
-    displayData = allData.filter(datum => matchObject(searchInput, datum))
+    matchedData = allData.filter(datum => matchObject(searchInput, datum))
   }
   function matchObject(searchInput: string, datum: any): boolean {
-    let terms = searchInput.split(' ')
+    let terms = searchInput.toLowerCase().split(' ')
     return terms.every((term) => {
       return Object.values(datum).some((value) => matchValue(term, value))
     })
-  } 
+  }
   function matchValue(term: string, value: any): boolean {
     if (typeof value === 'string') {
       return value.toLowerCase().includes(term)
@@ -62,7 +62,7 @@
 
         Highlighted: "text-white bg-indigo-600", Not Highlighted: "text-gray-900"
       -->
-        {#each displayData as agent}
+        {#each matchedData as agent}
         <li
         on:click={() => {panelInfo = agent}}
           class="text-gray-900 cursor-default select-none relative py-2 pl-3 pr-9"
