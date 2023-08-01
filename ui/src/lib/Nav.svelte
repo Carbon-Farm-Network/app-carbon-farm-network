@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto } from '$app/navigation'
+  import Logo from '$lib/Logo.svelte'
 
   function navigate(location: string) {
-    goto(location);
+    goto(location)
   }
 
   export let path: string
@@ -27,7 +28,7 @@
           class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
           aria-controls="mobile-menu"
           aria-expanded="false"
-					on:click={toggleMobileMenu}
+          on:click={toggleMobileMenu}
         >
           <span class="sr-only">Open main menu</span>
           <!--
@@ -80,7 +81,8 @@
         class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start"
       >
         <div class="flex-shrink-0 flex items-center">
-          <img
+          <Logo />
+          <!-- <img
             class="block lg:hidden h-8 w-auto"
             src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
             alt="Workflow"
@@ -89,7 +91,7 @@
             class="hidden lg:block h-8 w-auto"
             src="https://tailwindui.com/img/logos/workflow-logo-indigo-500-mark-white-text.svg"
             alt="Workflow"
-          />
+          /> -->
         </div>
         <div class="hidden sm:block sm:ml-6">
           <div class="flex space-x-4">
@@ -98,7 +100,8 @@
             <div
               style="cursor: pointer;"
               on:click={() => navigate('/')}
-              class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default">
+              class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default"
+            >
               Map
             </div>
             <!-- <a href="/"
@@ -108,7 +111,8 @@
             <div
               style="cursor: pointer;"
               on:click={() => navigate('/agents')}
-              class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default">
+              class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default"
+            >
               Agents
             </div>
 
@@ -120,7 +124,10 @@
             <div
               style="cursor: pointer;"
               on:click={() => navigate('/resource_specifications')}
-              class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default">
+              class="{path === '/resource_specifications'
+                ? 'nav-active'
+                : 'nav-inactive'} nav-default"
+            >
               Resource Specifications
             </div>
             <!-- <a
@@ -131,7 +138,8 @@
             <div
               style="cursor: pointer;"
               on:click={() => navigate('/facets')}
-              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default">
+              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default"
+            >
               Facets
             </div>
             <!-- <a
@@ -143,7 +151,8 @@
             <div
               style="cursor: pointer;"
               on:click={() => navigate('/offers')}
-              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default">
+              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default"
+            >
               Offers
             </div>
             <!-- <a
@@ -155,7 +164,8 @@
             <div
               style="cursor: pointer;"
               on:click={() => navigate('/planning')}
-              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default">
+              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default"
+            >
               Planning
             </div>
           </div>
@@ -194,14 +204,10 @@
               id="user-menu-button"
               aria-expanded="false"
               aria-haspopup="true"
-							on:click={toggleDropdownMenu}
+              on:click={toggleDropdownMenu}
             >
               <span class="sr-only">Open user menu</span>
-              <img
-                class="h-8 w-8 rounded-full"
-                src="profile.png"
-                alt=""
-              />
+              <img class="h-8 w-8 rounded-full" src="profile.png" alt="" />
               <!-- <img
                 class="h-8 w-8 rounded-full"
                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -221,7 +227,9 @@
               To: "transform opacity-0 scale-95"
           -->
           <div
-            class="{dropdownMenuOpen ? '' : 'hidden'} origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+            class="{dropdownMenuOpen
+              ? ''
+              : 'hidden'} origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="user-menu-button"
@@ -256,7 +264,7 @@
   </div>
 
   <!-- Mobile menu, show/hide based on menu state. -->
-  <div class="{ mobileMenuOpen ? '' : 'hidden' } sm:hidden" id="mobile-menu">
+  <div class="{mobileMenuOpen ? '' : 'hidden'} sm:hidden" id="mobile-menu">
     <div class="px-2 pt-2 pb-3 space-y-1">
       <a href="/" class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default block"
         >Map</a
@@ -270,8 +278,9 @@
 
       <a
         href="/resource_specifications"
-        class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Resource specifications</a
+        class="{path === '/resource_specifications'
+          ? 'nav-active'
+          : 'nav-inactive'} nav-default block">Resource specifications</a
       >
 
       <a
