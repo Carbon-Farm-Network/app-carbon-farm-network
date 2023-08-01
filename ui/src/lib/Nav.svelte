@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation'
   import Logo from '$lib/Logo.svelte'
 
+
   function navigate(location: string) {
     goto(location)
   }

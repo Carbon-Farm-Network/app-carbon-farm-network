@@ -1,6 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
+<script lang="ts" type="module">
+	export { className as class };
+</script>
+
+<style lang="css" type="text/css">
+	.Logo {
+		fill: white;
+		height: 40px;
+		background-color: white;
+		border-radius: 4px;
+		padding: 2px 0;
+	}
+</style>
+
+<!-- <?xml version="1.0" encoding="utf-8"?> -->
 <!-- Generator: Adobe Illustrator 25.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<svg class="Logo" version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 792 109.44" enable-background="new 0 0 792 109.44" xml:space="preserve">
 <g>
 	<path fill="#4A4A49" d="M322.37,99.23h-0.18h-0.09H322c-0.12-0.03-0.23-0.09-0.34-0.1c-1.85-0.17-3.7-0.25-5.55-0.62
