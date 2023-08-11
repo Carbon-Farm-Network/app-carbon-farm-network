@@ -83,6 +83,7 @@
   `
 
   let dependenciesOk: boolean | null = null
+  let error: Error | null = null
 
   const initUnits = mutation<{ unitEa: { unit: Unit }, unitLb: { unit: Unit } }, {}>(INITIALIZE_UNITS)
   const initData = mutation(INITIALIZE_GLOBAL_RECORDS)
@@ -99,7 +100,7 @@
       const created = await initUnits({})
       units = [created.data?.unitEa.unit as Unit, created.data?.unitLb.unit as Unit]
 
-      const rs = await initData({ variables: {
+      await initData({ variables: {
         g1: {
           name: "Agent",
           note: "All facet classifications relevant to Agent records.",
@@ -114,32 +115,50 @@
         },
       }})
     } catch(e) {
+      error = e as Error
       console.log(e)
     }
+    dependenciesOk = units.length > 0
     return units
   }
 
-  onMount(async () => {
+  async function checkDependencies() {
     const res = await getUnits.refetch()
     let units = flattenRelayConnection(res.data?.units)
+    dependenciesOk = units.length > 0
+  }
 
-    if (units.length === 0) {
-      units = await runInitialization()
-    }
-    if (units.length > 0) {
-      dependenciesOk = true
-    } else {
-      dependenciesOk = false
-    }
-  })
+  onMount(checkDependencies)
 </script>
 
-{#if dependenciesOk === true}
-  <slot></slot>
-{:else if dependenciesOk === false}
-  <h1>Error initializing shared data.</h1>
-  <p>The operation may have timed out. Try freeing up some system resources and restart the app.</p>
-{:else}
-  <h1>Loading data...</h1>
-  <p>(This may take a while the first time the app is opened.)</p>
-{/if}
+<div class="p-12">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+
+  {#if error}
+    <h1 class="text-base font-semibold leading-6 text-gray-900">Error initializing shared data.</h1>
+    <p class="mt-2 text-sm text-gray-700">The operation may have timed out. Try freeing up some system resources and restart the app.</p>
+  {:else if dependenciesOk === false}
+    <h1 class="text-base font-semibold leading-6 text-gray-900">New network detected!</h1>
+    <p class="mt-2 text-sm text-gray-700">It looks like you need to initialize some shared data.</p>
+    <br />
+    <p class="mt-2 text-sm text-gray-700">
+      <strong>If somebody else invited you to this network:</strong><br />
+      ensure the person who invited you is online and wait for their node to sync with yours. You can check the sync status in the Holochain app store.<br />
+      When ready, <button class="px-4 py-1 text-sm text-purple-600 font-semibold rounded-full border border-purple-200 hover:text-white hover:bg-purple-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" on:click={checkDependencies}>click here</button> to check again.
+    </p>
+    <br />
+    <p class="mt-2 text-sm text-gray-700">
+      <strong>If you are the person setting up this network:</strong><br />
+      please <button class="px-4 py-1 text-sm text-purple-600 font-semibold rounded-full border border-purple-200 hover:text-white hover:bg-purple-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" on:click={runInitialization}>click here</button> to create these records.
+    </p>
+  {:else if dependenciesOk === true}
+    <slot></slot>
+  {:else}
+    <h1 class="text-base font-semibold leading-6 text-gray-900">Checking shared data&hellip;</h1>
+    <p class="mt-2 text-sm text-gray-700">(This may take a while the first time the app is opened.)</p>
+  {/if}
+
+    </div>
+  </div>
+</div>
