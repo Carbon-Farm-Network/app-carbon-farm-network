@@ -29,11 +29,11 @@ if (browser) {
       <Nav path={$page.url.pathname} />
     </nav>
 
-    <Initialize>
-      <main class="main h-full">
+    <main class="main h-full">
+      <Initialize>
         <slot />
-      </main>
-    </Initialize>
+      </Initialize>
+    </main>
   </div>
 {/if}
 
