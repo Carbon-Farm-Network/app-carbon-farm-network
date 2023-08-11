@@ -84,6 +84,7 @@
 
   let dependenciesOk: boolean | null = null
   let error: Error | null = null
+  let saving = false
 
   const initUnits = mutation<{ unitEa: { unit: Unit }, unitLb: { unit: Unit } }, {}>(INITIALIZE_UNITS)
   const initData = mutation(INITIALIZE_GLOBAL_RECORDS)
@@ -95,6 +96,8 @@
 
   // :NOTE: assumes that FacetGroups & ResourceSpecification are not yet created if Units aren't
   async function runInitialization() {
+    if (saving) return
+    saving = true
     let units: Unit[] = []
     try {
       const created = await initUnits({})
@@ -119,6 +122,7 @@
       console.log(e)
     }
     dependenciesOk = units.length > 0
+    saving = false
     return units
   }
 
