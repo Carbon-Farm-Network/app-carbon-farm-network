@@ -83,6 +83,16 @@
 
   // map component state
 
+  let roleImages = {
+    "Farmer": "farm.svg",
+    "Scouring Mill": "mill.svg",
+    "Spinning Mill": "mill.svg",
+    "Knitting Factory": "mill.svg",
+    "Weaving Factory": "mill.svg",
+    "Designer": "knitting.svg",
+    "Shipping": "truck.svg",
+  }
+
   let panelInfo: any,
       MapComponent: ComponentType,
       agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
@@ -92,11 +102,12 @@
       await agentsQuery.getCurrentResult()
       await agentsQuery.refetch().then((r) => {
         agents = flattenRelayConnection(r.data?.agents).map((a) => {
+          let iconUrl = roleImages[a.classifiedAs[2]] || 'mill.svg'
           return {
             ...a,
             "name": a.name,
             "imageUrl": a.image,
-            "iconUrl": a.image,
+            "iconUrl": iconUrl,
             "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
             "address": a.note,
             "offers": offersList?.filter((o) => o.publishes[1].publishes.provider.id === a.id),

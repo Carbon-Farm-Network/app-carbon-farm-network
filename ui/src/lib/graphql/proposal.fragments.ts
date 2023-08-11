@@ -72,6 +72,14 @@ export const PROPOSAL_RETURN_FIELDS = gql`
             id
             symbol
           }
+          facets {
+            id
+            value
+            facet {
+              id
+              name
+            }
+          }
         }
         resourceQuantity {
           hasNumericalValue

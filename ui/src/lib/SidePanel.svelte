@@ -229,6 +229,11 @@
                       <!-- {JSON.stringify(offer)} -->
                       <p class="whitespace-nowrap">Available {mainIntent.publishes.availableQuantity.hasNumericalValue} {mainIntent.publishes.availableQuantity.hasUnit.label} on <time datetime={offer.hasBeginning}>{availableOn}</time></p>
                     </div>
+                    <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
+                      {#each mainIntent.publishes.resourceConformsTo.facets as facet}
+                        {facet.facet.name}: {facet.value}
+                      {/each}
+                    </div>
                   </div>
                 </li>
               {/if}
