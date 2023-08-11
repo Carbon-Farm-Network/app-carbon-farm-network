@@ -14,31 +14,7 @@
   export let name = "";
   export let units: any[];
   export let facets: Facet[] | undefined;
-  
-  // const facets = [
-  //    {
-  //     "id": "color",
-  //     "name": "Color",
-  //     "description": "A very detailed description",
-  //     "order": 1,
-  //   }
-  // ]
-  // const facetValues =  [{
-  //   "id": "white",
-  //   "value": "White",
-  //   "order": 1,
-  //   "description": "like snow"
-  // },{
-  //   "id": "brown",
-  //   "value": "Brown",
-  //   "order": 2,
-  //   "description": "like chocolate"
-  // },{
-  //   "id": "gray",
-  //   "value": "Gray",
-  //   "order": 3,
-  //   "description": "like smoke"
-  // }]
+  export let selectedFacets: any;
 
   const ADD_RESOURCE_SPECIFICATION = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS},
@@ -50,6 +26,13 @@
       }
     }
   `
+
+  const ASSOCIATE_RESOURCE_SPECIFICATION_AND_FACET_VALUE = gql`
+    mutation($identifier: String, $facetValueId: ID!){
+      associateFacetValue(identifier: $identifier, facetValueId: $facetValueId)
+    }
+  `
+
   const UPDATE_RESOURCE_SPECIFICATION = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS},
     mutation($resource: ResourceSpecificationUpdateParams!){
@@ -62,6 +45,7 @@
   `
 
   let addResourceSpecification: any = mutation(ADD_RESOURCE_SPECIFICATION)
+  let associateResourceSpecificationWithValue: any = mutation(ASSOCIATE_RESOURCE_SPECIFICATION_AND_FACET_VALUE)
   let updateResourceSpecification: any = mutation(UPDATE_RESOURCE_SPECIFICATION)
   // let retrieveUnits: any = query(GET_UNITS_OF_EFFORT_AND_RESOURCE)
 
@@ -80,6 +64,20 @@
     console.log(resource)
     try {
       const res = await addResourceSpecification({ variables: { resource } })
+
+      const identifier = res.data.createResourceSpecification.resourceSpecification.id
+      // for each facet in selectedFacets, associate the agent with the selected value
+      for (let facet in selectedFacets) {
+        console.log(facet)
+        console.log(selectedFacets)
+        console.log(selectedFacets[facet])
+        if (selectedFacets[facet] == null) {
+          continue
+        }
+        const res2 = await associateResourceSpecificationWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
+        console.log("associate", res2)
+      }
+
       dispatch("submit");
       open = false;
       console.log(res)
@@ -102,6 +100,20 @@
     }
     try {
       const res = await updateResourceSpecification({ variables: { resource } })
+
+      const identifier = res.data.updateResourceSpecification.resourceSpecification.id
+      // for each facet in selectedFacets, associate the agent with the selected value
+      for (let facet in selectedFacets) {
+        console.log(facet)
+        console.log(selectedFacets)
+        console.log(selectedFacets[facet])
+        if (selectedFacets[facet] == null) {
+          continue
+        }
+        const res2 = await associateResourceSpecificationWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
+        console.log("associate", res2)
+      }
+
       dispatch("submit");
       open = false;
       console.log(res)
@@ -286,14 +298,14 @@
               </div>
             </div>
 
-            <div class="mt-4 text-left">
+            <!-- <div class="mt-4 text-left">
               <div class="col-span-full">
                 <label
                   for="image"
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Logo url</label
                 >
-                <!-- <div class="mt-2">
+                <div class="mt-2">
                   <input
                     type="text"
                     name="longitude"
@@ -309,9 +321,9 @@
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
-                </div> -->
+                </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -364,23 +376,30 @@
           <!-- </div>
         </div> -->
 
-        {#if facets}
-        {#each facets as facet}
+        {#if facets && selectedFacets}
+        {#each facets as {id, name, values}}
           <div class="mt-4 text-left">
             <div>
               <label
                 for="type"
                 class="block text-sm font-medium leading-6 text-gray-900"
-                >{facet.name}</label
+                >{name}</label
               >
               <select
+                bind:value={selectedFacets[id]}
+                on:change={(e) => {
+                  console.log(selectedFacets[id])
+                }}
                 id="type"
                 name="type"
                 class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
               >
-                {#each facet.values as value}
-                  <option value={value.id}>{value.value}</option>
+                <option value={null}></option>
+              {#if values}
+                {#each values as {id, value}}
+                  <option value={id}>{value}</option>
                 {/each}
+              {/if}
               </select>
             </div>
           </div>

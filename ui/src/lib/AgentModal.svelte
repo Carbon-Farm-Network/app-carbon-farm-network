@@ -25,28 +25,28 @@
 
   const dispatch = createEventDispatcher();
 
-  const GET_FACET_GROUPS = gql`
-    query GetFacets {
-      facetGroups {
-        id
-        revisionId
-        name
-        note
-        facets {
-          id
-          revisionId
-          name
-          note
-          values {
-            id
-            revisionId
-            value
-            note
-          }
-        }
-      }
-    }
-  `
+  // const GET_FACET_GROUPS = gql`
+  //   query GetFacets {
+  //     facetGroups {
+  //       id
+  //       revisionId
+  //       name
+  //       note
+  //       facets {
+  //         id
+  //         revisionId
+  //         name
+  //         note
+  //         values {
+  //           id
+  //           revisionId
+  //           value
+  //           note
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
   const ADD_AGENT = gql`
     ${AGENT_CORE_FIELDS},
@@ -95,10 +95,10 @@
   }
   `
 
-  interface FacetGroupResponse {
-    facetGroups: FacetGroup[]
-  }
-  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+  // interface FacetGroupResponse {
+  //   facetGroups: FacetGroup[]
+  // }
+  // let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
 
 
   interface QueryResponse {
@@ -144,8 +144,8 @@
     }
     try {
       const res = await addAgent({ variables: { agent } })
-      const groups = (await queryFacetGroups.result())
-      console.log(groups)
+      // const groups = (await queryFacetGroups.result())
+      // console.log(groups)
       // const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
       // console.log(value_id)
       const identifier = res.data.createOrganization.agent.id
@@ -201,6 +201,9 @@
       for (let facet in selectedFacets) {
         console.log(facet)
         console.log(selectedFacets[facet])
+        if (selectedFacets[facet] == null) {
+          continue
+        }
         const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
         console.log("associate", res2)
       }

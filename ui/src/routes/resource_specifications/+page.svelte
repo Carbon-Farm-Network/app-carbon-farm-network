@@ -21,6 +21,7 @@
   let currentResourceSpecification: any;
   let units: any[];
   let facets: Facet[] | undefined;
+  let selectedFacets: any = {};
 
   const GET_FACET_GROUPS = gql`
     ${FACET_GROUP_CORE_FIELDS}
@@ -44,9 +45,9 @@
             defaultUnitOfResource {
               ...UnitCoreFields
             }
-            #facets {
-              #...FacetValueCoreFields
-            #}
+            facets {
+              ...FacetValueCoreFields
+            }
           }
         }
       }
@@ -139,7 +140,7 @@ const GET_UNITS = gql`
 
 <!-- <Units /> -->
 {#if units}
-<ResourceSpecificationModal bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} on:submit={fetchResourceSpecifications} />
+<ResourceSpecificationModal bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={fetchResourceSpecifications} />
 {/if}
 
 <div class="p-12">
@@ -179,6 +180,16 @@ const GET_UNITS = gql`
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Default unit of effort</th
               > -->
+              <!-- for each facet, create th -->
+              {#if facets}
+              {#each facets as facet}
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >{facet.name}</th
+                >
+              {/each}
+            {/if}
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
               </th>
@@ -200,10 +211,33 @@ const GET_UNITS = gql`
               <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{resourceSpecification.defaultUnitOfEffort || ''}</td
               > -->
+              {#if facets}
+              {#each facets as facet}
+              {@const facetValue = resourceSpecification.facets.findLast((f) => {return f.facet.id == facet.id})?.value}
+                <th
+                  scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
+                  >
+                  {#if facetValue && facetValue != 'undefined'}
+                    {facetValue}                    
+                  {/if}
+              </th>
+              {/each}
+              {/if}
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" on:click={() => {name = resourceSpecification.name; currentResourceSpecification = resourceSpecification; editing=true; modalOpen = true}}  class="text-indigo-600 hover:text-indigo-900"
+                <button type="button" on:click={() => {
+                  name = resourceSpecification.name; 
+                  currentResourceSpecification = resourceSpecification; 
+                  editing=true; modalOpen = true
+
+                  selectedFacets = {};
+                  currentResourceSpecification.facets.map((f) => {
+                    selectedFacets[f.facet.id] = f.id
+                  })
+                 
+                  }}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>
