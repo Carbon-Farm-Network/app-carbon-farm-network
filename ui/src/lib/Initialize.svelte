@@ -131,6 +131,10 @@
   onMount(checkDependencies)
 </script>
 
+{#if dependenciesOk === true}
+  <slot></slot>
+{:else}
+
 <div class="p-12">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
@@ -152,8 +156,6 @@
       <strong>If you are the person setting up this network:</strong><br />
       please <button class="px-4 py-1 text-sm text-purple-600 font-semibold rounded-full border border-purple-200 hover:text-white hover:bg-purple-600 hover:border-transparent focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2" on:click={runInitialization}>click here</button> to create these records.
     </p>
-  {:else if dependenciesOk === true}
-    <slot></slot>
   {:else}
     <h1 class="text-base font-semibold leading-6 text-gray-900">Checking shared data&hellip;</h1>
     <p class="mt-2 text-sm text-gray-700">(This may take a while the first time the app is opened.)</p>
@@ -162,3 +164,5 @@
     </div>
   </div>
 </div>
+
+{/if}
