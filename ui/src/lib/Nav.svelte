@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation'
   import Logo from '$lib/Logo.svelte'
 
-
   function navigate(location: string) {
     goto(location)
   }
@@ -19,14 +18,14 @@
 </script>
 
 <!-- This example requires Tailwind CSS v2.0+ -->
-<nav class="bg-gray-800 h-full">
+<nav class="h-full">
   <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-full">
     <div class="relative flex items-center justify-between h-full">
       <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
         <!-- Mobile menu button-->
         <button
           type="button"
-          class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          class="inline-flex items-center justify-center p-2 rounded-md hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
           aria-controls="mobile-menu"
           aria-expanded="false"
           on:click={toggleMobileMenu}
@@ -94,8 +93,8 @@
             alt="Workflow"
           /> -->
         </div>
-        <div class="hidden sm:block sm:ml-6">
-          <div class="flex space-x-4">
+        <div class="hidden sm:block sm:ml-6 w-full">
+          <div class="flex justify-end space-x-4">
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
 
             <div
@@ -105,49 +104,6 @@
             >
               Map
             </div>
-            <!-- <a href="/"
-            class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Map</a> -->
-
-            <div
-              style="cursor: pointer;"
-              on:click={() => navigate('/agents')}
-              class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default"
-            >
-              Agents
-            </div>
-
-            <!-- <a
-              href="/agents"
-              class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Agents</a> -->
-
-            <div
-              style="cursor: pointer;"
-              on:click={() => navigate('/resource_specifications')}
-              class="{path === '/resource_specifications'
-                ? 'nav-active'
-                : 'nav-inactive'} nav-default"
-            >
-              Resource Specifications
-            </div>
-            <!-- <a
-              href="/resource_specifications"
-              class="{path === '/resource_specifications' ? 'nav-active' : 'nav-inactive'} nav-default"
-              >Resource specifications</a> -->
-
-            <div
-              style="cursor: pointer;"
-              on:click={() => navigate('/facets')}
-              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default"
-            >
-              Facets
-            </div>
-            <!-- <a
-              href="/facets"
-              class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default">
-              Facets
-            </a> -->
 
             <div
               style="cursor: pointer;"
@@ -237,26 +193,29 @@
             tabindex="-1"
           >
             <!-- Active: "bg-gray-100", Not Active: "" -->
-            <a
-              href="#"
+            <button
+              type="button"
               class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/agents')}
               role="menuitem"
               tabindex="-1"
-              id="user-menu-item-0">Your Profile</a
+              id="user-menu-item-1">Agents</button
             >
-            <a
-              href="#"
+            <button
+              type="button"
               class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/resource_specifications')}
               role="menuitem"
               tabindex="-1"
-              id="user-menu-item-1">Settings</a
+              id="user-menu-item-1">Resource specifications</button
             >
-            <a
-              href="#"
+            <button
+              type="button"
               class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/facets')}
               role="menuitem"
               tabindex="-1"
-              id="user-menu-item-2">Sign out</a
+              id="user-menu-item-1">Facets</button
             >
           </div>
         </div>
@@ -313,7 +272,7 @@
   }
 
   .nav-inactive {
-    @apply text-gray-300;
+    @apply text-gray-900;
   }
 
   .nav-inactive:hover {
