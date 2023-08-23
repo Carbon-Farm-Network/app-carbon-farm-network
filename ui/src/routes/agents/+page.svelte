@@ -14,6 +14,7 @@
   import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
+  import Header from "$lib/Header.svelte"
 
   let modalOpen = false;
   let editing = false;
@@ -103,6 +104,9 @@
   $: agents, modalOpen, editing, id, currentAgent, selectedFacets;
 </script>
 
+<div style="height: 8vh">
+  <Header title="Agents" description="" />
+</div>
 <AgentModal bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={fetchAgents} />
 
 <div class="p-12">

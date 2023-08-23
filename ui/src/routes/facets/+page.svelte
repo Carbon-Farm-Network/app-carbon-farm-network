@@ -10,6 +10,8 @@
   import { onMount } from 'svelte'
   import { map } from "leaflet"
   import { goto } from '$app/navigation';
+  import Header from "$lib/Header.svelte"
+
   function navigate(location: string) {
     goto(location);
   }
@@ -57,6 +59,10 @@
   $: facetGroups, currentFacetGroup;
 
 </script>
+
+<div style="height: 8vh">
+  <Header title="Offers" description="" />
+</div>
 
 {#if facetGroups && currentFacetGroup}
 <FacetModal bind:facetGroups bind:open={modalOpen} bind:currentFacetGroup bind:currentFacet on:submit={fetchFacets} />

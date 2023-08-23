@@ -97,9 +97,11 @@
                   </span>
                 {/if}
               </div>
+              {#if panelInfo && panelInfo.address}
               <div class="mx-8">
                 <p>{panelInfo && panelInfo.address}</p>
               </div>
+              {/if}
             </div>
             {#if false}
             <div class="mt-6 px-4 sm:mt-8 sm:flex sm:items-end sm:px-6">
@@ -215,6 +217,7 @@
                 {@const mainIntent = offer.publishes.find(it => !it.reciprocal)}
                 {@const reciprocalIntent = offer.publishes.find(it => it.reciprocal)}
                 {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
+                {#if mainIntent.publishes.availableQuantity.hasNumericalValue > 0}
                 <li class="flex items-center justify-between gap-x-6 py-2">
                   <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
@@ -231,11 +234,12 @@
                     </div>
                     <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
                       {#each mainIntent.publishes.resourceConformsTo.facets as facet}
-                        {facet.facet.name}: {facet.value}
+                        <div class="display:block;">{facet.facet.name}: {facet.value}</div>
                       {/each}
                     </div>
                   </div>
                 </li>
+              {/if}
               {/if}
               {/each}
 

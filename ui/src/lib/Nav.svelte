@@ -3,6 +3,7 @@
   import Logo from '$lib/Logo.svelte'
 
   function navigate(location: string) {
+    dropdownMenuOpen = false;
     goto(location)
   }
 
@@ -121,7 +122,7 @@
             <div
               style="cursor: pointer;"
               on:click={() => navigate('/planning')}
-              class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default"
+              class="{path === '/planning' ? 'nav-active' : 'nav-inactive'} nav-default"
             >
               Planning
             </div>
@@ -191,6 +192,7 @@
             aria-orientation="vertical"
             aria-labelledby="user-menu-button"
             tabindex="-1"
+            style="z-index: 99999;"
           >
             <!-- Active: "bg-gray-100", Not Active: "" -->
             <button

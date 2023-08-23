@@ -13,6 +13,7 @@
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
+  import Header from "$lib/Header.svelte"
 
   let modalOpen = false;
   let editing = false;
@@ -138,6 +139,9 @@ const GET_UNITS = gql`
   $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units;
 </script>
 
+<div style="height: 8vh">
+  <Header title="Resource Specifications" description="" />
+</div>
 <!-- <Units /> -->
 {#if units}
 <ResourceSpecificationModal bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={fetchResourceSpecifications} />

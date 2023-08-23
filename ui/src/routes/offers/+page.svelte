@@ -16,6 +16,7 @@
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
   import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
+  import Header from '$lib/Header.svelte'
 
   // externally provided data
   let units: Unit[];
@@ -249,6 +250,10 @@
 
   $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
 </script>
+
+<div style="height: 8vh">
+  <Header title="Offers" description="" />
+</div>
 
 <OfferModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
