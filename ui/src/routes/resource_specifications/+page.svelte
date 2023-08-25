@@ -140,7 +140,7 @@ const GET_UNITS = gql`
 </script>
 
 <div style="height: 8vh">
-  <Header title="Resource Specifications" description="" />
+  <Header title="Resource Specifications" description="The types of resources your network creates, uses, trades; types of work; currencies, tokens." />
 </div>
 <!-- <Units /> -->
 {#if units}
@@ -150,10 +150,10 @@ const GET_UNITS = gql`
 <div class="p-12">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
-      <h1 class="text-base font-semibold leading-6 text-gray-900">Resource specifications</h1>
+      <!-- <h1 class="text-base font-semibold leading-6 text-gray-900">Resource specifications</h1>
       <p class="mt-2 text-sm text-gray-700">
         The types of resources your network creates, uses, trades; types of work; currencies, tokens.
-      </p>
+      </p> -->
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button

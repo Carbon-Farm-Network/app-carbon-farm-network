@@ -61,7 +61,7 @@
 </script>
 
 <div style="height: 8vh">
-  <Header title="Offers" description="" />
+  <Header title="Offers" description="A list of all the facets and their values for the facet group." />
 </div>
 
 {#if facetGroups && currentFacetGroup}
@@ -86,10 +86,10 @@
         </select>
       </div>
 
-      <h1 class="text-base font-semibold leading-6 text-gray-900 pt-6">Facets</h1>
+      <!-- <h1 class="text-base font-semibold leading-6 text-gray-900 pt-6">Facets</h1>
       <p class="mt-2 text-sm text-gray-700">
         A list of all the facets and their values for the facet group.
-      </p>
+      </p> -->
     </div>
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button

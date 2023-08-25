@@ -252,7 +252,7 @@
 </script>
 
 <div style="height: 8vh">
-  <Header title="Offers" description="" />
+  <Header title="Offers" description="The goods or services you are offering within the network, now or generally." />
 </div>
 
 <OfferModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
@@ -260,10 +260,10 @@
 <div class="p-12">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
-      <h1 class="text-base font-semibold leading-6 text-gray-900">Offers</h1>
+      <!-- <h1 class="text-base font-semibold leading-6 text-gray-900">Offers</h1>
       <p class="mt-2 text-sm text-gray-700">
         The goods or services you are offering within the network, now or generally.
-      </p>
+      </p> -->
     </div>
     {#if agents && resourceSpecifications && units}
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
