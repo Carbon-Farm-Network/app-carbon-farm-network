@@ -16,8 +16,8 @@
 </div>
 -->
 
-<div class="pt-4 flex justify-center items-center max-w-screen overflow-x-scroll">
-  <div class="grid grid-cols-2 gap-4">
+<div class="pt-4 flex justify-center items-center">
+  <div class="flex space-x-4 mx-4 overflow-x-scroll">
     <!--
     <div>
       <h2 class="text-center">Offers</h2>
@@ -36,8 +36,8 @@
     </div>
     -->
     <!-- Main Columns -->
-    {#each [{ title: 'Pick up and combine', image_src: '/Farmer_and_Sheep.jpeg', box_color: 'bg-yellow-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }] as { title, image_src, box_color }}
-      <div>
+    {#each [{ title: 'Pick up and combine', image_src: '/Farmer_and_Sheep.jpeg', box_color: 'bg-yellow-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }] as { title, image_src, box_color }}
+      <div class="min-w-[300px]">
         <img class="mx-auto" height="80px" width="80px" src={image_src} />
         <h2 class="text-center">{title}</h2>
         <div class="bg-gray-400 border border-gray-400 p-2">
