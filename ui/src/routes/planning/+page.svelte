@@ -1,5 +1,5 @@
 <script lang="ts">
-  import plan from '$lib/data/plan.json'
+  import plan from '$lib/data/plan-no-ship.json'
   import offers from '$lib/data/offers.json'
   import requests from '$lib/data/requests.json'
   import Header from '$lib/Header.svelte'
@@ -36,26 +36,57 @@
     </div>
     -->
     <!-- Main Columns -->
-    {#each [{ title: 'Pick up and combine', image_src: '/Farmer_and_Sheep.jpeg', box_color: 'bg-yellow-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }, { title: 'Scour', image_src: '/mill.svg', box_color: 'bg-green-200' }] as { title, image_src, box_color }}
-      <div class="min-w-[300px]">
-        <img class="mx-auto" height="80px" width="80px" src={image_src} />
-        <h2 class="text-center">{title}</h2>
-        <div class="bg-gray-400 border border-gray-400 p-2">
-          <!-- Sub-columns -->
-          <div class="grid grid-cols-2 gap-2">
-            <div
-              class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-            >
-              <p>Brown Alpaca Dirty</p>
-              <div class="flex justify-between">
-                <p>20 lbs</p>
-                <p>20 lbs</p>
+    {#each plan.process_specifications as { name, image, processes }}
+      <div class="min-w-[400px]">
+        <img class="mx-auto" height="80px" width="80px" src={image} />
+        <h2 class="text-center">{name}</h2>
+        {#each processes as { inputs, outputs }}
+          <div class="bg-gray-400 border border-gray-400 p-2">
+            <!-- Sub-columns -->
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                {#each inputs as { resource_conforms_to, supply_driven_quantity, demand_driven_quantity, provider }}
+                  <div
+                    class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+                  >
+                    <p>{resource_conforms_to.name}</p>
+                    <div class="flex justify-between">
+                      <p>
+                        {supply_driven_quantity.has_numerical_value}
+                        {supply_driven_quantity.has_unit?.label}
+                      </p>
+                      <p>
+                        {demand_driven_quantity.has_numerical_value}
+                        {demand_driven_quantity.has_unit?.label}
+                      </p>
+                    </div>
+                    <p>{provider.name}</p>
+                  </div>
+                {/each}
               </div>
-              <p>WoodLand Meadow</p>
+              <div>
+                {#each outputs as { resource_conforms_to, supply_driven_quantity, demand_driven_quantity, receiver, provider }}
+                  <div
+                    class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+                  >
+                    <p>{resource_conforms_to.name}</p>
+                    <div class="flex justify-between">
+                      <p>
+                        {supply_driven_quantity.has_numerical_value}
+                        {supply_driven_quantity.has_unit?.label}
+                      </p>
+                      <p>
+                        {demand_driven_quantity.has_numerical_value}
+                        {demand_driven_quantity.has_unit?.label}
+                      </p>
+                    </div>
+                    <p>{(receiver || provider)?.name}</p>
+                  </div>
+                {/each}
+              </div>
             </div>
-            <div class="{box_color} rounded-r-full border border-gray-400 p-2">Box 2</div>
           </div>
-        </div>
+        {/each}
       </div>
     {/each}
   </div>
