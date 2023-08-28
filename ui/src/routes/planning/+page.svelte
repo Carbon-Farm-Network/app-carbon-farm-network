@@ -5,19 +5,16 @@
   import Header from '$lib/Header.svelte'
 </script>
 
-<div style="height: 8vh">
-  <Header title="Planning" description="This page is for demonstration purposes only" />
-</div>
-<!--
-<div class="bg-white px-6 py-8">
-  <div class="mx-auto max-w-2xl text-left">
-    <h2 class="text-2xl font-bold tracking-tight text-gray-900">Plan: {plan.name}</h2>
+<!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
+<div class="custom-background" style="height: 8vh">
+  <div class="mx-auto px-2 sm:px-6 lg:px-8">
+    <h2 class="pt-1 text-white text-2xl">Planning</h2>
+    <p class="text-white text-xs">This page is for demonstration purposes only</p>
   </div>
 </div>
--->
 
 <div class="pt-4 flex justify-center items-center">
-  <div class="flex space-x-4 mx-4 overflow-x-scroll">
+  <div class="flex space-x-8 mx-4 overflow-x-scroll">
     <!--
     <div>
       <h2 class="text-center">Offers</h2>
@@ -91,3 +88,12 @@
     {/each}
   </div>
 </div>
+
+<style>
+  /* Custom CSS */
+  .custom-background {
+    background-image: url('/heading3.png');
+    background-size: cover;
+    background-position: center;
+  }
+</style>
