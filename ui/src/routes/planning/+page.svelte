@@ -15,6 +15,40 @@
 
 <div class="pt-4 flex justify-center items-center">
   <div class="flex space-x-8 mx-4 overflow-x-scroll">
+    <div class="min-w-[200px] mt-20">
+      <h2 class="text-center">Offers</h2>
+      <div class="bg-blue-300 border border-gray-400 p-2">
+        <!-- Sub-columns -->
+        <div class="">
+          <div>
+            {#each offers as { proposed_intents }}
+              {@const reciprocal = proposed_intents.find(it => it.reciprocal)}
+              {@const primary = proposed_intents.find(it => !it.reciprocal)}
+              <div
+                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+              >
+                <p>{primary?.intent?.resource_conforms_to?.name}</p>
+                {#if primary?.intent?.available_quantity}
+                  <p>
+                    {primary?.intent?.available_quantity?.has_numerical_value}
+                    {primary?.intent?.available_quantity?.has_unit?.label},
+                    {reciprocal?.intent?.resource_quantity?.has_numerical_value}
+                    USD per lb
+                  </p>
+                {:else}
+                  <p>
+                    {reciprocal?.intent?.resource_quantity?.has_numerical_value}
+                    USD per lb
+                  </p>
+                {/if}
+                <p>{primary?.intent?.provider?.name}</p>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!--
     <div>
       <h2 class="text-center">Offers</h2>
@@ -86,6 +120,31 @@
         {/each}
       </div>
     {/each}
+
+    <div class="min-w-[200px] mt-20">
+      <h2 class="text-center">Requests</h2>
+      <div class="bg-blue-300 border border-gray-400 p-2">
+        <!-- Sub-columns -->
+        <div class="">
+          <div>
+            {#each requests as { proposed_intents }}
+              {@const reciprocal = proposed_intents.find(it => it.reciprocal)}
+              {@const primary = proposed_intents.find(it => !it.reciprocal)}
+              <div
+                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+              >
+                <p>{primary?.intent?.resource_conforms_to?.name}</p>
+                <p>
+                  {primary?.intent?.resource_quantity?.has_numerical_value}
+                  {primary?.intent?.resource_quantity?.has_unit?.label}
+                </p>
+                <p>{primary?.intent?.receiver?.name}</p>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
