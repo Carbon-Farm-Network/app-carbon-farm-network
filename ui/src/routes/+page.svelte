@@ -5,7 +5,7 @@
   import { query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent, ProposalConnection } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, ProposalConnection, ProposedIntent } from '@valueflows/vf-graphql'
 
   import ErrorPage from './__error.svelte'
   import Search from '$lib/Search.svelte'
@@ -110,7 +110,8 @@
             "iconUrl": iconUrl,
             "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
             "address": a.note,
-            "offers": offersList?.filter((o) => o.publishes[1].publishes.provider.id === a.id),
+            "offers": offersList?.filter((o) => o.publishes
+              .filter((pi: ProposedIntent) => pi.reciprocal && pi.publishes.provider?.id === a.id))
           }
         })
       })
