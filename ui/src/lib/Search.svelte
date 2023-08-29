@@ -69,6 +69,7 @@
           class="text-gray-900 cursor-default select-none relative py-2 pl-3 pr-9"
           id="listbox-option-0"
           role="option"
+          aria-selected="false"
         >
           <div class="flex items-center">
             <!-- Online: "bg-green-400", Not Online: "bg-gray-200" -->
