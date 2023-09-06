@@ -16,6 +16,7 @@
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
+  import type { AgentExtended } from '$lib/graphql/extension-schemas'
 
   let offersList: Proposal[] = [];
 
@@ -166,8 +167,8 @@
 
   // reactive data bindings
 
-  let agents: Agent[]
-  let matchedAgents: Agent[]
+  let agents: AgentExtended[]
+  let matchedAgents: AgentExtended[]
 
   $: agents, offersList;
 </script>

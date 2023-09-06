@@ -1,10 +1,11 @@
 <script lang="ts">
   import type { Proposal } from '@valueflows/vf-graphql'
+  import type { AgentExtended } from '$lib/graphql/extension-schemas'
 
   let dropdownOpen = false
   export let allData: any[]
   export let matchedData: any[] = []
-  export let panelInfo: any | undefined;
+  export let panelInfo: AgentExtended | undefined;
 
   let searchInput = ""
   function filter() {

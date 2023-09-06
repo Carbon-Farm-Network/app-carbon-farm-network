@@ -1,20 +1,16 @@
 <script lang="ts">
   import dayjs from "dayjs";
-  // import type { Agent } from 'globals'
-  // export let panelInfo: Agent | undefined
-  export let panelInfo: any | undefined
+  import type { AgentExtended } from '$lib/graphql/extension-schemas'
+  export let panelInfo: AgentExtended | undefined
   let dropdownOpen = false
+
   import offers from '$lib/data/offers.json'
   import agent_facet_values from '$lib/data/agent_facet_values.json'
-  // import { onMount } from "svelte"
 
   // assign to allFacets a unique array of facets listed in each facet value in panelInfo
-  let allFacets = [...new Set(panelInfo.facets.map(facet => facet.facet.name))];
+  let allFacets = panelInfo ? [...new Set(panelInfo.facets.map(facet => facet.facet?.name))] : [];
 
-  // onMount(() => {
-  //   allFacets = [...new Set(panelInfo.facets.map(facet => facet.facet.name))]
-  //   console.log(allFacets)
-  // })
+  $: console.info('Panel displaying:', panelInfo)
 </script>
 
 <!-- Background overlay, show/hide based on slide-over state. -->

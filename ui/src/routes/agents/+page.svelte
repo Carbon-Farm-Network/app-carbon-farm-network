@@ -85,8 +85,6 @@
         "imageUrl": a.image,
         "iconUrl": a.image,
         "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-        "lat": a.classifiedAs[0],
-        "long": a.classifiedAs[1],
         "role": a.classifiedAs[2],
         "address": a.note,
         "facets": a.facets
