@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { Proposal } from '@valueflows/vf-graphql'
+
   let dropdownOpen = false
   export let allData: any[]
   export let matchedData: any[] = []
@@ -6,22 +8,17 @@
 
   let searchInput = ""
   function filter() {
-    matchedData = allData.filter(datum => matchObject(searchInput, datum))
+    matchedData = allData.filter(datum => matchAgent(searchInput.toLowerCase().split(' '), datum))
   }
-  function matchObject(searchInput: string, datum: any): boolean {
-    let terms = searchInput.toLowerCase().split(' ')
+  function matchAgent(terms: string[], datum: any): boolean {
     return terms.every((term) => {
-      return Object.values(datum).some((value) => matchValue(term, value))
+      return datum['name'].includes(term)
+        || datum['offers'].some((o: Proposal) => o.name?.includes(term) || o.note?.includes(term))
     })
   }
-  function matchValue(term: string, value: any): boolean {
-    if (typeof value === 'string') {
-      return value.toLowerCase().includes(term)
-    }
-    if (typeof value === 'object') {
-      return Object.values(value).some((inner) => matchValue(term, inner))
-    }
-    return false
+
+  $: {
+    console.log('SEARCH', allData, matchedData)
   }
 </script>
 
