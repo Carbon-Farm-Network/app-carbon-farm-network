@@ -103,6 +103,7 @@
       await agentsQuery.getCurrentResult()
       await agentsQuery.refetch().then((r) => {
         agents = flattenRelayConnection(r.data?.agents).map((a) => {
+          // @ts-ignore
           let iconUrl = roleImages[a.classifiedAs[2]] || 'mill.svg'
           return {
             ...a,
@@ -112,7 +113,7 @@
             "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
             "address": a.note,
             "offers": offersList?.filter((o: Proposal) => (o.publishes || [])
-              .filter((pi: ProposedIntent) => pi.reciprocal && pi.publishes.provider?.id === a.id))
+              .filter((pi: ProposedIntent) => !pi.reciprocal && pi.publishes.provider?.id === a.id).length > 0)
           }
         })
       })
