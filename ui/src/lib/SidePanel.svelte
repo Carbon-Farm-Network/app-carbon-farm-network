@@ -192,21 +192,21 @@
           <div class="ml-8 my-4 mr-12">
             <ul role="list" class="">
               {#each allFacets as facetOption}
-              {@const facet = panelInfo.facets.findLast(facet => facet.facet.name === facetOption)}
+              {@const facet = panelInfo?.facets.findLast(facet => facet.facet?.name === facetOption)}
               <li class="flex items-center justify-between gap-x-6 py-1">
                 <div class="min-w-0">
                   <div class="flex items-start gap-x-3">
-                    <p class="text-sm font-semibold leading-6 text-gray-900">{facet.facet.name}</p>
+                    <p class="text-sm font-semibold leading-6 text-gray-900">{facet?.facet?.name}</p>
                   </div>
                 </div>
                 <div class="flex flex-none items-center gap-x-4">
-                  <p class="text-sm leading-6 text-gray-900">{facet.value}</p>
+                  <p class="text-sm leading-6 text-gray-900">{facet?.value}</p>
                 </div>
              </li>
              {/each}
             </ul>
           </div>
-          {#if panelInfo.offers}
+          {#if panelInfo?.offers}
           <p class="ml-8 mt-12">Offering:</p>
           <div class="mx-8">
             <ul role="list" class="divide-y divide-gray-200">
@@ -217,23 +217,23 @@
                 {@const mainIntent = offer.publishes?.find(it => !it.reciprocal)}
                 {@const reciprocalIntent = offer.publishes?.find(it => it.reciprocal)}
                 {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
-                {#if mainIntent.publishes?.availableQuantity.hasNumericalValue > 0}
+                {#if mainIntent?.publishes?.availableQuantity?.hasNumericalValue > 0}
                 <li class="flex items-center justify-between gap-x-6 py-2">
                   <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
-                      <p class="text-sm font-semibold leading-6 text-gray-900">{mainIntent.publishes?.resourceConformsTo.name}</p>
+                      <p class="text-sm font-semibold leading-6 text-gray-900">{mainIntent?.publishes?.resourceConformsTo?.name}</p>
                     </div>
                     <div class="flex items-start gap-x-3">
-                      <p class="text-sm leading-6 text-gray-500">Price: {reciprocalIntent.publishes?.resourceQuantity.hasNumericalValue} {reciprocalIntent.publishes?.resourceConformsTo.name} per {mainIntent.publishes?.resourceQuantity.hasNumericalValue} {mainIntent.publishes?.availableQuantity.hasUnit.label}</p>
+                      <p class="text-sm leading-6 text-gray-500">Price: {reciprocalIntent?.publishes?.resourceQuantity?.hasNumericalValue} {reciprocalIntent?.publishes?.resourceConformsTo?.name} per {mainIntent?.publishes?.resourceQuantity?.hasNumericalValue} {mainIntent?.publishes?.availableQuantity?.hasUnit?.label}</p>
                     </div>
                     <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
                       <!-- {JSON.stringify(mainIntent.publishes?.availableQuantity.hasNumericalValue)} -->
                       <!-- {JSON.stringify(mainIntent.publishes?.availableQuantity.hasUnit.label)} -->
                       <!-- {JSON.stringify(offer)} -->
-                      <p class="whitespace-nowrap">Available {mainIntent.publishes?.availableQuantity.hasNumericalValue} {mainIntent.publishes?.availableQuantity.hasUnit.label} on <time datetime={offer.hasBeginning}>{availableOn}</time></p>
+                      <p class="whitespace-nowrap">Available {mainIntent?.publishes?.availableQuantity?.hasNumericalValue} {mainIntent?.publishes?.availableQuantity?.hasUnit?.label} on <time datetime={offer.hasBeginning}>{availableOn}</time></p>
                     </div>
                     <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-                      {#each mainIntent.publishes?.resourceConformsTo.facets as facet}
+                      {#each (mainIntent?.publishes?.resourceConformsTo?.facets || []) as facet}
                         <div class="display:block;">{facet.facet.name}: {facet.value}</div>
                       {/each}
                     </div>
