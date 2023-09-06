@@ -2,6 +2,7 @@ import type {
   ActionHashB64, EntryHashB64,
   EntryHash, ActionHash,
 } from '@holochain/client';
+import type { Agent, Proposal } from '@valueflows/vf-graphql'
 
 // zome API creation payloads
 
@@ -55,6 +56,23 @@ export interface FacetResponse {
 
 export interface FacetValueResponse {
   facetValue: FacetValue
+}
+
+// extended types
+
+interface LatLon {
+  lat: string
+  lon: string
+}
+
+export type AgentExtended = Agent & {
+  facets: FacetValue[]
+  offers?: Proposal[]
+  latLng?: LatLon
+  imageUrl?: string
+  iconUrl?: string  // :TODO: duplicate of imageUrl?
+  address?: string
+  role?: string
 }
 
 export default [
