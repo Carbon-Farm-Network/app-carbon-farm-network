@@ -119,7 +119,7 @@
     return {
       revisionId: '',
       action: 'transfer',
-      availableQuantity: { hasNumericalValue: 0, hasUnit: "null" },
+      availableQuantity: { hasNumericalValue: 0 },
       effortQuantity: { hasNumericalValue: 0 },
       resourceQuantity: { hasNumericalValue: 0 },
       provider: "",
@@ -356,7 +356,7 @@
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{resourceQuantity.hasNumericalValue}
                   {proposedReciprocalIntent?.publishes.resourceQuantity?.hasUnit?.id || "USD"}
-                
+
                   / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
                   {availableQuantity.hasUnit?.label}
                   <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
