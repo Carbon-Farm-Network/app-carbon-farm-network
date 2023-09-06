@@ -210,8 +210,8 @@
               <!-- {JSON.stringify(panelInfo.offers[0])} -->
               {#each panelInfo.offers as offer}
               {#if !offer.hasEnd || (new Date() < offer.hasEnd)}
-                {@const mainIntent = offer.publishes?.find(it => !it.reciprocal)}
-                {@const reciprocalIntent = offer.publishes?.find(it => it.reciprocal)}
+                {@const mainIntent = (offer.publishes || []).find(it => !it.reciprocal)}
+                {@const reciprocalIntent = (offer.publishes || []).find(it => it.reciprocal)}
                 {@const availableOn = dayjs(offer.hasBeginning).format("YYYY MMM DD")}
                 {#if mainIntent?.publishes?.availableQuantity?.hasNumericalValue > 0}
                 <li class="flex items-center justify-between gap-x-6 py-2">
