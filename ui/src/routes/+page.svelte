@@ -5,7 +5,7 @@
   import { query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent, ProposalConnection, ProposedIntent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, Proposal, ProposalConnection, ProposedIntent } from '@valueflows/vf-graphql'
 
   import ErrorPage from './__error.svelte'
   import Search from '$lib/Search.svelte'
@@ -17,7 +17,7 @@
   import { PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
 
-  let offersList: any[] = [];
+  let offersList: Proposal[] = [];
 
   // query & data bindings
 
@@ -110,7 +110,7 @@
             "iconUrl": iconUrl,
             "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
             "address": a.note,
-            "offers": offersList?.filter((o) => o.publishes
+            "offers": offersList?.filter((o: Proposal) => (o.publishes || [])
               .filter((pi: ProposedIntent) => pi.reciprocal && pi.publishes.provider?.id === a.id))
           }
         })
