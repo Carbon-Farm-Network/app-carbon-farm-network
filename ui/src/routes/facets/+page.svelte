@@ -61,7 +61,7 @@
 </script>
 
 <div style="height: 8vh">
-  <Header title="Offers" description="A list of all the facets and their values for the facet group." />
+  <Header title="Facets" description="A list of all the facets and their values for the facet group." />
 </div>
 
 {#if facetGroups && currentFacetGroup}
