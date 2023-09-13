@@ -4,7 +4,7 @@
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
-  import { query } from 'svelte-apollo'
+  import { mutation, query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
   import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
@@ -78,6 +78,19 @@ const GET_UNITS = gql`
   interface QueryResponse {
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
+
+  // DELETE RESOURCE SPECIFICATION
+  const DELETE_RESOURCE_SPECIFICATION = gql`mutation($revisionId: ID!){
+    deleteResourceSpecification(revisionId: $revisionId)
+  }`
+  let deleteResourceSpecification: any = mutation(DELETE_RESOURCE_SPECIFICATION)
+
+  async function deleteAResourceSpec(revisionId: string) {
+    const res = await deleteResourceSpecification({ variables: { revisionId } })
+    console.log(res)
+    await fetchResourceSpecifications()
+  }
+  // DELETE RESOURCE SPECIFICATION ENDS
 
   // map component state
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
@@ -244,6 +257,11 @@ const GET_UNITS = gql`
                   }}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
+                &nbsp;
+                <button type="button" on:click={() => {
+                  deleteAResourceSpec(resourceSpecification.revisionId)
+                }}  class="text-indigo-600 hover:text-indigo-900"
+                >Delete<span class="sr-only">, Lindsay Walton</span></button>
               </td>
             </tr>
             {/each}

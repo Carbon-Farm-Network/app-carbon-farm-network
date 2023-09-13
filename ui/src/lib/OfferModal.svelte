@@ -308,8 +308,7 @@
                   on:change={(e) => {
                     let id = e.target.value
                     let selectedResource = resourceSpecifications.find((rs) => rs.id === id)
-                    if (currentIntent.availableQuantity && currentIntent.availableQuantity.hasUnit) {
-                      console.log(currentIntent.availableQuantity.hasUnit)
+                    if (currentIntent.availableQuantity) {
                       currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id
                     } else {
                       console.log(currentIntent.availableQuantity)
@@ -450,7 +449,7 @@
                   >Currency</label
                 >
                 <!-- USD -->
-                {#if currentReciprocalIntent && currentReciprocalIntent.resourceConformsTo}
+                {#if currentReciprocalIntent}
                 <select
                   id="unit"
                   name="unit"

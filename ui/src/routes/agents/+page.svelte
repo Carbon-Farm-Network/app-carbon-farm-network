@@ -4,7 +4,7 @@
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import type { ComponentType } from 'svelte'
-  import { query } from 'svelte-apollo'
+  import { mutation, query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
   import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
@@ -91,6 +91,17 @@
       }
     })
     console.log(agents)
+  }
+
+  const DELETE_AGENT = gql`mutation($revisionId: ID!){
+    deleteOrganization(revisionId: $revisionId)
+  }`
+  let deleteAgent: any = mutation(DELETE_AGENT)
+
+  async function deleteAnAgent(revisionId: string) {
+    const res = await deleteAgent({ variables: { revisionId } })
+    console.log(res)
+    await fetchAgents()
   }
 
   onMount(async () => {
@@ -194,7 +205,11 @@
                   })
                   }}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
-                >
+                > &nbsp; 
+                <button type="button" on:click={() => {
+                  deleteAnAgent(agent.revisionId)
+                  }}  class="text-indigo-600 hover:text-indigo-900"
+                  >Delete<span class="sr-only">, Lindsay Walton</span></button>
               </td>
             </tr>
             {/each}

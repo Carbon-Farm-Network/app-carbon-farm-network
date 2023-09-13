@@ -229,6 +229,19 @@
     })
   }
 
+  // DELETE PROPOSAL  
+  const DELETE_PROPOSAL = gql`mutation($revisionId: ID!){
+    deleteProposal(revisionId: $revisionId)
+  }`
+  let deleteProposal: any = mutation(DELETE_PROPOSAL)
+
+  async function deleteAProposal(revisionId: string) {
+    const res = await deleteProposal({ variables: { revisionId } })
+    console.log(res)
+    await fetchOffers()
+  }
+  // DELETE RESOURCE SPECIFICATION ENDS
+
   onMount(() => {
     if (browser) {
       fetchResourceSpecifications()
@@ -470,6 +483,12 @@
                 }}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
+                &nbspl
+                <button type="button" on:click={() => {
+                  deleteAProposal(p.revisionId)
+                }}
+                class="text-indigo-600 hover:text-indigo-900">
+                Delete</button>
                 </td>
               </tr>
               {/if}
