@@ -99,9 +99,12 @@
   let deleteAgent: any = mutation(DELETE_AGENT)
 
   async function deleteAnAgent(revisionId: string) {
-    const res = await deleteAgent({ variables: { revisionId } })
-    console.log(res)
-    await fetchAgents()
+    let areYouSure = await confirm("Are you sure you want to delete this agent?")
+    if (areYouSure == true) {
+      const res = await deleteAgent({ variables: { revisionId } })
+      console.log(res)
+      await fetchAgents()
+    }
   }
 
   onMount(async () => {

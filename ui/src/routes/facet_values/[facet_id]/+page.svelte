@@ -3,7 +3,7 @@
   // import facetValues from '$lib/data/facet_values.json'
   import { gql } from 'graphql-tag'
   import { onMount } from 'svelte'
-  import { query } from 'svelte-apollo'
+  import { mutation, query } from 'svelte-apollo'
   import { FACET_GROUP_CORE_FIELDS  } from "$lib/graphql/facet.fragments"
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Facet, FacetGroup, FacetParams, FacetValue } from "$lib/graphql/extension-schemas"
@@ -31,6 +31,23 @@
   //     facetId
   //   }
   // })
+
+
+  // DELETE VALUE
+  const DELETE_VALUE = gql`mutation($revisionId: ID!){
+    deleteFacetValue(revisionId: $revisionId)
+  }`
+  let deleteFacetValue: any = mutation(DELETE_VALUE)
+
+  async function deleteVal(revisionId: string) {
+    let areYouSure = await confirm("Are you sure you want to delete this facet value?")
+    if (areYouSure == true) {
+      const res = await deleteFacetValue({ variables: { revisionId } })
+      console.log(res)
+      await fetchValues()
+    }
+  }
+  // DELETE VALUE
 
   const GET_FACET_GROUPS = gql`
     ${FACET_GROUP_CORE_FIELDS}
@@ -134,7 +151,8 @@
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
-            {#each facetValues as {id, value, note, order}, index}
+            {#each facetValues as {revisionId, id, value, note, order}, index}
+            <!-- {JSON.stringify({revisionId, id, value, note, order})} -->
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
                 class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
@@ -152,14 +170,14 @@
                 <button type="button" on:click={() => {selectedId = id; modalOpen = true; currentValue = value}}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
-              </td>
+              </td> -->
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
               >
-                <button type="button" class="text-indigo-600 hover:text-indigo-900"
+                <button on:click={() => {deleteVal(revisionId)}} type="button" class="text-indigo-600 hover:text-indigo-900"
                   >Delete<span class="sr-only">, Lindsay Walton</span></button
                 >
-              </td> -->
+              </td>
             </tr>
             {/each}
 

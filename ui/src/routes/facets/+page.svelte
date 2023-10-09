@@ -22,6 +22,23 @@
   let currentFacet: any = {name: '', note: ''};
 
 
+  // DELETE FACET
+  const DELETE_FACET = gql`mutation($revisionId: ID!){
+    deleteFacetOption(revisionId: $revisionId)
+  }`
+  let deleteFacetOption: any = mutation(DELETE_FACET)
+
+  async function deleteFacet(revisionId: string) {
+    let areYouSure = await confirm("Are you sure you want to delete this facet?")
+    if (areYouSure == true) {
+      console.log(revisionId)
+      const res = await deleteFacetOption({ variables: { revisionId } })
+      console.log(res)
+      await fetchFacets()
+    }
+  }
+  // DELETE FACET
+
   const GET_FACET_GROUPS = gql`
     ${FACET_GROUP_CORE_FIELDS}
     query GetFacets {
@@ -152,7 +169,6 @@
                 >{facet.note}</td
               >
               <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{order}</td
               >-->
               <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{values.join(", ")}</td
@@ -164,7 +180,6 @@
               {/if}
               <!-- <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
-              >
                 <button type="button" on:click={() => {
                   modalOpen = true;
                   currentFacet = facet;
@@ -179,6 +194,10 @@
               <a on:click={() => navigate('/facet_values/' + facet.id + '')}
                 class="text-indigo-600 hover:text-indigo-900" style="cursor: pointer"
                   >Edit values<span class="sr-only">, Lindsay Walton</span></a
+                >
+                &nbsp;&nbsp;
+                <button on:click={() => {deleteFacet(facet.revisionId)}} type="button" class="text-indigo-600 hover:text-indigo-900"
+                  >Delete facet<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>
             </tr>

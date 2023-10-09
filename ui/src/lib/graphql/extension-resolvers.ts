@@ -49,6 +49,8 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   const runCreateOption = mapZomeFn<FacetParams, Facet>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_option')
   const runCreateValue = mapZomeFn<FacetValueParams, FacetValue>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'create_facet_value')
   const runAssociateFacetValue = mapZomeFn<AssociateFacetValue, boolean>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'use_facet_value')
+  const runDeleteFacetValue = mapZomeFn<{ revision_id: EntryHashB64 }, boolean>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'delete_facet_value')
+  const runDeleteFacetOption = mapZomeFn<{ revision_id: EntryHashB64 }, boolean>(dnaConfig, conductorUri, 'facets', 'hc_facets', 'delete_facet_option')
 
   // :TODO: deletions API
 
@@ -106,10 +108,20 @@ console.log(res)
         const res = await runAssociateFacetValue(args)
         console.log(res)
         return res
-      }
+      },
+
+      deleteFacetOption: async function (_root: any, args: { revisionId: string }): Promise<boolean> {
+        const res = await runDeleteFacetOption({ revision_id: args.revisionId })
+        console.log(res)
+        return res
+      },
       // :TODO: delete APIs & resolvers
       // I suspect you can parameterise the API like
-      //     deleteFacetValue: async function (_root: any, args: { identifier: string, value: string }): Promise<bool>
+      deleteFacetValue: async function (_root: any, args: { revisionId: string }): Promise<boolean> {
+        const res = await runDeleteFacetValue({ revision_id: args.revisionId })
+        console.log(res)
+        return res
+      }
       // instead of adding the previously proposed `associationId` field to `FacetValue`.
     },
     Query: {

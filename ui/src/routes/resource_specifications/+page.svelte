@@ -86,9 +86,12 @@ const GET_UNITS = gql`
   let deleteResourceSpecification: any = mutation(DELETE_RESOURCE_SPECIFICATION)
 
   async function deleteAResourceSpec(revisionId: string) {
-    const res = await deleteResourceSpecification({ variables: { revisionId } })
-    console.log(res)
-    await fetchResourceSpecifications()
+    let areYouSure = await confirm("Are you sure you want to delete this resource specification?")
+    if (areYouSure == true) {
+      const res = await deleteResourceSpecification({ variables: { revisionId } })
+      console.log(res)
+      await fetchResourceSpecifications()
+    }
   }
   // DELETE RESOURCE SPECIFICATION ENDS
 

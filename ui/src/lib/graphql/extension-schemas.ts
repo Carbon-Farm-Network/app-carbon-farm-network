@@ -168,7 +168,7 @@ type Mutation  {
   putFacet(facet: FacetParams!): FacetResponse!
 
   "Delete a facet via its revisionId"
-  deleteFacet(revisionId: ID!): Boolean!
+  deleteFacetOption(revisionId: ID!): Boolean!
 
   "Create a new facet value to define possible values for a facet."
   putFacetValue(facetValue: FacetValueParams!): FacetValueResponse!

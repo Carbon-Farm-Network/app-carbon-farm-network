@@ -236,9 +236,12 @@
   let deleteProposal: any = mutation(DELETE_PROPOSAL)
 
   async function deleteAProposal(revisionId: string) {
-    const res = await deleteProposal({ variables: { revisionId } })
-    console.log(res)
-    await fetchOffers()
+    let areYouSure = await confirm("Are you sure you want to delete this offer?")
+    if (areYouSure == true) {
+      const res = await deleteProposal({ variables: { revisionId } })
+      console.log(res)
+      await fetchOffers()
+    }
   }
   // DELETE RESOURCE SPECIFICATION ENDS
 
@@ -483,7 +486,7 @@
                 }}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button
                 >
-                &nbspl
+                &nbsp;
                 <button type="button" on:click={() => {
                   deleteAProposal(p.revisionId)
                 }}

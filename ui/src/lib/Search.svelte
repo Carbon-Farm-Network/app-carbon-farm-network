@@ -13,8 +13,8 @@
   }
   function matchAgent(terms: string[], datum: any): boolean {
     return terms.every((term) => {
-      return datum['name'].includes(term)
-        || datum['offers'].some((o: Proposal) => o.name?.includes(term) || o.note?.includes(term))
+      return datum['name'].toLowerCase().includes(term)
+        || datum['offers'].some((o: Proposal) => o.name?.toLowerCase().includes(term) || o.note?.toLowerCase().includes(term))
     })
   }
 
