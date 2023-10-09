@@ -1111,7 +1111,7 @@
     {
       "id": "process_specification_id",
       "name": "Split Up Yarn",
-      "image": "/scissors.svg",
+      "image": "/socks.svg",
       "processes": [
         {
           "id": "process_id",
