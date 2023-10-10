@@ -335,7 +335,7 @@
             {#if offersList}
             {#each offersList as p, index}
               {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
-              {#if mainIntent}
+              {#if mainIntent && mainIntent.publishes.receiver?.name}
               {@const proposedReciprocalIntent = p.publishes?.find(
                 ({ reciprocal }) => reciprocal
               )}
