@@ -5,11 +5,22 @@
   export let open = false
   // export let selectedId: string
   export let currentValue: FacetValue;
-  import { createEventDispatcher } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import gql from 'graphql-tag'
   let name = ''
   let description = ''
   let order = 0
+
+  function checkKey(e: any) {
+    if (e.key === "Escape" && !e.shiftKey) {
+      e.preventDefault();
+      open = false;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("keydown", checkKey);
+  });
 
   const dispatch = createEventDispatcher();
 

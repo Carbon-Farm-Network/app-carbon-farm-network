@@ -13,6 +13,17 @@
   let name = ''
   let description = ''
 
+  function checkKey(e: any) {
+    if (e.key === "Escape" && !e.shiftKey) {
+      e.preventDefault();
+      open = false;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("keydown", checkKey);
+  });
+
   const dispatch = createEventDispatcher();
 
   const CREATE_FACET = gql`

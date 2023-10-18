@@ -21,6 +21,16 @@
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
   // import { AppAgentWebsocket, type AppAgentClient } from '@holochain/client';
 
+  function checkKey(e: any) {
+    if (e.key === "Escape" && !e.shiftKey) {
+      e.preventDefault();
+      open = false;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("keydown", checkKey);
+  });
   // let selectedFacets: any = {};
 
   const dispatch = createEventDispatcher();

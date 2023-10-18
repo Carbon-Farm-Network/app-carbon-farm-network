@@ -1,8 +1,8 @@
 <script lang="ts">
   import { gql } from 'graphql-tag'
-  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
+  import type { RecordMeta, ProcessSpecification, ProcessSpecificationCreateParams, ProcessSpecificationUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from './graphql/resource_specification.fragments'
+  import { PROCESS_SPECIFICATION_CORE_FIELDS } from './graphql/process_specification.fragments'
   import { mutation, query } from 'svelte-apollo'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { onMount } from 'svelte'
@@ -10,11 +10,8 @@
   
   export let open = false;
   export let editing = false;
-  export let currentResourceSpecification: any = {};
+  export let currentProcessSpecification: any = {};
   export let name = "";
-  export let units: any[];
-  export let facets: Facet[] | undefined;
-  export let selectedFacets: any;
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -26,69 +23,41 @@
   onMount(() => {
     window.addEventListener("keydown", checkKey);
   });
-
-  const ADD_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS},
-    mutation($resource: ResourceSpecificationCreateParams!){
-      createResourceSpecification(resourceSpecification: $resource) {
-        resourceSpecification {
-          ...ResourceSpecificationCoreFields
+  
+  const ADD_PROCESS_SPECIFICATION = gql`
+    ${PROCESS_SPECIFICATION_CORE_FIELDS},
+    mutation($process: ProcessSpecificationCreateParams!){
+      createProcessSpecification(processSpecification: $process) {
+        processSpecification {
+          ...ProcessSpecificationCoreFields
         }
       }
     }
   `
 
-  const ASSOCIATE_RESOURCE_SPECIFICATION_AND_FACET_VALUE = gql`
-    mutation($identifier: String, $facetValueId: ID!){
-      associateFacetValue(identifier: $identifier, facetValueId: $facetValueId)
-    }
-  `
-
-  const UPDATE_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS},
-    mutation($resource: ResourceSpecificationUpdateParams!){
-      updateResourceSpecification(resourceSpecification: $resource) {
-        resourceSpecification {
-          ...ResourceSpecificationCoreFields
+  const UPDATE_PROCESS_SPECIFICATION = gql`
+    ${PROCESS_SPECIFICATION_CORE_FIELDS},
+    mutation($process: ProcessSpecificationUpdateParams!){
+      updateProcessSpecification(processSpecification: $process) {
+        processSpecification {
+          ...ProcessSpecificationCoreFields
         }
       }
     }
   `
 
-  let addResourceSpecification: any = mutation(ADD_RESOURCE_SPECIFICATION)
-  let associateResourceSpecificationWithValue: any = mutation(ASSOCIATE_RESOURCE_SPECIFICATION_AND_FACET_VALUE)
-  let updateResourceSpecification: any = mutation(UPDATE_RESOURCE_SPECIFICATION)
-  // let retrieveUnits: any = query(GET_UNITS_OF_EFFORT_AND_RESOURCE)
+  let addProcessSpecification: any = mutation(ADD_PROCESS_SPECIFICATION)
+  let updateProcessSpecification: any = mutation(UPDATE_PROCESS_SPECIFICATION)
 
   async function handleSubmit() {
-    // let unitOfResource = units.find(unit => unit.id === currentResourceSpecification.defaultUnitOfResource).id
-    // let unitId = {
-    //   UnitId: currentResourceSpecification.defaultUnitOfResource
-    // }
-    let resource: ResourceSpecificationCreateParams = {
-      name: currentResourceSpecification.name,
-      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
-      // defaultUnitOfEffort: "Administrative work",
-      note: currentResourceSpecification.note,
-      image: currentResourceSpecification.image,
+    let process: ProcessSpecificationCreateParams = {
+      name: currentProcessSpecification.name,
+      note: currentProcessSpecification.note,
+      // image: currentProcessSpecification.image,
     }
-    console.log(resource)
+    console.log(process)
     try {
-      const res = await addResourceSpecification({ variables: { resource } })
-
-      const identifier = res.data.createResourceSpecification.resourceSpecification.id
-      // for each facet in selectedFacets, associate the agent with the selected value
-      for (let facet in selectedFacets) {
-        console.log(facet)
-        console.log(selectedFacets)
-        console.log(selectedFacets[facet])
-        if (selectedFacets[facet] == null) {
-          continue
-        }
-        const res2 = await associateResourceSpecificationWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
-        console.log("associate", res2)
-      }
-
+      const res = await addProcessSpecification({ variables: { process } })
       dispatch("submit");
       open = false;
       console.log(res)
@@ -99,32 +68,16 @@
 
   async function handleUpdate() {
     // getAgent();
-    console.log(currentResourceSpecification)
+    console.log(currentProcessSpecification)
 
-    let resource: ResourceSpecificationUpdateParams = {
-      name: currentResourceSpecification.name,
-      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
-      // defaultUnitOfEffort: currentResourceSpecification.defaultUnitOfEffort,
-      note: currentResourceSpecification.note,
-      image: currentResourceSpecification.image,
-      revisionId: currentResourceSpecification.revisionId
+    let process: ProcessSpecificationUpdateParams = {
+      name: currentProcessSpecification.name,
+      note: currentProcessSpecification.note,
+      // image: currentProcessSpecification.image,
+      revisionId: currentProcessSpecification.revisionId
     }
     try {
-      const res = await updateResourceSpecification({ variables: { resource } })
-
-      const identifier = res.data.updateResourceSpecification.resourceSpecification.id
-      // for each facet in selectedFacets, associate the agent with the selected value
-      for (let facet in selectedFacets) {
-        console.log(facet)
-        console.log(selectedFacets)
-        console.log(selectedFacets[facet])
-        if (selectedFacets[facet] == null) {
-          continue
-        }
-        const res2 = await associateResourceSpecificationWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
-        console.log("associate", res2)
-      }
-
+      const res = await updateProcessSpecification({ variables: { process } })
       dispatch("submit");
       open = false;
       console.log(res)
@@ -137,9 +90,9 @@
   onMount(async () => {
   })
 
-  $: editing, currentResourceSpecification, units; //, client;
+  $: editing, currentProcessSpecification, open; //, client;
 
-  $: isResourceSpecificationValid = true && currentResourceSpecification.name && currentResourceSpecification.defaultUnitOfResourceId; // && currentResourceSpecification.note && currentResourceSpecification.image;
+  $: isResourceSpecificationValid = true && currentProcessSpecification.name;
 
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -191,11 +144,11 @@
                     id="name"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={currentResourceSpecification.name}
+                    bind:value={currentProcessSpecification.name}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.name = input.value;
+                        currentProcessSpecification.name = input.value;
                         // console.log(name)
                       }
                     }}
@@ -226,62 +179,6 @@
               </div>
             </div>
             
-            {#if units}
-            <div class="mt-4 text-left">
-              <div>
-                <label
-                  for="defaultUnitOfResource"
-                  class="block text-sm font-medium leading-6 text-gray-900"
-                  >Default unit of resource</label>
-
-                <select
-                  id="classifiedAs"
-                  name="classifiedAs"
-                  bind:value={currentResourceSpecification.defaultUnitOfResourceId}
-                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  on:click={e => {
-                    console.log(currentResourceSpecification.defaultUnitOfResourceId)
-                  }}
-                  >
-                  {#each units as unit}
-                    {#if unit.label === "pound"}
-                      <option selected value={unit.id}>Pound</option>
-                    {:else if unit.label === "one"}
-                      <option value={unit.id}>Each</option>
-                    {/if}
-                  {/each}
-                </select>
-
-                <!-- <select
-                  id="defaultUnitOfResource"
-                  name="defaultUnitOfResource"
-                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                >
-                  <option selected>Pound</option>
-                  <option>Each</option>
-                </select> -->
-              </div>
-            </div>
-            {/if}
-
-            <!-- <div class="mt-4 text-left">
-              <div>
-                <label
-                  for="defaultUnitOfEffort"
-                  class="block text-sm font-medium leading-6 text-gray-900"
-                  >Default unit of effort</label
-                >
-                <select
-                  id="defaultUnitOfEffort"
-                  name="defaultUnitOfEffort"
-                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                >
-                  <option selected>Administrative work</option>
-                  <option>Delivery work</option>
-                </select>
-              </div>
-            </div> -->
-
             <div class="mt-4 text-left">
               <div class="col-span-full">
                 <label
@@ -294,11 +191,11 @@
                     name="note"
                     rows="3"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={currentResourceSpecification.note}
+                    bind:value={currentProcessSpecification.note}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.note = input.value;
+                        currentProcessSpecification.note = input.value;
                       }
                     }}
                     />
@@ -386,36 +283,6 @@
             </div> -->
           <!-- </div>
         </div> -->
-
-        {#if facets && selectedFacets}
-        {#each facets as {id, name, values}}
-          <div class="mt-4 text-left">
-            <div>
-              <label
-                for="type"
-                class="block text-sm font-medium leading-6 text-gray-900"
-                >{name}</label
-              >
-              <select
-                bind:value={selectedFacets[id]}
-                on:change={(e) => {
-                  console.log(selectedFacets[id])
-                }}
-                id="type"
-                name="type"
-                class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              >
-                <option value={null}></option>
-              {#if values}
-                {#each values as {id, value}}
-                  <option value={id}>{value}</option>
-                {/each}
-              {/if}
-              </select>
-            </div>
-          </div>
-        {/each}
-        {/if}
 
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           <button

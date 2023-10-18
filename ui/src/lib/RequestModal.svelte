@@ -27,6 +27,17 @@
   export let currentProposedIntent: any;
   export let editing: boolean;
   
+  function checkKey(e: any) {
+    if (e.key === "Escape" && !e.shiftKey) {
+      e.preventDefault();
+      open = false;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("keydown", checkKey);
+  });
+
   let submitting: boolean = false;
 
   const dispatch = createEventDispatcher();

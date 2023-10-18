@@ -223,6 +223,14 @@
             <button
               type="button"
               class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/process_specifications')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Process specifications</button
+            >
+            <button
+              type="button"
+              class="block px-4 py-2 text-sm text-gray-700"
               on:click={() => navigate('/facets')}
               role="menuitem"
               tabindex="-1"
