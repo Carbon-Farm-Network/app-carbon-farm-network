@@ -1,0 +1,331 @@
+[
+    {
+      "id": "recipe_process_id",
+      "name": "Ship to Knit",
+      "process_conforms_to": {
+        "name": "Ship"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Spin Yarn"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Spin Yarn"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Spin Yarn"
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Spin Brown Yarn",
+      "process_conforms_to": {
+        "name": "Spin Yarn"
+        },
+      "has_duration": {
+        "numeric_duration": 5,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.9,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.9,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Spin Ivory Yarn",
+      "process_conforms_to": {
+        "name": "Spin Yarn"
+        },
+      "has_duration": {
+        "numeric_duration": 5,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.9,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.9,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Spin Gray Yarn",
+      "process_conforms_to": {
+        "name": "Spin Yarn"
+        },
+      "has_duration": {
+        "numeric_duration": 5,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.9,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.9,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
