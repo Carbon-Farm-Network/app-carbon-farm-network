@@ -329,3 +329,530 @@
         }
       ]
     },
+    {
+      "id": "recipe_process_id",
+      "name": "Ship to Spin",
+      "process_conforms_to": {
+        "name": "Ship"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 4,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Scour Alpaca",
+      "process_conforms_to": {
+        "name": "Scour Fiber"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.8,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": "Ship"
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Scour Alpaca",
+      "process_conforms_to": {
+        "name": "Scour Fiber"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.8,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": "Ship"
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Scour Alpaca",
+      "process_conforms_to": {
+        "name": "Scour Fiber"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.8,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": "Ship"
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Scour Wool",
+      "process_conforms_to": {
+        "name": "Scour Fiber"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 0.6,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": "Ship"
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Ship to Scour",
+      "process_conforms_to": {
+        "name": "Ship"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": ""
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 4,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": ""
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ]
+    }
+]
