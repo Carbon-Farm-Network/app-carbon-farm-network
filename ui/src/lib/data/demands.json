@@ -1,0 +1,49 @@
+[
+    {
+        "id": "commitment_id",
+        "action": "consume",
+        "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+            },
+        "resource_quantity": {
+        "has_numerical_value": 1,
+        "has_unit": {
+            "label": "lb"
+            },
+        "stage": {
+            "name": "Ship to Knit"
+            }
+    },
+    {
+        "id": "commitment_id",
+        "action": "consume",
+        "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+            },
+            "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+                "label": "lb"
+                },
+            },
+        "stage": {
+            "name": "Ship to Knit"
+            }
+    },
+    {
+        "id": "commitment_id",
+        "action": "consume",
+        "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+            },
+        "resource_quantity": {
+            "has_numerical_value": 1,
+            "has_unit": {
+                "label": "lb"
+                },
+            },
+        "stage": {
+            "name": "Ship to Knit"
+            }
+    }
+]

@@ -2,7 +2,6 @@
   import plan from '$lib/data/plan-no-ship.json'
   import offers from '$lib/data/offers.json'
   import requests from '$lib/data/requests.json'
-  import Header from '$lib/Header.svelte'
 </script>
 
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
@@ -69,7 +68,7 @@
     <!-- Main Columns -->
     {#each plan.process_specifications as { name, image, processes }}
       <div class="min-w-[400px]">
-        <img class="mx-auto" height="80px" width="80px" src={image} />
+        <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
         <h2 class="text-center">{name}</h2>
         {#each processes as { inputs, outputs }}
           <div class="bg-gray-400 border border-gray-400 p-2">
