@@ -43,7 +43,7 @@
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
-              Recipe Input
+              Recipe Output
             </h3>
 
             <div class="mt-4 text-left">
