@@ -13,7 +13,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -22,12 +22,14 @@
           "resource_conforms_to": {
             "name": "Brown 50/50 Yarn"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -36,12 +38,14 @@
           "resource_conforms_to": {
             "name": "Ivory 50/50 Yarn"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -50,14 +54,16 @@
           "resource_conforms_to": {
             "name": "Gray 50/50 Yarn"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -73,7 +79,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -89,7 +95,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -118,7 +124,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.9,
+            "has_numerical_value": "0.9",
             "has_unit": {
               "label": "lb"
             }
@@ -127,12 +133,14 @@
           "resource_conforms_to": {
             "name": "Brown 50/50 Yarn"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.9,
+            "has_numerical_value": "0.9",
             "has_unit": {
               "label": "lb"
             }
@@ -141,14 +149,16 @@
           "resource_conforms_to": {
             "name": "Spinning Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -164,7 +174,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -193,7 +203,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.9,
+            "has_numerical_value": "0.9",
             "has_unit": {
               "label": "lb"
             }
@@ -202,12 +212,14 @@
           "resource_conforms_to": {
             "name": "Ivory 50/50 Yarn"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.9,
+            "has_numerical_value": "0.9",
             "has_unit": {
               "label": "lb"
             }
@@ -216,14 +228,16 @@
           "resource_conforms_to": {
             "name": "Spinning Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -239,7 +253,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -268,7 +282,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.9,
+            "has_numerical_value": "0.9",
             "has_unit": {
               "label": "lb"
             }
@@ -277,12 +291,14 @@
           "resource_conforms_to": {
             "name": "Gray 50/50 Yarn"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.9,
+            "has_numerical_value": "0.9",
             "has_unit": {
               "label": "lb"
             }
@@ -291,14 +307,16 @@
           "resource_conforms_to": {
             "name": "Spinning Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -314,7 +332,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -343,7 +361,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -352,12 +370,14 @@
           "resource_conforms_to": {
             "name": "Brown Alpaca Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -366,12 +386,14 @@
           "resource_conforms_to": {
             "name": "White Alpaca Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -380,12 +402,14 @@
           "resource_conforms_to": {
             "name": "Gray Alpaca Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -394,12 +418,14 @@
           "resource_conforms_to": {
             "name": "White Wool Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 4,
+            "has_numerical_value": "4",
             "has_unit": {
               "label": "lb"
             }
@@ -408,14 +434,16 @@
           "resource_conforms_to": {
             "name": "Shipping Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -431,7 +459,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -447,7 +475,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -463,7 +491,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -492,7 +520,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.8,
+            "has_numerical_value": "0.8",
             "has_unit": {
               "label": "lb"
             }
@@ -501,12 +529,14 @@
           "resource_conforms_to": {
             "name": "Brown Alpaca Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -515,14 +545,16 @@
           "resource_conforms_to": {
             "name": "Scouring Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -531,7 +563,9 @@
           "resource_conforms_to": {
             "name": "Brown Alpaca Dirty"
           },
-          "stage": "Ship"
+          "stage": {
+            "name": "Ship"
+          }
         }
       ]
     },
@@ -549,7 +583,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.8,
+            "has_numerical_value": "0.8",
             "has_unit": {
               "label": "lb"
             }
@@ -558,12 +592,14 @@
           "resource_conforms_to": {
             "name": "White Alpaca Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -572,14 +608,16 @@
           "resource_conforms_to": {
             "name": "Scouring Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -588,7 +626,9 @@
           "resource_conforms_to": {
             "name": "White Alpaca Dirty"
           },
-          "stage": "Ship"
+          "stage": {
+            "name": "Ship"
+          }
         }
       ]
     },
@@ -606,7 +646,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.8,
+            "has_numerical_value": "0.8",
             "has_unit": {
               "label": "lb"
             }
@@ -615,12 +655,14 @@
           "resource_conforms_to": {
             "name": "Gray Alpaca Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -629,14 +671,16 @@
           "resource_conforms_to": {
             "name": "Scouring Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -645,7 +689,9 @@
           "resource_conforms_to": {
             "name": "Gray Alpaca Dirty"
           },
-          "stage": "Ship"
+          "stage": {
+            "name": "Ship"
+          }
         }
       ]
     },
@@ -663,7 +709,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 0.6,
+            "has_numerical_value": "0.6",
             "has_unit": {
               "label": "lb"
             }
@@ -672,12 +718,14 @@
           "resource_conforms_to": {
             "name": "White Wool Clean"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -686,14 +734,16 @@
           "resource_conforms_to": {
             "name": "Scouring Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -702,7 +752,9 @@
           "resource_conforms_to": {
             "name": "White Wool Dirty"
           },
-          "stage": "Ship"
+          "stage": {
+            "name": "Ship"
+          }
         }
       ]
     },
@@ -720,7 +772,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -729,12 +781,14 @@
           "resource_conforms_to": {
             "name": "Brown Alpaca Dirty"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -743,12 +797,14 @@
           "resource_conforms_to": {
             "name": "White Alpaca Dirty"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -757,12 +813,14 @@
           "resource_conforms_to": {
             "name": "Gray Alpaca Dirty"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -771,12 +829,14 @@
           "resource_conforms_to": {
             "name": "White Wool Dirty"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         },
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 4,
+            "has_numerical_value": "4",
             "has_unit": {
               "label": "lb"
             }
@@ -785,14 +845,16 @@
           "resource_conforms_to": {
             "name": "Shipping Service"
           },
-          "stage": ""
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -808,7 +870,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -824,7 +886,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1", 
             "has_unit": {
               "label": "lb"
             }
@@ -840,7 +902,7 @@
         {
           "id": "recipe_flow_id",
           "resource_quantity": {
-            "has_numerical_value": 1,
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }

@@ -42,6 +42,7 @@
     "autoprefixer": "^10.4.14",
     "bestzip": "^2.2.0",
     "cssnano": "^6.0.0",
+    "decimal.js": "^10.4.3",
     "eslint": "^8.40.0",
     "eslint-plugin-svelte3": "^4.0.0",
     "lint-staged": "^13.2.0",
