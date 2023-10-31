@@ -6,7 +6,7 @@
             "name": "Brown 50/50 Yarn"
         },
         "resource_quantity": {
-            "has_numerical_value": 203,
+            "has_numerical_value": 196,
             "has_unit": {
                 "label": "lb"
             },
@@ -22,7 +22,7 @@
             "name": "Ivory 50/50 Yarn"
             },
             "resource_quantity": {
-            "has_numerical_value": 197,
+            "has_numerical_value": 198,
             "has_unit": {
                 "label": "lb"
                 }
@@ -38,7 +38,7 @@
             "name": "Gray 50/50 Yarn"
             },
         "resource_quantity": {
-            "has_numerical_value": 178,
+            "has_numerical_value": 186,
             "has_unit": {
                 "label": "lb"
                 }
