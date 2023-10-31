@@ -1,0 +1,32 @@
+[
+  {
+    "id": "process_specification_id",
+    "name": "Spin Yarn",
+    "image": ""
+  },
+  {
+    "id": "process_specification_id",
+    "name": "Scour Fiber",
+    "image": ""
+  },
+  {
+    "id": "process_specification_id",
+    "name": "Ship",
+    "image": ""
+  },
+  {
+    "id": "process_specification_id",
+    "name": "Pick Up",
+    "image": ""
+  },
+  {
+    "id": "process_specification_id",
+    "name": "Combine Lots",
+    "image": ""
+  },
+  {
+    "id": "process_specification_id",
+    "name": "Split Lots",
+    "image": ""
+  }
+]
