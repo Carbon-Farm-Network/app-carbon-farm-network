@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Brown Alpaca Dirty",
+    "accounting_quantity": {
+      "has_numerical_value": 22,
+      "has_unit": {
+          "label": "lb"
+      }
+    },
+    "onhand_quantity": {
+      "has_numerical_value": 22,
+      "has_unit": {
+          "label": "lb"
+      }
+    },
+    "stage": {
+      "name": "Pick Up"
+    },
+    "conforms_to": {
+      "name": "Brown Alpaca Dirty"
+    }
+  }
+]
