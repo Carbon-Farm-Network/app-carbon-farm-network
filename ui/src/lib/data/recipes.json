@@ -57,6 +57,22 @@
           "stage": {
             "name": ""
           }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "3",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": {
+            "name": ""
+          }
         }
       ],
       "has_recipe_input": [
