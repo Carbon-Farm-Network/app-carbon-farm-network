@@ -864,6 +864,149 @@
             "name": "Brown Alpaca Dirty"
           },
           "stage": {
+            "name": "Pick Up"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Pick Up"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1", 
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Pick Up"
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": "Pick Up"
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_process_id",
+      "name": "Pick Up Fiber",
+      "process_conforms_to": {
+        "name": "Pick Up"
+        },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
             "name": ""
           }
         },
@@ -910,6 +1053,22 @@
           "action": "pickup",
           "resource_conforms_to": {
             "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "recipe_flow_id",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Gas and Truck Rental"
           },
           "stage": {
             "name": ""
