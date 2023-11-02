@@ -56,38 +56,83 @@
               .toString()
           }
         }
-        let has_output = recipe.has_recipe_output.map(output => ({
-          ...output,
-          resource_quantity: {
-            ...output.resource_quantity,
-            has_numerical_value: new Decimal(output.resource_quantity.has_numerical_value)
-              .mul(multiplier)
-              .toDecimalPlaces(0, Decimal.ROUND_UP)
-              .toString()
-          }
-        }))
-        let has_input = recipe.has_recipe_input.map(input => ({
-          ...input,
-          resource_quantity: {
-            ...input.resource_quantity,
-            has_numerical_value: new Decimal(input.resource_quantity.has_numerical_value)
-              .mul(multiplier)
-              .toDecimalPlaces(0, Decimal.ROUND_UP)
-              .toString()
-          }
-        }))
+        let has_output, has_input, new_output, new_input
         if (matching_output?.action == 'dropoff' || matching_output?.action == 'modify') {
           const existing_process = acc.find(it => it.id == recipe.id)
           if (existing_process) {
             const remaining_processes = acc.filter(it => it.id != existing_process.id)
+            const existing_services = existing_process.has_output.filter(
+              output => output.action != 'dropoff' && output.action != 'modify'
+            )
+            const existing_output = existing_process.has_output.find(
+              output => output.id == matching_output.id
+            )
+            if (existing_output) {
+              new_output = {
+                ...existing_output,
+                resource_quantity: {
+                  ...existing_output.resource_quantity,
+                  has_numerical_value: new Decimal(
+                    existing_output.resource_quantity.has_numerical_value
+                  ).add(matching_output.resource_quantity.has_numerical_value)
+                }
+              }
+            } else {
+              new_output = matching_output
+            }
+
+            const existing_input = existing_process.has_input.find(
+              input => input.id == matching_input.id
+            )
+            if (existing_input) {
+              new_input = {
+                ...existing_input,
+                resource_quantity: {
+                  ...existing_input.resource_quantity,
+                  has_numerical_value: new Decimal(
+                    existing_input.resource_quantity.has_numerical_value
+                  ).add(matching_input.resource_quantity.has_numerical_value)
+                }
+              }
+            } else {
+              new_input = matching_input
+            }
+            const updated_services = existing_services.map(service => ({
+              ...service,
+              resource_quantity: {
+                ...service.resource_quantity,
+                has_numerical_value: new Decimal(
+                  service.resource_quantity.has_numerical_value
+                ).add(matching_output.resource_quantity.has_numerical_value)
+              }
+            }))
+            const non_service_non_matching_outputs = existing_process.has_output.filter(
+              previous_output =>
+                previous_output.id != matching_output.id &&
+                (previous_output.action == 'dropoff' ||
+                  previous_output.action == 'modify')
+            )
+            const non_matching_inputs = existing_process.has_input.filter(
+              previous_input => previous_input.id != matching_input.id
+            )
             return [
               ...remaining_processes,
               {
                 ...existing_process,
-                has_output: [...existing_process.has_output, ...has_output],
-                has_input: [...existing_process.has_input, ...has_input]
+                has_output: [
+                  ...non_service_non_matching_outputs,
+                  ...updated_services,
+                  new_output
+                ],
+                has_input: [...non_matching_inputs, new_input]
               }
             ]
+          } else {
+            const services = recipe.has_recipe_output.filter(
+              output => output.action != 'dropoff' && output.action != 'modify'
+            )
+            has_input = [matching_input]
+            has_output = [...services, matching_output]
           }
         } else {
           has_output = recipe.has_recipe_output.map(output => ({
@@ -96,6 +141,18 @@
               ...output.resource_quantity,
               has_numerical_value: new Decimal(
                 output.resource_quantity.has_numerical_value
+              )
+                .mul(multiplier)
+                .toDecimalPlaces(0, Decimal.ROUND_UP)
+                .toString()
+            }
+          }))
+          has_input = recipe.has_recipe_input.map(input => ({
+            ...input,
+            resource_quantity: {
+              ...input.resource_quantity,
+              has_numerical_value: new Decimal(
+                input.resource_quantity.has_numerical_value
               )
                 .mul(multiplier)
                 .toDecimalPlaces(0, Decimal.ROUND_UP)
