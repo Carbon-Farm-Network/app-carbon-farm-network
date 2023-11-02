@@ -1,31 +1,31 @@
 [
   {
-    "id": "process_specification_id",
+    "id": "spin_yarn",
     "name": "Spin Yarn",
     "image": ""
   },
   {
-    "id": "process_specification_id",
+    "id": "scour_fiber",
     "name": "Scour Fiber",
     "image": ""
   },
   {
-    "id": "process_specification_id",
+    "id": "ship",
     "name": "Ship",
     "image": ""
   },
   {
-    "id": "process_specification_id",
+    "id": "pick_up",
     "name": "Pick Up",
     "image": ""
   },
   {
-    "id": "process_specification_id",
+    "id": "combine_lots",
     "name": "Combine Lots",
     "image": ""
   },
   {
-    "id": "process_specification_id",
+    "id": "split_lots",
     "name": "Split Lots",
     "image": ""
   }
