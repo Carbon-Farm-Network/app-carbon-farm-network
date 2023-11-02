@@ -56,7 +56,26 @@
               .toString()
           }
         }
-        let has_input, has_output
+        let has_output = recipe.has_recipe_output.map(output => ({
+          ...output,
+          resource_quantity: {
+            ...output.resource_quantity,
+            has_numerical_value: new Decimal(output.resource_quantity.has_numerical_value)
+              .mul(multiplier)
+              .toDecimalPlaces(0, Decimal.ROUND_UP)
+              .toString()
+          }
+        }))
+        let has_input = recipe.has_recipe_input.map(input => ({
+          ...input,
+          resource_quantity: {
+            ...input.resource_quantity,
+            has_numerical_value: new Decimal(input.resource_quantity.has_numerical_value)
+              .mul(multiplier)
+              .toDecimalPlaces(0, Decimal.ROUND_UP)
+              .toString()
+          }
+        }))
         if (matching_output?.action == 'dropoff' || matching_output?.action == 'modify') {
           const existing_process = acc.find(it => it.id == recipe.id)
           if (existing_process) {
@@ -65,13 +84,11 @@
               ...remaining_processes,
               {
                 ...existing_process,
-                has_output: [...existing_process.has_output, matching_output],
-                has_input: [...existing_process.has_input, matching_input]
+                has_output: [...existing_process.has_output, ...has_output],
+                has_input: [...existing_process.has_input, ...has_input]
               }
             ]
           }
-          has_output = [matching_output]
-          has_input = [matching_input]
         } else {
           has_output = recipe.has_recipe_output.map(output => ({
             ...output,
@@ -79,18 +96,6 @@
               ...output.resource_quantity,
               has_numerical_value: new Decimal(
                 output.resource_quantity.has_numerical_value
-              )
-                .mul(multiplier)
-                .toDecimalPlaces(0, Decimal.ROUND_UP)
-                .toString()
-            }
-          }))
-          has_input = recipe.has_recipe_input.map(input => ({
-            ...input,
-            resource_quantity: {
-              ...input.resource_quantity,
-              has_numerical_value: new Decimal(
-                input.resource_quantity.has_numerical_value
               )
                 .mul(multiplier)
                 .toDecimalPlaces(0, Decimal.ROUND_UP)
