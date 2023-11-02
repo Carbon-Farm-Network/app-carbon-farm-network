@@ -1,6 +1,6 @@
 [
     {
-      "id": "recipe_process_id",
+      "id": "ship_to_knit",
       "name": "Ship to Knit",
       "process_conforms_to": {
         "name": "Ship"
@@ -11,7 +11,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_50_50_yarn_output_ship_to_knit",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -27,7 +27,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "ivory_50_50_yarn_output_ship_to_knit",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -43,7 +43,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_50_50_yarn_output_ship_to_knit",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -59,7 +59,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "shipping_service_output_ship_to_knit",
           "resource_quantity": {
             "has_numerical_value": "3",
             "has_unit": {
@@ -77,7 +77,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_50_50_yarn_input_ship_to_knit",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -93,7 +93,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "ivory_50_50_yarn_input_ship_to_knit",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -109,7 +109,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_50_50_yarn_input_ship_to_knit",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -127,7 +127,7 @@
       ]
     },
     {
-      "id": "recipe_process_id",
+      "id": "spin_brown_yarn",
       "name": "Spin Brown Yarn",
       "process_conforms_to": {
         "name": "Spin Yarn"
@@ -138,7 +138,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_50_50_yarn_output_spin_brown_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.9",
             "has_unit": {
@@ -154,7 +154,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "spinning_service_output_spin_brown_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.9",
             "has_unit": {
@@ -172,7 +172,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_clean_input_spin_brown_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.5",
             "has_unit": {
@@ -188,7 +188,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_clean_input_spin_brown_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.5",
             "has_unit": {
@@ -206,7 +206,7 @@
       ]
     },
     {
-      "id": "recipe_process_id",
+      "id": "spin_ivory_yarn",
       "name": "Spin Ivory Yarn",
       "process_conforms_to": {
         "name": "Spin Yarn"
@@ -217,7 +217,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "ivory_50_50_yarn_output_spin_ivory_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.9",
             "has_unit": {
@@ -233,7 +233,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "spinning_service_output_spin_ivory_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.9",
             "has_unit": {
@@ -251,7 +251,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_clean_input_spin_ivory_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.5",
             "has_unit": {
@@ -267,7 +267,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_clean_input_spin_ivory_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.5",
             "has_unit": {
@@ -285,7 +285,7 @@
       ]
     },
     {
-      "id": "recipe_process_id",
+      "id": "spin_gray_yarn",
       "name": "Spin Gray Yarn",
       "process_conforms_to": {
         "name": "Spin Yarn"
@@ -296,7 +296,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "gray_50_50_yarn_output_spin_gray_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.9",
             "has_unit": {
@@ -312,7 +312,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "spinning_service_output_spin_gray_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.9",
             "has_unit": {
@@ -330,7 +330,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_clean_input_spin_gray_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.5",
             "has_unit": {
@@ -346,7 +346,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_clean_input_spin_gray_yarn",
           "resource_quantity": {
             "has_numerical_value": "0.5",
             "has_unit": {
@@ -364,7 +364,7 @@
       ]
     },
     {
-      "id": "recipe_process_id",
+      "id": "ship_to_spin",
       "name": "Ship to Spin",
       "process_conforms_to": {
         "name": "Ship"
@@ -375,7 +375,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_clean_output_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -391,7 +391,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_clean_output_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -407,7 +407,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_clean_output_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -423,7 +423,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_clean_output_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -439,7 +439,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "shipping_service_output_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "4",
             "has_unit": {
@@ -457,7 +457,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_clean_input_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -473,7 +473,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_clean_input_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -489,7 +489,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_clean_input_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -505,7 +505,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_clean_ship_to_spin",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -523,8 +523,8 @@
       ]
     },
     {
-      "id": "recipe_process_id",
-      "name": "Scour Alpaca",
+      "id": "scour_brown_alpaca",
+      "name": "Scour Brown Alpaca",
       "process_conforms_to": {
         "name": "Scour Fiber"
         },
@@ -534,7 +534,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_clean_output_scour_brown_alpaca",
           "resource_quantity": {
             "has_numerical_value": "0.8",
             "has_unit": {
@@ -550,7 +550,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "scouring_service_output_scour_brown_alpaca",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -568,7 +568,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_dirty_input_scour_brown_alpaca",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -586,8 +586,8 @@
       ]
     },
     {
-      "id": "recipe_process_id",
-      "name": "Scour Alpaca",
+      "id": "scour_white_alpaca",
+      "name": "Scour White Alpaca",
       "process_conforms_to": {
         "name": "Scour Fiber"
         },
@@ -597,7 +597,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_clean_input_scour_white_alpaca",
           "resource_quantity": {
             "has_numerical_value": "0.8",
             "has_unit": {
@@ -613,7 +613,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "scouring_service_output_scour_white_alpaca",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -631,7 +631,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_dirty_input_scour_white_alpaca",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -649,8 +649,8 @@
       ]
     },
     {
-      "id": "recipe_process_id",
-      "name": "Scour Alpaca",
+      "id": "scour_gray_alpaca",
+      "name": "Scour Gray Alpaca",
       "process_conforms_to": {
         "name": "Scour Fiber"
         },
@@ -660,7 +660,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_clean_output_scour_gray_alpaca",
           "resource_quantity": {
             "has_numerical_value": "0.8",
             "has_unit": {
@@ -676,7 +676,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "scouring_service_output_scour_gray_alpaca",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -694,7 +694,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_dirty_input_scour_gray_alpaca",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -712,7 +712,7 @@
       ]
     },
     {
-      "id": "recipe_process_id",
+      "id": "scour_wool",
       "name": "Scour Wool",
       "process_conforms_to": {
         "name": "Scour Fiber"
@@ -723,7 +723,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_clean_output_scour_wool",
           "resource_quantity": {
             "has_numerical_value": "0.6",
             "has_unit": {
@@ -739,7 +739,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "scouring_service_output_scour_wool",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -757,7 +757,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_dirty_input_scour_wool",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -775,7 +775,7 @@
       ]
     },
     {
-      "id": "recipe_process_id",
+      "id": "ship_to_scour",
       "name": "Ship to Scour",
       "process_conforms_to": {
         "name": "Ship"
@@ -786,7 +786,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_dirty_output_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -802,7 +802,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_dirty_output_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -818,7 +818,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_dirty_output_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -834,7 +834,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_dirty_output_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -850,7 +850,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "shipping_service_output_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "4",
             "has_unit": {
@@ -868,7 +868,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_dirty_input_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -884,7 +884,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_dirty_input_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -900,7 +900,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_dirty_input_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1", 
             "has_unit": {
@@ -916,7 +916,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_dirty_input_ship_to_scour",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -934,7 +934,7 @@
       ]
     },
     {
-      "id": "recipe_process_id",
+      "id": "pick_up_fiber",
       "name": "Pick Up Fiber",
       "process_conforms_to": {
         "name": "Pick Up"
@@ -945,7 +945,7 @@
       },
       "has_recipe_output": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_dirty_output_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -961,7 +961,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_dirty_output_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -977,7 +977,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_dirty_output_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -993,7 +993,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_dirty_output_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -1011,7 +1011,7 @@
       ],
       "has_recipe_input": [
         {
-          "id": "recipe_flow_id",
+          "id": "brown_alpaca_dirty_input_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -1027,7 +1027,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_alpaca_dirty_input_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -1043,7 +1043,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gray_alpaca_dirty_input_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1", 
             "has_unit": {
@@ -1059,7 +1059,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "white_wool_dirty_input_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -1075,7 +1075,7 @@
           }
         },
         {
-          "id": "recipe_flow_id",
+          "id": "gas_and_truck_rental_input_pick_up_fiber",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
