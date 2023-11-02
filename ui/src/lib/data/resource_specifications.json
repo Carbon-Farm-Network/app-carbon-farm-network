@@ -1,95 +1,95 @@
 [
   {
-    "id": "resource_specification_id",
+    "id": "brown_50_50_yarn",
     "name": "Brown 50/50 Yarn",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "ivory_50_50_yarn",
     "name": "Ivory 50/50 Yarn",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "gray_50_50_yarn",
     "name": "Gray 50/50 yarn",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "shipping_service",
     "name": "Shipping Service",
     "substitutable": false,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "spinning_service",
     "name": "Spinning Service",
     "substitutable": false,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "brown_alpaca_clean",
     "name": "Brown Alpaca Clean",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "white_alpaca_clean",
     "name": "White Alpaca Clean",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "gray_alpace_clean",
     "name": "Gray Alpaca Clean",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "white_wool_clean",
     "name": "White Wool Clean",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "scouring_service",
     "name": "Scouring Service",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "brown_alpaca_dirty",
     "name": "Brown Alpaca Dirty",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "white_alpaca_dirty",
     "name": "White Alpaca Dirty",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "gray_alpaca_dirty",
     "name": "Gray Alpaca Dirty",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "white_wool_dirty",
     "name": "White Wool Dirty",
     "substitutable": true,
     "defaultUnitOfResource": "Pound"
   },
   {
-    "id": "resource_specification_id",
+    "id": "truck_rental",
     "name": "Truck Rental",
     "substitutable": false
   },
   {
-    "id": "resource_specification_id",
+    "id": "gasoline",
     "name": "Gasoline",
     "substitutable": true
   },
