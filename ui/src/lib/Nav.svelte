@@ -98,29 +98,29 @@
           <div class="flex justify-end space-x-4">
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
 
-            <div
+            <button
               style="cursor: pointer;"
               on:click={() => navigate('/')}
               class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default"
             >
               Map
-            </div>
+            </button>
 
-            <div
+            <button
               style="cursor: pointer;"
               on:click={() => navigate('/offers')}
               class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default"
             >
               Offers
-            </div>
+            </button>
 
-            <div
+            <button
               style="cursor: pointer;"
               on:click={() => navigate('/requests')}
               class="{path === '/requests' ? 'nav-active' : 'nav-inactive'} nav-default"
             >
               Requests
-            </div>
+            </button>
 
             <!-- <a
               href="/offers"
@@ -128,13 +128,13 @@
               Offers
             </a> -->
 
-            <div
+            <button
               style="cursor: pointer;"
-              on:click={() => navigate('/planning')}
-              class="{path === '/planning' ? 'nav-active' : 'nav-inactive'} nav-default"
+              on:click={() => navigate('/plans')}
+              class="{path === '/plans' ? 'nav-active' : 'nav-inactive'} nav-default"
             >
-              Planning
-            </div>
+              Plans
+            </button>
           </div>
         </div>
       </div>

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import recipes from '$lib/data/recipes.json'
+  import plan from '$lib/data/plan.json'
   import Header from '$lib/Header.svelte'
   import { goto } from '$app/navigation'
 </script>
 
 <div style="height: 8vh">
-  <Header title="Recipes" description="The instructions for manufacturing a resource." />
+  <Header title="Plans" description="Current operational planning" />
 </div>
 
 <div class="p-12">
@@ -19,9 +19,9 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => goto('/recipes/new')}
+        on:click={() => goto('/plans/new')}
         class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >Add a recipe</button
+        >Add a plan</button
       >
     </div>
   </div>
@@ -34,17 +34,12 @@
               <th
                 scope="col"
                 class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
-                >Inputs</th
+                >Name</th
               >
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Process</th
-              >
-              <th
-                scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Outputs</th
+                >Description</th
               >
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
@@ -53,26 +48,17 @@
           </thead>
           <tbody class="bg-white">
             <!-- {#each offers as { proposed_intents }, index} -->
-            {#each recipes as recipe_process, index}
+            {#each [plan] as { name, note }, index}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
-                  >{#each recipe_process.has_recipe_input.map(it => it.resource_conforms_to.name) as input_name}
-                    {input_name}<br />
-                  {/each}</td
+                  >{name}</td
                 >
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{recipe_process.name}</td
-                >
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{#each recipe_process.has_recipe_output.map(it => it.resource_conforms_to.name) as output_name}
-                    {output_name} <br />
-                  {/each}
-                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{note}</td>
                 <td
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                 >
                   <button type="button" class="text-indigo-600 hover:text-indigo-900"
-                    >Edit<span class="sr-only">, Lindsay Walton</span></button
+                    >Edit<span class="sr-only">, {name}</span></button
                   >
                   &nbsp;
                   <button type="button" class="text-indigo-600 hover:text-indigo-900">

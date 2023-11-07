@@ -3,8 +3,9 @@
       "id": "ship_to_knit",
       "name": "Ship to Knit",
       "process_conforms_to": {
-        "name": "Ship"
-        },
+        "name": "Ship",
+        "image": "/truck.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"
@@ -130,8 +131,9 @@
       "id": "spin_brown_yarn",
       "name": "Spin Brown Yarn",
       "process_conforms_to": {
-        "name": "Spin Yarn"
-        },
+        "name": "Spin Yarn",
+        "image": "/socks.svg"
+      },
       "has_duration": {
         "numeric_duration": 5,
         "unit_type": "unitDay"
@@ -209,8 +211,9 @@
       "id": "spin_ivory_yarn",
       "name": "Spin Ivory Yarn",
       "process_conforms_to": {
-        "name": "Spin Yarn"
-        },
+        "name": "Spin Yarn",
+        "image": "/socks.svg"
+      },
       "has_duration": {
         "numeric_duration": 5,
         "unit_type": "unitDay"
@@ -367,8 +370,9 @@
       "id": "ship_to_spin",
       "name": "Ship to Spin",
       "process_conforms_to": {
-        "name": "Ship"
-        },
+        "name": "Ship",
+        "image": "/truck.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"
@@ -526,8 +530,9 @@
       "id": "scour_brown_alpaca",
       "name": "Scour Brown Alpaca",
       "process_conforms_to": {
-        "name": "Scour Fiber"
-        },
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"
@@ -589,8 +594,9 @@
       "id": "scour_white_alpaca",
       "name": "Scour White Alpaca",
       "process_conforms_to": {
-        "name": "Scour Fiber"
-        },
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"
@@ -652,8 +658,9 @@
       "id": "scour_gray_alpaca",
       "name": "Scour Gray Alpaca",
       "process_conforms_to": {
-        "name": "Scour Fiber"
-        },
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"
@@ -715,8 +722,9 @@
       "id": "scour_wool",
       "name": "Scour Wool",
       "process_conforms_to": {
-        "name": "Scour Fiber"
-        },
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"
@@ -778,8 +786,9 @@
       "id": "ship_to_scour",
       "name": "Ship to Scour",
       "process_conforms_to": {
-        "name": "Ship"
-        },
+        "name": "Ship",
+        "image": "/truck.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"
@@ -937,8 +946,9 @@
       "id": "pick_up_fiber",
       "name": "Pick Up Fiber",
       "process_conforms_to": {
-        "name": "Pick Up"
-        },
+        "name": "Pick Up",
+        "image": "/farm.svg"
+      },
       "has_duration": {
         "numeric_duration": 7,
         "unit_type": "unitDay"

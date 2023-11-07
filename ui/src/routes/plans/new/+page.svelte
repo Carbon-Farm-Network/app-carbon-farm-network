@@ -1,7 +1,6 @@
 <script lang="ts">
   import recipes from '$lib/data/recipes.json'
-  import demands from '$lib/data/demands.json'
-  import { onMount } from 'svelte'
+  import requests from '$lib/data/requests.json'
   import { Decimal } from 'decimal.js'
 
   const previousColumn = column => {
@@ -174,9 +173,55 @@
     }, [])
   }
 
-  let previousProcesses = previousColumn(demands)
-  let allColumns: any[] = []
-  onMount(() => {
+  type Commitment = {
+    resource_conforms_to: { name: string }
+    resource_quantity: { has_numerical_value: string; has_unit: { label: string } }
+    receiver: { name: string }
+  }
+  let commitments: Commitment[] = []
+  $: aggregatedCommitments = aggregateCommitments(commitments)
+  $: allColumns = generateColumns(aggregatedCommitments)
+  function createCommitments(requests: { proposed_intents: { intent: any }[] }[]): any[] {
+    return requests.flatMap(request =>
+      request.proposed_intents.map(proposed_intent => ({
+        ...proposed_intent.intent,
+        action: 'transfer',
+        id: 'commitment_id'
+      }))
+    )
+  }
+  type Demand = {
+    resource_conforms_to: { name: string }
+    resource_quantity: { has_numerical_value: string; has_unit: { label: string } }
+  }
+  function aggregateCommitments(commitments: Commitment[]): Demand[] {
+    return Object.values(
+      commitments.reduce((acc, commitment) => {
+        if (acc[commitment.resource_conforms_to.name]) {
+          let existing = acc[commitment.resource_conforms_to.name]
+          acc[commitment.resource_conforms_to.name] = {
+            ...existing,
+            resource_quantity: {
+              ...existing.resource_quantity,
+              has_numerical_value:
+                existing.resource_quantity.has_numerical_value +
+                commitment.resource_quantity.has_numerical_value
+            }
+          }
+        } else {
+          acc[commitment.resource_conforms_to.name] = {
+            resource_quantity: commitment.resource_quantity,
+            resource_conforms_to: commitment.resource_conforms_to,
+            stage: { name: 'Ship' }
+          }
+        }
+        return acc
+      }, {})
+    )
+  }
+  function generateColumns(aggregatedCommitments: any[]): any[] {
+    let previousProcesses = previousColumn(aggregatedCommitments)
+    let allColumns: any[] = []
     while (previousProcesses.length != 0) {
       allColumns = [previousProcesses, ...allColumns]
       previousProcesses = previousColumn(
@@ -187,7 +232,8 @@
           }, [])
       )
     }
-  })
+    return allColumns
+  }
 </script>
 
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
@@ -201,7 +247,7 @@
 <div class="pt-4 flex justify-center items-center">
   <div class="flex space-x-8 mx-4 overflow-x-scroll">
     <div class="min-w-[200px] mt-20">
-      <h2 class="text-center">Offers</h2>
+      <h2 class="text-center text-xl font-semibold">Offers</h2>
       <div class="bg-blue-300 border border-gray-400 p-2">
         <!-- Sub-columns -->
         <div class="">
@@ -252,10 +298,11 @@
     </div>
     -->
     <!-- Main Columns -->
-    {#each allColumns as processes, index}
+    {#each allColumns as processes}
+      {@const { image, name } = processes[0].process_conforms_to}
       <div class="min-w-[400px]">
-        <!-- <img class="mx-auto" height="80px" width="80px" src={image} alt="" /> -->
-        <h2 class="text-center">Column {index}</h2>
+        <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
+        <h2 class="text-center text-xl font-semibold">{name}</h2>
         {#each processes as { has_input, has_output }}
           <div class="bg-gray-400 border border-gray-400 p-2">
             <!-- Sub-columns -->
@@ -324,13 +371,54 @@
       </div>
     {/each}
 
-    <div class="min-w-[200px] mt-20">
-      <h2 class="text-center">Requests</h2>
+    <div class="min-w-[200px]">
+      <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
+        <button
+          type="button"
+          on:click={() => {}}
+          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >Add a commitment</button
+        >
+      </div>
+      <h2 class="text-center text-xl font-semibold">Commitments</h2>
       <div class="bg-blue-300 border border-gray-400 p-2">
         <!-- Sub-columns -->
         <div class="">
           <div>
-            {#each [] as { proposed_intents }}
+            {#if commitments.length == 0}
+              <div class="flex justify-center my-4">
+                <button
+                  type="button"
+                  on:click={() => (commitments = createCommitments(requests))}
+                  class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >Create from requests</button
+                >
+              </div>
+            {/if}
+            {#each commitments as { resource_conforms_to, resource_quantity, receiver }}
+              <div
+                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+              >
+                <p>{resource_conforms_to?.name}</p>
+                <p>
+                  {resource_quantity?.has_numerical_value}
+                  {resource_quantity?.has_unit?.label}
+                </p>
+                <p>{receiver?.name}</p>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="min-w-[200px] mt-20">
+      <h2 class="text-center text-xl font-semibold">Requests</h2>
+      <div class="bg-blue-300 border border-gray-400 p-2">
+        <!-- Sub-columns -->
+        <div class="">
+          <div>
+            {#each requests as { proposed_intents }}
               {@const reciprocal = proposed_intents.find(it => it.reciprocal)}
               {@const primary = proposed_intents.find(it => !it.reciprocal)}
               <div

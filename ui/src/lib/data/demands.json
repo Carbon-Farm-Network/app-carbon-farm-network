@@ -10,24 +10,8 @@
             "has_unit": {
                 "label": "lb"
             },
-            "stage": {
-                "name": "Ship"
-            }
-        }
-    },
-    {
-        "id": "commitment_id",
-        "action": "consume",
-        "resource_conforms_to": {
-            "name": "Ivory 50/50 Yarn"
-            },
-            "resource_quantity": {
-            "has_numerical_value": 198,
-            "has_unit": {
-                "label": "lb"
-                }
-            },
-            "stage": {
+        },
+        "stage": {
             "name": "Ship"
         }
     },
@@ -35,14 +19,30 @@
         "id": "commitment_id",
         "action": "consume",
         "resource_conforms_to": {
-            "name": "Gray 50/50 Yarn"
-            },
+            "name": "Ivory 50/50 Yarn"
+        },
+        "resource_quantity": {
+        "has_numerical_value": 198,
+        "has_unit": {
+            "label": "lb"
+            }
+        },
+        "stage": {
+            "name": "Ship"
+        }
+    },
+    {
+        "id": "commitment_id",
+        "action": "consume",
+        "resource_conforms_to": {
+           "name": "Gray 50/50 Yarn"
+        },
         "resource_quantity": {
             "has_numerical_value": 186,
             "has_unit": {
                 "label": "lb"
-                }
-            },
+            }
+        },
         "stage": {
             "name": "Ship"
         }

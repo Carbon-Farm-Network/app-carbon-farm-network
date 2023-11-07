@@ -10,7 +10,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown 50-50 yarn"
+            "name": "Brown 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 33,
@@ -36,7 +36,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown 50-50 yarn"
+            "name": "Brown 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 80,
@@ -62,7 +62,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown 50-50 yarn"
+            "name": "Brown 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 50,
@@ -88,7 +88,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown 50-50 yarn"
+            "name": "Brown 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 40,
@@ -114,7 +114,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Grey 50-50 yarn"
+            "name": "Gray 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 38,
@@ -140,7 +140,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Grey 50-50 yarn"
+            "name": "Gray 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 38,
@@ -166,7 +166,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Grey 50-50 yarn"
+            "name": "Gray 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 50,
@@ -192,7 +192,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Grey 50-50 yarn"
+            "name": "Gray 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 40,
@@ -218,7 +218,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Ivory 50-50 yarn"
+            "name": "Ivory 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 57,
@@ -244,7 +244,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Ivory 50-50 yarn"
+            "name": "Ivory 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 50,
@@ -270,7 +270,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Ivory 50-50 yarn"
+            "name": "Ivory 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 50,
@@ -296,7 +296,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Ivory 50-50 yarn"
+            "name": "Ivory 50/50 Yarn"
           },
           "resource_quantity": {
             "has_numerical_value": 40,
