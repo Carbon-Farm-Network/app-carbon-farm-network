@@ -105,7 +105,7 @@
                   previous_output.action == 'modify')
             )
             const non_matching_inputs = existing_process.has_input.filter(
-              previous_input => previous_input.id != matching_input.id
+              previous_input => previous_input.id != matching_input?.id
             )
             return [
               ...remaining_processes,
@@ -116,14 +116,17 @@
                   new_output,
                   ...existing_services
                 ],
-                has_input: [...non_matching_inputs, new_input]
+                has_input: [new_input, ...non_matching_inputs]
               }
             ]
           } else {
             const services = recipe.has_recipe_output.filter(
               output => output.action != 'dropoff' && output.action != 'modify'
             )
-            has_input = [matching_input]
+            const non_matching_inputs = recipe.has_recipe_input.filter(
+              previous_input => previous_input.id != matching_input?.id
+            )
+            has_input = [matching_input, ...non_matching_inputs]
             has_output = [...services, matching_output]
           }
         } else {
