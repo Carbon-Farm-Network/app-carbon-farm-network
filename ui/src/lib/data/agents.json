@@ -1,5 +1,6 @@
 [
   {
+    "id": "laughing_goat_fiber_farm",
     "name": "Laughing Goat Fiber Farm",
     "latLng": [42.44705, -76.56986],
     "imageUrl": "/laughing_goat.png",
@@ -21,6 +22,7 @@
     ]
   },
   {
+    "id": "dashing_star_farm",
     "name": "Dashing Star Farm",
     "address": "157 Indian Lake Road Millerton, NY 12546",
     "iconUrl": "/mill.svg",
@@ -53,6 +55,7 @@
     ]
   },
   {
+    "id": "stone_barns_center",
     "name": "Stone Barns Center",
     "iconUrl": "/farm.svg",
     "address": "630 Bedford Road, Tarrytown, NY 10591",
@@ -73,6 +76,7 @@
     ]
   },
   {
+    "id": "little_creek_farm_alpacas",
     "name": "Little Creek Farm Alpacas",
     "iconUrl": "/farm.svg",
     "address": "321 Hardscrabble Rd North Salem, NY 10560",
@@ -93,6 +97,7 @@
     ]
   },
   {
+    "id": "la_basse_cour",
     "name": "La Basse Cour",
     "iconUrl": "/farm.svg",
     "address": "3228 Gun House Hill Road, South Kortright, NY 13842",
@@ -113,6 +118,7 @@
     ]
   },
   {
+    "id": "faraway_farm_alpacas",
     "name": "Faraway Farm Alpacas",
     "iconUrl": "/farm.svg",
     "address": "1307 Baptist Church Road, Yorktown Heights, NY 10598",
@@ -121,6 +127,7 @@
     ]
   },
   {
+    "id": "bartlettyarns_inc",
     "name": "Bartlettyarns, Inc.",
     "iconUrl": "/mill.svg",
     "address": "20 Water Street, Harmony, Maine",
@@ -141,6 +148,7 @@
     ]
   },
   {
+    "id": "rosehaven_mill",
     "name": "Rosehaven Mill",
     "iconUrl": "/mill.svg",
     "address": "2027 Rt 17B Bethel, NY 12720",
@@ -161,6 +169,7 @@
     ]
   },
   {
+    "id": "hudson_valley_sheep_and_wool_company",
     "name": "Hudson Valley Sheep & Wool Company",
     "iconUrl": "/mill.svg",
     "address": "192 Yantz Rd., Red Hook, NY 12571",
@@ -181,6 +190,7 @@
     ]
   },
   {
+    "id": "nj_knitting_corp",
     "name": "NJ Knitting Corp.",
     "iconUrl": "/knitting.svg",
     "address": "76 Fayette Street Perth Amboy, NJ 08861",
@@ -201,7 +211,29 @@
     ]
   },
   {
+    "id": "simply_knitting_mills_inc",
     "name": "Simply Knitting Mills, Inc",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "offers": [
+      {
+        "name": "White alpaca Unwashed",
+        "quantity": 60,
+        "price": 12,
+        "quantityUnit": "pounds",
+        "priceUnit": "$/pounds",
+        "availableDate": "2022/03/01",
+        "resourceType": {
+          "color": "white",
+          "fabric": "alpaca"
+        }
+      }
+    ]
+  },
+  {
+    "id": "wolhide",
+    "name": "wolhide",
     "iconUrl": "/knitting.svg",
     "address": "683 Woodward Avenue Ridgewood, NY 11385",
     "latLng": [40.70527471135605, -73.90585867362437],

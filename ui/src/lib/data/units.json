@@ -13,7 +13,7 @@
     "overrideLabel": "pound"
   },
   {
-    "id: "hour",
+    "id": "hour",
     "label": "hour",
     "symbol": "h"
   }

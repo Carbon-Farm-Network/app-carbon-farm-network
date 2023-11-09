@@ -2,6 +2,8 @@
   import recipes from '$lib/data/recipes.json'
   import requests from '$lib/data/requests.json'
   import { Decimal } from 'decimal.js'
+  import PlanModal from '$lib/PlanModal.svelte'
+  import CommitmentModal from '$lib/CommitmentModal.svelte'
 
   const previousColumn = column => {
     return column.reduce((acc, input) => {
@@ -177,6 +179,7 @@
     resource_conforms_to: { name: string }
     resource_quantity: { has_numerical_value: string; has_unit: { label: string } }
     receiver: { name: string }
+    id: string
   }
   let commitments: Commitment[] = []
   $: aggregatedCommitments = aggregateCommitments(commitments)
@@ -186,7 +189,7 @@
       request.proposed_intents.map(proposed_intent => ({
         ...proposed_intent.intent,
         action: 'transfer',
-        id: 'commitment_id'
+        id: crypto.randomUUID()
       }))
     )
   }
@@ -234,7 +237,18 @@
     }
     return allColumns
   }
+
+  let planModalOpen = false
+  let commitmentModalOpen = false
+  let selectedCommitmentId: string | undefined = undefined
 </script>
+
+<PlanModal bind:open={planModalOpen} />
+<CommitmentModal
+  bind:open={commitmentModalOpen}
+  {selectedCommitmentId}
+  bind:commitments
+/>
 
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
 <div class="custom-background" style="height: 8vh">
@@ -246,7 +260,15 @@
 
 <div class="pt-4 flex justify-center items-center">
   <div class="flex space-x-8 mx-4 overflow-x-scroll">
-    <div class="min-w-[200px] mt-20">
+    <div class="min-w-[200px]">
+      <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
+        <button
+          type="button"
+          on:click={() => (planModalOpen = true)}
+          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >Save plan</button
+        >
+      </div>
       <h2 class="text-center text-xl font-semibold">Offers</h2>
       <div class="bg-blue-300 border border-gray-400 p-2">
         <!-- Sub-columns -->
@@ -371,11 +393,13 @@
       </div>
     {/each}
 
-    <div class="min-w-[200px]">
+    <div class="min-w-[250px]">
       <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
         <button
           type="button"
-          on:click={() => {}}
+          on:click={() => {
+            commitmentModalOpen = true
+          }}
           class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Add a commitment</button
         >
@@ -395,16 +419,59 @@
                 >
               </div>
             {/if}
-            {#each commitments as { resource_conforms_to, resource_quantity, receiver }}
+            {#each commitments as { resource_conforms_to, resource_quantity, receiver, id }}
               <div
-                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs flex"
               >
-                <p>{resource_conforms_to?.name}</p>
-                <p>
-                  {resource_quantity?.has_numerical_value}
-                  {resource_quantity?.has_unit?.label}
-                </p>
-                <p>{receiver?.name}</p>
+                <div>
+                  <p>{resource_conforms_to?.name}</p>
+                  <p>
+                    {resource_quantity?.has_numerical_value}
+                    {resource_quantity?.has_unit?.label}
+                  </p>
+                  <p>{receiver?.name}</p>
+                </div>
+                <button
+                  class="ml-6"
+                  on:click={() => (commitments = commitments.filter(it => it.id != id))}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-8 h-8"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+                <button
+                  class="ml-2"
+                  on:click={() => {
+                    selectedCommitmentId = id
+                    commitmentModalOpen = true
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+                    />
+                  </svg>
+                </button>
               </div>
             {/each}
           </div>
