@@ -1,6 +1,7 @@
 <script lang="ts">
   import recipes from '$lib/data/recipes.json'
   import requests from '$lib/data/requests.json'
+  import offers from '$lib/data/offers.json'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
@@ -261,7 +262,7 @@
         <!-- Sub-columns -->
         <div class="">
           <div>
-            {#each [] as { proposed_intents }}
+            {#each offers as { proposed_intents }}
               {@const reciprocal = proposed_intents.find(it => it.reciprocal)}
               {@const primary = proposed_intents.find(it => !it.reciprocal)}
               <div
