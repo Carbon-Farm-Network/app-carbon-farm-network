@@ -1,11 +1,11 @@
 [
   {
-    "id": "proposal_id",
+    "id": "proposal_brown_50_50_yarn_wolhide",
     "has_begining": "2023-02-14T15:55:59Z",
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "brown_50_50_yarn_wolhide",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -26,12 +26,12 @@
     ]
   },
   {
-    "id": "proposal_id",
+    "id": "proposal_brown_50_50_yarn_vincent_james",
     "has_begining": "2023-02-14T15:55:59Z",
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "brown_50_50_yarn_vincent_james",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -57,7 +57,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "brown_50_50_yarn_textile_lab",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -83,7 +83,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "brown_50_50_yarn_manymoons",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -109,7 +109,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "gray_50_50_yarn_wolhide",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -135,7 +135,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "gray_50_50_yarn_vincent_james",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -161,7 +161,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "gray_50_50_yarn_textile_lab",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -187,7 +187,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "gray_50_50_yarn_manymoons",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -213,7 +213,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "ivory_50_50_yarn_wolhide",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -239,7 +239,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "ivory_50_50_yarn_vincent_james",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -265,7 +265,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "ivory_50_50_yarn_textile_lab",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",
@@ -291,7 +291,7 @@
     "unit_based": true,
     "proposed_intents": [
       {
-        "id": "proposed_intent_id",
+        "id": "ivory_50_50_yarn_manymoons",
         "reciprocal": false,
         "intent": {
           "id": "intent_id",

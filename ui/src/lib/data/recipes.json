@@ -158,7 +158,7 @@
         {
           "id": "spinning_service_output_spin_brown_yarn",
           "resource_quantity": {
-            "has_numerical_value": "0.9",
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -238,7 +238,7 @@
         {
           "id": "spinning_service_output_spin_ivory_yarn",
           "resource_quantity": {
-            "has_numerical_value": "0.9",
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -317,7 +317,7 @@
         {
           "id": "spinning_service_output_spin_gray_yarn",
           "resource_quantity": {
-            "has_numerical_value": "0.9",
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }

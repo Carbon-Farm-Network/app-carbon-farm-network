@@ -98,15 +98,6 @@
             } else {
               new_input = matching_input
             }
-            const updated_services = existing_services.map(service => ({
-              ...service,
-              resource_quantity: {
-                ...service.resource_quantity,
-                has_numerical_value: new Decimal(
-                  service.resource_quantity.has_numerical_value
-                ).add(matching_output.resource_quantity.has_numerical_value)
-              }
-            }))
             const non_service_non_matching_outputs = existing_process.has_output.filter(
               previous_output =>
                 previous_output.id != matching_output.id &&
@@ -122,8 +113,8 @@
                 ...existing_process,
                 has_output: [
                   ...non_service_non_matching_outputs,
-                  ...updated_services,
-                  new_output
+                  new_output,
+                  ...existing_services
                 ],
                 has_input: [...non_matching_inputs, new_input]
               }
@@ -136,18 +127,10 @@
             has_output = [...services, matching_output]
           }
         } else {
-          has_output = recipe.has_recipe_output.map(output => ({
-            ...output,
-            resource_quantity: {
-              ...output.resource_quantity,
-              has_numerical_value: new Decimal(
-                output.resource_quantity.has_numerical_value
-              )
-                .mul(multiplier)
-                .toDecimalPlaces(0, Decimal.ROUND_UP)
-                .toString()
-            }
-          }))
+          has_output = [
+            matching_output,
+            ...recipe.has_recipe_output.filter(it => it.id != matching_output?.id)
+          ]
           has_input = recipe.has_recipe_input.map(input => ({
             ...input,
             resource_quantity: {
@@ -189,6 +172,7 @@
       request.proposed_intents.map(proposed_intent => ({
         ...proposed_intent.intent,
         action: 'transfer',
+        satisfies: proposed_intent.id,
         id: crypto.randomUUID()
       }))
     )
