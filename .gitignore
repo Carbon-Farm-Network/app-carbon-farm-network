@@ -17,3 +17,5 @@ node_modules/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 ui/.svelte-kit
+flake.lock
+pnpm-lock.yaml
