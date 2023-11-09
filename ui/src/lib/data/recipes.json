@@ -62,7 +62,7 @@
         {
           "id": "shipping_service_output_ship_to_knit",
           "resource_quantity": {
-            "has_numerical_value": "3",
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -445,7 +445,7 @@
         {
           "id": "shipping_service_output_ship_to_spin",
           "resource_quantity": {
-            "has_numerical_value": "4",
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
@@ -861,7 +861,7 @@
         {
           "id": "shipping_service_output_ship_to_scour",
           "resource_quantity": {
-            "has_numerical_value": "4",
+            "has_numerical_value": "1",
             "has_unit": {
               "label": "lb"
             }
