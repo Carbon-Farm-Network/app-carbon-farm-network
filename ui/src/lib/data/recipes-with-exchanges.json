@@ -1300,6 +1300,104 @@
       ]
     },
     {
+      "id": "recipe_exchange_farm_fiber",
+      "name": "Fiber from the Farm",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "brown_alpaca_dirty_farm",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
+        },
+        {
+          "id": "gray_alpaca_dirty_farm",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
+        },
+        {
+          "id": "white_alpaca_dirty_farm",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
+        },
+        {
+          "id": "white_wool_dirty_farm",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_farm_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "Each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Farmer"
+        }
+      ]
+    },
+    {
       "id": "recipe_exchange_ship_to_knit",
       "name": "Shipping Service to Knit",
       "note": "",
