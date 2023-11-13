@@ -1,0 +1,1342 @@
+[
+    {
+      "id": "ship_to_knit",
+      "name": "Ship to Knit",
+      "process_conforms_to": {
+        "name": "Ship",
+        "image": "/truck.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "brown_50_50_yarn_output_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "ivory_50_50_yarn_output_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "gray_50_50_yarn_output_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "shipping_service_output_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "brown_50_50_yarn_input_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Spin Yarn"
+          }
+        },
+        {
+          "id": "ivory_50_50_yarn_input_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Spin Yarn"
+          }
+        },
+        {
+          "id": "gray_50_50_yarn_input_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Spin Yarn"
+          }
+        }
+      ]
+    },
+    {
+      "id": "spin_brown_yarn",
+      "name": "Spin Brown Yarn",
+      "process_conforms_to": {
+        "name": "Spin Yarn",
+        "image": "/socks.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 5,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "brown_50_50_yarn_output_spin_brown_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.9",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "spinning_service_output_spin_brown_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "brown_alpaca_clean_input_spin_brown_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.5",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "white_wool_clean_input_spin_brown_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.5",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "spin_ivory_yarn",
+      "name": "Spin Ivory Yarn",
+      "process_conforms_to": {
+        "name": "Spin Yarn",
+        "image": "/socks.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 5,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "ivory_50_50_yarn_output_spin_ivory_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.9",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "spinning_service_output_spin_ivory_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "white_alpaca_clean_input_spin_ivory_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.5",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "white_wool_clean_input_spin_ivory_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.5",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "spin_gray_yarn",
+      "name": "Spin Gray Yarn",
+      "process_conforms_to": {
+        "name": "Spin Yarn"
+        },
+      "has_duration": {
+        "numeric_duration": 5,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "gray_50_50_yarn_output_spin_gray_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.9",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "spinning_service_output_spin_gray_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "gray_alpaca_clean_input_spin_gray_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.5",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "white_wool_clean_input_spin_gray_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "0.5",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ship_to_spin",
+      "name": "Ship to Spin",
+      "process_conforms_to": {
+        "name": "Ship",
+        "image": "/truck.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "brown_alpaca_clean_output_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_alpaca_clean_output_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "gray_alpaca_clean_output_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_wool_clean_output_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "shipping_service_output_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "brown_alpaca_clean_input_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        },
+        {
+          "id": "white_alpaca_clean_input_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        },
+        {
+          "id": "gray_alpaca_clean_input_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        },
+        {
+          "id": "white_wool_clean_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": "Scour Fiber"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scour_brown_alpaca",
+      "name": "Scour Brown Alpaca",
+      "process_conforms_to": {
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "brown_alpaca_clean_output_scour_brown_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "0.8",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "scouring_service_output_scour_brown_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "brown_alpaca_dirty_input_scour_brown_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scour_white_alpaca",
+      "name": "Scour White Alpaca",
+      "process_conforms_to": {
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "white_alpaca_clean_input_scour_white_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "0.8",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "White Alpaca Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "scouring_service_output_scour_white_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "white_alpaca_dirty_input_scour_white_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scour_gray_alpaca",
+      "name": "Scour Gray Alpaca",
+      "process_conforms_to": {
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "gray_alpaca_clean_output_scour_gray_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "0.8",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "scouring_service_output_scour_gray_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "gray_alpaca_dirty_input_scour_gray_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scour_wool",
+      "name": "Scour Wool",
+      "process_conforms_to": {
+        "name": "Scour Fiber",
+        "image": "/mill.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "white_wool_clean_output_scour_wool",
+          "resource_quantity": {
+            "has_numerical_value": "0.6",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "produce",
+          "resource_conforms_to": {
+            "name": "White Wool Clean"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "scouring_service_output_scour_wool",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "white_wool_dirty_input_scour_wool",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ship_to_scour",
+      "name": "Ship to Scour",
+      "process_conforms_to": {
+        "name": "Ship",
+        "image": "/truck.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "brown_alpaca_dirty_output_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_alpaca_dirty_output_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "gray_alpaca_dirty_output_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_wool_dirty_output_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "shipping_service_output_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "brown_alpaca_dirty_input_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Pick Up"
+          }
+        },
+        {
+          "id": "white_alpaca_dirty_input_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Pick Up"
+          }
+        },
+        {
+          "id": "gray_alpaca_dirty_input_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": "Pick Up"
+          }
+        },
+        {
+          "id": "white_wool_dirty_input_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": "Pick Up"
+          }
+        }
+      ]
+    },
+    {
+      "id": "pick_up_fiber",
+      "name": "Pick Up Fiber",
+      "process_conforms_to": {
+        "name": "Pick Up",
+        "image": "/farm.svg"
+      },
+      "has_duration": {
+        "numeric_duration": 7,
+        "unit_type": "unitDay"
+      },
+      "has_recipe_output": [
+        {
+          "id": "brown_alpaca_dirty_output_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_alpaca_dirty_output_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "gray_alpaca_dirty_output_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_wool_dirty_output_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "dropoff",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_input": [
+        {
+          "id": "brown_alpaca_dirty_input_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Brown Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_alpaca_dirty_input_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "gray_alpaca_dirty_input_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "Gray Alpaca Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "white_wool_dirty_input_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "pickup",
+          "resource_conforms_to": {
+            "name": "White Wool Dirty"
+          },
+          "stage": {
+            "name": ""
+          }
+        },
+        {
+          "id": "gas_and_truck_rental_input_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Gas and Truck Rental"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_yarn",
+      "name": "CFN to Designer Yarn",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "brown_50_50_yarn_exchange_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "ivory_50_50_yarn_exchange_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        },
+        {
+          "id": "gray_50_50_yarn_exchange_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Ship"
+          }
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "19",
+            "has_unit": {
+              "label": "Each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_ship_to_knit",
+      "name": "Shipping Service to Knit",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "shipping_service_output_ship_to_knit",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_ship-to-knit",
+          "resource_quantity": {
+            "has_numerical_value": "1.5",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_ship_to_spin",
+      "name": "Shipping Service to Spin",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "shipping_service_output_ship_to_spin",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_ship-to-spin",
+          "resource_quantity": {
+            "has_numerical_value": "2",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_ship_to_scour",
+      "name": "Shipping Service to Scour",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "shipping_service_output_ship_to_scour",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Shipping Service"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_ship-to-scour",
+          "resource_quantity": {
+            "has_numerical_value": "1.5",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_pick_up_fiber",
+      "name": "Pick Up Expense",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "gas_and_truck_rental_input_pick_up_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "consume",
+          "resource_conforms_to": {
+            "name": "Gas and Truck Rental"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "gas_and_truck_rental_cost",
+          "resource_quantity": {
+            "has_numerical_value": "500",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          }
+        }
+      ]
+    }
+]
