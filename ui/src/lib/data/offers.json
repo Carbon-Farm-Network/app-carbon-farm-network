@@ -10,7 +10,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown alpaca dirty"
+            "name": "Brown Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 120,
@@ -61,7 +61,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown alpaca dirty"
+            "name": "Brown Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 20,
@@ -112,7 +112,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Brown alpaca dirty"
+            "name": "Brown Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 19,
@@ -163,7 +163,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Gray/black alpaca dirty"
+            "name": "Gray Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 10,
@@ -214,7 +214,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Gray/black alpaca dirty"
+            "name": "Gray Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 10,
@@ -265,7 +265,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Gray/black alpaca dirty"
+            "name": "Gray Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 100,
@@ -316,7 +316,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "White alpaca dirty"
+            "name": "White Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 50,
@@ -367,7 +367,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "White alpaca dirty"
+            "name": "White Alpaca Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 100,
@@ -418,7 +418,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "White wool dirty"
+            "name": "White Wool Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 420,
@@ -469,7 +469,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "White wool dirty"
+            "name": "White Wool Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 100,
@@ -520,7 +520,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "White wool dirty"
+            "name": "White Wool Dirty"
           },
           "available_quantity": {
             "has_numerical_value": 55,
@@ -571,7 +571,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Scouring service"
+            "name": "Scouring Service"
           },
           "resource_quantity": {
             "has_numerical_value": 1,
@@ -596,7 +596,7 @@
             }
           },
           "resource_conforms_to": {
-            "name": "US Dollar"
+            "name": "USD"
           },
           "receiver": {
             "name": "Bainton"
@@ -616,7 +616,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Shipping service"
+            "name": "Shipping Service"
           },
           "resource_quantity": {
             "has_numerical_value": 1,
@@ -641,7 +641,7 @@
             }
           },
           "resource_conforms_to": {
-            "name": "US Dollar"
+            "name": "USD"
           },
           "receiver": {
             "name": "Bainton"
@@ -661,7 +661,7 @@
         "intent": {
           "id": "intent_id",
           "resource_conforms_to": {
-            "name": "Spinning service"
+            "name": "Spinning Service"
           },
           "resource_quantity": {
             "has_numerical_value": 1,
@@ -686,7 +686,7 @@
             }
           },
           "resource_conforms_to": {
-            "name": "US Dollar"
+            "name": "USD"
           },
           "receiver": {
             "name": "Battenkill"
