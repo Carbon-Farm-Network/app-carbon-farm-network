@@ -1480,8 +1480,8 @@
       ]
     },
     {
-      "id": "recipe_exchange_scour_brown_alpaca",
-      "name": "Scour Brown Alpaca",
+      "id": "recipe_exchange_scour",
+      "name": "Scour All Fiber",
       "note": "",
       "has_recipe_clause": [
         {
@@ -1501,34 +1501,7 @@
           },
           "provider_role": "Scouring",
           "receiver_role": "Network"
-        }
-      ],
-      "has_recipe_reciprocal_clause": [
-        {
-          "id": "usd_exchange_scour_brown_alpaca",
-          "resource_quantity": {
-            "has_numerical_value": "2",
-            "has_unit": {
-              "label": "each"
-            }
-          },
-          "action": "transfer",
-          "resource_conforms_to": {
-            "name": "USD"
-          },
-          "stage": {
-            "name": ""
-          },
-          "provider_role": "Network",
-          "receiver_role": "Scouring"
-        }
-      ]
-    },
-    {
-      "id": "recipe_exchange_scour_white_alpaca",
-      "name": "Scour White Alpaca",
-      "note": "",
-      "has_recipe_clause": [
+        },
         {
           "id": "scouring_service_output_scour_white_alpaca",
           "resource_quantity": {
@@ -1546,34 +1519,7 @@
           },
           "provider_role": "Scouring",
           "receiver_role": "Network"
-        }
-      ],
-      "has_recipe_reciprocal_clause": [
-        {
-          "id": "usd_exchange_scour_white_alpaca",
-          "resource_quantity": {
-            "has_numerical_value": "2",
-            "has_unit": {
-              "label": "each"
-            }
-          },
-          "action": "transfer",
-          "resource_conforms_to": {
-            "name": "USD"
-          },
-          "stage": {
-            "name": ""
-          },
-          "provider_role": "Network",
-          "receiver_role": "Scouring"
-        }
-      ]
-    },
-    {
-      "id": "recipe_exchange_scour_gray_alpaca",
-      "name": "Scour Gray Alpaca",
-      "note": "",
-      "has_recipe_clause": [
+        },
         {
           "id": "scouring_service_output_scour_gray_alpaca",
           "resource_quantity": {
@@ -1593,32 +1539,6 @@
           "receiver_role": "Network"
         }
       ],
-      "has_recipe_reciprocal_clause": [
-        {
-          "id": "usd_exchange_scour_gray_alpaca",
-          "resource_quantity": {
-            "has_numerical_value": "2",
-            "has_unit": {
-              "label": "each"
-            }
-          },
-          "action": "transfer",
-          "resource_conforms_to": {
-            "name": "USD"
-          },
-          "stage": {
-            "name": ""
-          },
-          "provider_role": "Network",
-          "receiver_role": "Scouring"
-        }
-      ]
-    },
-    {
-      "id": "recipe_exchange_scour_white_wool",
-      "name": "Scour White Wool",
-      "note": "",
-      "has_recipe_clause": [
         {
           "id": "scouring_service_output_scour_white_wool",
           "resource_quantity": {
@@ -1640,7 +1560,7 @@
       ],
       "has_recipe_reciprocal_clause": [
         {
-          "id": "usd_exchange_scour_white_wool",
+          "id": "usd_exchange_scour",
           "resource_quantity": {
             "has_numerical_value": "2",
             "has_unit": {
@@ -1656,6 +1576,87 @@
           },
           "provider_role": "Network",
           "receiver_role": "Scouring"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_spin",
+      "name": "Spin All Fiber",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "spinning_service_output_spin_ivory_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Spinning Mill",
+          "receiver_role": "Network"
+        },
+        {
+          "id": "spinning_service_output_spin_brown_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Spinning Mill",
+          "receiver_role": "Network"
+        },
+        {
+          "id": "spinning_service_output_spin_gray_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Spinning Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Spinning Mill",
+          "receiver_role": "Network"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_spin",
+          "resource_quantity": {
+            "has_numerical_value": "18",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Spinning"
         }
       ]
     }
