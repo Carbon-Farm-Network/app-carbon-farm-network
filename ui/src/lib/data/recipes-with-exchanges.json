@@ -25,7 +25,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "ivory_50_50_yarn_output_ship_to_knit",
@@ -41,7 +43,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_50_50_yarn_output_ship_to_knit",
@@ -57,7 +61,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "shipping_service_output_ship_to_knit",
@@ -73,7 +79,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Shipping",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -91,7 +99,9 @@
           },
           "stage": {
             "name": "Spin Yarn"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "ivory_50_50_yarn_input_ship_to_knit",
@@ -107,7 +117,9 @@
           },
           "stage": {
             "name": "Spin Yarn"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_50_50_yarn_input_ship_to_knit",
@@ -123,7 +135,9 @@
           },
           "stage": {
             "name": "Spin Yarn"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -153,7 +167,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "spinning_service_output_spin_brown_yarn",
@@ -169,7 +185,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Spinning Mill",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -187,7 +205,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_clean_input_spin_brown_yarn",
@@ -203,7 +223,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -233,7 +255,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "spinning_service_output_spin_ivory_yarn",
@@ -249,7 +273,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Spinning Mill",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -267,7 +293,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_clean_input_spin_ivory_yarn",
@@ -283,7 +311,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -312,7 +342,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "spinning_service_output_spin_gray_yarn",
@@ -328,7 +360,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Spinning Mill",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -346,7 +380,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_clean_input_spin_gray_yarn",
@@ -362,7 +398,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -392,7 +430,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_alpaca_clean_output_ship_to_spin",
@@ -408,7 +448,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_alpaca_clean_output_ship_to_spin",
@@ -424,7 +466,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_clean_output_ship_to_spin",
@@ -440,7 +484,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "shipping_service_output_ship_to_spin",
@@ -456,7 +502,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Shipping",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -474,7 +522,9 @@
           },
           "stage": {
             "name": "Scour Fiber"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_alpaca_clean_input_ship_to_spin",
@@ -490,7 +540,9 @@
           },
           "stage": {
             "name": "Scour Fiber"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_alpaca_clean_input_ship_to_spin",
@@ -506,7 +558,9 @@
           },
           "stage": {
             "name": "Scour Fiber"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_clean_ship_to_spin",
@@ -522,7 +576,9 @@
           },
           "stage": {
             "name": "Scour Fiber"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -552,7 +608,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "scouring_service_output_scour_brown_alpaca",
@@ -568,7 +626,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Scouring Mill",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -586,7 +646,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -616,7 +678,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "scouring_service_output_scour_white_alpaca",
@@ -632,7 +696,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Scouring Mill",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -650,7 +716,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -680,7 +748,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "scouring_service_output_scour_gray_alpaca",
@@ -696,7 +766,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Scouring Mill",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -714,7 +786,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -744,7 +818,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "scouring_service_output_scour_wool",
@@ -760,7 +836,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Scouring Mill",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -778,7 +856,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -808,7 +888,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_alpaca_dirty_output_ship_to_scour",
@@ -824,7 +906,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_alpaca_dirty_output_ship_to_scour",
@@ -840,7 +924,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_dirty_output_ship_to_scour",
@@ -856,7 +942,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "shipping_service_output_ship_to_scour",
@@ -872,7 +960,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Shipping",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -890,7 +980,9 @@
           },
           "stage": {
             "name": "Pick Up"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_alpaca_dirty_input_ship_to_scour",
@@ -906,7 +998,9 @@
           },
           "stage": {
             "name": "Pick Up"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_alpaca_dirty_input_ship_to_scour",
@@ -922,7 +1016,9 @@
           },
           "stage": {
             "name": "Pick Up"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_dirty_input_ship_to_scour",
@@ -938,7 +1034,9 @@
           },
           "stage": {
             "name": "Pick Up"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -968,7 +1066,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_alpaca_dirty_output_pick_up_fiber",
@@ -984,7 +1084,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_alpaca_dirty_output_pick_up_fiber",
@@ -1000,7 +1102,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_dirty_output_pick_up_fiber",
@@ -1016,7 +1120,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_input": [
@@ -1034,7 +1140,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
         },
         {
           "id": "white_alpaca_dirty_input_pick_up_fiber",
@@ -1050,7 +1158,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
         },
         {
           "id": "gray_alpaca_dirty_input_pick_up_fiber",
@@ -1066,7 +1176,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
         },
         {
           "id": "white_wool_dirty_input_pick_up_fiber",
@@ -1082,7 +1194,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Farmer",
+          "receiver_role": "Network"
         },
         {
           "id": "gas_and_truck_rental_input_pick_up_fiber",
@@ -1098,7 +1212,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -1121,7 +1237,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Designer"
         },
         {
           "id": "ivory_50_50_yarn_exchange_yarn",
@@ -1137,7 +1255,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Designer"
         },
         {
           "id": "gray_50_50_yarn_exchange_yarn",
@@ -1153,7 +1273,9 @@
           },
           "stage": {
             "name": "Ship"
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Designer"
         }
       ],
       "has_recipe_reciprocal_clause": [
@@ -1171,7 +1293,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Designer",
+          "receiver_role": "Network"
         }
       ]
     },
@@ -1194,7 +1318,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Shipping",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_reciprocal_clause": [
@@ -1212,7 +1338,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Shipping"
         }
       ]
     },
@@ -1235,7 +1363,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Shipping",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_reciprocal_clause": [
@@ -1253,7 +1383,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Shipping"
         }
       ]
     },
@@ -1276,7 +1408,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Shipping",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_reciprocal_clause": [
@@ -1294,7 +1428,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": "Shipping"
         }
       ]
     },
@@ -1317,7 +1453,9 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "",
+          "receiver_role": "Network"
         }
       ],
       "has_recipe_reciprocal_clause": [
@@ -1335,7 +1473,189 @@
           },
           "stage": {
             "name": ""
-          }
+          },
+          "provider_role": "Network",
+          "receiver_role": ""
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_scour_brown_alpaca",
+      "name": "Scour Brown Alpaca",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "scouring_service_output_scour_brown_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Scouring",
+          "receiver_role": "Network"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_scour_brown_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "2",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Scouring"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_scour_white_alpaca",
+      "name": "Scour White Alpaca",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "scouring_service_output_scour_white_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Scouring",
+          "receiver_role": "Network"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_scour_white_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "2",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Scouring"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_scour_gray_alpaca",
+      "name": "Scour Gray Alpaca",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "scouring_service_output_scour_gray_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Scouring",
+          "receiver_role": "Network"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_scour_gray_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "2",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Scouring"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_scour_white_wool",
+      "name": "Scour White Wool",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "scouring_service_output_scour_white_wool",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Scouring",
+          "receiver_role": "Network"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_scour_white_wool",
+          "resource_quantity": {
+            "has_numerical_value": "2",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Scouring"
         }
       ]
     }
