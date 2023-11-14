@@ -129,18 +129,7 @@
                   >Receiver</label
                 >
                 {#if selectedCommitment?.receiver}
-                  <select
-                    id="receiver"
-                    name="receiver"
-                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={selectedCommitment.receiver.name}
-                  >
-                    {#each agents as agent}
-                      <option value={agent.name}>{agent.name}</option>
-                    {/each}
-                    <!-- <option selected>Lazy Acre Alpacca</option>
-                  <option>Woodland meadow farm</option> -->
-                  </select>
+                  <p>{selectedCommitment.receiver.name}</p>
                 {:else}
                   <select
                     id="receiver"
@@ -166,16 +155,7 @@
                   >Resource specification</label
                 >
                 {#if selectedCommitment?.resource_conforms_to}
-                  <select
-                    id="defaultUnitOfResource"
-                    name="defaultUnitOfResource"
-                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={selectedCommitment.resource_conforms_to.name}
-                  >
-                    {#each resource_specifications as rs}
-                      <option value={rs.name}>{rs.name}</option>
-                    {/each}
-                  </select>
+                  <p>{selectedCommitment?.resource_conforms_to.name}</p>
                 {:else}
                   <select
                     id="defaultUnitOfResource"
@@ -234,16 +214,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
                 {#if selectedCommitment?.resource_quantity}
-                  <select
-                    id="unit"
-                    name="unit"
-                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={selectedCommitment.resource_quantity.has_unit.label}
-                  >
-                    {#each units as unit}
-                      <option value={unit.symbol}>{unit.label}</option>
-                    {/each}
-                  </select>
+                  <p>{selectedCommitment?.resource_quantity.has_unit.label}</p>
                 {:else}
                   <select
                     id="unit"
@@ -252,7 +223,7 @@
                     bind:value={newCommitment.resource_quantity.has_unit.label}
                   >
                     {#each units as unit}
-                      <option value={unit.symbol}>{unit.label}</option>
+                      <option value={unit.symbol}>{unit.symbol}</option>
                     {/each}
                   </select>
                 {/if}
