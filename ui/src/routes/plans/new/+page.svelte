@@ -53,7 +53,7 @@
           ...matching_output,
           resource_quantity: {
             ...matching_output?.resource_quantity,
-            has_numerical_value: multiplier
+            has_numerical_value: new Decimal(input.resource_quantity.has_numerical_value)
               .toDecimalPlaces(0, Decimal.ROUND_UP)
               .toString()
           }
@@ -125,7 +125,10 @@
               output => output.action != 'dropoff' && output.action != 'modify'
             )
             const non_matching_inputs = recipe.has_recipe_input.filter(
-              previous_input => previous_input.id != matching_input?.id
+              previous_input =>
+                previous_input.id != matching_input?.id &&
+                previous_input.action != 'pickup' &&
+                previous_input.action != 'accept'
             )
             has_input = [matching_input, ...non_matching_inputs]
             has_output = [...services, matching_output]
