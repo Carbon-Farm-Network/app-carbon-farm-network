@@ -117,7 +117,7 @@
                   new_output,
                   ...existing_services
                 ],
-                has_input: [new_input, ...non_matching_inputs]
+                has_input: [...non_matching_inputs, new_input]
               }
             ]
           } else {
@@ -131,7 +131,7 @@
                 previous_input.action != 'accept'
             )
             has_input = [matching_input, ...non_matching_inputs]
-            has_output = [...services, matching_output]
+            has_output = [matching_output, ...services]
           }
         } else {
           has_output = [
