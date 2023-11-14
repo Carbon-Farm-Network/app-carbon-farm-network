@@ -18,6 +18,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "wolhide"
           }
@@ -44,6 +45,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Vincent James"
           }
@@ -70,6 +72,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Textile Lab"
           }
@@ -96,6 +99,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Manymoons"
           }
@@ -122,6 +126,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "wolhide"
           }
@@ -148,6 +153,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Vincent James"
           }
@@ -174,6 +180,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Textile Lab"
           }
@@ -200,6 +207,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Manymoons"
           }
@@ -226,6 +234,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "wolhide"
           }
@@ -252,6 +261,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Vincent James"
           }
@@ -278,6 +288,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Textile Lab"
           }
@@ -304,6 +315,7 @@
               "label": "lb"
             }
           },
+          "action": "transfer",
           "receiver": {
             "name": "Manymoons"
           }

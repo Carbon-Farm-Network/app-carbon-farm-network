@@ -169,6 +169,7 @@
     resource_conforms_to: { name: string }
     resource_quantity: { has_numerical_value: string; has_unit: { label: string } }
     receiver: { name: string }
+    action: string
     id: string
   }
   let commitments: Commitment[] = []
@@ -395,7 +396,7 @@
           >Add a commitment</button
         >
       </div>
-      <h2 class="text-center text-xl font-semibold">Commitments</h2>
+      <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
       <div class="bg-blue-300 border border-gray-400 p-2">
         <!-- Sub-columns -->
         <div class="">
@@ -410,13 +411,14 @@
                 >
               </div>
             {/if}
-            {#each commitments as { resource_conforms_to, resource_quantity, receiver, id }}
+            {#each commitments as { resource_conforms_to, resource_quantity, receiver, id, action }}
               <div
                 class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs flex"
               >
                 <div>
                   <p>{resource_conforms_to?.name}</p>
                   <p>
+                    {action}
                     {resource_quantity?.has_numerical_value}
                     {resource_quantity?.has_unit?.label}
                   </p>
@@ -484,6 +486,7 @@
               >
                 <p>{primary?.intent?.resource_conforms_to?.name}</p>
                 <p>
+                  {primary?.intent?.action}
                   {primary?.intent?.resource_quantity?.has_numerical_value}
                   {primary?.intent?.resource_quantity?.has_unit?.label}
                 </p>
