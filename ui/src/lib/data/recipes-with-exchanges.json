@@ -1,6 +1,7 @@
 [
     {
       "id": "ship_to_knit",
+      "type": "recipe_process",
       "name": "Ship to Knit",
       "process_conforms_to": {
         "name": "Ship",
@@ -143,6 +144,7 @@
     },
     {
       "id": "spin_brown_yarn",
+      "type": "recipe_process",
       "name": "Spin Brown Yarn",
       "process_conforms_to": {
         "name": "Spin Yarn",
@@ -231,6 +233,7 @@
     },
     {
       "id": "spin_ivory_yarn",
+      "type": "recipe_process",
       "name": "Spin Ivory Yarn",
       "process_conforms_to": {
         "name": "Spin Yarn",
@@ -319,6 +322,7 @@
     },
     {
       "id": "spin_gray_yarn",
+      "type": "recipe_process",
       "name": "Spin Gray Yarn",
       "process_conforms_to": {
         "name": "Spin Yarn"
@@ -406,6 +410,7 @@
     },
     {
       "id": "ship_to_spin",
+      "type": "recipe_process",
       "name": "Ship to Spin",
       "process_conforms_to": {
         "name": "Ship",
@@ -724,6 +729,7 @@
     },
     {
       "id": "scour_gray_alpaca",
+      "type": "recipe_process",
       "name": "Scour Gray Alpaca",
       "process_conforms_to": {
         "name": "Scour Fiber",
@@ -864,6 +870,7 @@
     },
     {
       "id": "ship_to_scour",
+      "type": "recipe_process",
       "name": "Ship to Scour",
       "process_conforms_to": {
         "name": "Ship",
@@ -1042,6 +1049,7 @@
     },
     {
       "id": "pick_up_fiber",
+      "type": "recipe_process",
       "name": "Pick Up Fiber",
       "process_conforms_to": {
         "name": "Pick Up",
@@ -1220,6 +1228,7 @@
     },
     {
       "id": "recipe_exchange_yarn",
+      "type": "recipe_exchange",
       "name": "CFN to Designer Yarn",
       "note": "",
       "has_recipe_clause": [
@@ -1301,6 +1310,7 @@
     },
     {
       "id": "recipe_exchange_farm_fiber",
+      "type": "recipe_exchange",
       "name": "Fiber from the Farm",
       "note": "",
       "has_recipe_clause": [
@@ -1399,6 +1409,7 @@
     },
     {
       "id": "recipe_exchange_ship_to_knit",
+      "type": "recipe_exchange",
       "name": "Shipping Service to Knit",
       "note": "",
       "has_recipe_clause": [
@@ -1444,6 +1455,7 @@
     },
     {
       "id": "recipe_exchange_ship_to_spin",
+      "type": "recipe_exchange",
       "name": "Shipping Service to Spin",
       "note": "",
       "has_recipe_clause": [
@@ -1489,6 +1501,7 @@
     },
     {
       "id": "recipe_exchange_ship_to_scour",
+      "type": "recipe_exchange",
       "name": "Shipping Service to Scour",
       "note": "",
       "has_recipe_clause": [
@@ -1579,6 +1592,7 @@
     },
     {
       "id": "recipe_exchange_scour",
+      "type": "recipe_exchange",
       "name": "Scour All Fiber",
       "note": "",
       "has_recipe_clause": [
@@ -1679,6 +1693,7 @@
     },
     {
       "id": "recipe_exchange_spin",
+      "type": "recipe_exchange",
       "name": "Spin All Fiber",
       "note": "",
       "has_recipe_clause": [
