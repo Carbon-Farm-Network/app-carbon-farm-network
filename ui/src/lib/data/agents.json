@@ -216,6 +216,7 @@
     "iconUrl": "/knitting.svg",
     "address": "683 Woodward Avenue Ridgewood, NY 11385",
     "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Knitting Mill",
     "offers": [
       {
         "name": "White alpaca Unwashed",
@@ -237,6 +238,7 @@
     "iconUrl": "/knitting.svg",
     "address": "683 Woodward Avenue Ridgewood, NY 11385",
     "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Designer",
     "offers": [
       {
         "name": "White alpaca Unwashed",
@@ -251,5 +253,61 @@
         }
       }
     ]
+  },
+  {
+    "id": "vincent_james",
+    "name": "Vincent James",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Designer"
+  },
+  {
+    "id": "textile_lab",
+    "name": "Textile Lab",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Designer"
+  },
+  {
+    "id": "manymoons",
+    "name": "Manymoons",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Designer"
+  },
+  {
+    "id": "vincent_james",
+    "name": "Vincent James",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Designer"
+  },
+  {
+    "id": "network",
+    "name": "Carbon Farm Network",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Network"
+  },
+  {
+    "id": "shipping",
+    "name": "ABC Shipping Svcs",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Shipping"
+  },
+  {
+    "id": "scouring",
+    "name": "Big Clean Mill",
+    "iconUrl": "/knitting.svg",
+    "address": "683 Woodward Avenue Ridgewood, NY 11385",
+    "latLng": [40.70527471135605, -73.90585867362437],
+    "role": "Scouring Mill"
   }
 ]
