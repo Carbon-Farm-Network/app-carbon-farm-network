@@ -5,6 +5,7 @@
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
+  import { Trash, Pencil, PlusCircle } from '$lib/icons'
 
   const previousColumn = column => {
     return column.reduce((acc, input) => {
@@ -108,6 +109,12 @@
             const non_matching_inputs = existing_process.has_input.filter(
               previous_input => previous_input.id != matching_input?.id
             )
+            const non_matching_independent_inputs = non_matching_inputs.filter(
+              it => it.independent
+            )
+            const non_matching_dependent_inputs = non_matching_inputs.filter(
+              it => !it.independent
+            )
             return [
               ...remaining_processes,
               {
@@ -117,26 +124,34 @@
                   new_output,
                   ...existing_services
                 ],
-                has_input: [...non_matching_inputs, new_input]
+                has_input: [
+                  ...non_matching_dependent_inputs,
+                  new_input,
+                  ...non_matching_independent_inputs
+                ]
               }
             ]
           } else {
             const services = recipe.has_recipe_output.filter(
               output => output.action != 'dropoff' && output.action != 'modify'
             )
-            const non_matching_inputs = recipe.has_recipe_input.filter(
-              previous_input =>
-                previous_input.id != matching_input?.id &&
-                previous_input.action != 'pickup' &&
-                previous_input.action != 'accept'
-            )
+            const non_matching_inputs = recipe.has_recipe_input
+              .filter(
+                previous_input =>
+                  previous_input.id != matching_input?.id &&
+                  previous_input.action != 'pickup' &&
+                  previous_input.action != 'accept'
+              )
+              .map(it => ({ ...it, independent: true }))
             has_input = [matching_input, ...non_matching_inputs]
             has_output = [matching_output, ...services]
           }
         } else {
           has_output = [
             matching_output,
-            ...recipe.has_recipe_output.filter(it => it.id != matching_output?.id)
+            ...recipe.has_recipe_output
+              .filter(it => it.id != matching_output?.id)
+              .map(it => ({ ...it, editable: true }))
           ]
           has_input = recipe.has_recipe_input.map(input => ({
             ...input,
@@ -322,6 +337,14 @@
             <!-- Sub-columns -->
             <div class="grid grid-cols-2 gap-2">
               <div>
+                <button
+                  class="flex justify-center items-center w-full mb-2"
+                  on:click={() => {
+                    commitmentModalOpen = true
+                  }}
+                >
+                  <PlusCircle />
+                </button>
                 {#each has_input as { resource_conforms_to, provider, resource_quantity, action }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
@@ -351,31 +374,61 @@
                 {/each}
               </div>
               <div>
-                {#each has_output as { resource_conforms_to, receiver, provider, resource_quantity, action }}
+                <button
+                  class="flex justify-center items-center w-full mb-2"
+                  on:click={() => {
+                    commitmentModalOpen = true
+                  }}
+                >
+                  <PlusCircle />
+                </button>
+                {#each has_output as { resource_conforms_to, receiver, provider, resource_quantity, action, editable, id }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
-                    <p>{resource_conforms_to?.name}</p>
-                    <div class="flex justify-between">
-                      <!--
+                    <div>
+                      <p>{resource_conforms_to?.name}</p>
+                      <div class="flex justify-between">
+                        <!--
                       <p>
                         {supply_driven_quantity?.has_numerical_value}
                         {supply_driven_quantity?.has_unit?.label}
                       </p>
                       -->
-                      <p>
-                        {action}
-                        {resource_quantity?.has_numerical_value}
-                        {resource_quantity?.has_unit?.label}
-                      </p>
-                      <!--
+                        <p>
+                          {action}
+                          {resource_quantity?.has_numerical_value}
+                          {resource_quantity?.has_unit?.label}
+                        </p>
+                        <!--
                       <p>
                         {demand_driven_quantity?.has_numerical_value}
                         {demand_driven_quantity?.has_unit?.label}
                       </p>
                       -->
+                      </div>
+                      <p>{(receiver || provider)?.name || ''}</p>
                     </div>
-                    <p>{(receiver || provider)?.name || ''}</p>
+                    {#if editable}
+                      <div class="w-full flex justify-center">
+                        <button
+                          on:click={() => {
+                            selectedCommitmentId = id
+                            commitmentModalOpen = true
+                          }}
+                        >
+                          <Pencil />
+                        </button>
+                        <button
+                          on:click={() => {
+                            selectedCommitmentId = id
+                            commitmentModalOpen = true
+                          }}
+                        >
+                          <Trash />
+                        </button>
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               </div>
@@ -385,22 +438,20 @@
       </div>
     {/each}
 
-    <div class="min-w-[250px]">
-      <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
-        <button
-          type="button"
-          on:click={() => {
-            commitmentModalOpen = true
-          }}
-          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >Add a commitment</button
-        >
-      </div>
+    <div class="min-w-[250px] mt-20">
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
       <div class="bg-blue-300 border border-gray-400 p-2">
         <!-- Sub-columns -->
         <div class="">
           <div>
+            <button
+              class="flex justify-center items-center w-full mb-2"
+              on:click={() => {
+                commitmentModalOpen = true
+              }}
+            >
+              <PlusCircle />
+            </button>
             {#if commitments.length == 0}
               <div class="flex justify-center my-4">
                 <button
@@ -413,7 +464,7 @@
             {/if}
             {#each commitments as { resource_conforms_to, resource_quantity, receiver, id, action }}
               <div
-                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs flex justify-between items-center"
+                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
               >
                 <div>
                   <p>{resource_conforms_to?.name}</p>
@@ -424,45 +475,19 @@
                   </p>
                   <p>{receiver?.name}</p>
                 </div>
-                <div>
+                <div class="w-full flex justify-center">
                   <button
                     on:click={() => {
                       selectedCommitmentId = id
                       commitmentModalOpen = true
                     }}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-8 h-8"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
-                      />
-                    </svg>
+                    <Pencil />
                   </button>
                   <button
                     on:click={() => (commitments = commitments.filter(it => it.id != id))}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-8 h-8"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    <Trash />
                   </button>
                 </div>
               </div>
