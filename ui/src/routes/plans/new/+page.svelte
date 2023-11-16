@@ -1,34 +1,56 @@
 <script lang="ts">
-  import recipes from '$lib/data/recipes.json'
+  import recipes from '$lib/data/recipes-with-exchanges.json'
   import requests from '$lib/data/requests.json'
   import offers from '$lib/data/offers.json'
+  import agents from '$lib/data/agents.json'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
 
+  function assignProviderReceiver(commitment, agents) {
+    const receivers = agents.filter(it => it.role == commitment?.receiver_role)
+    const providers = agents.filter(it => it.role == commitment?.provider_role)
+    return Object.assign(
+      {},
+      commitment,
+      receivers.length == 1
+        ? {
+            receiver: receivers[0]
+          }
+        : {},
+      providers.length == 1
+        ? {
+            provider: providers[0]
+          }
+        : {}
+    )
+  }
+
   const previousColumn = column => {
     return column.reduce((acc, input) => {
       if (input.resource_quantity.has_numerical_value > 0) {
         // find a recipe that outputs what the demand wants
-        const recipe = recipes.find(a_recipe => {
-          if (input.stage) {
-            return a_recipe.has_recipe_output.some(
-              output =>
-                output.resource_conforms_to.name == input.resource_conforms_to.name &&
-                a_recipe.process_conforms_to.name == input.stage.name
-            )
-          } else {
-            return a_recipe.has_recipe_output.some(
-              output =>
-                output.resource_conforms_to.name == input.resource_conforms_to.name
-            )
-          }
-        })
+        const recipe = recipes
+          .filter(it => it.type == 'recipe_process')
+          .find(a_recipe => {
+            if (input.stage) {
+              return a_recipe?.has_recipe_output?.some(
+                output =>
+                  output.resource_conforms_to.name == input.resource_conforms_to.name &&
+                  a_recipe.process_conforms_to.name == input.stage.name
+              )
+            } else {
+              return a_recipe.has_recipe_output.some(
+                output =>
+                  output.resource_conforms_to.name == input.resource_conforms_to.name
+              )
+            }
+          })
         // if there is no recipe we just continue
         if (!recipe) return acc
         // find the output that matches the demand
-        let matching_output = recipe.has_recipe_output.find(
+        let matching_output = recipe?.has_recipe_output?.find(
           output => output.resource_conforms_to.name == input.resource_conforms_to.name
         )
         // find the multiplier to make the demand required
@@ -37,28 +59,28 @@
         const multiplier = new Decimal(
           input.resource_quantity.has_numerical_value || '1'
         ).div(new Decimal(matching_output?.resource_quantity?.has_numerical_value))
-        let matching_input = recipe.has_recipe_input.find(
+        let matching_input = recipe?.has_recipe_input?.find(
           an_input =>
             an_input.resource_conforms_to.name == input.resource_conforms_to.name
         )
-        matching_input = {
-          ...matching_input,
+        matching_input = assignProviderReceiver(matching_input, agents)
+        matching_input = Object.assign({}, matching_input, {
           resource_quantity: {
             ...matching_input?.resource_quantity,
             has_numerical_value: multiplier
               .toDecimalPlaces(0, Decimal.ROUND_UP)
               .toString()
           }
-        }
-        matching_output = {
-          ...matching_output,
+        })
+        matching_output = assignProviderReceiver(matching_output, agents)
+        matching_output = Object.assign({}, matching_output, {
           resource_quantity: {
             ...matching_output?.resource_quantity,
             has_numerical_value: new Decimal(input.resource_quantity.has_numerical_value)
               .toDecimalPlaces(0, Decimal.ROUND_UP)
               .toString()
           }
-        }
+        })
         let has_output, has_input, new_output, new_input
         if (matching_output?.action == 'dropoff' || matching_output?.action == 'modify') {
           const existing_process = acc.find(it => it.id == recipe.id)
@@ -132,10 +154,10 @@
               }
             ]
           } else {
-            const services = recipe.has_recipe_output.filter(
-              output => output.action != 'dropoff' && output.action != 'modify'
-            )
-            const non_matching_inputs = recipe.has_recipe_input
+            const services = recipe?.has_recipe_output
+              .filter(output => output.action != 'dropoff' && output.action != 'modify')
+              .map(service => assignProviderReceiver(service, agents))
+            const non_matching_inputs = recipe?.has_recipe_input
               .filter(
                 previous_input =>
                   previous_input.id != matching_input?.id &&
@@ -149,22 +171,26 @@
         } else {
           has_output = [
             matching_output,
-            ...recipe.has_recipe_output
+            ...recipe?.has_recipe_output
               .filter(it => it.id != matching_output?.id)
               .map(it => ({ ...it, editable: true }))
+              .map(output => assignProviderReceiver(output, agents))
           ]
-          has_input = recipe.has_recipe_input.map(input => ({
-            ...input,
-            resource_quantity: {
-              ...input.resource_quantity,
-              has_numerical_value: new Decimal(
-                input.resource_quantity.has_numerical_value
-              )
-                .mul(multiplier)
-                .toDecimalPlaces(0, Decimal.ROUND_UP)
-                .toString()
-            }
-          }))
+          has_input = recipe?.has_recipe_input
+            ?.map(input => assignProviderReceiver(input, agents))
+            .map(input =>
+              Object.assign({}, input, {
+                resource_quantity: {
+                  ...input.resource_quantity,
+                  has_numerical_value: new Decimal(
+                    input.resource_quantity.has_numerical_value
+                  )
+                    .mul(multiplier)
+                    .toDecimalPlaces(0, Decimal.ROUND_UP)
+                    .toString()
+                }
+              })
+            )
         }
         return [
           ...acc,
@@ -345,7 +371,7 @@
                 >
                   <PlusCircle />
                 </button>
-                {#each has_input as { resource_conforms_to, provider, resource_quantity, action }}
+                {#each has_input as { resource_conforms_to, provider, resource_quantity, action, receiver }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -369,7 +395,10 @@
                       </p>
                       -->
                     </div>
-                    <p>{provider?.name || ''}</p>
+                    <p>
+                      from: {provider?.name || ''}<br />
+                      to: {receiver?.name || ''}
+                    </p>
                   </div>
                 {/each}
               </div>
@@ -407,7 +436,10 @@
                       </p>
                       -->
                       </div>
-                      <p>{(receiver || provider)?.name || ''}</p>
+                      <p>
+                        from: {provider?.name || ''}<br />
+                        to: {receiver?.name || ''}
+                      </p>
                     </div>
                     {#if editable}
                       <div class="w-full flex justify-center">
@@ -473,7 +505,7 @@
                     {resource_quantity?.has_numerical_value}
                     {resource_quantity?.has_unit?.label}
                   </p>
-                  <p>{receiver?.name}</p>
+                  <p>to: {receiver?.name}</p>
                 </div>
                 <div class="w-full flex justify-center">
                   <button

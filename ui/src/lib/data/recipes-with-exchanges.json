@@ -590,6 +590,7 @@
     {
       "id": "scour_brown_alpaca",
       "name": "Scour Brown Alpaca",
+      "type": "recipe_process",
       "process_conforms_to": {
         "name": "Scour Fiber",
         "image": "/mill.svg"
@@ -660,6 +661,7 @@
     {
       "id": "scour_white_alpaca",
       "name": "Scour White Alpaca",
+      "type": "recipe_process",
       "process_conforms_to": {
         "name": "Scour Fiber",
         "image": "/mill.svg"
@@ -801,6 +803,7 @@
     {
       "id": "scour_wool",
       "name": "Scour Wool",
+      "type": "recipe_process",
       "process_conforms_to": {
         "name": "Scour Fiber",
         "image": "/mill.svg"
@@ -1385,6 +1388,7 @@
           },
           "provider_role": "Farmer",
           "receiver_role": "Network"
+        }
       ],
       "has_recipe_reciprocal_clause": [
         {
@@ -1649,8 +1653,7 @@
           },
           "provider_role": "Scouring",
           "receiver_role": "Network"
-        }
-      ],
+        },
         {
           "id": "scouring_service_output_scour_white_wool",
           "resource_quantity": {
