@@ -94,9 +94,9 @@
     }
   `
 
-  interface ProposalsQueryResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
+  // interface ProposalsQueryResponse {
+  //   resourceSpecifications: AgentConnection & RelayConn<any>
+  // }
 
   interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined

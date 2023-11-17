@@ -64,6 +64,10 @@ export const PROPOSAL_RETURN_FIELDS = gql`
       reciprocal
       publishes {
         revisionId
+        action {
+          id
+          label
+        }
         resourceConformsTo {
           name
           id

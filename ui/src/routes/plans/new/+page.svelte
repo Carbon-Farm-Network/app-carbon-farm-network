@@ -8,6 +8,60 @@
   import CommitmentModal from '$lib/CommitmentModal.svelte'
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
 
+  import plan from '$lib/data/plan.json'
+  import Header from '$lib/Header.svelte'
+  import { goto } from '$app/navigation'
+  import { gql } from 'graphql-tag'
+  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import { mutation, query } from 'svelte-apollo'
+  import { onMount } from 'svelte'
+  import { browser } from '$app/environment'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import type { ReadableQuery } from 'svelte-apollo'
+  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
+
+  let proposalsList: Proposal[] = []
+
+  const GET_All_PROPOSALS = gql`
+    ${PROPOSAL_RETURN_FIELDS}
+    query {
+      proposals(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ProposalReturnFields
+          }
+        }
+      }
+    }
+  `
+  interface ProposalsQueryResponse {
+    proposals: ProposalConnection & RelayConn<any>
+  }
+
+  let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
+
+  async function fetchProposals() {
+    await getProposals.getCurrentResult()
+    await getProposals.refetch().then((r) => {
+      if (r.data?.proposals.edges.length > 0) {
+        proposalsList = flattenRelayConnection(r.data?.proposals)
+        console.log(proposalsList[0].publishes[0].publishes)
+        // console.log(requests)
+      }
+    })
+  }
+
+  onMount(() => {
+    if (browser) {
+      fetchProposals()
+    }
+  })
+
+
+  // ===========================================
+
   function assignProviderReceiver(commitment, agents) {
     const receivers = agents.filter(it => it.role == commitment?.receiver_role)
     const providers = agents.filter(it => it.role == commitment?.provider_role)
@@ -307,28 +361,30 @@
         <!-- Sub-columns -->
         <div class="">
           <div>
-            {#each offers as { proposed_intents }}
-              {@const reciprocal = proposed_intents.find(it => it.reciprocal)}
-              {@const primary = proposed_intents.find(it => !it.reciprocal)}
-              <div
-                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-              >
-                <p>{primary?.intent?.resource_conforms_to?.name}</p>
-                {#if primary?.intent?.available_quantity}
-                  <p>
-                    {primary?.intent?.available_quantity?.has_numerical_value}
-                    {primary?.intent?.available_quantity?.has_unit?.label},
-                    {reciprocal?.intent?.resource_quantity?.has_numerical_value}
-                    USD per lb
-                  </p>
-                {:else}
-                  <p>
-                    {reciprocal?.intent?.resource_quantity?.has_numerical_value}
-                    USD per lb
-                  </p>
-                {/if}
-                <p>{primary?.intent?.provider?.name}</p>
-              </div>
+            {#each proposalsList as { publishes }}
+              {@const reciprocal = publishes?.find(it => it.reciprocal)}
+              {@const primary = publishes?.find(it => !it.reciprocal)}
+              {#if primary?.publishes?.provider}
+                <div
+                  class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+                >
+                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
+                  {#if primary?.publishes?.availableQuantity}
+                    <p>
+                      {primary?.publishes?.availableQuantity?.hasNumericalValue}
+                      {primary?.publishes?.availableQuantity?.hasUnit?.label},
+                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
+                      USD per lb
+                    </p>
+                  {:else}
+                    <p>
+                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
+                      USD per lb
+                    </p>
+                  {/if}
+                  <p>{primary?.publishes?.provider?.name}</p>
+                </div>
+              {/if}
             {/each}
           </div>
         </div>
@@ -535,20 +591,22 @@
         <!-- Sub-columns -->
         <div class="">
           <div>
-            {#each requests as { proposed_intents }}
-              {@const reciprocal = proposed_intents.find(it => it.reciprocal)}
-              {@const primary = proposed_intents.find(it => !it.reciprocal)}
-              <div
-                class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-              >
-                <p>{primary?.intent?.resource_conforms_to?.name}</p>
-                <p>
-                  {primary?.intent?.action}
-                  {primary?.intent?.resource_quantity?.has_numerical_value}
-                  {primary?.intent?.resource_quantity?.has_unit?.label}
-                </p>
-                <p>{primary?.intent?.receiver?.name}</p>
-              </div>
+            {#each proposalsList as { publishes }}
+              {@const reciprocal = publishes.find(it => it.reciprocal)}
+              {@const primary = publishes.find(it => !it.reciprocal)}
+              {#if primary?.publishes?.receiver}
+                <div
+                  class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+                >
+                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
+                  <p>
+                    {primary?.publishes?.action?.label}
+                    {primary?.publishes?.resourceQuantity?.hasNumericalValue}
+                    {primary?.publishes?.availableQuantity?.hasUnit?.label}
+                  </p>
+                  <p>{primary?.publishes?.receiver?.name}</p>
+                </div>
+              {/if}
             {/each}
           </div>
         </div>
