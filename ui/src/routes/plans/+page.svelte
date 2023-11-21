@@ -2,6 +2,47 @@
   import plan from '$lib/data/plan.json'
   import Header from '$lib/Header.svelte'
   import { goto } from '$app/navigation'
+  import { gql } from 'graphql-tag'
+  import { onMount } from 'svelte'
+  import { mutation, query } from 'svelte-apollo'
+  import { page } from "$app/stores"
+  import type { ReadableQuery } from 'svelte-apollo'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import type { PlanConnection } from '@valueflows/vf-graphql'
+
+
+  export let plans: any[] = [plan]
+
+  const GET_PLANS = gql`
+    query fetchPlans {
+      plans {
+        id
+        revisionId
+        name
+        note
+      }
+    }
+  `
+
+  interface QueryResponse {
+    agents: PlanConnection & RelayConn<any>
+  }
+
+  let plansQuery: ReadableQuery<QueryResponse> = query(GET_PLANS)
+
+  // let plansQuery = query(GET_PLANS)
+
+  async function fetchPlans() {
+    const res = await plansQuery.refetch()
+    console.log(res)
+    // plans = res.data.plans
+  }
+
+  onMount(() => {
+    fetchPlans()
+  })
+
+
 </script>
 
 <div style="height: 8vh">

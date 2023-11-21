@@ -19,9 +19,13 @@
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams } from '@valueflows/vf-graphql'
 
   let proposalsList: Proposal[] = []
+  let createPlan: PlanCreateParams = {
+    name: '',
+    note: '',
+  }
 
   const GET_All_PROPOSALS = gql`
     ${PROPOSAL_RETURN_FIELDS}
@@ -47,7 +51,7 @@
     await getProposals.refetch().then((r) => {
       if (r.data?.proposals.edges.length > 0) {
         proposalsList = flattenRelayConnection(r.data?.proposals)
-        console.log(proposalsList[0].publishes[0].publishes)
+        // console.log(proposalsList[0].publishes[0].publishes)
         // console.log(requests)
       }
     })
@@ -330,7 +334,7 @@
   let selectedCommitmentId: string | undefined = undefined
 </script>
 
-<PlanModal bind:open={planModalOpen} />
+<PlanModal bind:open={planModalOpen} planObject = {createPlan} />
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}

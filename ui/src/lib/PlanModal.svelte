@@ -1,15 +1,60 @@
 <script lang="ts">
   import { clickOutside } from './utils'
   import { onMount } from 'svelte'
+  import { mutation } from 'svelte-apollo';
+  import gql from 'graphql-tag'
+  import type { PlanUpdateParams, PlanCreateParams } from '@valueflows/vf-graphql'
+  import { createEventDispatcher } from 'svelte';
+  
   export let open = false
-  let name = ''
-  let note = ''
+  export let planObject: PlanUpdateParams | PlanCreateParams;
+  export let editing: boolean = false;
+  // let name = ''
+  // let note = ''
+
+  const dispatch = createEventDispatcher();
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
       e.preventDefault()
       open = false
     }
+  }
+
+  const CREATE_PLAN = gql`
+    mutation($plan: PlanCreateParams!){
+      createPlan(plan: $plan) {
+        plan {
+          id
+          name
+          note
+        }
+      }
+    }
+  `
+
+  let addPlan: any = mutation(CREATE_PLAN)
+
+  async function handleSubmit() {
+    if (planObject.name === '') {
+      alert('Name is required.')
+      return
+    }
+    let f = await addPlan({
+      variables: {
+        plan: {
+          name: "test",
+          // note: "plan.note",
+        }
+      }
+    })
+    console.log(f)
+    open = false
+    // dispatch('create', plan)
+  }
+
+  async function handleUpdate() {
+    console.log("update in progress ...")
   }
 
   onMount(() => {
@@ -77,7 +122,7 @@
                     id="name"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={name}
+                    bind:value={planObject.name}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
@@ -115,7 +160,7 @@
                 <div class="mt-2">
                   <textarea
                     id="note"
-                    bind:value={note}
+                    bind:value={planObject.note}
                     name="note"
                     rows="3"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -129,7 +174,13 @@
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-            on:click={() => (open = false)}>Create</button
+            on:click={() => {
+              if (editing) {
+                handleUpdate()
+              } else {
+                handleSubmit()
+              }
+            }}>Create</button
           >
           <button
             type="button"
