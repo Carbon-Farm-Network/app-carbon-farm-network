@@ -1230,9 +1230,9 @@
       ]
     },
     {
-      "id": "recipe_exchange_yarn",
+      "id": "recipe_exchange_yarn_brown",
       "type": "recipe_exchange",
-      "name": "CFN to Designer Yarn",
+      "name": "CFN to Designer Brown Yarn",
       "note": "",
       "has_recipe_clause": [
         {
@@ -1252,25 +1252,35 @@
           },
           "provider_role": "Network",
           "receiver_role": "Designer"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
         {
-          "id": "ivory_50_50_yarn_exchange_yarn",
+          "id": "usd_exchange_yarn",
           "resource_quantity": {
-            "has_numerical_value": "1",
+            "has_numerical_value": "19",
             "has_unit": {
-              "label": "lb"
+              "label": "Each"
             }
           },
           "action": "transfer",
           "resource_conforms_to": {
-            "name": "Ivory 50/50 Yarn"
+            "name": "USD"
           },
           "stage": {
-            "name": "Ship"
+            "name": ""
           },
-          "provider_role": "Network",
-          "receiver_role": "Designer"
-        },
+          "provider_role": "Designer",
+          "receiver_role": "Network"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_yarn_gray",
+      "type": "recipe_exchange",
+      "name": "CFN to Designer Gray Yarn",
+      "note": "",
+      "has_recipe_clause": [
         {
           "id": "gray_50_50_yarn_exchange_yarn",
           "resource_quantity": {
@@ -1312,9 +1322,55 @@
       ]
     },
     {
-      "id": "recipe_exchange_farm_fiber",
+      "id": "recipe_exchange_yarn_ivory",
       "type": "recipe_exchange",
-      "name": "Fiber from the Farm",
+      "name": "CFN to Designer Ivory Yarn",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "ivory_50_50_yarn_exchange_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Ship"
+          },
+          "provider_role": "Network",
+          "receiver_role": "Designer"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_yarn",
+          "resource_quantity": {
+            "has_numerical_value": "19",
+            "has_unit": {
+              "label": "Each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Designer",
+          "receiver_role": "Network"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_farm_alpaca_brown",
+      "type": "recipe_exchange",
+      "name": "Brown Alpaca from the Farm",
       "note": "",
       "has_recipe_clause": [
         {
@@ -1334,7 +1390,35 @@
           },
           "provider_role": "Farmer",
           "receiver_role": "Network"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_farm_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "3",
+            "has_unit": {
+              "label": "Each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Farmer"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_farm_alpaca_gray",
+      "type": "recipe_exchange",
+      "name": "Gray Alpaca from the Farm",
+      "note": "",
+      "has_recipe_clause": [
         {
           "id": "gray_alpaca_dirty_farm",
           "resource_quantity": {
@@ -1352,7 +1436,35 @@
           },
           "provider_role": "Farmer",
           "receiver_role": "Network"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_farm_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "3",
+            "has_unit": {
+              "label": "Each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Farmer"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_farm_alpaca_white",
+      "type": "recipe_exchange",
+      "name": "White Alpaca from the Farm",
+      "note": "",
+      "has_recipe_clause": [
         {
           "id": "white_alpaca_dirty_farm",
           "resource_quantity": {
@@ -1370,7 +1482,35 @@
           },
           "provider_role": "Farmer",
           "receiver_role": "Network"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_farm_fiber",
+          "resource_quantity": {
+            "has_numerical_value": "3",
+            "has_unit": {
+              "label": "Each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Farmer"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_farm_wool_white",
+      "type": "recipe_exchange",
+      "name": "White Wool from the Farm",
+      "note": "",
+      "has_recipe_clause": [
         {
           "id": "white_wool_dirty_farm",
           "resource_quantity": {
@@ -1394,7 +1534,7 @@
         {
           "id": "usd_exchange_farm_fiber",
           "resource_quantity": {
-            "has_numerical_value": "1",
+            "has_numerical_value": "3",
             "has_unit": {
               "label": "Each"
             }
@@ -1595,9 +1735,9 @@
       ]
     },
     {
-      "id": "recipe_exchange_scour",
+      "id": "recipe_exchange_scour_brown_alpaca",
       "type": "recipe_exchange",
-      "name": "Scour All Fiber",
+      "name": "Scour Brown Alpaca",
       "note": "",
       "has_recipe_clause": [
         {
@@ -1617,25 +1757,35 @@
           },
           "provider_role": "Scouring",
           "receiver_role": "Network"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
         {
-          "id": "scouring_service_output_scour_white_alpaca",
+          "id": "usd_exchange_scour",
           "resource_quantity": {
-            "has_numerical_value": "1",
+            "has_numerical_value": "2",
             "has_unit": {
-              "label": "lb"
+              "label": "each"
             }
           },
-          "action": "deliverService",
+          "action": "transfer",
           "resource_conforms_to": {
-            "name": "Scouring Service"
+            "name": "USD"
           },
           "stage": {
             "name": ""
           },
-          "provider_role": "Scouring",
-          "receiver_role": "Network"
-        },
+          "provider_role": "Network",
+          "receiver_role": "Scouring"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_scour_gray_alpaca",
+      "type": "recipe_exchange",
+      "name": "Scour Gray Alpaca",
+      "note": "",
+      "has_recipe_clause": [
         {
           "id": "scouring_service_output_scour_gray_alpaca",
           "resource_quantity": {
@@ -1653,7 +1803,81 @@
           },
           "provider_role": "Scouring",
           "receiver_role": "Network"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_scour",
+          "resource_quantity": {
+            "has_numerical_value": "2",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Scouring"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_scour_white_alpaca",
+      "type": "recipe_exchange",
+      "name": "Scour White Alpaca",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "scouring_service_output_scour_white_alpaca",
+          "resource_quantity": {
+            "has_numerical_value": "1",
+            "has_unit": {
+              "label": "lb"
+            }
+          },
+          "action": "deliverService",
+          "resource_conforms_to": {
+            "name": "Scouring Service"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Scouring",
+          "receiver_role": "Network"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_scour",
+          "resource_quantity": {
+            "has_numerical_value": "2",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Scouring"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_scour_white_wool",
+      "type": "recipe_exchange",
+      "name": "Scour White Wool",
+      "note": "",
+      "has_recipe_clause": [
         {
           "id": "scouring_service_output_scour_white_wool",
           "resource_quantity": {
@@ -1695,9 +1919,9 @@
       ]
     },
     {
-      "id": "recipe_exchange_spin",
+      "id": "recipe_exchange_spin_ivory_yarn",
       "type": "recipe_exchange",
-      "name": "Spin All Fiber",
+      "name": "Spin Ivory Yarn",
       "note": "",
       "has_recipe_clause": [
         {
@@ -1717,9 +1941,37 @@
           },
           "provider_role": "Spinning Mill",
           "receiver_role": "Network"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
         {
-          "id": "spinning_service_output_spin_brown_yarn",
+          "id": "usd_exchange_spin",
+          "resource_quantity": {
+            "has_numerical_value": "18",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Spinning"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_spin_gray_yarn",
+      "type": "recipe_exchange",
+      "name": "Spin Gray Yarn",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "spinning_service_output_spin_gray_yarn",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
@@ -1735,9 +1987,37 @@
           },
           "provider_role": "Spinning Mill",
           "receiver_role": "Network"
-        },
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
         {
-          "id": "spinning_service_output_spin_gray_yarn",
+          "id": "usd_exchange_spin",
+          "resource_quantity": {
+            "has_numerical_value": "18",
+            "has_unit": {
+              "label": "each"
+            }
+          },
+          "action": "transfer",
+          "resource_conforms_to": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Network",
+          "receiver_role": "Spinning"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_spin_brown_yarn",
+      "type": "recipe_exchange",
+      "name": "Spin Brown Yarn",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "spinning_service_output_spin_brown_yarn",
           "resource_quantity": {
             "has_numerical_value": "1",
             "has_unit": {
