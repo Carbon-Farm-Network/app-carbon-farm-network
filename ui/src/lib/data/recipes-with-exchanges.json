@@ -81,6 +81,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumOutputs",
           "provider_role": "Shipping",
           "receiver_role": "Network"
         }
@@ -188,7 +189,8 @@
           "stage": {
             "name": ""
           },
-          "provider_role": "Spinning Mill",
+          "instructions": "SumOutputs",
+          "provider_role": "Spinning",
           "receiver_role": "Network"
         }
       ],
@@ -277,7 +279,8 @@
           "stage": {
             "name": ""
           },
-          "provider_role": "Spinning Mill",
+          "instructions": "SumOutputs",
+          "provider_role": "Spinning",
           "receiver_role": "Network"
         }
       ],
@@ -365,7 +368,8 @@
           "stage": {
             "name": ""
           },
-          "provider_role": "Spinning Mill",
+          "instructions": "SumOutputs",
+          "provider_role": "Spinning",
           "receiver_role": "Network"
         }
       ],
@@ -508,6 +512,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumOutputs",
           "provider_role": "Shipping",
           "receiver_role": "Network"
         }
@@ -633,6 +638,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring Mill",
           "receiver_role": "Network"
         }
@@ -704,6 +710,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring Mill",
           "receiver_role": "Network"
         }
@@ -775,6 +782,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring Mill",
           "receiver_role": "Network"
         }
@@ -846,6 +854,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring Mill",
           "receiver_role": "Network"
         }
@@ -971,6 +980,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumOutputs",
           "provider_role": "Shipping",
           "receiver_role": "Network"
         }
@@ -1071,7 +1081,7 @@
               "label": "lb"
             }
           },
-          "action": "dropoff",
+          "action": "produce",
           "resource_conforms_to": {
             "name": "Brown Alpaca Dirty"
           },
@@ -1089,7 +1099,7 @@
               "label": "lb"
             }
           },
-          "action": "dropoff",
+          "action": "produce",
           "resource_conforms_to": {
             "name": "White Alpaca Dirty"
           },
@@ -1107,7 +1117,7 @@
               "label": "lb"
             }
           },
-          "action": "dropoff",
+          "action": "produce",
           "resource_conforms_to": {
             "name": "Gray Alpaca Dirty"
           },
@@ -1125,7 +1135,7 @@
               "label": "lb"
             }
           },
-          "action": "dropoff",
+          "action": "produce",
           "resource_conforms_to": {
             "name": "White Wool Dirty"
           },
@@ -1145,13 +1155,14 @@
               "label": "lb"
             }
           },
-          "action": "pickup",
+          "action": "consume",
           "resource_conforms_to": {
             "name": "Brown Alpaca Dirty"
           },
           "stage": {
             "name": ""
           },
+          "instructions": "UseOffers",
           "provider_role": "Farmer",
           "receiver_role": "Network"
         },
@@ -1163,13 +1174,14 @@
               "label": "lb"
             }
           },
-          "action": "pickup",
+          "action": "consume",
           "resource_conforms_to": {
             "name": "White Alpaca Dirty"
           },
           "stage": {
             "name": ""
           },
+          "instructions": "UseOffers",
           "provider_role": "Farmer",
           "receiver_role": "Network"
         },
@@ -1181,13 +1193,14 @@
               "label": "lb"
             }
           },
-          "action": "pickup",
+          "action": "consume",
           "resource_conforms_to": {
             "name": "Gray Alpaca Dirty"
           },
           "stage": {
             "name": ""
           },
+          "instructions": "UseOffers",
           "provider_role": "Farmer",
           "receiver_role": "Network"
         },
@@ -1199,13 +1212,14 @@
               "label": "lb"
             }
           },
-          "action": "pickup",
+          "action": "consume ",
           "resource_conforms_to": {
             "name": "White Wool Dirty"
           },
           "stage": {
             "name": ""
           },
+          "instructions": "UseOffers",
           "provider_role": "Farmer",
           "receiver_role": "Network"
         },
@@ -1572,6 +1586,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Shipping",
           "receiver_role": "Network"
         }
@@ -1618,6 +1633,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Shipping",
           "receiver_role": "Network"
         }
@@ -1664,6 +1680,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Shipping",
           "receiver_role": "Network"
         }
@@ -1755,6 +1772,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring",
           "receiver_role": "Network"
         }
@@ -1801,6 +1819,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring",
           "receiver_role": "Network"
         }
@@ -1847,6 +1866,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring",
           "receiver_role": "Network"
         }
@@ -1893,6 +1913,7 @@
           "stage": {
             "name": ""
           },
+          "instructions": "SumInputs",
           "provider_role": "Scouring",
           "receiver_role": "Network"
         }
@@ -1939,7 +1960,8 @@
           "stage": {
             "name": ""
           },
-          "provider_role": "Spinning Mill",
+          "instructions": "SumOutputs",
+          "provider_role": "Spinning",
           "receiver_role": "Network"
         }
       ],
@@ -1985,7 +2007,8 @@
           "stage": {
             "name": ""
           },
-          "provider_role": "Spinning Mill",
+          "instructions": "SumOutputs",
+          "provider_role": "Spinning",
           "receiver_role": "Network"
         }
       ],
@@ -2031,7 +2054,8 @@
           "stage": {
             "name": ""
           },
-          "provider_role": "Spinning Mill",
+          "instructions": "SumOutputs",
+          "provider_role": "Spinning",
           "receiver_role": "Network"
         }
       ],
