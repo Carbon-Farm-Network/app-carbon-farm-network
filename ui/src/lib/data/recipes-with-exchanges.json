@@ -1081,7 +1081,7 @@
               "label": "lb"
             }
           },
-          "action": "produce",
+          "action": "dropoff",
           "resource_conforms_to": {
             "name": "Brown Alpaca Dirty"
           },
@@ -1099,7 +1099,7 @@
               "label": "lb"
             }
           },
-          "action": "produce",
+          "action": "dropoff",
           "resource_conforms_to": {
             "name": "White Alpaca Dirty"
           },
@@ -1117,7 +1117,7 @@
               "label": "lb"
             }
           },
-          "action": "produce",
+          "action": "dropoff",
           "resource_conforms_to": {
             "name": "Gray Alpaca Dirty"
           },
@@ -1135,7 +1135,7 @@
               "label": "lb"
             }
           },
-          "action": "produce",
+          "action": "dropoff",
           "resource_conforms_to": {
             "name": "White Wool Dirty"
           },
@@ -1155,7 +1155,7 @@
               "label": "lb"
             }
           },
-          "action": "consume",
+          "action": "pickup",
           "resource_conforms_to": {
             "name": "Brown Alpaca Dirty"
           },
@@ -1174,7 +1174,7 @@
               "label": "lb"
             }
           },
-          "action": "consume",
+          "action": "pickup",
           "resource_conforms_to": {
             "name": "White Alpaca Dirty"
           },
@@ -1193,7 +1193,7 @@
               "label": "lb"
             }
           },
-          "action": "consume",
+          "action": "pickup",
           "resource_conforms_to": {
             "name": "Gray Alpaca Dirty"
           },
@@ -1212,7 +1212,7 @@
               "label": "lb"
             }
           },
-          "action": "consume ",
+          "action": "pickup",
           "resource_conforms_to": {
             "name": "White Wool Dirty"
           },
@@ -1584,7 +1584,7 @@
             "name": "Shipping Service"
           },
           "stage": {
-            "name": ""
+            "name": "Ship"
           },
           "instructions": "SumInputs",
           "provider_role": "Shipping",
@@ -1631,7 +1631,7 @@
             "name": "Shipping Service"
           },
           "stage": {
-            "name": ""
+            "name": "Ship"
           },
           "instructions": "SumInputs",
           "provider_role": "Shipping",
@@ -1678,7 +1678,7 @@
             "name": "Shipping Service"
           },
           "stage": {
-            "name": ""
+            "name": "Ship"
           },
           "instructions": "SumInputs",
           "provider_role": "Shipping",
@@ -1709,6 +1709,7 @@
     {
       "id": "recipe_exchange_pick_up_fiber",
       "name": "Pick Up Expense",
+      "type": "recipe_exchange",
       "note": "",
       "has_recipe_clause": [
         {
@@ -1770,7 +1771,7 @@
             "name": "Scouring Service"
           },
           "stage": {
-            "name": ""
+            "name": "Scour Fiber"
           },
           "instructions": "SumInputs",
           "provider_role": "Scouring",
@@ -1817,7 +1818,7 @@
             "name": "Scouring Service"
           },
           "stage": {
-            "name": ""
+            "name": "Scour Fiber"
           },
           "instructions": "SumInputs",
           "provider_role": "Scouring",
@@ -1864,7 +1865,7 @@
             "name": "Scouring Service"
           },
           "stage": {
-            "name": ""
+            "name": "Scour Fiber"
           },
           "instructions": "SumInputs",
           "provider_role": "Scouring",
@@ -1911,7 +1912,7 @@
             "name": "Scouring Service"
           },
           "stage": {
-            "name": ""
+            "name": "Scour Fiber"
           },
           "instructions": "SumInputs",
           "provider_role": "Scouring",
@@ -1958,7 +1959,7 @@
             "name": "Spinning Service"
           },
           "stage": {
-            "name": ""
+            "name": "Spin Yarn"
           },
           "instructions": "SumOutputs",
           "provider_role": "Spinning",
@@ -2005,7 +2006,7 @@
             "name": "Spinning Service"
           },
           "stage": {
-            "name": ""
+            "name": "Spin Yarn"
           },
           "instructions": "SumOutputs",
           "provider_role": "Spinning",
@@ -2052,7 +2053,7 @@
             "name": "Spinning Service"
           },
           "stage": {
-            "name": ""
+            "name": "Spin Yarn"
           },
           "instructions": "SumOutputs",
           "provider_role": "Spinning",
