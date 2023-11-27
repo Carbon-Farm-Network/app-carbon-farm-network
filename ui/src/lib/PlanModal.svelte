@@ -9,6 +9,9 @@
   export let open = false
   export let planObject: PlanUpdateParams | PlanCreateParams;
   export let editing: boolean = false;
+  export let commitments;
+  export let allColumns: any[] = [];
+
   // let name = ''
   // let note = ''
 
@@ -22,34 +25,104 @@
   }
 
   const CREATE_PLAN = gql`
-    mutation($plan: PlanCreateParams!){
-      createPlan(plan: $plan) {
+    mutation($rs: PlanCreateParams!) {
+      res: createPlan(plan: $rs) {
         plan {
           id
-          name
-          note
+          revisionId
+        }
+      }
+    }
+  `
+
+  const CREATE_PROCESS = gql`
+    mutation($pc: ProcessCreateParams!) {
+      createProcess(process: $pc) {
+        process {
+          id
+          revisionId
+        }
+      }
+    }
+  `
+    
+  const CREATE_COMMITMENT = gql`
+    mutation($cm: CommitmentCreateParams!) {
+      createProcess(commitment: $cm) {
+        commitment {
+          id
+          revisionId
         }
       }
     }
   `
 
   let addPlan: any = mutation(CREATE_PLAN)
+  let addProcess: any = mutation(CREATE_PROCESS)
+  let addCommitment: any = mutation(CREATE_COMMITMENT)
 
-  async function handleSubmit() {
-    if (planObject.name === '') {
-      alert('Name is required.')
-      return
-    }
-    let f = await addPlan({
+  async function saveProcess(process: any) {
+    let p = await addProcess({
       variables: {
-        plan: {
-          name: "test",
-          // note: "plan.note",
+        pc: {
+          name: process.name,
+          note: process.note,
         }
       }
     })
-    console.log(f)
-    open = false
+    console.log(p)
+  }
+
+
+  async function saveCommitment(commitment: any) {
+    console.log(commitment)
+    let c = await addCommitment({
+      variables: {
+        cm: {
+          action: commitment.action,
+          provider: commitment.provider.id,
+          receiver: commitment.receiver.id,
+        }
+      }
+    })
+    console.log(c)
+  }
+
+  async function handleSubmit() {
+    // if (planObject.name === '') {
+    //   alert('Name is required.')
+    //   return
+    // }
+
+    console.log(allColumns)
+
+    for (const column of allColumns) {
+      for (const process of column) {
+        await saveProcess(process)
+        for (const input of process.has_input) {
+          await saveCommitment(input)
+        }
+        for (const output of process.has_output) {
+          await saveCommitment(output)
+        }
+      }
+    }
+
+    // let f = await addPlan({
+    //   variables: {
+    //     rs: {
+    //       name: 'test plan',
+    //       created: new Date(),
+    //       due: new Date(),
+    //       note: 'just testing, nothing was rly planned',
+    //     }
+    //   }
+    // })
+
+
+
+    // console.log(f)
+    // open = false
     // dispatch('create', plan)
   }
 
@@ -58,6 +131,7 @@
   }
 
   onMount(() => {
+    console.log(planObject)
     window.addEventListener('keydown', checkKey)
   })
 </script>

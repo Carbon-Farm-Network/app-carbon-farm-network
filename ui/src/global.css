@@ -17,3 +17,7 @@ button:disabled:hover {
 .mt-8 {
   margin-top: 0;
 }
+
+main {
+  overflow: scroll;
+}

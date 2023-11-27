@@ -334,7 +334,7 @@
   let selectedCommitmentId: string | undefined = undefined
 </script>
 
-<PlanModal bind:open={planModalOpen} planObject = {createPlan} />
+<PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}
