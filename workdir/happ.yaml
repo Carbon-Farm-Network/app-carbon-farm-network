@@ -88,6 +88,20 @@ roles:
       version: ~
       clone_limit: 0
 
+  - name: hrea_plan_0
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "./hrea_plan.dna"
+      modifiers:
+        network_seed: ~
+        properties: ~
+        origin_time: ~
+        quantum_time: ~
+      version: ~
+      clone_limit: 0
+
   - name: hrea_facets_0
     provisioning:
       strategy: create

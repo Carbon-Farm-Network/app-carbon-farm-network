@@ -94,34 +94,36 @@
     //   return
     // }
 
-    console.log(allColumns)
-
-    for (const column of allColumns) {
-      for (const process of column) {
-        await saveProcess(process)
-        for (const input of process.has_input) {
-          await saveCommitment(input)
-        }
-        for (const output of process.has_output) {
-          await saveCommitment(output)
+    let f = await addPlan({
+      variables: {
+        rs: {
+          name: 'test plan',
+          created: new Date(),
+          due: new Date(),
+          note: 'just testing, nothing was rly planned',
         }
       }
-    }
+    })
 
-    // let f = await addPlan({
-    //   variables: {
-    //     rs: {
-    //       name: 'test plan',
-    //       created: new Date(),
-    //       due: new Date(),
-    //       note: 'just testing, nothing was rly planned',
+    console.log(f)
+
+    // console.log(allColumns)
+
+    // for (const column of allColumns) {
+    //   for (const process of column) {
+    //     await saveProcess(process)
+    //     for (const input of process.has_input) {
+    //       await saveCommitment(input)
+    //     }
+    //     for (const output of process.has_output) {
+    //       await saveCommitment(output)
     //     }
     //   }
-    // })
+    // }
 
 
 
-    // console.log(f)
+
     // open = false
     // dispatch('create', plan)
   }
