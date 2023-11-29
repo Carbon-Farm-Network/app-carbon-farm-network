@@ -11,7 +11,7 @@
   import type { PlanConnection } from '@valueflows/vf-graphql'
 
 
-  export let plans: any[] = [plan]
+  export let plans: any[];
 
   const GET_PLANS = gql`
     query fetchPlans {
@@ -24,13 +24,13 @@
     }
   `
 
-  interface QueryResponse {
-    agents: PlanConnection & RelayConn<any>
-  }
+  // interface PlansQueryResponse {
+  //   plans: PlanConnection & RelayConn<any>
+  // }
 
-  let plansQuery: ReadableQuery<QueryResponse> = query(GET_PLANS)
+  // let plansQuery: ReadableQuery<PlansQueryResponse> = query(GET_PLANS)
 
-  // let plansQuery = query(GET_PLANS)
+  let plansQuery = query(GET_PLANS)
 
   async function fetchPlans() {
     const res = await plansQuery.refetch()
@@ -38,8 +38,8 @@
     // plans = res.data.plans
   }
 
-  onMount(() => {
-    fetchPlans()
+  onMount(async () => {
+    await fetchPlans()
   })
 
 
@@ -89,7 +89,7 @@
           </thead>
           <tbody class="bg-white">
             <!-- {#each offers as { proposed_intents }, index} -->
-            {#each [plan] as { name, note }, index}
+            <!-- {#each [plan] as { name, note }, index}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
                   >{name}</td
@@ -107,7 +107,7 @@
                   >
                 </td>
               </tr>
-            {/each}
+            {/each} -->
           </tbody>
         </table>
       </div>

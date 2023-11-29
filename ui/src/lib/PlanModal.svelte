@@ -3,7 +3,7 @@
   import { onMount } from 'svelte'
   import { mutation } from 'svelte-apollo';
   import gql from 'graphql-tag'
-  import type { PlanUpdateParams, PlanCreateParams } from '@valueflows/vf-graphql'
+  import type { PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   
   export let open = false
@@ -11,6 +11,8 @@
   export let editing: boolean = false;
   export let commitments;
   export let allColumns: any[] = [];
+  let savingPlan: boolean = false;
+  const delay = ms => new Promise(res => setTimeout(res, ms));
 
   // let name = ''
   // let note = ''
@@ -48,7 +50,7 @@
     
   const CREATE_COMMITMENT = gql`
     mutation($cm: CommitmentCreateParams!) {
-      createProcess(commitment: $cm) {
+      createCommitment(commitment: $cm) {
         commitment {
           id
           revisionId
@@ -71,18 +73,32 @@
       }
     })
     console.log(p)
+    return p
   }
 
 
   async function saveCommitment(commitment: any) {
     console.log(commitment)
+    let o = {
+      action: commitment.action,
+      provider: "uhCEkUAUZYqbTCt_d5O7IMnuKwM_MAYUDQi2bkVTYC7j0wd_JWivP:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
+      receiver: "uhCEkUAUZYqbTCt_d5O7IMnuKwM_MAYUDQi2bkVTYC7j0wd_JWivP:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
+      // provider: commitment.provider.id,
+      // receiver: commitment.receiver.id,
+      // inputOf: commitment.process,
+      // stage: commitment.stage,
+      resourceConformsTo: "uhCEkpL7iODPQxUJKouyWoPmil2DYcJ4v8SnB1OO15MIALDZb9lMR:uhC0kJvB573HrpvYSmw2TJzvE5uWldwsQnQIqCr23zIPZnHqrmAHP",
+      // resourceQuantity: {hasNumericalValue: Number(commitment.resource_quantity.has_numerical_value)},
+      resourceQuantity: {hasNumericalValue: Number(1)},
+      // resourceQuantity: 1,
+      // finished: false,
+      // note: commitment.note,
+      hasBeginning: new Date(Date.now()),
+    }
+    console.log(o)
     let c = await addCommitment({
       variables: {
-        cm: {
-          action: commitment.action,
-          provider: commitment.provider.id,
-          receiver: commitment.receiver.id,
-        }
+        cm: o
       }
     })
     console.log(c)
@@ -94,7 +110,9 @@
     //   return
     // }
 
-    let f = await addPlan({
+    savingPlan = true;
+
+    let p = await addPlan({
       variables: {
         rs: {
           name: 'test plan',
@@ -105,26 +123,47 @@
       }
     })
 
-    console.log(f)
+    console.log(p)
 
-    // console.log(allColumns)
+    console.log(allColumns)
 
     // for (const column of allColumns) {
-    //   for (const process of column) {
-    //     await saveProcess(process)
+    //   for (const process of [column[0]]) {
+    //     console.log(process)
+    //     await delay(100);
+    //     let x = await saveProcess(process)
+    //     console.log(x)
+    //     console.log("hi")
     //     for (const input of process.has_input) {
-    //       await saveCommitment(input)
+    //       await delay(100);
+    //       console.log("ho")
+    //       let c = input
+    //       c.process = x.data.createProcess.process
+    //       if (c.provider === undefined) {
+    //         c.provider = c.receiver
+    //       }
+    //       if (c.receiver === undefined) {
+    //         c.receiver = c.provider
+    //       }
+    //       await saveCommitment(c)
     //     }
-    //     for (const output of process.has_output) {
-    //       await saveCommitment(output)
-    //     }
+    //     // for (const output of process.has_output) {
+    //     //   await saveCommitment(output)
+    //     // }
     //   }
     // }
 
+    // saveCommitment({
+    //   action: 'transfer',
+    //   // provider: {"id": 'test provider'},
+    //   // receiver: {"id": 'test receiver'},
+    // })
+
+    savingPlan = false;
 
 
 
-    // open = false
+    open = false
     // dispatch('create', plan)
   }
 
@@ -158,6 +197,7 @@
     <div
       class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
     >
+
       <!--
         Modal panel, show/hide based on modal state.
 
@@ -174,11 +214,13 @@
         use:clickOutside
         on:outclick={() => (open = false)}
       > -->
-      <div
-        class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
-        class:hidden={!open}
-        use:clickOutside
-      >
+
+      {#if !savingPlan}
+        <div
+          class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
+          class:hidden={!open}
+          use:clickOutside
+        >
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
@@ -266,6 +308,38 @@
           >
         </div>
       </div>
+      <!-- loading popup -->
+      {:else}
+        <div
+          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          class:hidden={!savingPlan}
+        >
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <!-- <div
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10"
+              > -->
+              <svg width="50" height="50" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="rgb(99,102,241)" stroke-dasharray="31.415, 31.415" />
+              </svg>
+              <!-- </div> -->
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3
+                  class="text-lg leading-6 font-medium text-gray-900"
+                  id="modal-headline"
+                >
+                  Saving plan ...
+                </h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">
+                    Please wait while the plan saves.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
