@@ -20,7 +20,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown 50/50 Yarn"
           },
           "stage": {
@@ -36,7 +36,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Ivory 50/50 Yarn"
           },
           "stage": {
@@ -52,7 +52,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray 50/50 Yarn"
           },
           "stage": {
@@ -68,7 +68,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Shipping Service"
           },
           "stage": {
@@ -86,7 +86,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown 50/50 Yarn"
           },
           "stage": {
@@ -102,7 +102,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Ivory 50/50 Yarn"
           },
           "stage": {
@@ -118,7 +118,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray 50/50 Yarn"
           },
           "stage": {
@@ -148,7 +148,7 @@
             }
           },
           "action": "produce",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown 50/50 Yarn"
           },
           "stage": {
@@ -164,7 +164,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Spinning Service"
           },
           "stage": {
@@ -182,7 +182,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
           "stage": {
@@ -198,7 +198,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Clean"
           },
           "stage": {
@@ -228,7 +228,7 @@
             }
           },
           "action": "produce",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Ivory 50/50 Yarn"
           },
           "stage": {
@@ -244,7 +244,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Spinning Service"
           },
           "stage": {
@@ -262,7 +262,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
           "stage": {
@@ -278,7 +278,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Clean"
           },
           "stage": {
@@ -307,7 +307,7 @@
             }
           },
           "action": "produce",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray 50/50 Yarn"
           },
           "stage": {
@@ -323,7 +323,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Spinning Service"
           },
           "stage": {
@@ -341,7 +341,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
           "stage": {
@@ -357,7 +357,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Clean"
           },
           "stage": {
@@ -387,7 +387,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
           "stage": {
@@ -403,7 +403,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
           "stage": {
@@ -419,7 +419,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
           "stage": {
@@ -435,7 +435,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Clean"
           },
           "stage": {
@@ -451,7 +451,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Shipping Service"
           },
           "stage": {
@@ -469,7 +469,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
           "stage": {
@@ -485,7 +485,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
           "stage": {
@@ -501,7 +501,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
           "stage": {
@@ -517,7 +517,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Clean"
           },
           "stage": {
@@ -547,7 +547,7 @@
             }
           },
           "action": "produce",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
           "stage": {
@@ -563,7 +563,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Scouring Service"
           },
           "stage": {
@@ -581,7 +581,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
           "stage": {
@@ -611,7 +611,7 @@
             }
           },
           "action": "produce",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
           "stage": {
@@ -627,7 +627,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Scouring Service"
           },
           "stage": {
@@ -645,7 +645,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
           "stage": {
@@ -675,7 +675,7 @@
             }
           },
           "action": "produce",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
           "stage": {
@@ -691,7 +691,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Scouring Service"
           },
           "stage": {
@@ -709,7 +709,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
           "stage": {
@@ -739,7 +739,7 @@
             }
           },
           "action": "produce",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Clean"
           },
           "stage": {
@@ -755,7 +755,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Scouring Service"
           },
           "stage": {
@@ -773,7 +773,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
           "stage": {
@@ -803,7 +803,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
           "stage": {
@@ -819,7 +819,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
           "stage": {
@@ -835,7 +835,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
           "stage": {
@@ -851,7 +851,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
           "stage": {
@@ -867,7 +867,7 @@
             }
           },
           "action": "deliverService",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Shipping Service"
           },
           "stage": {
@@ -885,7 +885,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
           "stage": {
@@ -901,7 +901,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
           "stage": {
@@ -917,7 +917,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
           "stage": {
@@ -933,7 +933,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
           "stage": {
@@ -963,7 +963,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
           "stage": {
@@ -979,7 +979,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
           "stage": {
@@ -995,7 +995,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
           "stage": {
@@ -1011,7 +1011,7 @@
             }
           },
           "action": "dropoff",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
           "stage": {
@@ -1029,7 +1029,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
           "stage": {
@@ -1045,7 +1045,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
           "stage": {
@@ -1061,7 +1061,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
           "stage": {
@@ -1077,7 +1077,7 @@
             }
           },
           "action": "pickup",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
           "stage": {
@@ -1093,7 +1093,7 @@
             }
           },
           "action": "consume",
-          "resource_conforms_to": {
+          "resourceConformsTo": {
             "name": "Gas and Truck Rental"
           },
           "stage": {

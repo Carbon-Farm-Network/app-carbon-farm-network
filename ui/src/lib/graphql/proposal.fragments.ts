@@ -61,6 +61,7 @@ export const PROPOSAL_RETURN_FIELDS = gql`
     hasEnd
     unitBased
     publishes {
+      id
       reciprocal
       publishes {
         revisionId

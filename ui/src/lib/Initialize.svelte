@@ -5,10 +5,12 @@
   import { onMount } from 'svelte'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, UnitConnection } from '@valueflows/vf-graphql'
+  import recipes from '$lib/data/recipes-with-exchanges.json'
 
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import Logo from './Logo.svelte'
 
   const INITIALIZE_UNITS = gql`
     ${UNIT_CORE_FIELDS}
@@ -39,7 +41,7 @@
   const INITIALIZE_GLOBAL_RECORDS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
     ${UNIT_CORE_FIELDS}
-    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!) {
+    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!, $agent: OrganizationCreateParams) {
 
       g1: putFacetGroup(facetGroup: $g1) {
         facetGroup {
@@ -65,6 +67,22 @@
         }
       }
 
+      a: createOrganization(organization: $agent) {
+        organization {
+          id
+        }
+      }
+    }
+  `
+
+  const CREATE_RESOURCE_SPECIFICATION = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    mutation($resource: ResourceSpecificationCreateParams!) {
+      rs: createResourceSpecification(resourceSpecification: $resource) {
+        resourceSpecification {
+          ...ResourceSpecificationCoreFields
+        }
+      }
     }
   `
 
@@ -88,6 +106,7 @@
 
   const initUnits = mutation<{ unitEa: { unit: Unit }, unitLb: { unit: Unit } }, {}>(INITIALIZE_UNITS)
   const initData = mutation(INITIALIZE_GLOBAL_RECORDS)
+  const addResourceSpecification = mutation(CREATE_RESOURCE_SPECIFICATION)
 
   interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<Unit>
@@ -116,7 +135,35 @@
           name: "USD",
           defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
         },
+        agent: {
+          name: "Carbon Farm Network",
+          classifiedAs: ["40.689247", "-74.044502", "knitting.svg"],
+        }
       }})
+
+      // let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
+      let specs: any[] = []
+      for (let r of recipes) {
+        console.log(r)
+        let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
+        console.log(input)
+        let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
+        let combined = input.concat(output)
+        for (let s of combined) {
+          if (!specs.includes(s.resourceConformsTo.name)) {
+            specs.push(s.resourceConformsTo.name)
+          }
+        }
+      }
+      for (let r of specs) {
+        let x = await addResourceSpecification({ variables: {
+          resource: {
+            name: r,
+            defaultUnitOfResource: units.find(u => u.symbol === 'lb')?.id,
+          },
+        }})
+        console.log(x)
+      }
     } catch(e) {
       error = e as Error
       console.log(e)
@@ -133,6 +180,7 @@
   }
 
   onMount(checkDependencies)
+  // dependenciesOk = false
 </script>
 
 {#if dependenciesOk === true}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import plan from '$lib/data/plan.json'
+  // import plan from '$lib/data/plan.json'
   import Header from '$lib/Header.svelte'
   import { goto } from '$app/navigation'
   import { gql } from 'graphql-tag'
@@ -16,26 +16,29 @@
   const GET_PLANS = gql`
     query fetchPlans {
       plans {
-        id
-        revisionId
-        name
-        note
+        edges {
+          node {
+            id
+            name
+            note
+          }
+        }
       }
     }
   `
 
-  // interface PlansQueryResponse {
-  //   plans: PlanConnection & RelayConn<any>
-  // }
+  interface PlansQueryResponse {
+    plans: PlanConnection & RelayConn<any>
+  }
 
-  // let plansQuery: ReadableQuery<PlansQueryResponse> = query(GET_PLANS)
+  let plansQuery: ReadableQuery<PlansQueryResponse> = query(GET_PLANS)
 
-  let plansQuery = query(GET_PLANS)
+  // let plansQuery = query(GET_PLANS)
 
   async function fetchPlans() {
     const res = await plansQuery.refetch()
-    console.log(res)
-    // plans = res.data.plans
+    plans = res.data.plans.edges
+    // plans = res2.data.plans
   }
 
   onMount(async () => {
@@ -89,12 +92,14 @@
           </thead>
           <tbody class="bg-white">
             <!-- {#each offers as { proposed_intents }, index} -->
-            <!-- {#each [plan] as { name, note }, index}
+            {#if plans && plans.length > 0}
+            
+            {#each plans as plan, index}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
-                  >{name}</td
+                  >{plan.node.name}</td
                 >
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{note}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{plan.node.note}</td>
                 <td
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                 >
@@ -107,7 +112,9 @@
                   >
                 </td>
               </tr>
-            {/each} -->
+            {/each}
+            {/if}
+
           </tbody>
         </table>
       </div>

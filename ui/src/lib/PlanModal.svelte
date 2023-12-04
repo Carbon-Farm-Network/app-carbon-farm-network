@@ -1,18 +1,25 @@
 <script lang="ts">
   import { clickOutside } from './utils'
   import { onMount } from 'svelte'
-  import { mutation } from 'svelte-apollo';
+  import { mutation, query } from 'svelte-apollo'
+  import type { AgentConnection } from '@valueflows/vf-graphql'
   import gql from 'graphql-tag'
   import type { PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  import type { ReadableQuery } from 'svelte-apollo'
   
   export let open = false
   export let planObject: PlanUpdateParams | PlanCreateParams;
   export let editing: boolean = false;
   export let commitments;
-  export let allColumns: any[] = [];
+  export let allColumns: any[];
+  let agents: any[];
   let savingPlan: boolean = false;
   const delay = ms => new Promise(res => setTimeout(res, ms));
+  let resourceSpecifications: any[];
 
   // let name = ''
   // let note = ''
@@ -59,6 +66,47 @@
     }
   `
 
+const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    query {
+      resourceSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ResourceSpecificationCoreFields
+          }
+        }
+      }
+    }
+  `
+
+const GET_ALL_AGENTS = gql`
+    ${AGENT_CORE_FIELDS}
+    query {
+      agents(last: 100000) {
+        edges {
+          cursor
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  `
+
+  interface QueryResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
+
+  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  interface QueryResponse {
+    agents: AgentConnection & RelayConn<any>
+  }
+
+  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+
   let addPlan: any = mutation(CREATE_PLAN)
   let addProcess: any = mutation(CREATE_PROCESS)
   let addCommitment: any = mutation(CREATE_COMMITMENT)
@@ -79,17 +127,17 @@
 
   async function saveCommitment(commitment: any) {
     console.log(commitment)
-    let o = {
+    let o: CommitmentCreateParams = {
       action: commitment.action,
-      provider: "uhCEkUAUZYqbTCt_d5O7IMnuKwM_MAYUDQi2bkVTYC7j0wd_JWivP:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
-      receiver: "uhCEkUAUZYqbTCt_d5O7IMnuKwM_MAYUDQi2bkVTYC7j0wd_JWivP:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
-      // provider: commitment.provider.id,
-      // receiver: commitment.receiver.id,
-      // inputOf: commitment.process,
+      // provider: "uhCEkJ1Yb2oVfThUJPRJ2qaqyI21qe48jhjI1l26_gBFjgObGoaBU:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
+      // receiver: "uhCEkJ1Yb2oVfThUJPRJ2qaqyI21qe48jhjI1l26_gBFjgObGoaBU:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
+      provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+      receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+      inputOf: commitment.process.id,
       // stage: commitment.stage,
-      resourceConformsTo: "uhCEkpL7iODPQxUJKouyWoPmil2DYcJ4v8SnB1OO15MIALDZb9lMR:uhC0kJvB573HrpvYSmw2TJzvE5uWldwsQnQIqCr23zIPZnHqrmAHP",
-      // resourceQuantity: {hasNumericalValue: Number(commitment.resource_quantity.has_numerical_value)},
-      resourceQuantity: {hasNumericalValue: Number(1)},
+      resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
+      resourceQuantity: {hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue)},
+      // resourceQuantity: {hasNumericalValue: Number(1)},
       // resourceQuantity: 1,
       // finished: false,
       // note: commitment.note,
@@ -115,10 +163,10 @@
     let p = await addPlan({
       variables: {
         rs: {
-          name: 'test plan',
-          created: new Date(),
-          due: new Date(),
-          note: 'just testing, nothing was rly planned',
+          name: planObject.name,
+          created: new Date(Date.now()),
+          due: new Date(Date.now()),
+          note: planObject.note,
         }
       }
     })
@@ -127,31 +175,31 @@
 
     console.log(allColumns)
 
-    // for (const column of allColumns) {
-    //   for (const process of [column[0]]) {
-    //     console.log(process)
-    //     await delay(100);
-    //     let x = await saveProcess(process)
-    //     console.log(x)
-    //     console.log("hi")
-    //     for (const input of process.has_input) {
-    //       await delay(100);
-    //       console.log("ho")
-    //       let c = input
-    //       c.process = x.data.createProcess.process
-    //       if (c.provider === undefined) {
-    //         c.provider = c.receiver
-    //       }
-    //       if (c.receiver === undefined) {
-    //         c.receiver = c.provider
-    //       }
-    //       await saveCommitment(c)
-    //     }
-    //     // for (const output of process.has_output) {
-    //     //   await saveCommitment(output)
-    //     // }
-    //   }
-    // }
+    for (const column of allColumns) {
+      for (const process of [column[0]]) {
+        console.log(process)
+        await delay(100);
+        let x = await saveProcess(process)
+        console.log(x)
+        console.log("hi")
+        for (const input of process.has_input) {
+          await delay(100);
+          console.log("ho")
+          let c = input
+          c.process = x.data.createProcess.process
+          if (c.provider === undefined) {
+            c.provider = c.receiver
+          }
+          if (c.receiver === undefined) {
+            c.receiver = c.provider
+          }
+          await saveCommitment(c)
+        }
+        // for (const output of process.has_output) {
+        //   await saveCommitment(output)
+        // }
+      }
+    }
 
     // saveCommitment({
     //   action: 'transfer',
@@ -171,11 +219,20 @@
     console.log("update in progress ...")
   }
 
-  onMount(() => {
+  onMount(async () => {
     console.log(planObject)
+    const x = await resourceSpecificationsQuery.refetch()
+    resourceSpecifications = x.data.resourceSpecifications.edges
+    console.log(resourceSpecifications)
+    const y = await agentsQuery.refetch()
+    agents = y.data.agents.edges
+    console.log(agents)
     window.addEventListener('keydown', checkKey)
   })
+
+  $: allColumns
 </script>
+
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--

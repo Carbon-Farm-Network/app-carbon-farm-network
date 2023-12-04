@@ -2,7 +2,7 @@
   import recipes from '$lib/data/recipes-with-exchanges.json'
   // import requests from '$lib/data/requests.json'
   // import offers from '$lib/data/offers.json'
-  // import agents from '$lib/data/agents.json'
+  import agents from '$lib/data/agents.json'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
@@ -22,6 +22,7 @@
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams } from '@valueflows/vf-graphql'
 
   let requests: Proposal[] = [];
+  let offers: Proposal[] = [];
   let proposalsList: Proposal[] = []
   let createPlan: PlanCreateParams = {
     name: '',
@@ -55,7 +56,9 @@
         // {@const primary = publishes.find(it => !it.reciprocal)}
         //       {#if primary?.publishes?.receiver}
         requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
+        offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
         console.log(requests)
+        console.log(offers)
         // console.log(proposalsList[0].publishes[0].publishes)
         // console.log(requests)
       }
@@ -93,7 +96,7 @@
   const previousColumn = column => {
     return column
       .reduce((acc, input) => {
-        if (input.resource_quantity.has_numerical_value > 0) {
+        if (input.resourceQuantity.hasNumericalValue > 0) {
           // find a recipe that outputs what the demand wants
           const recipe = recipes
             .filter(it => it.type == 'recipe_process')
@@ -101,13 +104,14 @@
               if (input.stage) {
                 return a_recipe?.has_recipe_output?.some(
                   output =>
-                    output.resource_conforms_to.name == input.resource_conforms_to.name &&
+                    output.resourceConformsTo.name == input.resourceConformsTo.name &&
                     a_recipe.process_conforms_to.name == input.stage.name
                 )
               } else {
+                console.log("else")
                 return a_recipe.has_recipe_output.some(
                   output =>
-                    output.resource_conforms_to.name == input.resource_conforms_to.name
+                    output.resourceConformsTo.name == input.resourceConformsTo.name
                 )
               }
             })
@@ -115,67 +119,35 @@
           if (!recipe) return acc
           // find the output that matches the demand
           let matching_output = recipe?.has_recipe_output?.find(
-            output => output.resource_conforms_to.name == input.resource_conforms_to.name
+            output => output.resourceConformsTo.name == input.resourceConformsTo.name
           )
           // find the multiplier to make the demand required
           // TODO round up not down like it is now
-          // console.log(recipe, matching_output?.resource_quantity?.has_numerical_value)
+          // console.log(recipe, matching_output?.resourceQuantity?.hasNumericalValue)
           const multiplier = new Decimal(
-            input.resource_quantity.has_numerical_value || '1'
-          ).div(new Decimal(matching_output?.resource_quantity?.has_numerical_value))
+            input.resourceQuantity.hasNumericalValue || '1'
+          ).div(new Decimal(matching_output?.resourceQuantity?.hasNumericalValue))
+
           let matching_input = recipe?.has_recipe_input?.find(
             an_input =>
-              an_input.resource_conforms_to.name == input.resource_conforms_to.name
+              an_input.resourceConformsTo.name == input.resourceConformsTo.name
           )
           matching_input = assignProviderReceiver(matching_input, agents)
           matching_input = Object.assign({}, matching_input, {
-            resource_quantity: {
-              ...matching_input?.resource_quantity,
-              has_numerical_value: multiplier
+            resourceQuantity: {
+              ...matching_input?.resourceQuantity,
+              hasNumericalValue: multiplier
                 .toDecimalPlaces(0, Decimal.ROUND_UP)
                 .toString()
             }
           })
-        matching_output = assignProviderReceiver(matching_output, agents)
-        matching_output = Object.assign({}, matching_output, {
-          resource_quantity: {
-            ...matching_output?.resource_quantity,
-            has_numerical_value: new Decimal(input.resource_quantity.has_numerical_value)
-              .toDecimalPlaces(0, Decimal.ROUND_UP)
-              .toString()
-          }
-        })
-        let has_output, has_input, new_output, new_input
-        if (matching_output?.action == 'dropoff' || matching_output?.action == 'modify') {
-          const existing_process = acc.find(it => it.id == recipe.id)
-          if (existing_process) {
-            const remaining_processes = acc.filter(it => it.id != existing_process.id)
-            const existing_services = existing_process.has_output.filter(
-              output => output.action != 'dropoff' && output.action != 'modify'
-            )
-            const existing_output = existing_process.has_output.find(
-              output => output.id == matching_output.id
-            )
-            if (existing_output) {
-              new_output = {
-                ...existing_output,
-                resource_quantity: {
-                  ...existing_output.resource_quantity,
-                  has_numerical_value: new Decimal(
-                    existing_output.resource_quantity.has_numerical_value
-                  ).add(matching_output.resource_quantity.has_numerical_value)
-                }
-              }
-            } else {
-              new_output = matching_output
-            }
 
           matching_output = assignProviderReceiver(matching_output, agents)
           matching_output = Object.assign({}, matching_output, {
-            resource_quantity: {
-              ...matching_output?.resource_quantity,
-              has_numerical_value: new Decimal(
-                input.resource_quantity.has_numerical_value
+            resourceQuantity: {
+              ...matching_output?.resourceQuantity,
+              hasNumericalValue: new Decimal(
+                input.resourceQuantity.hasNumericalValue
               )
                 .toDecimalPlaces(0, Decimal.ROUND_UP)
                 .toString()
@@ -199,11 +171,11 @@
               if (existing_output) {
                 new_output = {
                   ...existing_output,
-                  resource_quantity: {
-                    ...existing_output.resource_quantity,
-                    has_numerical_value: new Decimal(
-                      existing_output.resource_quantity.has_numerical_value
-                    ).add(matching_output.resource_quantity.has_numerical_value)
+                  resourceQuantity: {
+                    ...existing_output.resourceQuantity,
+                    hasNumericalValue: new Decimal(
+                      existing_output.resourceQuantity.hasNumericalValue
+                    ).add(matching_output.resourceQuantity.hasNumericalValue)
                   }
                 }
               } else {
@@ -216,11 +188,11 @@
               if (existing_input) {
                 new_input = {
                   ...existing_input,
-                  resource_quantity: {
-                    ...existing_input.resource_quantity,
-                    has_numerical_value: new Decimal(
-                      existing_input.resource_quantity.has_numerical_value
-                    ).add(matching_input.resource_quantity.has_numerical_value)
+                  resourceQuantity: {
+                    ...existing_input.resourceQuantity,
+                    hasNumericalValue: new Decimal(
+                      existing_input.resourceQuantity.hasNumericalValue
+                    ).add(matching_input.resourceQuantity.hasNumericalValue)
                   }
                 }
               } else {
@@ -284,10 +256,10 @@
               ?.map(input => assignProviderReceiver(input, agents))
               .map(input =>
                 Object.assign({}, input, {
-                  resource_quantity: {
-                    ...input.resource_quantity,
-                    has_numerical_value: new Decimal(
-                      input.resource_quantity.has_numerical_value
+                  resourceQuantity: {
+                    ...input.resourceQuantity,
+                    hasNumericalValue: new Decimal(
+                      input.resourceQuantity.hasNumericalValue
                     )
                       .mul(multiplier)
                       .toDecimalPlaces(0, Decimal.ROUND_UP)
@@ -296,6 +268,17 @@
                 })
               )
           }
+
+          console.log([
+            ...acc,
+            {
+              id: recipe.id,
+              name: recipe.name,
+              based_on: recipe.process_conforms_to,
+              has_output,
+              has_input
+            }
+          ])
 
           return [
             ...acc,
@@ -329,26 +312,26 @@
         if (output.instructions == 'SumOutputs') {
           const other_outputs = process.has_output.filter(it => it.id != output.id)
           const sum = other_outputs.reduce(
-            (acc, output) => acc.add(output.resource_quantity.has_numerical_value),
+            (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
             new Decimal(0)
           )
           return {
             ...output,
-            resource_quantity: {
-              ...output.resource_quantity,
-              has_numerical_value: sum.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
+            resourceQuantity: {
+              ...output.resourceQuantity,
+              hasNumericalValue: sum.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
             }
           }
         } else if (output.instructions == 'SumInputs') {
           const sum = process.has_input.reduce(
-            (acc, output) => acc.add(output.resource_quantity.has_numerical_value),
+            (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
             new Decimal(0)
           )
           return {
             ...output,
-            resource_quantity: {
-              ...output.resource_quantity,
-              has_numerical_value: sum.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
+            resourceQuantity: {
+              ...output.resourceQuantity,
+              hasNumericalValue: sum.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
             }
           }
         }
@@ -389,7 +372,7 @@
 
   type Commitment = {
     resourceConformsTo: { name: string }
-    resource_quantity: { has_numerical_value: string; has_unit: { label: string } }
+    resourceQuantity: { hasNumericalValue: string; has_unit: { label: string } }
     receiver: { name: string }
     action: string
     id: string
@@ -398,10 +381,12 @@
   let plan_created = false
   $: aggregatedCommitments = aggregateCommitments(commitments)
   $: allColumns = !plan_created ? generateColumns(aggregatedCommitments) : []
+
   function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
+    console.log(requests[0].publishes.filter(it => !it.reciprocal))
     return requests.flatMap(request =>
-      request.publishes.map(proposed_intent => ({
-        ...proposed_intent.intent,
+      request.publishes.filter(it => !it.reciprocal).map(proposed_intent => ({
+        publishes: proposed_intent.publishes,
         action: 'transfer',
         satisfies: proposed_intent.id,
         id: crypto.randomUUID()
@@ -410,36 +395,37 @@
   }
   type Demand = {
     resourceConformsTo: { name: string }
-    resource_quantity: { has_numerical_value: string; has_unit: { label: string } }
+    resourceQuantity: { hasNumericalValue: string; has_unit: { label: string } }
   }
   function aggregateCommitments(commitments: Commitment[]): Demand[] {
     return Object.values(
       commitments.reduce((acc, commitment) => {
-        console.log(commitment)
-        // console.log(commitment[0].publishes.filter(it => it.reciprocal))
-        if (acc[commitment.publishes[0].resourceConformsTo.name]) {
-          let existing = acc[commitment.publishes[0].resourceConformsTo.name]
-          acc[commitment.publishes[0].resourceConformsTo.name] = {
+        if (acc[commitment.publishes.resourceConformsTo.name]) {
+          let existing = acc[commitment.publishes.resourceConformsTo.name]
+          console.log(existing)
+          acc[commitment.publishes.resourceConformsTo.name] = {
             ...existing,
-            resource_quantity: {
-              ...existing.resource_quantity,
-              has_numerical_value:
-                existing.resource_quantity.has_numerical_value +
-                commitment.resource_quantity.has_numerical_value
+            resourceQuantity: {
+              ...existing.publishes.resourceQuantity,
+              hasNumericalValue:
+                existing.publishes.resourceQuantity.hasNumericalValue +
+                commitment.publishes.resourceQuantity.hasNumericalValue
             }
           }
         } else {
-          acc[commitment.publishes[0].resourceConformsTo.name] = {
-            resource_quantity: commitment.resource_quantity,
-            resourceConformsTo: commitment.publishes[0].resourceConformsTo,
+          acc[commitment.publishes.resourceConformsTo.name] = {
+            resourceQuantity: commitment.publishes.resourceQuantity,
+            resourceConformsTo: commitment.publishes.resourceConformsTo,
             stage: { name: 'Ship' }
           }
         }
+        console.log(acc)
         return acc
       }, {})
     )
   }
   function generateColumns(aggregatedCommitments: any[]): any[] {
+    console.log(aggregatedCommitments)
     let previousProcesses = previousColumn(aggregatedCommitments)
     let allColumns: any[] = []
     while (previousProcesses.length != 0) {
@@ -465,14 +451,14 @@
         if (based_on_name) {
           return a_recipe?.has_recipe_clause?.some(
             clause =>
-              clause.resource_conforms_to.name ==
-                commitment?.resource_conforms_to?.name &&
+              clause.resourceConformsTo.name ==
+                commitment?.resourceConformsTo?.name &&
               clause.stage?.name == based_on_name
           )
         }
         return a_recipe?.has_recipe_clause?.some(
           clause =>
-            clause.resource_conforms_to.name == commitment?.resource_conforms_to?.name &&
+            clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
             clause.stage?.name == commitment.stage?.name
         )
       })
@@ -485,21 +471,21 @@
   ): undefined | any {
     const reciprocal_clause = recipe?.has_recipe_reciprocal_clause?.[0]
     if (!reciprocal_clause) return
-    let numerical_value = reciprocal_clause.resource_quantity.has_numerical_value
-    let has_unit = reciprocal_clause.resource_quantity.has_unit
+    let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
+    let has_unit = reciprocal_clause.resourceQuantity.has_unit
     // TODO get data to test the matching offer logic
     // const matching_offer = offers.find(offer => {
     //   offer.proposed_intents.find(
     //     intent =>
-    //       intent.intent.resource_conforms_to.name == commitment.resource_conforms_to.name
+    //       intent.intent.resourceConformsTo.name == commitment.resourceConformsTo.name
     //   )
     // })
     // if (matching_offer) {
     //   const reciprocal_intent = matching_offer.proposed_intents.find(
     //     intent => intent.reciprocal
     //   )
-    //   numerical_value = reciprocal_intent.resource_quantity.has_numerical_value
-    //   has_unit = reciprocal_intent.resource_quantity
+    //   numerical_value = reciprocal_intent.resourceQuantity.hasNumericalValue
+    //   has_unit = reciprocal_intent.resourceQuantity
     // }
     return {
       name: recipe.name,
@@ -507,10 +493,10 @@
       commitment: {
         action: reciprocal_clause.action,
         stage: reciprocal_clause.stage,
-        resource_conforms_to: reciprocal_clause.resource_conforms_to,
-        resource_quantity: {
-          has_numerical_value: new Decimal(numerical_value)
-            .mul(commitment.resource_quantity.has_numerical_value)
+        resourceConformsTo: reciprocal_clause.resourceConformsTo,
+        resourceQuantity: {
+          hasNumericalValue: new Decimal(numerical_value)
+            .mul(commitment.resourceQuantity.hasNumericalValue)
             .toDecimalPlaces(0, Decimal.ROUND_UP)
             .toString(),
           has_unit
@@ -523,6 +509,7 @@
   let commitmentModalOpen = false
   let selectedCommitmentId: string | undefined = undefined
 </script>
+
 
 <PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
 <CommitmentModal
@@ -547,7 +534,7 @@
           type="button"
           on:click={() => {
             planModalOpen = true
-            plan_created = true
+            // plan_created = true
           }}
           class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save plan</button
@@ -606,6 +593,11 @@
     </div>
     -->
     <!-- Main Columns -->
+    <!-- {JSON.stringify(allColumns[0])} -->
+    <!-- {#each allColumns as processes}
+      {@const { image, name } = processes[0].based_on}
+      {JSON.stringify(name)}
+    {/each} -->
     {#each allColumns as processes}
       {@const { image, name } = processes[0].based_on}
       <div class="min-w-[400px]">
@@ -625,7 +617,7 @@
                   <PlusCircle />
                 </button>
 
-                {#each has_input as { resource_conforms_to, provider, resource_quantity, action, receiver, agreement }}
+                {#each has_input as { resourceConformsTo, provider, resourceQuantity, action, receiver, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -633,18 +625,18 @@
                     <div class="flex justify-between">
                       <!--
                       <p>
-                        {supply_driven_quantity?.has_numerical_value}
+                        {supply_driven_quantity?.hasNumericalValue}
                         {supply_driven_quantity?.has_unit?.label}
                       </p>
                       -->
                       <p>
                         {action}
-                        {new Decimal(resource_quantity?.has_numerical_value).toString()}
-                        {resource_quantity?.has_unit?.label}
+                        {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                        {resourceQuantity?.has_unit?.label}
                       </p>
                       <!--
                       <p>
-                        {demand_driven_quantity?.has_numerical_value}
+                        {demand_driven_quantity?.hasNumericalValue}
                         {demand_driven_quantity?.has_unit?.label}
                       </p>
                       -->
@@ -657,11 +649,11 @@
                       {@const commitment = agreement.commitment}
                       <p>
                         cost: {new Decimal(
-                          commitment.resource_quantity.has_numerical_value
+                          commitment.resourceQuantity.hasNumericalValue
                         )
                           .toFixed(2, Decimal.ROUND_HALF_UP)
                           .toString()}
-                        {commitment.resource_conforms_to.name}
+                        {commitment.resourceConformsTo.name}
                       </p>
                     {/if}
                   </div>
@@ -677,7 +669,7 @@
                   <PlusCircle />
                 </button>
 
-                {#each has_output as { resource_conforms_to, receiver, provider, resource_quantity, action, editable, id, agreement }}
+                {#each has_output as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -686,18 +678,18 @@
                       <div class="flex justify-between">
                         <!--
                       <p>
-                        {supply_driven_quantity?.has_numerical_value}
+                        {supply_driven_quantity?.hasNumericalValue}
                         {supply_driven_quantity?.has_unit?.label}
                       </p>
                       -->
                         <p>
                           {action}
-                          {resource_quantity?.has_numerical_value}
-                          {resource_quantity?.has_unit?.label}
+                          {resourceQuantity?.hasNumericalValue}
+                          {resourceQuantity?.has_unit?.label}
                         </p>
                         <!--
                       <p>
-                        {demand_driven_quantity?.has_numerical_value}
+                        {demand_driven_quantity?.hasNumericalValue}
                         {demand_driven_quantity?.has_unit?.label}
                       </p>
                       -->
@@ -710,11 +702,11 @@
                         {@const commitment = agreement.commitment}
                         <p>
                           cost: {new Decimal(
-                            commitment.resource_quantity.has_numerical_value
+                            commitment.resourceQuantity.hasNumericalValue
                           )
                             .toFixed(2, Decimal.ROUND_HALF_UP)
                             .toString()}
-                          {commitment.resource_conforms_to.name}
+                          {commitment.resourceConformsTo.name}
                         </p>
                       {/if}
                     </div>
@@ -771,7 +763,12 @@
                 >
               </div>
             {/if}
-            {#each commitments as { resourceConformsTo, resource_quantity, receiver, id, action }}
+            {#each commitments as c}
+              {@const resourceConformsTo = c.publishes.resourceConformsTo}
+              {@const resourceQuantity = c.publishes.resourceQuantity}
+              {@const receiver = c.publishes.receiver}
+              {@const id = c.id}
+              {@const action = c.action}
               <div
                 class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
               >
@@ -779,8 +776,8 @@
                   <p>{resourceConformsTo?.name}</p>
                   <p>
                     {action}
-                    {resource_quantity?.has_numerical_value}
-                    {resource_quantity?.has_unit?.label}
+                    {resourceQuantity?.hasNumericalValue}
+                    {resourceQuantity?.has_unit?.label}
                   </p>
                   <p>to: {receiver?.name}</p>
                 </div>
