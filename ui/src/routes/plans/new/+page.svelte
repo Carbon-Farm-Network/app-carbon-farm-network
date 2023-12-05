@@ -403,12 +403,13 @@
         if (acc[commitment.publishes.resourceConformsTo.name]) {
           let existing = acc[commitment.publishes.resourceConformsTo.name]
           console.log(existing)
+          console.log(commitment)
           acc[commitment.publishes.resourceConformsTo.name] = {
             ...existing,
             resourceQuantity: {
-              ...existing.publishes.resourceQuantity,
+              ...existing.resourceQuantity,
               hasNumericalValue:
-                existing.publishes.resourceQuantity.hasNumericalValue +
+                existing.resourceQuantity.hasNumericalValue +
                 commitment.publishes.resourceQuantity.hasNumericalValue
             }
           }
