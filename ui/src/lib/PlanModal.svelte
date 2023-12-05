@@ -129,18 +129,13 @@ const GET_ALL_AGENTS = gql`
     console.log(commitment)
     let o: CommitmentCreateParams = {
       action: commitment.action,
-      // provider: "uhCEkJ1Yb2oVfThUJPRJ2qaqyI21qe48jhjI1l26_gBFjgObGoaBU:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
-      // receiver: "uhCEkJ1Yb2oVfThUJPRJ2qaqyI21qe48jhjI1l26_gBFjgObGoaBU:uhC0keK_92w0fUpWrdEmRjgcUbneOgYT2BRpT7A9jhHhySyfpYIqH",
       provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
       receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
       inputOf: commitment.process.id,
-      // stage: commitment.stage,
       resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
       resourceQuantity: {hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue)},
-      // resourceQuantity: {hasNumericalValue: Number(1)},
-      // resourceQuantity: 1,
-      // finished: false,
-      // note: commitment.note,
+      finished: false,
+      note: commitment.note,
       hasBeginning: new Date(Date.now()),
     }
     console.log(o)

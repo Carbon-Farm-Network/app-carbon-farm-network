@@ -137,7 +137,8 @@
         },
         agent: {
           name: "Carbon Farm Network",
-          classifiedAs: ["40.689247", "-74.044502", "knitting.svg"],
+          classifiedAs: ["40.689247", "-74.044502", "Network"],
+          image: "knitting.svg"
         }
       }})
 
