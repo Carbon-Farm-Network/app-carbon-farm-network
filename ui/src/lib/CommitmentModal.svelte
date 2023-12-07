@@ -24,14 +24,16 @@
   export let commitments: any[]
   let newCommitmentTemplate = {
     id: 'commitment_id',
-    resource_conforms_to: {
-      name: ''
-    },
-    resource_quantity: {
-      has_numerical_value: 0,
-      has_unit: {
-        label: 'lb'
-      }
+    publishes: {
+      resourceConformsTo: {
+        name: ''
+      },
+      resourceQuantity: {
+        hasNumericalValue: 0,
+        hasUnit: {
+          label: 'lb'
+        }
+      },
     },
     receiver: {
       name: ''
@@ -154,14 +156,14 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Resource specification</label
                 >
-                {#if selectedCommitment?.resource_conforms_to}
-                  <p>{selectedCommitment?.resource_conforms_to.name}</p>
+                {#if selectedCommitment?.publishes?.resourceConformsTo}
+                  <p>{selectedCommitment?.publishes?.resourceConformsTo.name}</p>
                 {:else}
                   <select
                     id="defaultUnitOfResource"
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.resource_conforms_to.name}
+                    bind:value={newCommitment.publishes.resourceConformsTo.name}
                   >
                     {#each resource_specifications as rs}
                       <option value={rs.name}>{rs.name}</option>
@@ -179,15 +181,15 @@
                   >Quantity</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
-                  {#if selectedCommitment?.resource_quantity}
+                  {#if selectedCommitment?.publishes?.resourceQuantity}
                     <input
                       type="number"
                       name="quantity"
                       id="quantity"
                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       placeholder=""
-                      bind:value={selectedCommitment.resource_quantity
-                        .has_numerical_value}
+                      bind:value={selectedCommitment.publishes.resourceQuantity
+                        .hasNumericalValue}
                       required
                       aria-invalid="true"
                       aria-describedby="name-error"
@@ -199,7 +201,7 @@
                       id="quantity"
                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       placeholder=""
-                      bind:value={newCommitment.resource_quantity.has_numerical_value}
+                      bind:value={newCommitment.publishes.resourceQuantity.hasNumericalValue}
                       required
                       aria-invalid="true"
                       aria-describedby="name-error"
@@ -213,14 +215,14 @@
                   for="unit"
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
-                {#if selectedCommitment?.resource_quantity}
-                  <p>{selectedCommitment?.resource_quantity.has_unit.label}</p>
+                {#if selectedCommitment?.publishes?.resourceQuantity}
+                  <p>{selectedCommitment?.publishes?.resourceQuantity.hasUnit.label}</p>
                 {:else}
                   <select
                     id="unit"
                     name="unit"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.resource_quantity.has_unit.label}
+                    bind:value={newCommitment.publishes.resourceQuantity.hasUnit.label}
                   >
                     {#each units as unit}
                       <option value={unit.symbol}>{unit.symbol}</option>
@@ -278,10 +280,11 @@
                 commitments = [...commitments, newCommitment]
                 newCommitment = Object.assign({}, newCommitmentTemplate)
               }
+              console.log(newCommitment)
               open = false
             }}
           >
-            Update
+            Add
           </button>
           <button
             type="button"

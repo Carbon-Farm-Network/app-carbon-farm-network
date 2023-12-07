@@ -175,11 +175,8 @@ const GET_ALL_AGENTS = gql`
         console.log(process)
         await delay(100);
         let x = await saveProcess(process)
-        console.log(x)
-        console.log("hi")
         for (const input of process.has_input) {
           await delay(100);
-          console.log("ho")
           let c = input
           c.process = x.data.createProcess.process
           if (c.provider === undefined) {

@@ -31,3 +31,19 @@ circle {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* top scroll */
+/* .outer-div {
+  overflow: hidden;
+}
+
+.scroll-div {
+  overflow-x: scroll;
+  overflow-y: scroll;
+  transform: rotateX(180deg);
+}
+
+.content-div {
+  transform: rotateX(180deg);
+  padding-top: 1.5rem;
+} */

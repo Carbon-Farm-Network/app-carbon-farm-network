@@ -400,6 +400,7 @@
   function aggregateCommitments(commitments: Commitment[]): Demand[] {
     return Object.values(
       commitments.reduce((acc, commitment) => {
+        console.log(commitment)
         if (acc[commitment.publishes.resourceConformsTo.name]) {
           let existing = acc[commitment.publishes.resourceConformsTo.name]
           console.log(existing)
@@ -527,7 +528,10 @@
   </div>
 </div>
 
-<div class="pt-4 flex justify-center items-center">
+<div class="justify-center items-center">
+  <!-- <div class="outer-div justify-center items-center">
+  <div class="scroll-div justify-center items-center">
+  <div class="content-div flex space-x-8 mx-4 justify-center"> -->
   <div class="flex space-x-8 mx-4 overflow-x-scroll">
     <div class="min-w-[200px]">
       <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
@@ -832,6 +836,8 @@
       </div>
     </div>
   </div>
+  <!-- </div>
+  </div> -->
 </div>
 
 <style>
