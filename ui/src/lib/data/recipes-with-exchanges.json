@@ -74,7 +74,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -182,7 +182,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -272,7 +272,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -361,7 +361,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -505,7 +505,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -631,7 +631,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -703,7 +703,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -775,7 +775,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -847,7 +847,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -973,7 +973,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -1579,7 +1579,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -1626,7 +1626,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -1673,7 +1673,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -1766,7 +1766,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1813,7 +1813,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1860,7 +1860,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1907,7 +1907,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1954,7 +1954,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -2001,7 +2001,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -2048,7 +2048,7 @@
               "label": "lb"
             }
           },
-          "action": "deliverService",
+          "action": "deliver_service",
           "resourceConformsTo": {
             "name": "Spinning Service"
           },

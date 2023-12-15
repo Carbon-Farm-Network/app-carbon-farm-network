@@ -7,6 +7,7 @@
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
+  import { page } from '$app/stores';
 
   // import plan from '$lib/data/plan.json'
   import Header from '$lib/Header.svelte'
@@ -20,6 +21,13 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
+
+  let planId = ''
+  $: if ($page.params.plan_id) {
+    planId = $page.params.plan_id;
+  }
+
+  let plan: any = undefined;
 
   let requests: Proposal[] = [];
   let offers: Proposal[] = [];
@@ -43,6 +51,85 @@
     }
   `
 
+  const GET_PLAN = gql`
+    query GetPlan($id: ID!) {
+      plan(id: $id) {
+        id
+        name
+        meta {
+          retrievedRevision {
+            id
+            time
+          }
+        }
+        processes {
+          id
+          name
+          meta {
+            retrievedRevision {
+              id
+              time
+            }
+          }
+          committedInputs {
+            id
+            meta {
+              retrievedRevision {
+                id
+                time
+              }
+            }
+            provider {
+              id
+              name
+            }
+            receiver {
+              id
+              name
+            }
+            resourceQuantity {
+              hasNumericalValue
+            	hasUnit {
+              	label
+            	}
+            }
+            resourceConformsTo {
+              id
+              name
+            }
+          }
+          committedOutputs {
+            id
+            meta {
+              retrievedRevision {
+                id
+                time
+              }
+            }
+            provider {
+              id
+              name
+            }
+            receiver {
+              id
+              name
+            }
+            resourceQuantity {
+              hasNumericalValue
+            	hasUnit {
+              	label
+            	}
+            }
+            resourceConformsTo {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  `
+
   interface ProposalsQueryResponse {
     proposals: ProposalConnection & RelayConn<any>
   }
@@ -52,6 +139,9 @@
   }
 
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
+  let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
+
+  // let getPlan: ReadableQuery<ProposalsQueryResponse> = query(GET_PLAN)
 
   async function fetchProposals() {
     await getProposals.getCurrentResult()
@@ -62,8 +152,8 @@
         //       {#if primary?.publishes?.receiver}
         requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
         offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
-        console.log(requests)
-        console.log(offers)
+        // console.log(requests)
+        // console.log(offers)
         // console.log(proposalsList[0].publishes[0].publishes)
         // console.log(requests)
       }
@@ -73,7 +163,17 @@
   onMount(async () => {
     if (browser) {
       fetchProposals()
-      // console log url query values as object
+      
+      console.log(planId)
+      getPlan.setVariables({
+        id: planId
+      });
+      const res = await getPlan.refetch()
+      plan = res.data.plan
+      console.log(plan)
+
+
+      
     }
   })
 
@@ -518,6 +618,12 @@
   let selectedCommitmentId: string | undefined = undefined
 </script>
 
+<!-- {JSON.stringify(aggregatedCommitments)} -->
+{#if plan}
+{#each plan.processes as process}
+{JSON.stringify(process.name)} {JSON.stringify(process.committedInputs.length)} - {JSON.stringify(process.committedOutputs.length)}<br/>
+{/each}
+{/if}
 
 <PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
 <CommitmentModal
@@ -525,7 +631,6 @@
   {selectedCommitmentId}
   bind:commitments
 />
-
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
 <div class="custom-background" style="height: 8vh">
   <div class="mx-auto px-2 sm:px-6 lg:px-8">
@@ -548,7 +653,7 @@
             // plan_created = true
           }}
           class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >Save plan</button
+          >Save changes</button
         >
       </div>
       <h2 class="text-center text-xl font-semibold">Offers</h2>

@@ -18,6 +18,11 @@
       plans {
         edges {
           node {
+            meta {
+              retrievedRevision {
+                time
+              }
+            }
             id
             name
             note
@@ -38,6 +43,7 @@
   async function fetchPlans() {
     const res = await plansQuery.refetch()
     plans = res.data.plans.edges
+    console.log('plans', plans)
     // plans = res2.data.plans
   }
 
@@ -104,7 +110,8 @@
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                 >
                   <button type="button" class="text-indigo-600 hover:text-indigo-900"
-                    >Edit<span class="sr-only">, {name}</span></button
+                  on:click={() => goto(`plans/update/${plan.node.id}`)}  
+                  >Edit<span class="sr-only">, {name}</span></button
                   >
                   &nbsp;
                   <button type="button" class="text-indigo-600 hover:text-indigo-900">

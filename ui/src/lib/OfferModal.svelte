@@ -143,6 +143,9 @@
         availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
         effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
       }
+      if (intent.resourceQuantity) {
+        intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
+      }
       console.info(intent)
       const res2 = await addIntent({ variables: { intent } });
       const res2ID = res2.data.createIntent.intent.id
@@ -206,6 +209,9 @@
       resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
       availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
       effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
+    }
+    if (intent.resourceQuantity) {
+      intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
     }
     console.log(intent)
     const res = await updateIntent({ variables: { intent: intent } })

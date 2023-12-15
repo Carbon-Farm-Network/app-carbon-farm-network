@@ -108,6 +108,8 @@
   // helper to workaround direct bind:value syntax coercing things to strings
   function parseFormValues(val: IMeasure) {
     if (val.hasNumericalValue || val.hasNumericalValue === "0") val.hasNumericalValue = parseFloat(val.hasNumericalValue)
+    // also add hasUnit
+    if (val.hasUnit) val.hasUnit = val.hasUnit
     return val
   }
 
@@ -142,6 +144,9 @@
         resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
         availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
         effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
+      }
+      if (intent.resourceQuantity) {
+        intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
       }
       console.info(intent)
       const res2 = await addIntent({ variables: { intent } });
@@ -207,17 +212,23 @@
       availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
       effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
     }
+    if (intent.resourceQuantity) {
+      intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
+    }
     console.log(intent)
     const res = await updateIntent({ variables: { intent: intent } })
     console.log(res)
 
     let intent2 = {
       receiver: currentIntent.receiver,
-        revisionId: currentReciprocalIntent.revisionId,
-        action: currentReciprocalIntent.action as string,
-        resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
-        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
+      revisionId: currentReciprocalIntent.revisionId,
+      action: currentReciprocalIntent.action as string,
+      resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
+      resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
     }
+    // if (intent2.resourceQuantity) {
+    //   intent2.resourceQuantity.hasUnit = intent2.availableQuantity?.hasUnit
+    // }
     console.log(intent2)
     const res2 = await updateIntent({ variables: { intent: intent2 } })
     dispatch("submit");
@@ -268,6 +279,7 @@
           From: "opacity-100 translate-y-0 sm:scale-100"
           To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
       -->
+      {#if !submitting}
       <div
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
         class:hidden={!open}
@@ -324,6 +336,7 @@
                     } else {
                       console.log(currentIntent.availableQuantity)
                     }
+                    console.log(currentIntent.availableQuantity)
                   }}
                 >
                 {#each resourceSpecifications as rs}
@@ -353,6 +366,9 @@
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
                     bind:value={currentIntent.resourceQuantity.hasNumericalValue}
+                    on:change={(e) => {
+                      console.log(e.target.value)
+                    }}
                     required
                     aria-invalid="true"
                     aria-describedby="name-error"
@@ -458,6 +474,37 @@
           >
         </div>
       </div>
+      {:else}
+        <div
+          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          class:hidden={!submitting}
+        >
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <!-- <div
+                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10"
+              > -->
+              <svg width="50" height="50" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="rgb(99,102,241)" stroke-dasharray="31.415, 31.415" />
+              </svg>
+              <!-- </div> -->
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3
+                  class="text-lg leading-6 font-medium text-gray-900"
+                  id="modal-headline"
+                >
+                  Saving request ...
+                </h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">
+                    Please wait while the request saves.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 </div>

@@ -2,7 +2,7 @@
   import { clickOutside } from './utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
-  import type { AgentConnection } from '@valueflows/vf-graphql'
+  import type { AgentConnection, ProcessCreateParams } from '@valueflows/vf-graphql'
   import gql from 'graphql-tag'
   import type { PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
@@ -10,6 +10,7 @@
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { ReadableQuery } from 'svelte-apollo'
+  import type { Create } from '@holochain/client'
   
   export let open = false
   export let planObject: PlanUpdateParams | PlanCreateParams;
@@ -112,12 +113,15 @@ const GET_ALL_AGENTS = gql`
   let addCommitment: any = mutation(CREATE_COMMITMENT)
 
   async function saveProcess(process: any) {
+    console.log(process)
+    let processCreateParams: ProcessCreateParams = {
+      name: process.name,
+      note: process.note,
+      plannedWithin: process.plannedWithin,
+    }
     let p = await addProcess({
       variables: {
-        pc: {
-          name: process.name,
-          note: process.note,
-        }
+        pc: processCreateParams
       }
     })
     console.log(p)
@@ -128,16 +132,25 @@ const GET_ALL_AGENTS = gql`
   async function saveCommitment(commitment: any) {
     console.log(commitment)
     let o: CommitmentCreateParams = {
+      // ...commitment,
       action: commitment.action,
       provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+      plannedWithin: commitment.process.id,
       receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
-      inputOf: commitment.process.id,
       resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
       resourceQuantity: {hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue)},
       finished: false,
       note: commitment.note,
       hasBeginning: new Date(Date.now()),
     }
+    if (commitment.inputOf !== undefined) {
+      o.inputOf = commitment.inputOf
+    } else if (commitment.outputOf !== undefined) {
+      o.outputOf = commitment.outputOf
+    }
+    // if (o.action == "dropoff") {
+    //   o.action = ""
+    // }
     console.log(o)
     let c = await addCommitment({
       variables: {
@@ -166,17 +179,16 @@ const GET_ALL_AGENTS = gql`
       }
     })
 
-    console.log(p)
+    // console.log(p)
 
-    console.log(allColumns)
+    // console.log(allColumns)
 
     for (const column of allColumns) {
-      for (const process of [column[0]]) {
-        console.log(process)
-        await delay(100);
+      for (const process of column) {
+        process.plannedWithin = p.data.res.plan.id
+        // console.log(process)
         let x = await saveProcess(process)
         for (const input of process.has_input) {
-          await delay(100);
           let c = input
           c.process = x.data.createProcess.process
           if (c.provider === undefined) {
@@ -185,19 +197,31 @@ const GET_ALL_AGENTS = gql`
           if (c.receiver === undefined) {
             c.receiver = c.provider
           }
+          // console.log(x.data.createProcess.process.id)
+          c.inputOf = x.data.createProcess.process.id
+          // console.log("saving commitment",c)
           await saveCommitment(c)
+          await delay(20);
         }
-        // for (const output of process.has_output) {
-        //   await saveCommitment(output)
-        // }
+        for (const input of process.has_output) {
+          let c = input
+          c.process = x.data.createProcess.process
+          if (c.provider === undefined) {
+            c.provider = c.receiver
+          }
+          if (c.receiver === undefined) {
+            c.receiver = c.provider
+          }
+          console.log(x.data.createProcess.process.id)
+          c.outputOf = x.data.createProcess.process.id
+          // c.outputProcess = "none"
+          // console.log("saving commitment",c)
+          await saveCommitment(c)
+          await delay(20);
+        }
+        await delay(20);
       }
     }
-
-    // saveCommitment({
-    //   action: 'transfer',
-    //   // provider: {"id": 'test provider'},
-    //   // receiver: {"id": 'test receiver'},
-    // })
 
     savingPlan = false;
 
