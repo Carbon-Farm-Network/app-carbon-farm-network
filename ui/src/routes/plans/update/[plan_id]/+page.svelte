@@ -36,6 +36,9 @@
     name: '',
     note: '',
   }
+  let loadingPlan: boolean = true;
+  let allColumns: any = []
+  $: loadingPlan
 
   const GET_All_PROPOSALS = gql`
     ${PROPOSAL_RETURN_FIELDS}
@@ -62,6 +65,23 @@
             time
           }
         }
+        independentDemands {
+          id
+          receiver {
+            id
+            name
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnit {
+              label
+            }
+          }
+          resourceConformsTo {
+            id
+            name
+          }
+        }
         processes {
           id
           name
@@ -70,6 +90,10 @@
               id
               time
             }
+          }
+          basedOn {
+            id
+            name
           }
           committedInputs {
             id
@@ -171,9 +195,28 @@
       const res = await getPlan.refetch()
       plan = res.data.plan
       console.log(plan)
-
-
       
+      let lastSeenProcessSpecification: any = null;
+      let lastColumn: any = []
+      plan.processes.forEach((process: any) => {
+        if (process.basedOn.id !=lastSeenProcessSpecification) {
+          if (lastColumn.length > 0) {
+            allColumns.unshift(lastColumn)
+            lastColumn = []
+          }
+          lastSeenProcessSpecification = process.basedOn.id
+        }
+        console.log(allColumns)
+        console.log(process)
+        lastColumn.unshift({
+          ...process,
+          image: "/truck.svg",
+          committedInputs: [...process.committedInputs].reverse(),
+          committedOutputs: [...process.committedOutputs].reverse(),
+        })
+      })
+
+      loadingPlan = false;
     }
   })
 
@@ -260,7 +303,7 @@
             }
           })
 
-          let has_output, has_input, new_output, new_input
+          let committedOutputs, committedInputs, new_output, new_input
           if (
             matching_output?.action == 'dropoff' ||
             matching_output?.action == 'modify'
@@ -268,10 +311,10 @@
             const existing_process = acc.find(it => it.id == recipe.id)
             if (existing_process) {
               const remaining_processes = acc.filter(it => it.id != existing_process.id)
-              const existing_services = existing_process.has_output.filter(
+              const existing_services = existing_process.committedOutputs.filter(
                 output => output.action != 'dropoff' && output.action != 'modify'
               )
-              const existing_output = existing_process.has_output.find(
+              const existing_output = existing_process.committedOutputs.find(
                 output => output.id == matching_output.id
               )
               if (existing_output) {
@@ -288,7 +331,7 @@
                 new_output = matching_output
               }
 
-              const existing_input = existing_process.has_input.find(
+              const existing_input = existing_process.committedInputs.find(
                 input => input.id == matching_input.id
               )
               if (existing_input) {
@@ -304,13 +347,13 @@
               } else {
                 new_input = matching_input
               }
-              const non_service_non_matching_outputs = existing_process.has_output.filter(
+              const non_service_non_matching_outputs = existing_process.committedOutputs.filter(
                 previous_output =>
                   previous_output.id != matching_output.id &&
                   (previous_output.action == 'dropoff' ||
                     previous_output.action == 'modify')
               )
-              const non_matching_inputs = existing_process.has_input.filter(
+              const non_matching_inputs = existing_process.committedInputs.filter(
                 previous_input => previous_input.id != matching_input?.id
               )
               const non_matching_independent_inputs = non_matching_inputs.filter(
@@ -323,12 +366,12 @@
                 ...remaining_processes,
                 {
                   ...existing_process,
-                  has_output: [
+                  committedOutputs: [
                     ...non_service_non_matching_outputs,
                     new_output,
                     ...existing_services
                   ],
-                  has_input: [
+                  committedInputs: [
                     ...non_matching_dependent_inputs,
                     new_input,
                     ...non_matching_independent_inputs
@@ -347,18 +390,18 @@
                     previous_input.action != 'accept'
                 )
                 .map(it => ({ ...it, independent: true }))
-              has_input = [matching_input, ...non_matching_inputs]
-              has_output = [matching_output, ...services]
+              committedInputs = [matching_input, ...non_matching_inputs]
+              committedOutputs = [matching_output, ...services]
             }
           } else {
-            has_output = [
+            committedOutputs = [
               matching_output,
               ...recipe?.has_recipe_output
                 .filter(it => it.id != matching_output?.id)
                 .map(it => ({ ...it, editable: true }))
                 .map(output => assignProviderReceiver(output, agents))
             ]
-            has_input = recipe?.has_recipe_input
+            committedInputs = recipe?.has_recipe_input
               ?.map(input => assignProviderReceiver(input, agents))
               .map(input =>
                 Object.assign({}, input, {
@@ -380,9 +423,9 @@
             {
               id: recipe.id,
               name: recipe.name,
-              based_on: recipe.process_conforms_to,
-              has_output,
-              has_input
+              basedOn: recipe.process_conforms_to,
+              committedOutputs,
+              committedInputs
             }
           ])
 
@@ -391,9 +434,9 @@
             {
               id: recipe.id,
               name: recipe.name,
-              based_on: recipe.process_conforms_to,
-              has_output,
-              has_input
+              basedOn: recipe.process_conforms_to,
+              committedOutputs,
+              committedInputs
             }
           ]
         }
@@ -405,18 +448,18 @@
   type Process = {
     id: string
     name: string
-    based_on: {
+    basedOn: {
       name: string
     }
-    has_output: any[]
-    has_input: any[]
+    committedOutputs: any[]
+    committedInputs: any[]
   }
   function runInstructions(process: Process): Process {
     return {
       ...process,
-      has_output: process.has_output.map(output => {
+      committedOutputs: process.committedOutputs.map(output => {
         if (output.instructions == 'SumOutputs') {
-          const other_outputs = process.has_output.filter(it => it.id != output.id)
+          const other_outputs = process.committedOutputs.filter(it => it.id != output.id)
           const sum = other_outputs.reduce(
             (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
             new Decimal(0)
@@ -429,7 +472,7 @@
             }
           }
         } else if (output.instructions == 'SumInputs') {
-          const sum = process.has_input.reduce(
+          const sum = process.committedInputs.reduce(
             (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
             new Decimal(0)
           )
@@ -444,15 +487,15 @@
         return output
       }),
       // TODO in the future inputs will have instructions too
-      has_input: process.has_input
+      committedInputs: process.committedInputs
     }
   }
 
   function createAgreements(process: Process): Process {
     return {
       ...process,
-      has_output: process.has_output.map(output => {
-        const output_exchange = findExchange(output, process.based_on.name)
+      committedOutputs: process.committedOutputs.map(output => {
+        const output_exchange = findExchange(output, process.basedOn.name)
         const output_agreement = makeAgreement(output, output_exchange, offers)
         if (output_agreement) {
           return {
@@ -462,7 +505,7 @@
         }
         return output
       }),
-      has_input: process.has_input.map(input => {
+      committedInputs: process.committedInputs.map(input => {
         const input_exchange = findExchange(input, undefined)
         const input_agreement = makeAgreement(input, input_exchange, offers)
         if (input_agreement) {
@@ -486,7 +529,7 @@
   let commitments: Commitment[] = []
   let plan_created = false
   $: aggregatedCommitments = aggregateCommitments(commitments)
-  $: allColumns = !plan_created ? generateColumns(aggregatedCommitments) : []
+  // $: allColumns = !plan_created ? generateColumns(aggregatedCommitments) : []
 
   function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
     console.log(requests[0].publishes.filter(it => !it.reciprocal))
@@ -540,7 +583,7 @@
       allColumns = [previousProcesses, ...allColumns]
       previousProcesses = previousColumn(
         previousProcesses
-          .flatMap((it: any) => it.has_input)
+          .flatMap((it: any) => it.committedInputs)
           .reduce((acc: any[], process: any) => {
             return [...acc, process]
           }, [])
@@ -551,17 +594,17 @@
 
   function findExchange(
     commitment: any,
-    based_on_name: string | undefined
+    basedOn_name: string | undefined
   ): undefined | { name: string; note: string } {
     return recipes
       .filter(it => it.type == 'recipe_exchange')
       .find(a_recipe => {
-        if (based_on_name) {
+        if (basedOn_name) {
           return a_recipe?.has_recipe_clause?.some(
             clause =>
               clause.resourceConformsTo.name ==
                 commitment?.resourceConformsTo?.name &&
-              clause.stage?.name == based_on_name
+              clause.stage?.name == basedOn_name
           )
         }
         return a_recipe?.has_recipe_clause?.some(
@@ -619,11 +662,6 @@
 </script>
 
 <!-- {JSON.stringify(aggregatedCommitments)} -->
-{#if plan}
-{#each plan.processes as process}
-{JSON.stringify(process.name)} {JSON.stringify(process.committedInputs.length)} - {JSON.stringify(process.committedOutputs.length)}<br/>
-{/each}
-{/if}
 
 <PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
 <CommitmentModal
@@ -639,6 +677,9 @@
   </div>
 </div>
 
+{#if loadingPlan}
+Loading plan...
+{:else}
 <div class="flex justify-center items-center">
   <!-- <div class="outer-div justify-center items-center">
   <div class="scroll-div justify-center items-center">
@@ -655,40 +696,7 @@
           class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save changes</button
         >
-      </div>
-      <h2 class="text-center text-xl font-semibold">Offers</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
-        <!-- Sub-columns -->
-        <div class="">
-          <div>
-            {#each proposalsList as { publishes }}
-              {@const reciprocal = publishes?.find(it => it.reciprocal)}
-              {@const primary = publishes?.find(it => !it.reciprocal)}
-              {#if primary?.publishes?.provider}
-                <div
-                  class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-                >
-                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
-                  {#if primary?.publishes?.availableQuantity}
-                    <p>
-                      {primary?.publishes?.availableQuantity?.hasNumericalValue}
-                      {primary?.publishes?.availableQuantity?.hasUnit?.label},
-                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                      USD per lb
-                    </p>
-                  {:else}
-                    <p>
-                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                      USD per lb
-                    </p>
-                  {/if}
-                  <p>{primary?.publishes?.provider?.name}</p>
-                </div>
-              {/if}
-            {/each}
-          </div>
-        </div>
-      </div>
+      </div>      
     </div>
 
     <!--
@@ -711,15 +719,15 @@
     <!-- Main Columns -->
     <!-- {JSON.stringify(allColumns[0])} -->
     <!-- {#each allColumns as processes}
-      {@const { image, name } = processes[0].based_on}
+      {@const { image, name } = processes[0].basedOn}
       {JSON.stringify(name)}
     {/each} -->
     {#each allColumns as processes}
-      {@const { image, name } = processes[0].based_on}
+      {@const { image, name } = processes[0].basedOn}
       <div class="min-w-[400px]">
         <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
         <h2 class="text-center text-xl font-semibold">{name}</h2>
-        {#each processes as { has_input, has_output }}
+        {#each processes as { committedInputs, committedOutputs }}
           <div class="bg-gray-400 border border-gray-400 p-2">
             <!-- Sub-columns -->
             <div class="grid grid-cols-2 gap-2">
@@ -733,7 +741,7 @@
                   <PlusCircle />
                 </button>
 
-                {#each has_input as { resourceConformsTo, provider, resourceQuantity, action, receiver, agreement }}
+                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -785,7 +793,7 @@
                   <PlusCircle />
                 </button>
 
-                {#each has_output as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
+                {#each committedOutputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -869,16 +877,6 @@
             >
               <PlusCircle />
             </button>
-            {#if commitments.length == 0}
-              <div class="flex justify-center my-4">
-                <button
-                  type="button"
-                  on:click={() => (commitments = createCommitments(requests))}
-                  class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >Create from requests</button
-                >
-              </div>
-            {/if}
             {#each commitments as c}
               {@const resourceConformsTo = c.publishes.resourceConformsTo}
               {@const resourceQuantity = c.publishes.resourceQuantity}
@@ -919,37 +917,11 @@
       </div>
     </div>
 
-    <div class="min-w-[200px] mt-20">
-      <h2 class="text-center text-xl font-semibold">Requests</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
-        <!-- Sub-columns -->
-        <div class="">
-          <div>
-            {#each proposalsList as { publishes }}
-              {@const reciprocal = publishes.find(it => it.reciprocal)}
-              {@const primary = publishes.find(it => !it.reciprocal)}
-              {#if primary?.publishes?.receiver}
-                <div
-                  class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-                >
-                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
-                  <p>
-                    {primary?.publishes?.action?.label}
-                    {primary?.publishes?.resourceQuantity?.hasNumericalValue}
-                    {primary?.publishes?.availableQuantity?.hasUnit?.label}
-                  </p>
-                  <p>{primary?.publishes?.receiver?.name}</p>
-                </div>
-              {/if}
-            {/each}
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
   <!-- </div>
   </div> -->
 </div>
+{/if}
 
 <style>
   /* Custom CSS */

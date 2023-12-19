@@ -10,6 +10,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
   import Logo from './Logo.svelte'
 
   const INITIALIZE_UNITS = gql`
@@ -86,6 +87,17 @@
     }
   `
 
+  const CREATE_PROCESS_SPECIFICATION = gql`
+    ${PROCESS_SPECIFICATION_CORE_FIELDS}
+    mutation($process: ProcessSpecificationCreateParams!) {
+      rs: createProcessSpecification(processSpecification: $process) {
+        processSpecification {
+          ...ProcessSpecificationCoreFields
+        }
+      }
+    }
+  `
+
   const GET_UNITS = gql`
     ${UNIT_CORE_FIELDS}
     query {
@@ -107,6 +119,7 @@
   const initUnits = mutation<{ unitEa: { unit: Unit }, unitLb: { unit: Unit } }, {}>(INITIALIZE_UNITS)
   const initData = mutation(INITIALIZE_GLOBAL_RECORDS)
   const addResourceSpecification = mutation(CREATE_RESOURCE_SPECIFICATION)
+  const addProcessSpecification = mutation(CREATE_PROCESS_SPECIFICATION)
 
   interface UnitsQueryResponse {
     units: UnitConnection & RelayConn<Unit>
@@ -143,28 +156,44 @@
       }})
 
       // let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
-      let specs: any[] = []
+      let rSpecs: any[] = []
+      let pSpecs: any[] = []
+
       for (let r of recipes) {
-        console.log(r)
+        if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
+          console.log(r.process_conforms_to)
+          pSpecs.push(r.process_conforms_to.name)
+        }
         let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
-        console.log(input)
         let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
         let combined = input.concat(output)
         for (let s of combined) {
-          if (!specs.includes(s.resourceConformsTo.name)) {
-            specs.push(s.resourceConformsTo.name)
+          if (!rSpecs.includes(s.resourceConformsTo.name)) {
+            rSpecs.push(s.resourceConformsTo.name)
           }
         }
       }
-      for (let r of specs) {
+      for (let r of rSpecs) {
         let x = await addResourceSpecification({ variables: {
           resource: {
             name: r,
             defaultUnitOfResource: units.find(u => u.symbol === 'lb')?.id,
           },
         }})
+      }
+
+      console.log(pSpecs)
+      for (let p of pSpecs) {
+        console.log(p)
+        let x = await addProcessSpecification({ variables: {
+          process: {
+            name: p
+          },
+        }})
         console.log(x)
       }
+
+      
     } catch(e) {
       error = e as Error
       console.log(e)

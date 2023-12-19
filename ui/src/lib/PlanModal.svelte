@@ -8,6 +8,7 @@
   import { createEventDispatcher } from 'svelte';
   import type { RelayConn } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Create } from '@holochain/client'
@@ -21,6 +22,7 @@
   let savingPlan: boolean = false;
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let resourceSpecifications: any[];
+  let processSpecifications: any[];
 
   // let name = ''
   // let note = ''
@@ -81,6 +83,20 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     }
   `
 
+const GET_ALL_PROCESS_SPECIFICATIONS = gql`
+    ${PROCESS_SPECIFICATION_CORE_FIELDS}
+    query {
+      processSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ProcessSpecificationCoreFields
+          }
+        }
+      }
+    }
+  `
+
 const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     query {
@@ -100,7 +116,12 @@ const GET_ALL_AGENTS = gql`
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
 
+  interface QueryResponse {
+    processSpecifications: AgentConnection & RelayConn<any>
+  }
+
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
 
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
@@ -114,10 +135,12 @@ const GET_ALL_AGENTS = gql`
 
   async function saveProcess(process: any) {
     console.log(process)
+    console.log(processSpecifications)
     let processCreateParams: ProcessCreateParams = {
       name: process.name,
       note: process.note,
       plannedWithin: process.plannedWithin,
+      basedOn: processSpecifications.find((rs) => rs.node.name === process.based_on.name).node.id,
     }
     let p = await addProcess({
       variables: {
@@ -183,6 +206,12 @@ const GET_ALL_AGENTS = gql`
 
     // console.log(allColumns)
 
+    // SAVE INDEPENDENT DEMANDS (commitments with no input or output)
+    // references plan with independentDemandOf
+    // action is transfer
+    // provider is carbon farm network
+    // reciever is agent for request
+
     for (const column of allColumns) {
       for (const process of column) {
         process.plannedWithin = p.data.res.plan.id
@@ -200,6 +229,34 @@ const GET_ALL_AGENTS = gql`
           // console.log(x.data.createProcess.process.id)
           c.inputOf = x.data.createProcess.process.id
           // console.log("saving commitment",c)
+          
+          // SAVE POTENTIAL AGREEMENTS
+
+          // "agreement":{
+          // "name":"Spin Ivory Yarn",
+          //       "note":"",
+          //       "commitment":{
+          //          "action":"transfer",
+          //          "stage":{
+          //             "name":""
+          //          },
+          //          "resourceConformsTo":{
+          //             "name":"USD"
+          //          },
+          //          "resourceQuantity":{
+          //             "hasNumericalValue":"270",
+          //             "hasUnit":{
+          //                "label":"each"
+          //             }
+          //          }
+          //       }
+          //    }
+
+          // save agreement
+          // save agreement commitment
+            // commitment has to reference plan
+          // add agreement id to original commitment
+
           await saveCommitment(c)
           await delay(20);
         }
@@ -239,6 +296,8 @@ const GET_ALL_AGENTS = gql`
     console.log(planObject)
     const x = await resourceSpecificationsQuery.refetch()
     resourceSpecifications = x.data.resourceSpecifications.edges
+    const z = await processSpecificationsQuery.refetch()
+    processSpecifications = z.data.processSpecifications.edges
     console.log(resourceSpecifications)
     const y = await agentsQuery.refetch()
     agents = y.data.agents.edges

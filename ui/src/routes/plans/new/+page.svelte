@@ -518,6 +518,7 @@
   let selectedCommitmentId: string | undefined = undefined
 </script>
 
+<!-- {JSON.stringify(allColumns)} -->
 
 <PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
 <CommitmentModal
