@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "pnpm run download-hrea-obs && pnpm run download-hrea-specification && pnpm run download-hrea-agent && pnpm run download-hrea-planning && pnpm run download-hrea-proposal && pnpm run download-hrea-plan && pnpm run download-facets",
+    "postinstall": "pnpm run download-hrea-obs && pnpm run download-hrea-specification && pnpm run download-hrea-agent && pnpm run download-hrea-planning && pnpm run download-hrea-proposal && pnpm run download-hrea-plan && pnpm run download-hrea-agreement && pnpm run download-facets",
     "start": "AGENTS=1 pnpm run network",
     "network": "hc s clean && pnpm run build:happ && UI_PORT=8888 concurrently \"cd ui && pnpm start\" \"pnpm run launch:happ\"",
     "test": "pnpm run build:zomes && hc app pack workdir && cd tests && pnpm t",
@@ -23,7 +23,8 @@
     "download-hrea-planning": "[ ! -f \"workdir/hrea_planning.dna\" ] && curl -L --output workdir/hrea_planning.dna https://github.com/h-REA/hREA/releases/download/happ-0.1.3-beta/hrea_planning.dna; exit 0",
     "download-hrea-proposal": "[ ! -f \"workdir/hrea_proposal.dna\" ] && curl -L --output workdir/hrea_proposal.dna https://github.com/h-REA/hREA/releases/download/happ-0.1.3-beta/hrea_proposal.dna; exit 0",
     "download-hrea-plan": "[ ! -f \"workdir/hrea_plan.dna\" ] && curl -L --output workdir/hrea_plan.dna https://github.com/h-REA/hREA/releases/download/happ-0.1.3-beta/hrea_plan.dna; exit 0",
-    "clean:hrea-modules": "rimraf workdir/hrea_observation.dna; rimraf workdir/hrea_specification.dna; rimraf workdir/hrea_agent.dna; rimraf workdir/hrea_planning.dna; rimraf workdir/hrea_proposal.dna; rimraf workdir/hrea_plan.dna",
+    "download-hrea-agreement": "[ ! -f \"workdir/hrea_agreement.dna\" ] && curl -L --output workdir/hrea_agreement.dna https://github.com/h-REA/hREA/releases/download/happ-0.1.3-beta/hrea_agreement.dna; exit 0",
+    "clean:hrea-modules": "rimraf workdir/hrea_observation.dna; rimraf workdir/hrea_specification.dna; rimraf workdir/hrea_agent.dna; rimraf workdir/hrea_planning.dna; rimraf workdir/hrea_proposal.dna; rimraf workdir/hrea_plan.dna; rimraf workdir/hrea_agreement.dna",
     "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do echo \"  Remove $DIR\"; rm -Rf \"$DIR\"; done",
     "clean:build-cache": "rimraf .cargo; rimraf ui/.svelte-kit",
     "clean:build": "rimraf target; rm dnas/acfn/workdir/acfn.dna; rm workdir/acfn.happ",
