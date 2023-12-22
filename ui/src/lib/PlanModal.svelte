@@ -16,7 +16,7 @@
   export let open = false
   export let planObject: PlanUpdateParams | PlanCreateParams;
   export let editing: boolean = false;
-  export let commitments;
+  export let commitments: any;
   export let allColumns: any[];
   let agents: any[];
   let savingPlan: boolean = false;
@@ -62,6 +62,20 @@
     mutation($cm: CommitmentCreateParams!) {
       createCommitment(commitment: $cm) {
         commitment {
+          id
+          revisionId
+          plannedWithin {
+            id
+          }
+        }
+      }
+    }
+  `
+
+  const CREATE_AGREEMENT = gql`
+    mutation($ag: AgreementCreateParams!) {
+      createAgreement(agreement: $ag) {
+        agreement {
           id
           revisionId
         }
@@ -120,18 +134,17 @@ const GET_ALL_AGENTS = gql`
     processSpecifications: AgentConnection & RelayConn<any>
   }
 
-  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
-
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
   }
-
+  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   let addPlan: any = mutation(CREATE_PLAN)
   let addProcess: any = mutation(CREATE_PROCESS)
   let addCommitment: any = mutation(CREATE_COMMITMENT)
+  let addAgreement: any = mutation(CREATE_AGREEMENT)
 
   async function saveProcess(process: any) {
     console.log(process)
@@ -211,14 +224,79 @@ const GET_ALL_AGENTS = gql`
     // action is transfer
     // provider is carbon farm network
     // reciever is agent for request
+    for (const c of commitments) {
+      // if (c.inputOf === undefined && c.outputOf === undefined) {
+        console.log(c)
+        let o: CommitmentCreateParams = {
+          // ...c,
+          action: "transfer",
+          provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+          plannedWithin: p.data.res.plan.id,
+          receiver: c.publishes.receiver.id,
+          resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === c.publishes.resourceConformsTo.name).node.id,
+          resourceQuantity: {hasNumericalValue: Number(c.publishes.resourceQuantity.hasNumericalValue)},
+          finished: false,
+          note: c.publishes.note,
+          hasBeginning: new Date(Date.now()),
+        }
+        console.log(o)
+        let commitment = await addCommitment({
+          variables: {
+            cm: o
+          }
+        })
+        console.log(commitment)
+      // }
+    }
 
     for (const column of allColumns) {
       for (const process of column) {
         process.plannedWithin = p.data.res.plan.id
         // console.log(process)
+        // save process
         let x = await saveProcess(process)
+        // save everything else
         for (const input of process.has_input) {
-          let c = input
+          let c = input;
+          
+          // save cost if applicable
+          if (c.agreement !== undefined) {
+            // save agreement
+            let ag = c.agreement
+            let agCreateParams = {
+              name: ag.name,
+              note: ag.note,
+            }
+            const a = await addAgreement({
+              variables: {
+                ag: agCreateParams
+              }
+            })
+            console.log(a)
+            c.clauseOf = a.data.createAgreement.agreement.id
+
+            // save cost commitment
+            let payment = {
+              clauseOf: a.data.createAgreement.agreement.id,
+              action: "transfer",
+              provider: c.receiver,
+              plannedWithin: p.data.res.plan.id,
+              receiver: c.provider,
+              resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === "USD").node.id,
+              resourceQuantity: {hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue)},
+              finished: false,
+              note: c.agreement.commitment.note,
+              hasBeginning: new Date(Date.now()),
+            }
+            let paymentCommitment = await addCommitment({
+              variables: {
+                cm: payment
+              }
+            })
+            console.log(paymentCommitment)
+          }
+
+          // save primary commitment
           c.process = x.data.createProcess.process
           if (c.provider === undefined) {
             c.provider = c.receiver
@@ -228,10 +306,10 @@ const GET_ALL_AGENTS = gql`
           }
           // console.log(x.data.createProcess.process.id)
           c.inputOf = x.data.createProcess.process.id
+          await saveCommitment(c)
           // console.log("saving commitment",c)
           
           // SAVE POTENTIAL AGREEMENTS
-
           // "agreement":{
           // "name":"Spin Ivory Yarn",
           //       "note":"",
@@ -257,7 +335,7 @@ const GET_ALL_AGENTS = gql`
             // commitment has to reference plan
           // add agreement id to original commitment
 
-          await saveCommitment(c)
+
           await delay(20);
         }
         for (const input of process.has_output) {

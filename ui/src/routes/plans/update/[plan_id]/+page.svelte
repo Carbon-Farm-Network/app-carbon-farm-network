@@ -59,12 +59,6 @@
       plan(id: $id) {
         id
         name
-        meta {
-          retrievedRevision {
-            id
-            time
-          }
-        }
         independentDemands {
           id
           receiver {
@@ -85,24 +79,11 @@
         processes {
           id
           name
-          meta {
-            retrievedRevision {
-              id
-              time
-            }
-          }
           basedOn {
-            id
             name
           }
           committedInputs {
             id
-            meta {
-              retrievedRevision {
-                id
-                time
-              }
-            }
             provider {
               id
               name
@@ -120,16 +101,21 @@
             resourceConformsTo {
               id
               name
+            }
+            clauseOf {
+              commitments {
+                id
+                resourceQuantity {
+                  hasNumericalValue
+                  hasUnit {
+                    label
+                  }
+                }
+              }
             }
           }
           committedOutputs {
             id
-            meta {
-              retrievedRevision {
-                id
-                time
-              }
-            }
             provider {
               id
               name
@@ -148,10 +134,20 @@
               id
               name
             }
+            clauseOf {
+              commitments {
+                id
+                resourceQuantity {
+                  hasNumericalValue
+                  hasUnit {
+                    label
+                  }
+                }
+              }
+            }
           }
         }
       }
-    }
   `
 
   interface ProposalsQueryResponse {
@@ -663,11 +659,13 @@
 
 <!-- {JSON.stringify(aggregatedCommitments)} -->
 
+
+
 <PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
 <CommitmentModal
-  bind:open={commitmentModalOpen}
-  {selectedCommitmentId}
-  bind:commitments
+bind:open={commitmentModalOpen}
+{selectedCommitmentId}
+bind:commitments
 />
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
 <div class="custom-background" style="height: 8vh">
@@ -680,6 +678,10 @@
 {#if loadingPlan}
 Loading plan...
 {:else}
+<!-- plan name -->
+<!-- plan name -->
+<h2 class="text-center">{plan.name}</h2>
+
 <div class="flex justify-center items-center">
   <!-- <div class="outer-div justify-center items-center">
   <div class="scroll-div justify-center items-center">
