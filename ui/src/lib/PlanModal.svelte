@@ -169,9 +169,12 @@ const GET_ALL_AGENTS = gql`
     console.log(commitment)
     let o: CommitmentCreateParams = {
       // ...commitment,
+      clauseOf: commitment.clauseOf,
+      inputOf: commitment.inputOf,
+      outputOf: commitment.outputOf,
       action: commitment.action,
       provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
-      plannedWithin: commitment.process.id,
+      plannedWithin: commitment.plannedWithin,
       receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
       resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
       resourceQuantity: {hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue)},
@@ -225,28 +228,25 @@ const GET_ALL_AGENTS = gql`
     // provider is carbon farm network
     // reciever is agent for request
     for (const c of commitments) {
-      // if (c.inputOf === undefined && c.outputOf === undefined) {
-        console.log(c)
-        let o: CommitmentCreateParams = {
-          // ...c,
-          action: "transfer",
-          provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
-          plannedWithin: p.data.res.plan.id,
-          receiver: c.publishes.receiver.id,
-          resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === c.publishes.resourceConformsTo.name).node.id,
-          resourceQuantity: {hasNumericalValue: Number(c.publishes.resourceQuantity.hasNumericalValue)},
-          finished: false,
-          note: c.publishes.note,
-          hasBeginning: new Date(Date.now()),
+      console.log(c)
+      let o: CommitmentCreateParams = {
+        action: "transfer",
+        provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+        plannedWithin: p.data.res.plan.id,
+        receiver: c.publishes.receiver.id,
+        resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === c.publishes.resourceConformsTo.name).node.id,
+        resourceQuantity: {hasNumericalValue: Number(c.publishes.resourceQuantity.hasNumericalValue)},
+        finished: false,
+        note: c.publishes.note,
+        hasBeginning: new Date(Date.now()),
+      }
+      console.log(o)
+      let commitment = await addCommitment({
+        variables: {
+          cm: o
         }
-        console.log(o)
-        let commitment = await addCommitment({
-          variables: {
-            cm: o
-          }
-        })
-        console.log(commitment)
-      // }
+      })
+      console.log(commitment)
     }
 
     for (const column of allColumns) {
@@ -255,6 +255,7 @@ const GET_ALL_AGENTS = gql`
         // console.log(process)
         // save process
         let x = await saveProcess(process)
+        console.log("compare ids", p, x)
         // save everything else
         for (const input of process.has_input) {
           let c = input;
@@ -279,9 +280,9 @@ const GET_ALL_AGENTS = gql`
             let payment = {
               clauseOf: a.data.createAgreement.agreement.id,
               action: "transfer",
-              provider: c.receiver,
+              provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
               plannedWithin: p.data.res.plan.id,
-              receiver: c.provider,
+              receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
               resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === "USD").node.id,
               resourceQuantity: {hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue)},
               finished: false,
@@ -298,6 +299,8 @@ const GET_ALL_AGENTS = gql`
 
           // save primary commitment
           c.process = x.data.createProcess.process
+          c.plannedWithin = p.data.res.plan.id
+          console.log(c.process)
           if (c.provider === undefined) {
             c.provider = c.receiver
           }
@@ -306,6 +309,9 @@ const GET_ALL_AGENTS = gql`
           }
           // console.log(x.data.createProcess.process.id)
           c.inputOf = x.data.createProcess.process.id
+          await delay(20)
+          console.log("about to save commitment", c)
+          console.log("compare ids 2", p, x)
           await saveCommitment(c)
           // console.log("saving commitment",c)
           
@@ -349,6 +355,7 @@ const GET_ALL_AGENTS = gql`
           }
           console.log(x.data.createProcess.process.id)
           c.outputOf = x.data.createProcess.process.id
+          c.plannedWithin = p.data.res.plan.id
           // c.outputProcess = "none"
           // console.log("saving commitment",c)
           await saveCommitment(c)

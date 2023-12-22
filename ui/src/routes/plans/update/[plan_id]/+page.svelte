@@ -59,6 +59,12 @@
       plan(id: $id) {
         id
         name
+        meta {
+          retrievedRevision {
+            id
+            time
+          }
+        }
         independentDemands {
           id
           receiver {
@@ -79,11 +85,24 @@
         processes {
           id
           name
+          meta {
+            retrievedRevision {
+              id
+              time
+            }
+          }
           basedOn {
+            id
             name
           }
           committedInputs {
             id
+            meta {
+              retrievedRevision {
+                id
+                time
+              }
+            }
             provider {
               id
               name
@@ -101,21 +120,16 @@
             resourceConformsTo {
               id
               name
-            }
-            clauseOf {
-              commitments {
-                id
-                resourceQuantity {
-                  hasNumericalValue
-                  hasUnit {
-                    label
-                  }
-                }
-              }
             }
           }
           committedOutputs {
             id
+            meta {
+              retrievedRevision {
+                id
+                time
+              }
+            }
             provider {
               id
               name
@@ -134,20 +148,10 @@
               id
               name
             }
-            clauseOf {
-              commitments {
-                id
-                resourceQuantity {
-                  hasNumericalValue
-                  hasUnit {
-                    label
-                  }
-                }
-              }
-            }
           }
         }
       }
+    }
   `
 
   interface ProposalsQueryResponse {
