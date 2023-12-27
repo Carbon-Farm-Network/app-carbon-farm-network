@@ -21,13 +21,23 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
 
+  let commitmentModalProcess: number | undefined;
+  let commitmentModalColumn: number | undefined;
+  let commitmentModalSide: string | undefined;
+  // let selectedCommitment: any;
   let requests: Proposal[] = [];
   let offers: Proposal[] = [];
   let proposalsList: Proposal[] = []
+  let currentProcess: any[];
   let createPlan: PlanCreateParams = {
     name: '',
     note: '',
   }
+
+  $: currentProcess;
+  // $: if (commitmentModalColumn) {
+  //   currentProcess = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide];
+  // }
 
   const GET_All_PROPOSALS = gql`
     ${PROPOSAL_RETURN_FIELDS}
@@ -275,16 +285,16 @@
               )
           }
 
-          console.log([
-            ...acc,
-            {
-              id: recipe.id,
-              name: recipe.name,
-              based_on: recipe.process_conforms_to,
-              has_output,
-              has_input
-            }
-          ])
+          // console.log([
+          //   ...acc,
+          //   {
+          //     id: recipe.id,
+          //     name: recipe.name,
+          //     based_on: recipe.process_conforms_to,
+          //     has_output,
+          //     has_input
+          //   }
+          // ])
 
           return [
             ...acc,
@@ -385,9 +395,11 @@
   }
   let commitments: Commitment[] = []
   let plan_created = false
+  let allColumns: any;
   $: aggregatedCommitments = aggregateCommitments(commitments)
-  $: allColumns = !plan_created ? generateColumns(aggregatedCommitments) : []
-
+  $: if (!plan_created) {
+    allColumns = generateColumns(aggregatedCommitments);
+  }
   function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
     console.log(requests[0].publishes.filter(it => !it.reciprocal))
     return requests.flatMap(request =>
@@ -435,9 +447,9 @@
   function generateColumns(aggregatedCommitments: any[]): any[] {
     console.log(aggregatedCommitments)
     let previousProcesses = previousColumn(aggregatedCommitments)
-    let allColumns: any[] = []
+    let allColumnsLocal: any[] = []
     while (previousProcesses.length != 0) {
-      allColumns = [previousProcesses, ...allColumns]
+      allColumnsLocal = [previousProcesses, ...allColumnsLocal]
       previousProcesses = previousColumn(
         previousProcesses
           .flatMap((it: any) => it.has_input)
@@ -446,7 +458,7 @@
           }, [])
       )
     }
-    return allColumns
+    return allColumnsLocal
   }
 
   function findExchange(
@@ -524,8 +536,35 @@
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}
+  {commitmentModalProcess}
+  {commitmentModalColumn}
+  {commitmentModalSide}
+  process = {currentProcess}
   bind:commitments
+  on:submit={(event) => {
+    plan_created = true;
+    // console.log(event.detail.commitment)
+    console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
+    let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
+    if (commitmentIndex == -1) {
+      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+    } else {
+      allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+    }
+    // console.log(event.detail.column, event.detail.process, event.detail.side, commitmentIndex)
+    // allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex].provider = {...event.detail.commitment.provider}
+
+    // reset form
+    selectedCommitmentId = undefined
+    commitmentModalProcess = undefined
+    commitmentModalColumn = undefined
+    commitmentModalSide = undefined
+  }}
 />
+
+<!-- {#if allColumns[0]} -->
+{JSON.stringify(selectedCommitmentId)}
+<!-- {/if} -->
 
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
 <div class="custom-background" style="height: 8vh">
@@ -544,7 +583,7 @@
       <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
         <button
           type="button"
-          on:click={() => {
+          on:click={() => {0
             planModalOpen = true
             // plan_created = true
           }}
@@ -610,12 +649,12 @@
       {@const { image, name } = processes[0].based_on}
       {JSON.stringify(name)}
     {/each} -->
-    {#each allColumns as processes}
+    {#each allColumns as processes, columnIndex}
       {@const { image, name } = processes[0].based_on}
       <div class="min-w-[400px]">
         <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
         <h2 class="text-center text-xl font-semibold">{name}</h2>
-        {#each processes as { has_input, has_output }}
+        {#each processes as { has_input, has_output }, processIndex}
           <div class="bg-gray-400 border border-gray-400 p-2">
             <!-- Sub-columns -->
             <div class="grid grid-cols-2 gap-2">
@@ -623,13 +662,16 @@
                 <button
                   class="flex justify-center items-center w-full mb-2"
                   on:click={() => {
+                    commitmentModalProcess = processIndex
+                    commitmentModalColumn = columnIndex
+                    commitmentModalSide = "has_input"
                     commitmentModalOpen = true
                   }}
                 >
                   <PlusCircle />
                 </button>
 
-                {#each has_input as { resourceConformsTo, provider, resourceQuantity, action, receiver, agreement }}
+                {#each has_input as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -668,6 +710,28 @@
                         {commitment.resourceConformsTo.name}
                       </p>
                     {/if}
+                    <div class="w-full flex justify-center">
+                      <button
+                        on:click={() => {
+                          commitmentModalProcess = processIndex
+                          commitmentModalColumn = columnIndex
+                          commitmentModalSide = "has_input"
+                          selectedCommitmentId = id
+                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                          commitmentModalOpen = true
+                        }}
+                      >
+                        <Pencil/>
+                      </button>
+                      <button
+                        on:click={() => {
+                          plan_created = true
+                          allColumns[columnIndex][processIndex].has_input = allColumns[columnIndex][processIndex].has_input.filter(it => it.id != id)
+                        }}
+                      >
+                        <Trash />
+                      </button>
+                    </div>
                   </div>
                 {/each}
               </div>
@@ -675,6 +739,9 @@
                 <button
                   class="flex justify-center items-center w-full mb-2"
                   on:click={() => {
+                    commitmentModalProcess = processIndex
+                    commitmentModalColumn = columnIndex
+                    commitmentModalSide = "has_output"
                     commitmentModalOpen = true
                   }}
                 >
@@ -722,26 +789,30 @@
                         </p>
                       {/if}
                     </div>
-                    {#if editable}
-                      <div class="w-full flex justify-center">
-                        <button
-                          on:click={() => {
-                            selectedCommitmentId = id
-                            commitmentModalOpen = true
-                          }}
-                        >
-                          <Pencil />
-                        </button>
-                        <button
-                          on:click={() => {
-                            selectedCommitmentId = id
-                            commitmentModalOpen = true
-                          }}
-                        >
-                          <Trash />
-                        </button>
-                      </div>
-                    {/if}
+                    <!-- {#if editable} -->
+                    <div class="w-full flex justify-center">
+                      <button
+                        on:click={() => {
+                          commitmentModalProcess = processIndex
+                          commitmentModalColumn = columnIndex
+                          commitmentModalSide = "has_output"
+                          selectedCommitmentId = id
+                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                          commitmentModalOpen = true
+                        }}
+                      >
+                        <Pencil/>
+                      </button>
+                      <button
+                        on:click={() => {
+                          plan_created = true
+                          allColumns[columnIndex][processIndex].has_output = allColumns[columnIndex][processIndex].has_output.filter(it => it.id != id)
+                        }}
+                      >
+                        <Trash />
+                      </button>
+                    </div>
+                    <!-- {/if} -->
                   </div>
                 {/each}
               </div>

@@ -1,0 +1,20 @@
+[
+  "dropoff",
+  "pickup",
+  "consume",
+  "use",
+  "work",
+  "cite",
+  "produce",
+  "accept",
+  "modify",
+  "pass",
+  "fail",
+  "deliver_service",
+  "transfer_all_rights",
+  "transfer_custody",
+  "transfer",
+  "move",
+  "raise",
+  "lower"
+]

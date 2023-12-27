@@ -260,7 +260,7 @@ Loading plan...
 {:else}
 <!-- plan name -->
 <!-- plan name -->
-<h2 class="text-center">{plan.name}</h2>
+<h1 class="text-center">{plan.name}</h1>
 
 <div class="flex justify-center items-center">
   <!-- <div class="outer-div justify-center items-center">

@@ -1,51 +1,165 @@
 <script lang="ts">
   import { clickOutside } from './utils'
   import { onMount } from 'svelte'
-  import agents from '$lib/data/agents.json'
-  import resource_specifications from '$lib/data/resource_specifications.json'
+  import { createEventDispatcher } from 'svelte';
+  // import agents from '$lib/data/agents.json'
+  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { RelayConn } from '$lib/graphql/helpers'
+  import type { ReadableQuery } from 'svelte-apollo'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
+  import { query } from 'svelte-apollo'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  // import resource_specifications from '$lib/data/resource_specifications.json'
   import units from '$lib/data/units.json'
+  import actions from '$lib/data/actions.json'
+  import { gql } from 'graphql-tag'
+  import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
 
   export let open = false
+  // export let plan_created: boolean;
+  export let commitmentModalColumn: number | undefined;
+  export let commitmentModalProcess: number | undefined;
+  export let commitmentModalSide: string | undefined;
+  // export let commitmentId: string;
+  const dispatch = createEventDispatcher();
+
   let name = ''
   let note = ''
+  let agents: Agent[];
+  let resourceSpecifications: any[];
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
       e.preventDefault()
+      selectedCommitmentId = undefined
       open = false
     }
   }
 
-  onMount(() => {
+  const GET_ALL_AGENTS = gql`
+    query {
+      agents(last: 100000) {
+        edges {
+          cursor
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  `
+
+const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    ${UNIT_CORE_FIELDS}
+    query {
+      resourceSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ResourceSpecificationCoreFields
+            defaultUnitOfResource {
+              ...UnitCoreFields
+            }
+          }
+        }
+      }
+    }
+  `
+
+  interface QueryResponse {
+    agents: AgentConnection & RelayConn<any>
+  }
+
+  interface RspecResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
+  
+  // map component state
+  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+
+  let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  async function fetchAgents() {
+    await agentsQuery.getCurrentResult()
+    const a = await agentsQuery.refetch()
+    agents = flattenRelayConnection(a.data?.agents).map((a) => {
+      return {
+        ...a,
+      }
+    })
+    console.log(agents)
+  }
+
+  async function fetchResourceSpecifications() {
+    await resourceSpecificationsQuery.getCurrentResult()
+    let r = await resourceSpecificationsQuery.refetch()
+    resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+      return {
+        ...a,
+        defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
+      }
+    })
+    console.log(resourceSpecifications)
+  }
+
+  onMount(async() => {
     window.addEventListener('keydown', checkKey)
+    await fetchAgents();
+    await fetchResourceSpecifications();
   })
 
   export let selectedCommitmentId: string | undefined
+  // export let allColumns: any[]
+  export let process: any[];
   export let commitments: any[]
+  // let selectedCommitment: any;
   let newCommitmentTemplate = {
-    id: 'commitment_id',
-    publishes: {
-      resourceConformsTo: {
-        name: ''
-      },
-      resourceQuantity: {
-        hasNumericalValue: 0,
-        hasUnit: {
-          label: 'lb'
-        }
-      },
+    id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+    resourceConformsTo: {
+      name: ''
+    },
+    action: '',
+    resourceQuantity: {
+      hasNumericalValue: 0,
+      hasUnit: {
+        label: 'lb'
+      }
     },
     receiver: {
+      id: '',
       name: ''
     },
     provider: {
+      id: '',
       name: ''
     },
     note: ''
   }
   let newCommitment = Object.assign({}, newCommitmentTemplate)
-  $: selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
+  let selectedCommitment: any;
+  // $: selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
+  $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide
+  $: if (selectedCommitmentId && commitmentModalColumn > -1) {
+    // selectedCommitment = {...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)}
+    console.log(selectedCommitmentId)
+    console.log(process)
+    selectedCommitment = process.find(it => it.id == selectedCommitmentId)
+    console.log(selectedCommitment)
+  } else {
+    console.log(selectedCommitmentId, commitmentModalColumn, process)
+    selectedCommitment = {}
+  }
+  // onMount(async () => {
+  //   selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
+  //   if (!selectedCommitment) {
+  //     selectedCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)
+  //   }
+  // })
+
 </script>
+
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
@@ -95,28 +209,51 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Provider</label
                 >
-                {#if selectedCommitment?.provider}
+                <!-- {JSON.stringify(selectedCommitment.provider)} -->
+                {#if selectedCommitment?.provider && agents}
                   <select
                     id="provider"
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={selectedCommitment.provider.name}
-                  >
+                    value={selectedCommitment.provider.id}
+                    on:change={(e) => {
+                      let id = e.target.value
+                      console.log(id)
+                      let selectedAgent = agents.find((rs) => rs.id === id)
+                      console.log(selectedAgent.name)
+                      if (selectedCommitment.provider) {
+                        selectedCommitment.provider = selectedAgent
+                      } else {
+                        console.log(selectedCommitment.provider)
+                      }
+                    }}
+
+                    >
                     {#each agents as agent}
-                      <option value={agent.name}>{agent.name}</option>
+                      <option value={agent.id}>{agent.name}</option>
                     {/each}
                     <!-- <option selected>Lazy Acre Alpacca</option>
                   <option>Woodland meadow farm</option> -->
                   </select>
-                {:else}
+                {:else if agents}
                   <select
                     id="provider"
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.provider.name}
-                  >
+                    value={""}
+                    on:change={(e) => {
+                      let id = e.target.value
+                      console.log(id)
+                      let selectedAgent = agents.find((rs) => rs.id === id)
+                      if (newCommitment.provider) {
+                        newCommitment.provider = selectedAgent
+                      } else {
+                        console.log(newCommitment.provider)
+                      }
+                    }}
+                    >
                     {#each agents as agent}
-                      <option value={agent.name}>{agent.name}</option>
+                      <option value={agent.id}>{agent.name}</option>
                     {/each}
                   </select>
                 {/if}
@@ -132,15 +269,46 @@
                 >
                 {#if selectedCommitment?.receiver}
                   <p>{selectedCommitment.receiver.name}</p>
-                {:else}
+                {:else if selectedCommitment?.id && agents}
                   <select
                     id="receiver"
                     name="receiver"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.receiver.name}
-                  >
+                    value=""
+                    on:change={(e) => {
+                      let id = e.target.value
+                      console.log(id)
+                      let selectedAgent = agents.find((rs) => rs.id === id)
+                      if (newCommitment.receiver) {
+                        selectedCommitment.receiver = selectedAgent
+                      } else {
+                        console.log(selectedCommitment.receiver)
+                      }
+                    }}
+                    >
                     {#each agents as agent}
-                      <option value={agent.name}>{agent.name}</option>
+                      <option value={agent.id}>{agent.name}</option>
+                    {/each}
+                  </select>
+                {:else if agents}
+                  <select
+                    id="receiver"
+                    name="receiver"
+                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    value={newCommitment.receiver.id}
+                    on:change={(e) => {
+                      let id = e.target.value
+                      console.log(id)
+                      let selectedAgent = agents.find((rs) => rs.id === id)
+                      if (newCommitment.receiver) {
+                        newCommitment.receiver = selectedAgent
+                      } else {
+                        console.log(newCommitment.receiver)
+                      }
+                    }}
+                    >
+                    {#each agents as agent}
+                      <option value={agent.id}>{agent.name}</option>
                     {/each}
                     <!-- <option selected>Lazy Acre Alpacca</option>
                   <option>Woodland meadow farm</option> -->
@@ -156,17 +324,43 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Resource specification</label
                 >
-                {#if selectedCommitment?.publishes?.resourceConformsTo}
-                  <p>{selectedCommitment?.publishes?.resourceConformsTo.name}</p>
-                {:else}
+                {#if selectedCommitment?.resourceConformsTo}
+                  <p>{selectedCommitment?.resourceConformsTo.name}</p>
+                {:else if resourceSpecifications}
+                  <!-- {JSON.stringify(newCommitmentTemplate)} -->
                   <select
                     id="defaultUnitOfResource"
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.publishes.resourceConformsTo.name}
+                    bind:value={newCommitment.resourceConformsTo.name}
                   >
-                    {#each resource_specifications as rs}
+                    {#each resourceSpecifications as rs}
                       <option value={rs.name}>{rs.name}</option>
+                    {/each}
+                  </select>
+                {/if}
+              </div>
+            </div>
+
+            <!-- action selector -->
+            <div class="mt-4 text-left">
+              <div>
+                <label
+                  for="action"
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                  >Action</label
+                >
+                {#if selectedCommitment?.action}
+                  <p>{selectedCommitment?.action}</p>
+                {:else}
+                  <select
+                    id="action"
+                    name="action"
+                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    bind:value={newCommitment.action}
+                  >
+                    {#each actions as action}
+                      <option value={action}>{action}</option>
                     {/each}
                   </select>
                 {/if}
@@ -181,14 +375,15 @@
                   >Quantity</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
-                  {#if selectedCommitment?.publishes?.resourceQuantity}
+                  {#if selectedCommitment?.resourceQuantity}
+                  ys
                     <input
                       type="number"
                       name="quantity"
                       id="quantity"
                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       placeholder=""
-                      bind:value={selectedCommitment.publishes.resourceQuantity
+                      bind:value={selectedCommitment.resourceQuantity
                         .hasNumericalValue}
                       required
                       aria-invalid="true"
@@ -201,7 +396,7 @@
                       id="quantity"
                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       placeholder=""
-                      bind:value={newCommitment.publishes.resourceQuantity.hasNumericalValue}
+                      bind:value={newCommitment.resourceQuantity.hasNumericalValue}
                       required
                       aria-invalid="true"
                       aria-describedby="name-error"
@@ -215,14 +410,14 @@
                   for="unit"
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
-                {#if selectedCommitment?.publishes?.resourceQuantity}
-                  <p>{selectedCommitment?.publishes?.resourceQuantity.hasUnit.label}</p>
+                {#if selectedCommitment?.resourceQuantity}
+                  <p>{selectedCommitment?.resourceQuantity.hasUnit.label}</p>
                 {:else}
                   <select
                     id="unit"
                     name="unit"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.publishes.resourceQuantity.hasUnit.label}
+                    bind:value={newCommitment.resourceQuantity.hasUnit.label}
                   >
                     {#each units as unit}
                       <option value={unit.symbol}>{unit.symbol}</option>
@@ -266,26 +461,107 @@
           </div>
         </div>
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          {#if selectedCommitmentId}
+          <button
+          type="button"
+          class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+          on:click={() => {
+            // console.log(JSON.stringify(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].provider.name))
+
+            // let allColumnsCopy = [...allColumns]
+
+            // plan_created = true;
+            let updatedCommitment = {...selectedCommitment}
+            if (!selectedCommitment.provider) {
+              updatedCommitment.provider = newCommitment.provider
+            }
+            if (!selectedCommitment.receiver) {
+              updatedCommitment.receiver = newCommitment.receiver
+            }
+            if (!selectedCommitment.resourceConformsTo) {
+              updatedCommitment.resourceConformsTo = newCommitment.resourceConformsTo
+            }
+            if (!selectedCommitment.resourceQuantity) {
+              updatedCommitment.resourceQuantity = newCommitment.resourceQuantity
+            }
+            if (!selectedCommitment.action) {
+              updatedCommitment.action = newCommitment.action
+            }
+            if (!selectedCommitment.note) {
+              updatedCommitment.note = newCommitment.note
+            }
+
+            if (commitmentModalColumn == undefined) {
+            //   let commitmentIndex = commitments.findIndex(
+            //    it => it.id == selectedCommitmentId
+            //   )
+            //   commitments[commitmentIndex] = selectedCommitment
+            //   commitments = commitments
+            // } else {
+            //   let commitmentIndex = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(
+            //    it => it.id == selectedCommitmentId
+            //   )
+            //   allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][commitmentIndex] = {...updatedCommitment}
+            //   selectedCommitment = Object.assign({}, newCommitmentTemplate)
+
+            }
+            // console.log("hihi")
+            dispatch('submit', {
+              column: commitmentModalColumn,
+              process: commitmentModalProcess,
+              side: commitmentModalSide,
+              commitment: updatedCommitment
+            });
+            open = false;
+          }}
+          >Save changes</button>
+          {:else}
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             on:click={() => {
-              let commitmentIndex = commitments.findIndex(
+              if (commitmentModalColumn == undefined) {
+                let commitmentIndex = commitments.findIndex(
                 it => it.id == selectedCommitmentId
-              )
-              if (commitmentIndex != -1) {
-                commitments[commitmentIndex] = selectedCommitment
-                commitments = commitments
+                )
+                if (commitmentIndex != -1) {
+                  commitments[commitmentIndex] = selectedCommitment
+                  commitments = commitments
+                } else {
+                  commitments = [...commitments, newCommitment]
+                  newCommitment = Object.assign({}, newCommitmentTemplate)
+                }
               } else {
-                commitments = [...commitments, newCommitment]
-                newCommitment = Object.assign({}, newCommitmentTemplate)
+                // console.log(allColumns)
+                // insert new commitment in allColumns[columnIndex][processIndex]
+                // plan_created = true
+                // console.log(process)
+
+                // process = [
+                //   ...process,
+                //   newCommitment
+                // ]
+
+                dispatch('submit', {
+                  column: commitmentModalColumn,
+                  process: commitmentModalProcess,
+                  side: commitmentModalSide,
+                  commitment: newCommitment
+                });
+
+                // allColumns = [...allColumns]
               }
-              console.log(newCommitment)
+
+              // console.log(JSON.stringify(newCommitment))
+              // console.log(JSON.stringify(newCommitmentTemplate))
+              // newCommitment = {...newCommitmentTemplate}
+              // console.log(JSON.stringify(newCommitment))
               open = false
             }}
           >
             Add
           </button>
+          {/if}
           <button
             type="button"
             on:click={() => (open = false)}
