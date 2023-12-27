@@ -1,4 +1,4 @@
-# ACFN
+# Carbon Farm Network
 
 ## Environment Setup
 
@@ -60,3 +60,15 @@ This repository is using these tools:
 
 
 TODO fix the modals for the clickoutside action, only the facets modal has it working properly
+
+## Legal
+
+Copyright 2023 Leo Bensman, Raphael Megzari, pospi, Lynn Foster
+
+This file is part of Carbon Farm Network.
+
+Carbon Farm Network is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+Carbon Farm Network is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along with Carbon Farm Network. If not, see <https://www.gnu.org/licenses/>. 
