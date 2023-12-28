@@ -22,10 +22,17 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
 
+  let commitmentModalProcess: number | undefined;
+  let commitmentModalColumn: number | undefined;
+  let commitmentModalSide: string | undefined;
+  let currentProcess: any[];
+
   let planId = ''
   $: if ($page.params.plan_id) {
     planId = $page.params.plan_id;
   }
+
+  $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen;
 
   let plan: any = undefined;
 
@@ -38,7 +45,7 @@
   }
   let loadingPlan: boolean = true;
   let allColumns: any = []
-  $: loadingPlan
+  $: loadingPlan, currentProcess
 
   const GET_All_PROPOSALS = gql`
     ${PROPOSAL_RETURN_FIELDS}
@@ -58,6 +65,7 @@
     query GetPlan($id: ID!) {
       plan(id: $id) {
         id
+        revisionId
         name
         meta {
           retrievedRevision {
@@ -73,7 +81,7 @@
           }
           resourceQuantity {
             hasNumericalValue
-            hasUnit {
+            defaultUnitOfResource {
               label
             }
           }
@@ -113,13 +121,16 @@
             }
             resourceQuantity {
               hasNumericalValue
-            	hasUnit {
+            	defaultUnitOfResource {
               	label
             	}
             }
             resourceConformsTo {
               id
               name
+              defaultUnitOfResource {
+                label
+              }
             }
           }
           committedOutputs {
@@ -140,7 +151,7 @@
             }
             resourceQuantity {
               hasNumericalValue
-            	hasUnit {
+            	defaultUnitOfResource {
               	label
             	}
             }
@@ -196,9 +207,21 @@
       plan = res.data.plan
       console.log(plan)
       
-      let lastSeenProcessSpecification: any = null;
+      let lastSeenProcessSpecification: any = undefined;
       let lastColumn: any = []
       plan.processes.forEach((process: any) => {
+        console.log(JSON.stringify(process.basedOn))
+        console.log(allColumns)
+        console.log(process)
+        lastColumn.unshift({
+          ...process,
+          basedOn: {
+            image: "/farm.svg",
+            name: "Column"
+          },
+          committedInputs: [...process.committedInputs].reverse(),
+          committedOutputs: [...process.committedOutputs].reverse(),
+        })
         if (process.basedOn.id !=lastSeenProcessSpecification) {
           if (lastColumn.length > 0) {
             allColumns.unshift(lastColumn)
@@ -206,14 +229,6 @@
           }
           lastSeenProcessSpecification = process.basedOn.id
         }
-        console.log(allColumns)
-        console.log(process)
-        lastColumn.unshift({
-          ...process,
-          image: "/truck.svg",
-          committedInputs: [...process.committedInputs].reverse(),
-          committedOutputs: [...process.committedOutputs].reverse(),
-        })
       })
 
       loadingPlan = false;
@@ -243,9 +258,37 @@
 
 <PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
 <CommitmentModal
-bind:open={commitmentModalOpen}
-{selectedCommitmentId}
-bind:commitments
+  bind:open={commitmentModalOpen}
+  {selectedCommitmentId}
+  {commitmentModalProcess}
+  {commitmentModalColumn}
+  {commitmentModalSide}
+  process = {currentProcess}
+  bind:commitments
+  on:submit={(event) => {
+    console.log(allColumns)
+    // console.log(event)
+    console.log(JSON.stringify(allColumns[event.detail.column][event.detail.process][event.detail.side]))
+    console.log("ID: ", event.detail.commitment.id)
+    let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
+    if (commitmentIndex == -1) {
+      console.log("1")
+      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+    } else {
+      console.log("2")
+      allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+    }
+
+    allColumns = [...allColumns]
+    console.log(allColumns)
+    console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
+
+    // reset form
+    selectedCommitmentId = undefined
+    commitmentModalProcess = undefined
+    commitmentModalColumn = undefined
+    commitmentModalSide = undefined
+  }}
 />
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
 <div class="custom-background" style="height: 8vh">
@@ -260,7 +303,7 @@ Loading plan...
 {:else}
 <!-- plan name -->
 <!-- plan name -->
-<h1 class="text-center">{plan.name}</h1>
+<h1>{plan.name}</h1>
 
 <div class="flex justify-center items-center">
   <!-- <div class="outer-div justify-center items-center">
@@ -304,26 +347,30 @@ Loading plan...
       {@const { image, name } = processes[0].basedOn}
       {JSON.stringify(name)}
     {/each} -->
-    {#each allColumns as processes}
-      {@const { image, name } = processes[0].basedOn}
-      <div class="min-w-[400px]">
-        <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
-        <h2 class="text-center text-xl font-semibold">{name}</h2>
-        {#each processes as { committedInputs, committedOutputs }}
-          <div class="bg-gray-400 border border-gray-400 p-2">
-            <!-- Sub-columns -->
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <button
-                  class="flex justify-center items-center w-full mb-2"
-                  on:click={() => {
-                    commitmentModalOpen = true
-                  }}
-                >
-                  <PlusCircle />
-                </button>
+    {#each allColumns as processes, columnIndex}
+    {@const { image, name } = processes[0].basedOn}
+    <div class="min-w-[400px]">
+      <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
+      <h2 class="text-center text-xl font-semibold">{name}</h2>
+      {#each processes as { committedInputs, committedOutputs }, processIndex}
 
-                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, agreement }}
+      <div class="bg-gray-400 border border-gray-400 p-2">
+        <!-- Sub-columns -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <button
+            class="flex justify-center items-center w-full mb-2"
+            on:click={() => {
+              commitmentModalProcess = processIndex
+              commitmentModalColumn = columnIndex
+              commitmentModalSide = "committedInputs"
+              commitmentModalOpen = true
+            }}
+                >
+                <PlusCircle />
+              </button>
+
+                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -362,6 +409,27 @@ Loading plan...
                         {commitment.resourceConformsTo.name}
                       </p>
                     {/if}
+                    <div class="w-full flex justify-center">
+                      <!-- <button
+                      on:click={() => {
+                        commitmentModalProcess = processIndex
+                        commitmentModalColumn = columnIndex
+                        commitmentModalSide = "committedInputs"
+                        selectedCommitmentId = id
+                        currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                        commitmentModalOpen = true
+                      }}
+                    >
+                      <Pencil/>
+                    </button> -->
+                    <button
+                      on:click={() => {
+                        allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
+                      }}
+                    >
+                      <Trash />
+                    </button>
+                    </div>
                   </div>
                 {/each}
               </div>
@@ -369,6 +437,9 @@ Loading plan...
                 <button
                   class="flex justify-center items-center w-full mb-2"
                   on:click={() => {
+                    commitmentModalProcess = processIndex
+                    commitmentModalColumn = columnIndex
+                    commitmentModalSide = "committedOutputs"
                     commitmentModalOpen = true
                   }}
                 >
@@ -416,32 +487,35 @@ Loading plan...
                         </p>
                       {/if}
                     </div>
-                    {#if editable}
+                    <!-- {#if editable} -->
                       <div class="w-full flex justify-center">
-                        <button
-                          on:click={() => {
-                            selectedCommitmentId = id
-                            commitmentModalOpen = true
-                          }}
-                        >
-                          <Pencil />
-                        </button>
-                        <button
-                          on:click={() => {
-                            selectedCommitmentId = id
-                            commitmentModalOpen = true
-                          }}
-                        >
-                          <Trash />
-                        </button>
+                        <!-- <button
+                        on:click={() => {
+                          commitmentModalProcess = processIndex
+                          commitmentModalColumn = columnIndex
+                          commitmentModalSide = "committedOutputs"
+                          selectedCommitmentId = id
+                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                          commitmentModalOpen = true
+                        }}
+                      >
+                        <Pencil/>
+                      </button> -->
+                      <button
+                        on:click={() => {
+                          allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
+                        }}
+                      >
+                        <Trash />
+                      </button>
                       </div>
-                    {/if}
+                    <!-- {/if} -->
                   </div>
                 {/each}
               </div>
             </div>
           </div>
-        {/each}
+          {/each}
       </div>
     {/each}
 

@@ -177,7 +177,10 @@ const GET_ALL_AGENTS = gql`
       plannedWithin: commitment.plannedWithin,
       receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
       resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
-      resourceQuantity: {hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue)},
+      resourceQuantity: {
+        hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue),
+        // defaultUnitOfResource: commitment.resourceQuantity.defaultUnitOfResource.id,
+      },
       finished: false,
       note: commitment.note,
       hasBeginning: new Date(Date.now()),
@@ -235,7 +238,10 @@ const GET_ALL_AGENTS = gql`
         plannedWithin: p.data.res.plan.id,
         receiver: c.publishes.receiver.id,
         resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === c.publishes.resourceConformsTo.name).node.id,
-        resourceQuantity: {hasNumericalValue: Number(c.publishes.resourceQuantity.hasNumericalValue)},
+        resourceQuantity: {
+          hasNumericalValue: Number(c.publishes.resourceQuantity.hasNumericalValue),
+          // defaultUnitOfResource: c.publishes.resourceQuantity.defaultUnitOfResource.id,
+        },
         finished: false,
         note: c.publishes.note,
         hasBeginning: new Date(Date.now()),
@@ -257,7 +263,7 @@ const GET_ALL_AGENTS = gql`
         let x = await saveProcess(process)
         console.log("compare ids", p, x)
         // save everything else
-        for (const input of process.has_input) {
+        for (const input of process.committedInputs) {
           let c = input;
           
           // save cost if applicable
@@ -284,7 +290,10 @@ const GET_ALL_AGENTS = gql`
               plannedWithin: p.data.res.plan.id,
               receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
               resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === "USD").node.id,
-              resourceQuantity: {hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue)},
+              resourceQuantity: {
+                hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue),
+                // defaultUnitOfResource: resourceSpecifications.find((rs) => rs.node.name === "USD").node.defaultUnitOfResource,
+              },
               finished: false,
               note: c.agreement.commitment.note,
               hasBeginning: new Date(Date.now()),
@@ -329,7 +338,7 @@ const GET_ALL_AGENTS = gql`
           //          },
           //          "resourceQuantity":{
           //             "hasNumericalValue":"270",
-          //             "hasUnit":{
+          //             "defaultUnitOfResource":{
           //                "label":"each"
           //             }
           //          }
@@ -344,7 +353,7 @@ const GET_ALL_AGENTS = gql`
 
           await delay(20);
         }
-        for (const input of process.has_output) {
+        for (const input of process.committedOutputs) {
           let c = input
           c.process = x.data.createProcess.process
           if (c.provider === undefined) {

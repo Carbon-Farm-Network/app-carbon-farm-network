@@ -170,7 +170,7 @@
             }
           })
 
-          let has_output, has_input, new_output, new_input
+          let committedOutputs, committedInputs, new_output, new_input
           if (
             matching_output?.action == 'dropoff' ||
             matching_output?.action == 'modify'
@@ -178,10 +178,10 @@
             const existing_process = acc.find(it => it.id == recipe.id)
             if (existing_process) {
               const remaining_processes = acc.filter(it => it.id != existing_process.id)
-              const existing_services = existing_process.has_output.filter(
+              const existing_services = existing_process.committedOutputs.filter(
                 output => output.action != 'dropoff' && output.action != 'modify'
               )
-              const existing_output = existing_process.has_output.find(
+              const existing_output = existing_process.committedOutputs.find(
                 output => output.id == matching_output.id
               )
               if (existing_output) {
@@ -198,7 +198,7 @@
                 new_output = matching_output
               }
 
-              const existing_input = existing_process.has_input.find(
+              const existing_input = existing_process.committedInputs.find(
                 input => input.id == matching_input.id
               )
               if (existing_input) {
@@ -214,13 +214,13 @@
               } else {
                 new_input = matching_input
               }
-              const non_service_non_matching_outputs = existing_process.has_output.filter(
+              const non_service_non_matching_outputs = existing_process.committedOutputs.filter(
                 previous_output =>
                   previous_output.id != matching_output.id &&
                   (previous_output.action == 'dropoff' ||
                     previous_output.action == 'modify')
               )
-              const non_matching_inputs = existing_process.has_input.filter(
+              const non_matching_inputs = existing_process.committedInputs.filter(
                 previous_input => previous_input.id != matching_input?.id
               )
               const non_matching_independent_inputs = non_matching_inputs.filter(
@@ -233,12 +233,12 @@
                 ...remaining_processes,
                 {
                   ...existing_process,
-                  has_output: [
+                  committedOutputs: [
                     ...non_service_non_matching_outputs,
                     new_output,
                     ...existing_services
                   ],
-                  has_input: [
+                  committedInputs: [
                     ...non_matching_dependent_inputs,
                     new_input,
                     ...non_matching_independent_inputs
@@ -257,18 +257,18 @@
                     previous_input.action != 'accept'
                 )
                 .map(it => ({ ...it, independent: true }))
-              has_input = [matching_input, ...non_matching_inputs]
-              has_output = [matching_output, ...services]
+              committedInputs = [matching_input, ...non_matching_inputs]
+              committedOutputs = [matching_output, ...services]
             }
           } else {
-            has_output = [
+            committedOutputs = [
               matching_output,
               ...recipe?.has_recipe_output
                 .filter(it => it.id != matching_output?.id)
                 .map(it => ({ ...it, editable: true }))
                 .map(output => assignProviderReceiver(output, agents))
             ]
-            has_input = recipe?.has_recipe_input
+            committedInputs = recipe?.has_recipe_input
               ?.map(input => assignProviderReceiver(input, agents))
               .map(input =>
                 Object.assign({}, input, {
@@ -291,8 +291,8 @@
           //     id: recipe.id,
           //     name: recipe.name,
           //     based_on: recipe.process_conforms_to,
-          //     has_output,
-          //     has_input
+          //     committedOutputs,
+          //     committedInputs
           //   }
           // ])
 
@@ -302,8 +302,8 @@
               id: recipe.id,
               name: recipe.name,
               based_on: recipe.process_conforms_to,
-              has_output,
-              has_input
+              committedOutputs,
+              committedInputs
             }
           ]
         }
@@ -318,15 +318,15 @@
     based_on: {
       name: string
     }
-    has_output: any[]
-    has_input: any[]
+    committedOutputs: any[]
+    committedInputs: any[]
   }
   function runInstructions(process: Process): Process {
     return {
       ...process,
-      has_output: process.has_output.map(output => {
+      committedOutputs: process.committedOutputs.map(output => {
         if (output.instructions == 'SumOutputs') {
-          const other_outputs = process.has_output.filter(it => it.id != output.id)
+          const other_outputs = process.committedOutputs.filter(it => it.id != output.id)
           const sum = other_outputs.reduce(
             (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
             new Decimal(0)
@@ -339,7 +339,7 @@
             }
           }
         } else if (output.instructions == 'SumInputs') {
-          const sum = process.has_input.reduce(
+          const sum = process.committedInputs.reduce(
             (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
             new Decimal(0)
           )
@@ -354,14 +354,14 @@
         return output
       }),
       // TODO in the future inputs will have instructions too
-      has_input: process.has_input
+      committedInputs: process.committedInputs
     }
   }
 
   function createAgreements(process: Process): Process {
     return {
       ...process,
-      has_output: process.has_output.map(output => {
+      committedOutputs: process.committedOutputs.map(output => {
         const output_exchange = findExchange(output, process.based_on.name)
         const output_agreement = makeAgreement(output, output_exchange, offers)
         if (output_agreement) {
@@ -372,7 +372,7 @@
         }
         return output
       }),
-      has_input: process.has_input.map(input => {
+      committedInputs: process.committedInputs.map(input => {
         const input_exchange = findExchange(input, undefined)
         const input_agreement = makeAgreement(input, input_exchange, offers)
         if (input_agreement) {
@@ -452,7 +452,7 @@
       allColumnsLocal = [previousProcesses, ...allColumnsLocal]
       previousProcesses = previousColumn(
         previousProcesses
-          .flatMap((it: any) => it.has_input)
+          .flatMap((it: any) => it.committedInputs)
           .reduce((acc: any[], process: any) => {
             return [...acc, process]
           }, [])
@@ -562,10 +562,6 @@
   }}
 />
 
-<!-- {#if allColumns[0]} -->
-{JSON.stringify(selectedCommitmentId)}
-<!-- {/if} -->
-
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
 <div class="custom-background" style="height: 8vh">
   <div class="mx-auto px-2 sm:px-6 lg:px-8">
@@ -654,7 +650,7 @@
       <div class="min-w-[400px]">
         <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
         <h2 class="text-center text-xl font-semibold">{name}</h2>
-        {#each processes as { has_input, has_output }, processIndex}
+        {#each processes as { committedInputs, committedOutputs }, processIndex}
           <div class="bg-gray-400 border border-gray-400 p-2">
             <!-- Sub-columns -->
             <div class="grid grid-cols-2 gap-2">
@@ -664,14 +660,14 @@
                   on:click={() => {
                     commitmentModalProcess = processIndex
                     commitmentModalColumn = columnIndex
-                    commitmentModalSide = "has_input"
+                    commitmentModalSide = "committedInputs"
                     commitmentModalOpen = true
                   }}
                 >
                   <PlusCircle />
                 </button>
 
-                {#each has_input as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
+                {#each committedInputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -715,7 +711,8 @@
                         on:click={() => {
                           commitmentModalProcess = processIndex
                           commitmentModalColumn = columnIndex
-                          commitmentModalSide = "has_input"
+                          commitmentModalSide = "committedInputs"
+                          console.log(id)
                           selectedCommitmentId = id
                           currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
                           commitmentModalOpen = true
@@ -726,7 +723,7 @@
                       <button
                         on:click={() => {
                           plan_created = true
-                          allColumns[columnIndex][processIndex].has_input = allColumns[columnIndex][processIndex].has_input.filter(it => it.id != id)
+                          allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
                         }}
                       >
                         <Trash />
@@ -741,14 +738,14 @@
                   on:click={() => {
                     commitmentModalProcess = processIndex
                     commitmentModalColumn = columnIndex
-                    commitmentModalSide = "has_output"
+                    commitmentModalSide = "committedOutputs"
                     commitmentModalOpen = true
                   }}
                 >
                   <PlusCircle />
                 </button>
 
-                {#each has_output as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
+                {#each committedOutputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -795,7 +792,7 @@
                         on:click={() => {
                           commitmentModalProcess = processIndex
                           commitmentModalColumn = columnIndex
-                          commitmentModalSide = "has_output"
+                          commitmentModalSide = "committedOutputs"
                           selectedCommitmentId = id
                           currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
                           commitmentModalOpen = true
@@ -806,7 +803,7 @@
                       <button
                         on:click={() => {
                           plan_created = true
-                          allColumns[columnIndex][processIndex].has_output = allColumns[columnIndex][processIndex].has_output.filter(it => it.id != id)
+                          allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
                         }}
                       >
                         <Trash />
