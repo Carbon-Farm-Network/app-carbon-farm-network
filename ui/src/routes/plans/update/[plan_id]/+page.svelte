@@ -20,7 +20,7 @@
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
 
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
@@ -34,15 +34,10 @@
 
   $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen;
 
-  let plan: any = undefined;
-
   let requests: Proposal[] = [];
   let offers: Proposal[] = [];
   let proposalsList: Proposal[] = []
-  let createPlan: PlanCreateParams = {
-    name: '',
-    note: '',
-  }
+  let plan: any;
   let loadingPlan: boolean = true;
   let allColumns: any = []
   $: loadingPlan, currentProcess
@@ -256,7 +251,10 @@
 
 
 
-<PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
+{#if plan}
+<PlanModal bind:open={planModalOpen} planObject = {plan} {allColumns} {commitments} editing={true}/>
+{/if}
+
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}
@@ -268,15 +266,15 @@
   on:submit={(event) => {
     console.log(allColumns)
     // console.log(event)
-    console.log(JSON.stringify(allColumns[event.detail.column][event.detail.process][event.detail.side]))
+    console.log(JSON.stringify(allColumns[event.detail.column][event.detail.process][event.detail.side][0].id))
     console.log("ID: ", event.detail.commitment.id)
-    let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
-    if (commitmentIndex == -1) {
+    if (event.detail.useAs == "update") {
+      let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
       console.log("1")
-      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
-    } else {
-      console.log("2")
       allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+    } else {
+      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+      console.log("2")
     }
 
     allColumns = [...allColumns]
@@ -440,7 +438,9 @@ Loading plan...
                     commitmentModalProcess = processIndex
                     commitmentModalColumn = columnIndex
                     commitmentModalSide = "committedOutputs"
+                    console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
                     commitmentModalOpen = true
+                    console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
                   }}
                 >
                   <PlusCircle />

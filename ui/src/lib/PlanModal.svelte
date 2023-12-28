@@ -524,7 +524,9 @@ const GET_ALL_AGENTS = gql`
               } else {
                 handleSubmit()
               }
-            }}>Create</button
+            }}>{
+              editing ? "Update" : "Save"
+            }</button
           >
           <button
             type="button"

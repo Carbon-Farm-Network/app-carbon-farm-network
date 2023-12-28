@@ -16,11 +16,12 @@
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
 
   export let open = false
-  // export let plan_created: boolean;
   export let commitmentModalColumn: number | undefined;
   export let commitmentModalProcess: number | undefined;
   export let commitmentModalSide: string | undefined;
-  // export let commitmentId: string;
+  export let selectedCommitmentId: string | undefined
+  export let process: any[];
+  export let commitments: any[]
   const dispatch = createEventDispatcher();
 
   let name = ''
@@ -31,6 +32,7 @@
   $: if (open) {
     newCommitment.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     console.log(newCommitment.id)
+    console.log(process)
   }
 
   function checkKey(e: any) {
@@ -115,10 +117,6 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     await fetchResourceSpecifications();
   })
 
-  export let selectedCommitmentId: string | undefined
-  // export let allColumns: any[]
-  export let process: any[];
-  export let commitments: any[]
   // let selectedCommitment: any;
   let newCommitmentTemplate = {
     id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
@@ -515,7 +513,8 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
               column: commitmentModalColumn,
               process: commitmentModalProcess,
               side: commitmentModalSide,
-              commitment: updatedCommitment
+              commitment: updatedCommitment,
+              useAs: 'update'
             });
             open = false;
           }}
@@ -552,7 +551,8 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   column: commitmentModalColumn,
                   process: commitmentModalProcess,
                   side: commitmentModalSide,
-                  commitment: newCommitment
+                  commitment: newCommitment,
+                  useAs: 'new'
                 });
 
                 // allColumns = [...allColumns]

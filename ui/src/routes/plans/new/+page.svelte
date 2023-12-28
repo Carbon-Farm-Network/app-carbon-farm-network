@@ -545,11 +545,11 @@
     plan_created = true;
     // console.log(event.detail.commitment)
     console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
-    let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
-    if (commitmentIndex == -1) {
-      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
-    } else {
+    if (event.detail.useAs == "update") {
+      let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
       allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+    } else {
+      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
     }
     // console.log(event.detail.column, event.detail.process, event.detail.side, commitmentIndex)
     // allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex].provider = {...event.detail.commitment.provider}
