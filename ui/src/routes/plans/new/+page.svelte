@@ -172,14 +172,14 @@
 
           let committedOutputs, committedInputs, new_output, new_input
           if (
-            matching_output?.action == 'dropoff' ||
-            matching_output?.action == 'modify'
+            matching_output?.action.label == 'dropoff' ||
+            matching_output?.action.label == 'modify'
           ) {
             const existing_process = acc.find(it => it.id == recipe.id)
             if (existing_process) {
               const remaining_processes = acc.filter(it => it.id != existing_process.id)
               const existing_services = existing_process.committedOutputs.filter(
-                output => output.action != 'dropoff' && output.action != 'modify'
+                output => output.action.label != 'dropoff' && output.action.label != 'modify'
               )
               const existing_output = existing_process.committedOutputs.find(
                 output => output.id == matching_output.id
@@ -217,8 +217,8 @@
               const non_service_non_matching_outputs = existing_process.committedOutputs.filter(
                 previous_output =>
                   previous_output.id != matching_output.id &&
-                  (previous_output.action == 'dropoff' ||
-                    previous_output.action == 'modify')
+                  (previous_output.action.label == 'dropoff' ||
+                    previous_output.action.label == 'modify')
               )
               const non_matching_inputs = existing_process.committedInputs.filter(
                 previous_input => previous_input.id != matching_input?.id
@@ -247,14 +247,14 @@
               ]
             } else {
               const services = recipe?.has_recipe_output
-                .filter(output => output.action != 'dropoff' && output.action != 'modify')
+                .filter(output => output.action.label != 'dropoff' && output.action.label != 'modify')
                 .map(service => assignProviderReceiver(service, agents))
               const non_matching_inputs = recipe?.has_recipe_input
                 .filter(
                   previous_input =>
                     previous_input.id != matching_input?.id &&
-                    previous_input.action != 'pickup' &&
-                    previous_input.action != 'accept'
+                    previous_input.action.label != 'pickup' &&
+                    previous_input.action.label != 'accept'
                 )
                 .map(it => ({ ...it, independent: true }))
               committedInputs = [matching_input, ...non_matching_inputs]
@@ -390,7 +390,9 @@
     resourceConformsTo: { name: string }
     resourceQuantity: { hasNumericalValue: string; hasUnit: { label: string } }
     receiver: { name: string }
-    action: string
+    action: {
+      label: string
+    }
     id: string
   }
   let commitments: Commitment[] = []
@@ -405,7 +407,9 @@
     return requests.flatMap(request =>
       request.publishes.filter(it => !it.reciprocal).map(proposed_intent => ({
         publishes: proposed_intent.publishes,
-        action: 'transfer',
+        action: {
+          label: 'transfer',
+        },
         satisfies: proposed_intent.id,
         id: crypto.randomUUID()
       }))
@@ -532,7 +536,7 @@
 
 <!-- {JSON.stringify(allColumns)} -->
 
-<PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments}/>
+<PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments} editing={false}/>
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}
@@ -680,7 +684,7 @@
                       </p>
                       -->
                       <p>
-                        {action}
+                        {action.label}
                         {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
                         {resourceQuantity?.hasUnit?.label}
                       </p>
@@ -759,7 +763,7 @@
                       </p>
                       -->
                         <p>
-                          {action}
+                          {action.label}
                           {resourceQuantity?.hasNumericalValue}
                           {resourceQuantity?.hasUnit?.label}
                         </p>
@@ -855,7 +859,7 @@
                 <div>
                   <p>{resourceConformsTo?.name}</p>
                   <p>
-                    {action}
+                    {action.label}
                     {resourceQuantity?.hasNumericalValue}
                     {resourceConformsTo?.defaultUnitOfResource?.label}
                   </p>

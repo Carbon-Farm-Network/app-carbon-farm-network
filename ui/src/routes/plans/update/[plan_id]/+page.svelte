@@ -14,6 +14,7 @@
   import { goto } from '$app/navigation'
   import { gql } from 'graphql-tag'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
@@ -26,6 +27,13 @@
   let commitmentModalColumn: number | undefined;
   let commitmentModalSide: string | undefined;
   let currentProcess: any[];
+
+  let processImages = {
+    "Pick Up": "/farm.svg",
+    "Ship": "/truck.svg",
+    "Spin Yarn": "/socks.svg",
+    "Scour Fiber": "/mill.svg"
+  }
 
   let planId = ''
   $: if ($page.params.plan_id) {
@@ -57,105 +65,10 @@
   `
 
   const GET_PLAN = gql`
+    ${PLAN_RETURN_FIELDS}
     query GetPlan($id: ID!) {
       plan(id: $id) {
-        id
-        revisionId
-        name
-        meta {
-          retrievedRevision {
-            id
-            time
-          }
-        }
-        independentDemands {
-          id
-          receiver {
-            id
-            name
-          }
-          resourceQuantity {
-            hasNumericalValue
-            defaultUnitOfResource {
-              label
-            }
-          }
-          resourceConformsTo {
-            id
-            name
-          }
-        }
-        processes {
-          id
-          name
-          meta {
-            retrievedRevision {
-              id
-              time
-            }
-          }
-          basedOn {
-            id
-            name
-          }
-          committedInputs {
-            id
-            meta {
-              retrievedRevision {
-                id
-                time
-              }
-            }
-            provider {
-              id
-              name
-            }
-            receiver {
-              id
-              name
-            }
-            resourceQuantity {
-              hasNumericalValue
-            	defaultUnitOfResource {
-              	label
-            	}
-            }
-            resourceConformsTo {
-              id
-              name
-              defaultUnitOfResource {
-                label
-              }
-            }
-          }
-          committedOutputs {
-            id
-            meta {
-              retrievedRevision {
-                id
-                time
-              }
-            }
-            provider {
-              id
-              name
-            }
-            receiver {
-              id
-              name
-            }
-            resourceQuantity {
-              hasNumericalValue
-            	defaultUnitOfResource {
-              	label
-            	}
-            }
-            resourceConformsTo {
-              id
-              name
-            }
-          }
-        }
+        ...PlanReturnFields
       }
     }
   `
@@ -192,6 +105,7 @@
 
   onMount(async () => {
     if (browser) {
+      console.log(GET_PLAN)
       fetchProposals()
       
       console.log(planId)
@@ -199,7 +113,7 @@
         id: planId
       });
       const res = await getPlan.refetch()
-      plan = res.data.plan
+      plan = {...res.data.plan}
       console.log(plan)
       
       let lastSeenProcessSpecification: any = undefined;
@@ -211,8 +125,9 @@
         lastColumn.unshift({
           ...process,
           basedOn: {
-            image: "/farm.svg",
-            name: "Column"
+            image: processImages[process.basedOn.name],
+            name: process.basedOn.name,
+            id: process.basedOn.id,
           },
           committedInputs: [...process.committedInputs].reverse(),
           committedOutputs: [...process.committedOutputs].reverse(),
@@ -301,7 +216,7 @@ Loading plan...
 {:else}
 <!-- plan name -->
 <!-- plan name -->
-<h1>{plan.name}</h1>
+<h1 class="text-center text-xl font-semibold">{plan.name}</h1>
 
 <div class="flex justify-center items-center">
   <!-- <div class="outer-div justify-center items-center">
@@ -381,7 +296,7 @@ Loading plan...
                       </p>
                       -->
                       <p>
-                        {action}
+                        {action.label}
                         {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
                         {resourceQuantity?.hasUnit?.label}
                       </p>
@@ -408,7 +323,7 @@ Loading plan...
                       </p>
                     {/if}
                     <div class="w-full flex justify-center">
-                      <!-- <button
+                      <button
                       on:click={() => {
                         commitmentModalProcess = processIndex
                         commitmentModalColumn = columnIndex
@@ -419,7 +334,7 @@ Loading plan...
                       }}
                     >
                       <Pencil/>
-                    </button> -->
+                    </button>
                     <button
                       on:click={() => {
                         allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
@@ -460,7 +375,7 @@ Loading plan...
                       </p>
                       -->
                         <p>
-                          {action}
+                          {action.label}
                           {resourceQuantity?.hasNumericalValue}
                           {resourceQuantity?.hasUnit?.label}
                         </p>
@@ -489,7 +404,7 @@ Loading plan...
                     </div>
                     <!-- {#if editable} -->
                       <div class="w-full flex justify-center">
-                        <!-- <button
+                        <button
                         on:click={() => {
                           commitmentModalProcess = processIndex
                           commitmentModalColumn = columnIndex
@@ -500,7 +415,7 @@ Loading plan...
                         }}
                       >
                         <Pencil/>
-                      </button> -->
+                      </button>
                       <button
                         on:click={() => {
                           allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
@@ -545,7 +460,7 @@ Loading plan...
                 <div>
                   <p>{resourceConformsTo?.name}</p>
                   <p>
-                    {action}
+                    {action.label}
                     {resourceQuantity?.hasNumericalValue}
                     {resourceConformsTo?.defaultUnitOfResource?.label}
                   </p>

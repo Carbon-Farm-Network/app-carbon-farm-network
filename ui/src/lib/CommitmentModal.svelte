@@ -354,7 +354,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   >Action</label
                 >
                 {#if selectedCommitment?.action}
-                  <p>{selectedCommitment?.action}</p>
+                  <p>{selectedCommitment?.action.label}</p>
                 {:else}
                   <select
                     id="action"
@@ -379,7 +379,6 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
                   {#if selectedCommitment?.resourceQuantity}
-                  ys
                     <input
                       type="number"
                       name="quantity"

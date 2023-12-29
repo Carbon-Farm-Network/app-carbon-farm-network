@@ -2,11 +2,11 @@
   import { clickOutside } from './utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
-  import type { AgentConnection, ProcessCreateParams } from '@valueflows/vf-graphql'
   import gql from 'graphql-tag'
-  import type { PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, UnitConnection, PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams, ProcessCreateParams, ProcessUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import type { RelayConn } from '$lib/graphql/helpers'
+  import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
@@ -23,6 +23,7 @@
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let resourceSpecifications: any[];
   let processSpecifications: any[];
+  let units: Unit[];
 
   // let name = ''
   // let note = ''
@@ -36,6 +37,21 @@
     }
   }
 
+  const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
+
   const CREATE_PLAN = gql`
     mutation($rs: PlanCreateParams!) {
       res: createPlan(plan: $rs) {
@@ -47,9 +63,31 @@
     }
   `
 
+  const UPDATE_PLAN = gql`
+    mutation($rs: PlanUpdateParams!) {
+      res: updatePlan(plan: $rs) {
+        plan {
+          id
+          revisionId
+        }
+      }
+    }
+  `
+
   const CREATE_PROCESS = gql`
     mutation($pc: ProcessCreateParams!) {
       createProcess(process: $pc) {
+        process {
+          id
+          revisionId
+        }
+      }
+    }
+  `
+
+  const UPDATE_PROCESS = gql`
+    mutation($pc: ProcessUpdateParams!) {
+      updateProcess(process: $pc) {
         process {
           id
           revisionId
@@ -72,6 +110,20 @@
     }
   `
 
+  const UPDATE_COMMITMENT = gql`
+    mutation($cm: CommitmentUpdateParams!) {
+      updateCommitment(commitment: $cm) {
+        commitment {
+          id
+          revisionId
+          plannedWithin {
+            id
+          }
+        }
+      }
+    }
+  `
+
   const CREATE_AGREEMENT = gql`
     mutation($ag: AgreementCreateParams!) {
       createAgreement(agreement: $ag) {
@@ -83,7 +135,18 @@
     }
   `
 
-const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+  const UPDATE_AGREEMENT = gql`
+    mutation($ag: AgreementUpdateParams!) {
+      updateAgreement(agreement: $ag) {
+        agreement {
+          id
+          revisionId
+        }
+      }
+    }
+  `
+
+  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
     query {
       resourceSpecifications(last: 100000) {
@@ -97,7 +160,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     }
   `
 
-const GET_ALL_PROCESS_SPECIFICATIONS = gql`
+  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
     ${PROCESS_SPECIFICATION_CORE_FIELDS}
     query {
       processSpecifications(last: 100000) {
@@ -111,7 +174,7 @@ const GET_ALL_PROCESS_SPECIFICATIONS = gql`
     }
   `
 
-const GET_ALL_AGENTS = gql`
+  const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     query {
       agents(last: 100000) {
@@ -137,14 +200,23 @@ const GET_ALL_AGENTS = gql`
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
   }
+
+  interface UnitsQueryResponse {
+    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  }
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
   let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
   let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   let addPlan: any = mutation(CREATE_PLAN)
+  let updatePlan: any = mutation(UPDATE_PLAN)
   let addProcess: any = mutation(CREATE_PROCESS)
+  let updateProcess: any = mutation(UPDATE_PROCESS)
   let addCommitment: any = mutation(CREATE_COMMITMENT)
+  let updateCommitment: any = mutation(UPDATE_COMMITMENT)
   let addAgreement: any = mutation(CREATE_AGREEMENT)
+  let updateAgreement: any = mutation(UPDATE_AGREEMENT)
 
   async function saveProcess(process: any) {
     console.log(process)
@@ -164,6 +236,24 @@ const GET_ALL_AGENTS = gql`
     return p
   }
 
+  async function saveProcessUpdates(process: any) {
+    let processUpdateParams: ProcessUpdateParams = {
+      revisionId: process.revisionId,
+      name: process.name,
+      note: process.note,
+      plannedWithin: process.plannedWithin,
+      basedOn: process.basedOn.id,
+    }
+    console.log(processUpdateParams)
+    let p = await updateProcess({
+      variables: {
+        pc: processUpdateParams
+      }
+    })
+    console.log(p)
+    return p
+  }
+
 
   async function saveCommitment(commitment: any) {
     console.log(commitment)
@@ -172,14 +262,14 @@ const GET_ALL_AGENTS = gql`
       clauseOf: commitment.clauseOf,
       inputOf: commitment.inputOf,
       outputOf: commitment.outputOf,
-      action: commitment.action,
+      action: commitment.action.label,
       provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
       plannedWithin: commitment.plannedWithin,
       receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
       resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
       resourceQuantity: {
         hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue),
-        // defaultUnitOfResource: commitment.resourceQuantity.defaultUnitOfResource.id,
+        hasUnit: commitment.resourceQuantity.hasUnit.id,
       },
       finished: false,
       note: commitment.note,
@@ -202,24 +292,80 @@ const GET_ALL_AGENTS = gql`
     console.log(c)
   }
 
-  async function handleSubmit() {
-    // if (planObject.name === '') {
-    //   alert('Name is required.')
-    //   return
-    // }
-
-    savingPlan = true;
-
-    let p = await addPlan({
+  async function saveCommitmentUpdates(commitment: any) {
+    console.log(commitment)
+    let o: CommitmentUpdateParams = {
+      ...commitment,
+    }
+    console.log(o)
+    let c = await updateCommitment({
       variables: {
-        rs: {
-          name: planObject.name,
-          created: new Date(Date.now()),
-          due: new Date(Date.now()),
-          note: planObject.note,
-        }
+        cm: o
       }
     })
+    console.log(c)
+  }
+
+  async function addOrUpdatePlan(update: boolean) {
+    if (update) {
+      return await updatePlan({
+        variables: {
+          rs: {
+            revisionId: planObject.revisionId,
+            name: planObject.name,
+            note: planObject.note,
+          }
+        }
+      })
+    } else {
+      return await addPlan({
+        variables: {
+          rs: {
+            name: planObject.name,
+            created: new Date(Date.now()),
+            due: new Date(Date.now()),
+            note: planObject.note,
+          }
+        }
+      })
+    }   
+  }
+
+  async function saveOrUpdateProcess(process: any) {
+    if (process.revisionId !== undefined) {
+      console.log("update process")
+      const x = await saveProcessUpdates(process)
+      console.log(x)
+      return x.data.updateProcess.process.id
+    } else {
+      console.log("create process")
+      const x = await saveProcess(process)
+      return x.data.createProcess.process.id
+    }
+  }
+
+  async function saveOrUpdateComitment(commitment: any) {
+    if (commitment.revisionId !== undefined) {
+      console.log("commitment", commitment)
+      return await saveCommitmentUpdates({
+        revisionId: commitment.revisionId,
+        provider: commitment.provider.id,
+        receiver: commitment.receiver.id,
+        resourceQuantity: {
+          hasNumericalValue: commitment.resourceQuantity.hasNumericalValue,
+          hasUnit: commitment.resourceQuantity.hasUnit.id
+        }
+      })
+    } else {
+      console.log("adding commitment", commitment)
+      return await saveCommitment(commitment)
+    }
+  }
+
+  async function handleSubmit() {
+    savingPlan = true;
+
+    let p = await addOrUpdatePlan(editing)
 
     // console.log(p)
 
@@ -232,6 +378,7 @@ const GET_ALL_AGENTS = gql`
     // reciever is agent for request
     for (const c of commitments) {
       console.log(c)
+      
       let o: CommitmentCreateParams = {
         action: "transfer",
         provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
@@ -240,7 +387,7 @@ const GET_ALL_AGENTS = gql`
         resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === c.publishes.resourceConformsTo.name).node.id,
         resourceQuantity: {
           hasNumericalValue: Number(c.publishes.resourceQuantity.hasNumericalValue),
-          // defaultUnitOfResource: c.publishes.resourceQuantity.defaultUnitOfResource.id,
+          // hasUnit: c.publishes.resourceQuantity.defaultUnitOfResource.id,
         },
         finished: false,
         note: c.publishes.note,
@@ -258,14 +405,11 @@ const GET_ALL_AGENTS = gql`
     for (const column of allColumns) {
       for (const process of column) {
         process.plannedWithin = p.data.res.plan.id
-        // console.log(process)
         // save process
-        let x = await saveProcess(process)
-        console.log("compare ids", p, x)
+        const processId = await saveOrUpdateProcess(process)
+        console.log("compare ids", p, processId)
         // save everything else
-        for (const input of process.committedInputs) {
-          let c = input;
-          
+        async function handleCommitment(c: any) {          
           // save cost if applicable
           if (c.agreement !== undefined) {
             // save agreement
@@ -307,7 +451,7 @@ const GET_ALL_AGENTS = gql`
           }
 
           // save primary commitment
-          c.process = x.data.createProcess.process
+          // c.process = x.data.createProcess.process
           c.plannedWithin = p.data.res.plan.id
           console.log(c.process)
           if (c.provider === undefined) {
@@ -316,59 +460,48 @@ const GET_ALL_AGENTS = gql`
           if (c.receiver === undefined) {
             c.receiver = c.provider
           }
-          // console.log(x.data.createProcess.process.id)
-          c.inputOf = x.data.createProcess.process.id
           await delay(20)
           console.log("about to save commitment", c)
-          console.log("compare ids 2", p, x)
-          await saveCommitment(c)
+
+          // TEMPORARY find unit id
+          if (c.revisionId == undefined) {
+            console.log(units)
+            c.resourceQuantity.hasUnit.id = units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
+          }
+          // UNIT ID FIND ENDS
+          console.log("commitment before sending to function", c)
+          await saveOrUpdateComitment(c)
           // console.log("saving commitment",c)
-          
-          // SAVE POTENTIAL AGREEMENTS
-          // "agreement":{
-          // "name":"Spin Ivory Yarn",
-          //       "note":"",
-          //       "commitment":{
-          //          "action":"transfer",
-          //          "stage":{
-          //             "name":""
-          //          },
-          //          "resourceConformsTo":{
-          //             "name":"USD"
-          //          },
-          //          "resourceQuantity":{
-          //             "hasNumericalValue":"270",
-          //             "defaultUnitOfResource":{
-          //                "label":"each"
-          //             }
-          //          }
-          //       }
-          //    }
-
-          // save agreement
-          // save agreement commitment
-            // commitment has to reference plan
-          // add agreement id to original commitment
-
-
           await delay(20);
         }
+
+        for (const input of process.committedInputs) {
+          await handleCommitment({
+            ...input,
+            inputOf: processId,
+          })
+        }
         for (const input of process.committedOutputs) {
-          let c = input
-          c.process = x.data.createProcess.process
-          if (c.provider === undefined) {
-            c.provider = c.receiver
-          }
-          if (c.receiver === undefined) {
-            c.receiver = c.provider
-          }
-          console.log(x.data.createProcess.process.id)
-          c.outputOf = x.data.createProcess.process.id
-          c.plannedWithin = p.data.res.plan.id
-          // c.outputProcess = "none"
-          // console.log("saving commitment",c)
-          await saveCommitment(c)
-          await delay(20);
+          await handleCommitment({
+            ...input,
+            outputOf: processId,
+          })
+
+          // let c = input
+          // c.process = x.data.createProcess.process
+          // if (c.provider === undefined) {
+          //   c.provider = c.receiver
+          // }
+          // if (c.receiver === undefined) {
+          //   c.receiver = c.provider
+          // }
+          // console.log(x.data.createProcess.process.id)
+          // c.outputOf = x.data.createProcess.process.id
+          // c.plannedWithin = p.data.res.plan.id
+          // // c.outputProcess = "none"
+          // // console.log("saving commitment",c)
+          // await saveCommitment(c)
+          // await delay(20);
         }
         await delay(20);
       }
@@ -384,9 +517,20 @@ const GET_ALL_AGENTS = gql`
 
   async function handleUpdate() {
     console.log("update in progress ...")
+
+  }
+
+  async function fetchUnits() {
+    getUnits.getCurrentResult()
+    getUnits.refetch().then((r) => {
+      if (r.data?.units.edges.length > 0) {
+        units = flattenRelayConnection(r.data?.units)
+      }
+    })
   }
 
   onMount(async () => {
+    await fetchUnits();
     console.log(planObject)
     const x = await resourceSpecificationsQuery.refetch()
     resourceSpecifications = x.data.resourceSpecifications.edges
@@ -519,11 +663,11 @@ const GET_ALL_AGENTS = gql`
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             on:click={() => {
-              if (editing) {
-                handleUpdate()
-              } else {
+              // if (editing) {
+              //   handleUpdate()
+              // } else {
                 handleSubmit()
-              }
+              // }
             }}>{
               editing ? "Update" : "Save"
             }</button

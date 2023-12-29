@@ -17,10 +17,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Brown 50/50 Yarn"
           },
@@ -35,10 +35,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Ivory 50/50 Yarn"
           },
@@ -53,10 +53,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Gray 50/50 Yarn"
           },
@@ -71,10 +71,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -92,10 +92,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Brown 50/50 Yarn"
           },
@@ -110,10 +110,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Ivory 50/50 Yarn"
           },
@@ -128,10 +128,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Gray 50/50 Yarn"
           },
@@ -161,10 +161,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.9",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "produce",
+          "action": {"label":  "produce"},
           "resourceConformsTo": {
             "name": "Brown 50/50 Yarn"
           },
@@ -179,10 +179,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -200,10 +200,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.5",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
@@ -218,10 +218,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.5",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "White Wool Clean"
           },
@@ -251,10 +251,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.9",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "produce",
+          "action": {"label":  "produce"},
           "resourceConformsTo": {
             "name": "Ivory 50/50 Yarn"
           },
@@ -269,10 +269,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -290,10 +290,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.5",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
@@ -308,10 +308,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.5",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "White Wool Clean"
           },
@@ -340,10 +340,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.9",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "produce",
+          "action": {"label":  "produce"},
           "resourceConformsTo": {
             "name": "Gray 50/50 Yarn"
           },
@@ -358,10 +358,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -379,10 +379,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.5",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
@@ -397,10 +397,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.5",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "White Wool Clean"
           },
@@ -430,10 +430,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
@@ -448,10 +448,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
@@ -466,10 +466,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
@@ -484,10 +484,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "White Wool Clean"
           },
@@ -502,10 +502,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -523,10 +523,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
@@ -541,10 +541,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
@@ -559,10 +559,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
@@ -577,10 +577,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "White Wool Clean"
           },
@@ -610,10 +610,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.8",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "produce",
+          "action": {"label":  "produce"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Clean"
           },
@@ -628,10 +628,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -649,10 +649,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
@@ -682,10 +682,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.8",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "produce",
+          "action": {"label":  "produce"},
           "resourceConformsTo": {
             "name": "White Alpaca Clean"
           },
@@ -700,10 +700,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -721,10 +721,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
@@ -754,10 +754,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.8",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "produce",
+          "action": {"label":  "produce"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Clean"
           },
@@ -772,10 +772,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -793,10 +793,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
@@ -826,10 +826,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "0.6",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "produce",
+          "action": {"label":  "produce"},
           "resourceConformsTo": {
             "name": "White Wool Clean"
           },
@@ -844,10 +844,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -865,10 +865,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
@@ -898,10 +898,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
@@ -916,10 +916,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
@@ -934,10 +934,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
@@ -952,10 +952,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
@@ -970,10 +970,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -991,10 +991,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
@@ -1009,10 +1009,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
@@ -1027,10 +1027,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
@@ -1045,10 +1045,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
@@ -1078,10 +1078,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
@@ -1096,10 +1096,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
@@ -1114,10 +1114,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
@@ -1132,10 +1132,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "dropoff",
+          "action": {"label": "dropoff"},
           "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
@@ -1152,10 +1152,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
@@ -1171,10 +1171,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
@@ -1190,10 +1190,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
@@ -1209,10 +1209,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "pickup",
+          "action": {"label": "pickup"},
           "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
@@ -1228,10 +1228,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "Gas and Truck Rental"
           },
@@ -1254,10 +1254,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "Brown 50/50 Yarn"
           },
@@ -1274,10 +1274,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "19",
             "hasUnit": {
-              "label": "Each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1300,10 +1300,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "Gray 50/50 Yarn"
           },
@@ -1320,10 +1320,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "19",
             "hasUnit": {
-              "label": "Each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1346,10 +1346,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "Ivory 50/50 Yarn"
           },
@@ -1366,10 +1366,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "19",
             "hasUnit": {
-              "label": "Each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1392,10 +1392,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "Brown Alpaca Dirty"
           },
@@ -1412,10 +1412,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "3",
             "hasUnit": {
-              "label": "Each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1438,10 +1438,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "Gray Alpaca Dirty"
           },
@@ -1458,10 +1458,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "3",
             "hasUnit": {
-              "label": "Each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1484,10 +1484,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "White Alpaca Dirty"
           },
@@ -1504,10 +1504,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "3",
             "hasUnit": {
-              "label": "Each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1530,10 +1530,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "White Wool Dirty"
           },
@@ -1550,10 +1550,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "3",
             "hasUnit": {
-              "label": "Each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1576,10 +1576,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -1597,10 +1597,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1.5",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1623,10 +1623,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -1644,10 +1644,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "2",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1670,10 +1670,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Shipping Service"
           },
@@ -1691,10 +1691,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1.5",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1717,10 +1717,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "consume",
+          "action": {"label": "consume"},
           "resourceConformsTo": {
             "name": "Gas and Truck Rental"
           },
@@ -1737,10 +1737,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "500",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1763,10 +1763,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1784,10 +1784,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "2",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1810,10 +1810,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1831,10 +1831,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "2",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1857,10 +1857,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1878,10 +1878,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "2",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1904,10 +1904,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Scouring Service"
           },
@@ -1925,10 +1925,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "2",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1951,10 +1951,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -1972,10 +1972,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "18",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -1998,10 +1998,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -2019,10 +2019,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "18",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
@@ -2045,10 +2045,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "1",
             "hasUnit": {
-              "label": "lb"
+              "label": "pound"
             }
           },
-          "action": "deliver_service",
+          "action": {"label": "deliver_service"},
           "resourceConformsTo": {
             "name": "Spinning Service"
           },
@@ -2066,10 +2066,10 @@
           "resourceQuantity": {
             "hasNumericalValue": "18",
             "hasUnit": {
-              "label": "each"
+              "label": "one"
             }
           },
-          "action": "transfer",
+          "action": {"label": "transfer"},
           "resourceConformsTo": {
             "name": "USD"
           },
