@@ -27,6 +27,7 @@
   let commitmentModalColumn: number | undefined;
   let commitmentModalSide: string | undefined;
   let currentProcess: any[];
+  let commitmentsToDelete: string[] = []
 
   let processImages = {
     "Pick Up": "/farm.svg",
@@ -167,7 +168,7 @@
 
 
 {#if plan}
-<PlanModal bind:open={planModalOpen} planObject = {plan} {allColumns} {commitments} editing={true}/>
+<PlanModal bind:open={planModalOpen} planObject = {plan} {allColumns} {commitments} {commitmentsToDelete} editing={true}/>
 {/if}
 
 <CommitmentModal
@@ -181,7 +182,7 @@
   on:submit={(event) => {
     console.log(allColumns)
     // console.log(event)
-    console.log(JSON.stringify(allColumns[event.detail.column][event.detail.process][event.detail.side][0].id))
+    // console.log(JSON.stringify(allColumns[event.detail.column][event.detail.process][event.detail.side][0].id))
     console.log("ID: ", event.detail.commitment.id)
     if (event.detail.useAs == "update") {
       let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
@@ -278,12 +279,13 @@ Loading plan...
               commitmentModalColumn = columnIndex
               commitmentModalSide = "committedInputs"
               commitmentModalOpen = true
+              selectedCommitmentId = undefined
             }}
                 >
                 <PlusCircle />
               </button>
 
-                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, agreement }}
+                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -338,6 +340,8 @@ Loading plan...
                     <button
                       on:click={() => {
                         allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
+                        commitmentsToDelete.push(revisionId)
+                        console.log(commitmentsToDelete, revisionId)
                       }}
                     >
                       <Trash />
@@ -353,15 +357,16 @@ Loading plan...
                     commitmentModalProcess = processIndex
                     commitmentModalColumn = columnIndex
                     commitmentModalSide = "committedOutputs"
-                    console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
+                    // console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
                     commitmentModalOpen = true
-                    console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
+                    // console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
+                    selectedCommitmentId = undefined
                   }}
                 >
                   <PlusCircle />
                 </button>
 
-                {#each committedOutputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
+                {#each committedOutputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, revisionId, agreement }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -419,6 +424,7 @@ Loading plan...
                       <button
                         on:click={() => {
                           allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
+                          commitmentsToDelete.push(revisionId)
                         }}
                       >
                         <Trash />
@@ -453,6 +459,7 @@ Loading plan...
               {@const resourceQuantity = c.publishes.resourceQuantity}
               {@const receiver = c.publishes.receiver}
               {@const id = c.id}
+              {@const revisionId = c.revisionId}
               {@const action = c.action}
               <div
                 class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
@@ -476,7 +483,10 @@ Loading plan...
                     <Pencil />
                   </button>
                   <button
-                    on:click={() => (commitments = commitments.filter(it => it.id != id))}
+                    on:click={() => {
+                      (commitments = commitments.filter(it => it.id != id));
+                      commitmentsToDelete.push(revisionId);
+                    }}
                   >
                     <Trash />
                   </button>

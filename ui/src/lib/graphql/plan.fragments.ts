@@ -5,6 +5,7 @@ export const PLAN_RETURN_FIELDS = gql`
     id
     revisionId
     name
+    note
     meta {
       retrievedRevision {
         id

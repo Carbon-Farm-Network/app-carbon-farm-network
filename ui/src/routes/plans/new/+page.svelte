@@ -71,7 +71,7 @@
         // {@const primary = publishes.find(it => !it.reciprocal)}
         //       {#if primary?.publishes?.receiver}
         requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
-        offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
+        offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
         console.log(requests)
         console.log(offers)
         // console.log(proposalsList[0].publishes[0].publishes)
@@ -666,6 +666,7 @@
                     commitmentModalColumn = columnIndex
                     commitmentModalSide = "committedInputs"
                     commitmentModalOpen = true
+                    selectedCommitmentId = undefined
                   }}
                 >
                   <PlusCircle />
@@ -744,6 +745,7 @@
                     commitmentModalColumn = columnIndex
                     commitmentModalSide = "committedOutputs"
                     commitmentModalOpen = true
+                    selectedCommitmentId = undefined
                   }}
                 >
                   <PlusCircle />

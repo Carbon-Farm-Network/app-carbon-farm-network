@@ -3,14 +3,14 @@
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   // import agents from '$lib/data/agents.json'
-  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { query } from 'svelte-apollo'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   // import resource_specifications from '$lib/data/resource_specifications.json'
-  import units from '$lib/data/units.json'
+  // import units from '$lib/data/units.json'
   import actions from '$lib/data/actions.json'
   import { gql } from 'graphql-tag'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
@@ -28,9 +28,10 @@
   let note = ''
   let agents: Agent[];
   let resourceSpecifications: any[];
+  let units: any[];
 
   $: if (open) {
-    newCommitment.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    // newCommitment.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     console.log(newCommitment.id)
     console.log(process)
   }
@@ -38,10 +39,26 @@
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
       e.preventDefault()
-      selectedCommitmentId = undefined
+      // selectedCommitmentId = undefined
+      // previousSelectedCommitmentId = undefined
       open = false
     }
   }
+
+  const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
 
   const GET_ALL_AGENTS = gql`
     query {
@@ -82,11 +99,27 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
   interface RspecResponse {
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
+
+
+  interface UnitsQueryResponse {
+    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  }
+
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
   
   // map component state
   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  async function fetchUnits() {
+    getUnits.getCurrentResult()
+    getUnits.refetch().then((r) => {
+      if (r.data?.units.edges.length > 0) {
+        units = flattenRelayConnection(r.data?.units)
+      }
+    })
+  }
 
   async function fetchAgents() {
     await agentsQuery.getCurrentResult()
@@ -119,15 +152,15 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
 
   // let selectedCommitment: any;
   let newCommitmentTemplate = {
-    id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+    id: undefined,
     resourceConformsTo: {
       name: ''
     },
-    action: '',
+    action: {label: ''},
     resourceQuantity: {
       hasNumericalValue: 0,
       hasUnit: {
-        label: 'lb'
+        label: ''
       }
     },
     receiver: {
@@ -141,25 +174,42 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     note: ''
   }
   let newCommitment = Object.assign({}, newCommitmentTemplate)
-  let selectedCommitment: any;
+  let selectedCommitment = Object.assign({}, newCommitmentTemplate)
   // $: selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
-  $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide
-  $: if (selectedCommitmentId && commitmentModalColumn > -1) {
-    // selectedCommitment = {...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)}
-    console.log(selectedCommitmentId)
-    console.log(process)
-    selectedCommitment = process.find(it => it.id == selectedCommitmentId)
-    console.log(selectedCommitment)
-  } else {
-    console.log(selectedCommitmentId, commitmentModalColumn)
-    selectedCommitment = {}
+  $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide, selectedCommitment, selectedCommitmentId
+  // $: if (selectedCommitmentId && commitmentModalColumn > -1) {
+  //   // selectedCommitment = {...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)}
+  //   // console.log(selectedCommitmentId)
+  //   // console.log(process)
+  //   // selectedCommitment = process.find(it => it.id == selectedCommitmentId)
+  //   selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
+  //   console.log(selectedCommitment)
+  // } else {
+  //   // console.log(selectedCommitmentId, commitmentModalColumn)
+  //   // selectedCommitment = {}
+  // }
+
+  let previousSelectedCommitmentId: string | undefined;
+  $: {
+    if (selectedCommitmentId !== previousSelectedCommitmentId) {
+      previousSelectedCommitmentId = selectedCommitmentId;
+      if (selectedCommitmentId && commitmentModalColumn > -1) {
+        selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
+      } else {
+        selectedCommitment = {};
+      }
+    }
   }
-  // onMount(async () => {
-  //   selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
-  //   if (!selectedCommitment) {
-  //     selectedCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)
-  //   }
-  // })
+
+  onMount(async () => {
+
+    fetchUnits();
+
+    // selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
+    // if (!selectedCommitment) {
+    //   selectedCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)
+    // }
+  })
 
 </script>
 
@@ -213,7 +263,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   >Provider</label
                 >
                 <!-- {JSON.stringify(selectedCommitment.provider)} -->
-                {#if selectedCommitment?.provider && agents}
+                {#if selectedCommitment?.id && selectedCommitment?.provider && agents}
                   <select
                     id="provider"
                     name="provider"
@@ -270,7 +320,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Receiver</label
                 >
-                {#if selectedCommitment?.receiver}
+                {#if selectedCommitment?.id && selectedCommitment.receiver}
                   <p>{selectedCommitment.receiver.name}</p>
                 {:else if selectedCommitment?.id && agents}
                   <select
@@ -327,7 +377,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Resource specification</label
                 >
-                {#if selectedCommitment?.resourceConformsTo}
+                {#if selectedCommitment?.id && selectedCommitment?.resourceConformsTo}
                   <p>{selectedCommitment?.resourceConformsTo.name}</p>
                 {:else if resourceSpecifications}
                   <!-- {JSON.stringify(newCommitmentTemplate)} -->
@@ -336,6 +386,9 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.resourceConformsTo.name}
+                    on:change={(e) => {
+                      newCommitment.resourceQuantity.hasUnit.label = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource.label
+                    }}
                   >
                     {#each resourceSpecifications as rs}
                       <option value={rs.name}>{rs.name}</option>
@@ -353,14 +406,14 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Action</label
                 >
-                {#if selectedCommitment?.action}
+                {#if selectedCommitment?.id && selectedCommitment?.action}
                   <p>{selectedCommitment?.action.label}</p>
                 {:else}
                   <select
                     id="action"
                     name="action"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.action}
+                    bind:value={newCommitment.action.label}
                   >
                     {#each actions as action}
                       <option value={action}>{action}</option>
@@ -412,7 +465,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   for="unit"
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
-                {#if selectedCommitment?.resourceQuantity}
+                {#if selectedCommitment?.id && selectedCommitment?.resourceQuantity}
                   <p>{selectedCommitment?.resourceQuantity.hasUnit.label}</p>
                 {:else}
                   <select
@@ -421,9 +474,11 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.resourceQuantity.hasUnit.label}
                   >
-                    {#each units as unit}
-                      <option value={unit.symbol}>{unit.symbol}</option>
-                    {/each}
+                    {#if units}
+                      {#each units as unit}
+                        <option value={unit.label}>{unit.symbol}</option>
+                      {/each}
+                    {/if}
                   </select>
                 {/if}
               </div>
@@ -535,26 +590,17 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   newCommitment = Object.assign({}, newCommitmentTemplate)
                 }
               } else {
-                // console.log(allColumns)
-                // insert new commitment in allColumns[columnIndex][processIndex]
-                // plan_created = true
-                // console.log(process)
-
-                // process = [
-                //   ...process,
-                //   newCommitment
-                // ]
-
-                console.log(newCommitment.id)
+                console.log(newCommitment)
                 dispatch('submit', {
                   column: commitmentModalColumn,
                   process: commitmentModalProcess,
                   side: commitmentModalSide,
-                  commitment: newCommitment,
+                  commitment: {
+                    ...newCommitment,
+                    id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+                  },
                   useAs: 'new'
                 });
-
-                // allColumns = [...allColumns]
               }
 
               // console.log(JSON.stringify(newCommitment))

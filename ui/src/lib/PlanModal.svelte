@@ -18,6 +18,7 @@
   export let editing: boolean = false;
   export let commitments: any;
   export let allColumns: any[];
+  export let commitmentsToDelete: any[];
   let agents: any[];
   let savingPlan: boolean = false;
   const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -124,6 +125,10 @@
     }
   `
 
+  const DELETE_COMMITMENT = gql`mutation($revisionId: ID!){
+    deleteCommitment(revisionId: $revisionId)
+  }`
+
   const CREATE_AGREEMENT = gql`
     mutation($ag: AgreementCreateParams!) {
       createAgreement(agreement: $ag) {
@@ -217,6 +222,7 @@
   let updateCommitment: any = mutation(UPDATE_COMMITMENT)
   let addAgreement: any = mutation(CREATE_AGREEMENT)
   let updateAgreement: any = mutation(UPDATE_AGREEMENT)
+  let deleteCommitment: any = mutation(DELETE_COMMITMENT)
 
   async function saveProcess(process: any) {
     console.log(process)
@@ -466,6 +472,7 @@
           // TEMPORARY find unit id
           if (c.revisionId == undefined) {
             console.log(units)
+            console.log(c.resourceQuantity.hasUnit.label)
             c.resourceQuantity.hasUnit.id = units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
           }
           // UNIT ID FIND ENDS
@@ -505,6 +512,15 @@
         }
         await delay(20);
       }
+    }
+
+    // delete commitments
+    for (const c of commitmentsToDelete) {
+      await deleteCommitment({
+        variables: {
+          revisionId: c
+        }
+      })
     }
 
     savingPlan = false;
