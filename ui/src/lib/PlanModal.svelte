@@ -3,7 +3,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
-  import type { Unit, AgentConnection, UnitConnection, PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams, ProcessCreateParams, ProcessUpdateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, UnitConnection, PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams, ProcessCreateParams, ProcessUpdateParams, Commitment } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
@@ -12,13 +12,14 @@
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Create } from '@holochain/client'
+  import { goto } from '$app/navigation'
   
   export let open = false
   export let planObject: PlanUpdateParams | PlanCreateParams;
   export let editing: boolean = false;
   export let commitments: any;
   export let allColumns: any[];
-  export let commitmentsToDelete: any[];
+  export let commitmentsToDelete: any[] = [];
   let agents: any[];
   let savingPlan: boolean = false;
   const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -260,58 +261,6 @@
     return p
   }
 
-
-  async function saveCommitment(commitment: any) {
-    console.log(commitment)
-    let o: CommitmentCreateParams = {
-      // ...commitment,
-      clauseOf: commitment.clauseOf,
-      inputOf: commitment.inputOf,
-      outputOf: commitment.outputOf,
-      action: commitment.action.label,
-      provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
-      plannedWithin: commitment.plannedWithin,
-      receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
-      resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
-      resourceQuantity: {
-        hasNumericalValue: Number(commitment.resourceQuantity.hasNumericalValue),
-        hasUnit: commitment.resourceQuantity.hasUnit.id,
-      },
-      finished: false,
-      note: commitment.note,
-      hasBeginning: new Date(Date.now()),
-    }
-    if (commitment.inputOf !== undefined) {
-      o.inputOf = commitment.inputOf
-    } else if (commitment.outputOf !== undefined) {
-      o.outputOf = commitment.outputOf
-    }
-    // if (o.action == "dropoff") {
-    //   o.action = ""
-    // }
-    console.log(o)
-    let c = await addCommitment({
-      variables: {
-        cm: o
-      }
-    })
-    console.log(c)
-  }
-
-  async function saveCommitmentUpdates(commitment: any) {
-    console.log(commitment)
-    let o: CommitmentUpdateParams = {
-      ...commitment,
-    }
-    console.log(o)
-    let c = await updateCommitment({
-      variables: {
-        cm: o
-      }
-    })
-    console.log(c)
-  }
-
   async function addOrUpdatePlan(update: boolean) {
     if (update) {
       return await updatePlan({
@@ -350,62 +299,95 @@
     }
   }
 
-  async function saveOrUpdateComitment(commitment: any) {
-    if (commitment.revisionId !== undefined) {
-      console.log("commitment", commitment)
-      return await saveCommitmentUpdates({
-        revisionId: commitment.revisionId,
-        provider: commitment.provider.id,
-        receiver: commitment.receiver.id,
-        resourceQuantity: {
-          hasNumericalValue: commitment.resourceQuantity.hasNumericalValue,
-          hasUnit: commitment.resourceQuantity.hasUnit.id
-        }
-      })
+  async function saveOrUpdateCommitment(commitment: CommitmentUpdateParams) {
+    console.log(commitment)
+    let o: CommitmentCreateParams = {
+      plannedWithin: commitment.plannedWithin,
+      finished: false,
+      note: commitment.note,
+      hasBeginning: new Date(Date.now()),
+      resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
+      resourceQuantity: {
+        hasNumericalValue: Number(commitment?.resourceQuantity?.hasNumericalValue),
+        hasUnit: commitment?.resourceQuantity?.hasUnit?.id
+      },
+    }
+    if (commitment.clauseOf !== undefined) {
+      o.clauseOf = commitment.clauseOf
+    }
+    if (o.provider == undefined) {
+      o.provider = agents.find((a) => a.node.name === "Carbon Farm Network").node.id
     } else {
-      console.log("adding commitment", commitment)
-      return await saveCommitment(commitment)
+      o.provider = agents.find((a) => a.node.name === commitment.provider.name).node.id
+    }
+    if (o.receiver == undefined) {
+      o.receiver = agents.find((a) => a.node.name === "Carbon Farm Network").node.id
+    } else {
+      o.receiver = agents.find((a) => a.node.name === commitment.receiver.name).node.id
+    }
+    if (commitment.outputOf !== undefined) {
+      o.outputOf = commitment.outputOf
+    }
+    if (commitment.inputOf !== undefined) {
+      o.inputOf = commitment.inputOf
+    }
+    if (commitment.independentDemandOf !== undefined) {
+      o.independentDemandOf = commitment.independentDemandOf
+    }
+    console.log("save or update commitment", commitment)
+    if (commitment.revisionId == undefined) {
+      o.action = commitment.action.label
+      console.log("adding commitment", o)
+      try {
+        await addCommitment({
+          variables: {
+            cm: o
+          }
+        })
+      } catch (e) {
+        console.log(e)
+      }
+    } else {
+      let com: CommitmentUpdateParams = {
+        ...o,
+        revisionId: commitment.revisionId,
+      }
+      console.log("updating commitment", com)
+      try {
+        let res = await updateCommitment({
+          variables: {
+            cm: com
+          }
+        })
+        console.log("updated commitment", res)
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 
   async function handleSubmit() {
     savingPlan = true;
-
     let p = await addOrUpdatePlan(editing)
-
-    // console.log(p)
-
-    // console.log(allColumns)
-
     // SAVE INDEPENDENT DEMANDS (commitments with no input or output)
-    // references plan with independentDemandOf
-    // action is transfer
-    // provider is carbon farm network
-    // reciever is agent for request
     for (const c of commitments) {
       console.log(c)
-      
-      let o: CommitmentCreateParams = {
-        action: "transfer",
+      let o = {
+        ...c,
+        // provider is carbon farm network
         provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+        // reciever is agent for request
         plannedWithin: p.data.res.plan.id,
-        receiver: c.publishes.receiver.id,
-        resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === c.publishes.resourceConformsTo.name).node.id,
-        resourceQuantity: {
-          hasNumericalValue: Number(c.publishes.resourceQuantity.hasNumericalValue),
-          // hasUnit: c.publishes.resourceQuantity.defaultUnitOfResource.id,
-        },
-        finished: false,
-        note: c.publishes.note,
-        hasBeginning: new Date(Date.now()),
-      }
-      console.log(o)
-      let commitment = await addCommitment({
-        variables: {
-          cm: o
+        // references plan with independentDemandOf
+        independentDemandOf: p.data.res.plan.id,
+        // action is transfer
+        action: {
+          label: "transfer"
         }
-      })
-      console.log(commitment)
+      }
+      console.log("trying to add independent", o)
+      await saveOrUpdateCommitment(o)
+      console.log('added independent', o)
     }
 
     for (const column of allColumns) {
@@ -414,6 +396,7 @@
         // save process
         const processId = await saveOrUpdateProcess(process)
         console.log("compare ids", p, processId)
+        let agreementId: string;
         // save everything else
         async function handleCommitment(c: any) {          
           // save cost if applicable
@@ -430,6 +413,7 @@
               }
             })
             console.log(a)
+            agreementId = a.data.createAgreement.agreement.id
             c.clauseOf = a.data.createAgreement.agreement.id
 
             // save cost commitment
@@ -448,12 +432,16 @@
               note: c.agreement.commitment.note,
               hasBeginning: new Date(Date.now()),
             }
-            let paymentCommitment = await addCommitment({
-              variables: {
-                cm: payment
-              }
-            })
-            console.log(paymentCommitment)
+            try {
+              let paymentCommitment = await addCommitment({
+                variables: {
+                  cm: payment
+                }
+              })
+              console.log(paymentCommitment)
+            } catch (e) {
+              console.log(e)
+            }
           }
 
           // save primary commitment
@@ -466,18 +454,30 @@
           if (c.receiver === undefined) {
             c.receiver = c.provider
           }
+          if (agreementId) {
+            c.clauseOf = agreementId
+          }
           await delay(20)
           console.log("about to save commitment", c)
 
           // TEMPORARY find unit id
           if (c.revisionId == undefined) {
-            console.log(units)
-            console.log(c.resourceQuantity.hasUnit.label)
-            c.resourceQuantity.hasUnit.id = units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
+            console.log("finding unit id", c.resourceQuantity.hasUnit.label)
+            c = {
+              ...c,
+              resourceQuantity: {
+                ...c.resourceQuantity,
+                hasUnit: {
+                  ...c.resourceQuantity.hasUnit,
+                  id: units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
+                }
+              }
+            }
+            // c.resourceQuantity.hasUnit.id = units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
           }
           // UNIT ID FIND ENDS
           console.log("commitment before sending to function", c)
-          await saveOrUpdateComitment(c)
+          await saveOrUpdateCommitment(c)
           // console.log("saving commitment",c)
           await delay(20);
         }
@@ -515,7 +515,9 @@
     }
 
     // delete commitments
+    console.log(commitmentsToDelete)
     for (const c of commitmentsToDelete) {
+      console.log("deleting commitment", c)
       await deleteCommitment({
         variables: {
           revisionId: c
@@ -524,6 +526,7 @@
     }
 
     savingPlan = false;
+    goto(`/plans/update/${p.data.res.plan.id}`)
 
 
 

@@ -406,12 +406,13 @@
     console.log(requests[0].publishes.filter(it => !it.reciprocal))
     return requests.flatMap(request =>
       request.publishes.filter(it => !it.reciprocal).map(proposed_intent => ({
-        publishes: proposed_intent.publishes,
+        ...proposed_intent.publishes,
         action: {
           label: 'transfer',
         },
         satisfies: proposed_intent.id,
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
+        revisionId: undefined,
       }))
     )
   }
@@ -423,23 +424,23 @@
     return Object.values(
       commitments.reduce((acc, commitment) => {
         console.log(commitment)
-        if (acc[commitment.publishes.resourceConformsTo.name]) {
-          let existing = acc[commitment.publishes.resourceConformsTo.name]
+        if (acc[commitment.resourceConformsTo.name]) {
+          let existing = acc[commitment.resourceConformsTo.name]
           console.log(existing)
           console.log(commitment)
-          acc[commitment.publishes.resourceConformsTo.name] = {
+          acc[commitment.resourceConformsTo.name] = {
             ...existing,
             resourceQuantity: {
               ...existing.resourceQuantity,
               hasNumericalValue:
                 existing.resourceQuantity.hasNumericalValue +
-                commitment.publishes.resourceQuantity.hasNumericalValue
+                commitment.resourceQuantity.hasNumericalValue
             }
           }
         } else {
-          acc[commitment.publishes.resourceConformsTo.name] = {
-            resourceQuantity: commitment.publishes.resourceQuantity,
-            resourceConformsTo: commitment.publishes.resourceConformsTo,
+          acc[commitment.resourceConformsTo.name] = {
+            resourceQuantity: commitment.resourceQuantity,
+            resourceConformsTo: commitment.resourceConformsTo,
             stage: { name: 'Ship' }
           }
         }
@@ -543,17 +544,29 @@
   {commitmentModalProcess}
   {commitmentModalColumn}
   {commitmentModalSide}
+  {commitments}
   process = {currentProcess}
-  bind:commitments
   on:submit={(event) => {
-    plan_created = true;
+    console.log(event.detail)
+    // plan_created = true;
     // console.log(event.detail.commitment)
-    console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
+    // console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
     if (event.detail.useAs == "update") {
-      let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
-      allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+      if (event.detail.column == undefined) {
+        commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
+        commitments = [...commitments]
+      } else {
+        let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
+        allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+      }
     } else {
-      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+      console.log(event.detail)
+      if (event.detail.column == undefined) {
+        commitments.push(event.detail.commitment)
+        commitments = [...commitments]
+      } else {
+        allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+      }
     }
     // console.log(event.detail.column, event.detail.process, event.detail.side, commitmentIndex)
     // allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex].provider = {...event.detail.commitment.provider}
@@ -717,7 +730,6 @@
                           commitmentModalProcess = processIndex
                           commitmentModalColumn = columnIndex
                           commitmentModalSide = "committedInputs"
-                          console.log(id)
                           selectedCommitmentId = id
                           currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
                           commitmentModalOpen = true
@@ -835,6 +847,7 @@
               class="flex justify-center items-center w-full mb-2"
               on:click={() => {
                 commitmentModalOpen = true
+                selectedCommitmentId = undefined
               }}
             >
               <PlusCircle />
@@ -850,9 +863,9 @@
               </div>
             {/if}
             {#each commitments as c}
-              {@const resourceConformsTo = c.publishes.resourceConformsTo}
-              {@const resourceQuantity = c.publishes.resourceQuantity}
-              {@const receiver = c.publishes.receiver}
+              {@const resourceConformsTo = c.resourceConformsTo}
+              {@const resourceQuantity = c.resourceQuantity}
+              {@const receiver = c.receiver}
               {@const id = c.id}
               {@const action = c.action}
               <div
@@ -863,7 +876,7 @@
                   <p>
                     {action.label}
                     {resourceQuantity?.hasNumericalValue}
-                    {resourceConformsTo?.defaultUnitOfResource?.label}
+                    {resourceQuantity?.hasUnit?.label}
                   </p>
                   <p>to: {receiver?.name}</p>
                 </div>

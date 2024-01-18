@@ -30,11 +30,11 @@
   let resourceSpecifications: any[];
   let units: any[];
 
-  $: if (open) {
+  // $: if (open) {
     // newCommitment.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    console.log(newCommitment.id)
-    console.log(process)
-  }
+    // console.log(newCommitment.id)
+    // console.log(process)
+  // }
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
@@ -154,7 +154,10 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
   let newCommitmentTemplate = {
     id: undefined,
     resourceConformsTo: {
-      name: ''
+      name: '',
+      defaultUnitOfResource: {
+        label: ''
+      }
     },
     action: {label: ''},
     resourceQuantity: {
@@ -195,6 +198,10 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
       previousSelectedCommitmentId = selectedCommitmentId;
       if (selectedCommitmentId && commitmentModalColumn > -1) {
         selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
+      } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
+        console.log(commitments)
+        selectedCommitment = JSON.parse(JSON.stringify(commitments.find(it => it.id == selectedCommitmentId)));
+        console.log(selectedCommitment)
       } else {
         selectedCommitment = {};
       }
@@ -387,7 +394,8 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.resourceConformsTo.name}
                     on:change={(e) => {
-                      newCommitment.resourceQuantity.hasUnit.label = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource.label
+                      newCommitment.resourceQuantity.hasUnit = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource
+                      newCommitment.resourceConformsTo.defaultUnitOfResource = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource
                     }}
                   >
                     {#each resourceSpecifications as rs}
@@ -578,18 +586,18 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             on:click={() => {
-              if (commitmentModalColumn == undefined) {
-                let commitmentIndex = commitments.findIndex(
-                it => it.id == selectedCommitmentId
-                )
-                if (commitmentIndex != -1) {
-                  commitments[commitmentIndex] = selectedCommitment
-                  commitments = commitments
-                } else {
-                  commitments = [...commitments, newCommitment]
-                  newCommitment = Object.assign({}, newCommitmentTemplate)
-                }
-              } else {
+              // if (commitmentModalColumn == undefined) {
+                // let commitmentIndex = commitments.findIndex(
+                // it => it.id == selectedCommitmentId
+                // )
+                // if (commitmentIndex != -1) {
+                //   commitments[commitmentIndex] = selectedCommitment
+                //   commitments = commitments
+                // } else {
+                //   commitments = [...commitments, newCommitment]
+                //   newCommitment = Object.assign({}, newCommitmentTemplate)
+                // }
+              // } else {
                 console.log(newCommitment)
                 dispatch('submit', {
                   column: commitmentModalColumn,
@@ -601,7 +609,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   },
                   useAs: 'new'
                 });
-              }
+              // }
 
               // console.log(JSON.stringify(newCommitment))
               // console.log(JSON.stringify(newCommitmentTemplate))

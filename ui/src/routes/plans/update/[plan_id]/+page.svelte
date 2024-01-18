@@ -116,6 +116,10 @@
       const res = await getPlan.refetch()
       plan = {...res.data.plan}
       console.log(plan)
+
+      // assign all commitments and nest them under the "publishes" key
+      commitments = [...plan.independentDemands]
+      console.log(commitments)
       
       let lastSeenProcessSpecification: any = undefined;
       let lastColumn: any = []
@@ -156,7 +160,7 @@
     action: string
     id: string
   }
-  let commitments: Commitment[] = []
+  let commitments: any[] = []
 
   let planModalOpen = false
   let commitmentModalOpen = false
@@ -185,17 +189,26 @@
     // console.log(JSON.stringify(allColumns[event.detail.column][event.detail.process][event.detail.side][0].id))
     console.log("ID: ", event.detail.commitment.id)
     if (event.detail.useAs == "update") {
-      let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
-      console.log("1")
-      allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+      if (event.detail.column == undefined) {
+        commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
+        commitments = [...commitments]
+      } else {
+        let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
+        allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+      }
     } else {
-      allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
-      console.log("2")
+      console.log(event.detail)
+      if (event.detail.column == undefined) {
+        commitments.push(event.detail.commitment)
+        commitments = [...commitments]
+      } else {
+        allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+      }
     }
 
     allColumns = [...allColumns]
-    console.log(allColumns)
-    console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
+    // console.log(allColumns)
+    // console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
 
     // reset form
     selectedCommitmentId = undefined
@@ -340,7 +353,9 @@ Loading plan...
                     <button
                       on:click={() => {
                         allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
-                        commitmentsToDelete.push(revisionId)
+                        if (revisionId) {
+                          commitmentsToDelete.push(revisionId)
+                        }
                         console.log(commitmentsToDelete, revisionId)
                       }}
                     >
@@ -424,7 +439,9 @@ Loading plan...
                       <button
                         on:click={() => {
                           allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
-                          commitmentsToDelete.push(revisionId)
+                          if (revisionId != undefined) {
+                            commitmentsToDelete.push(revisionId)
+                          }
                         }}
                       >
                         <Trash />
@@ -455,9 +472,10 @@ Loading plan...
               <PlusCircle />
             </button>
             {#each commitments as c}
-              {@const resourceConformsTo = c.publishes.resourceConformsTo}
-              {@const resourceQuantity = c.publishes.resourceQuantity}
-              {@const receiver = c.publishes.receiver}
+              <!-- {JSON.stringify(c)} -->
+              {@const resourceConformsTo = c.resourceConformsTo}
+              {@const resourceQuantity = c.resourceQuantity}
+              {@const receiver = c.receiver}
               {@const id = c.id}
               {@const revisionId = c.revisionId}
               {@const action = c.action}
