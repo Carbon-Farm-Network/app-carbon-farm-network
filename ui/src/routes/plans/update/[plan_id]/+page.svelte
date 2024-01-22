@@ -74,6 +74,21 @@
     }
   `
 
+  // const GET_COMMITMENTS = gql`
+  //   query {
+  //     commitments {
+  //       clauseOf {
+  //         id
+  //       }
+  //     }
+  //     agreements {
+  //       commitments {
+  //         id
+  //       }
+  //     }
+  //   }
+  // `
+
   interface ProposalsQueryResponse {
     proposals: ProposalConnection & RelayConn<any>
   }
@@ -115,6 +130,7 @@
       });
       const res = await getPlan.refetch()
       plan = {...res.data.plan}
+      // alert(JSON.stringify(plan.independentDemands[0]))
       console.log(plan)
 
       // assign all commitments and nest them under the "publishes" key

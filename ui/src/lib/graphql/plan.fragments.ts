@@ -87,17 +87,6 @@ export const PLAN_RETURN_FIELDS = gql`
             label
           }
         }
-        clauseOf {
-          commitments {
-            id
-            resourceQuantity {
-              hasNumericalValue
-              hasUnit {
-                label
-              }
-            }
-          }
-        }
       }
       committedOutputs {
         id
@@ -130,17 +119,6 @@ export const PLAN_RETURN_FIELDS = gql`
         resourceConformsTo {
           id
           name
-        }
-        clauseOf {
-          commitments {
-            id
-            resourceQuantity {
-              hasNumericalValue
-              hasUnit {
-                label
-              }
-            }
-          }
         }
       }
     }
