@@ -7,6 +7,47 @@
     %sveltekit.head%
   </head>
   <body>
+    <!-- <div id="console-output"></div> -->
     <div>%sveltekit.body%</div>
   </body>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    #console-output {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      width: 50vw;
+      z-index: 999999;
+      overflow: scroll;
+      background-color: #000;
+      color: #fff;
+      padding: 0.2rem;
+      resize: both;
+      overflow: auto;
+      white-space: pre-wrap; /* Set white-space to pre-wrap to enable text wrapping */
+      word-wrap: break-word; /* for IE */
+    }
+    #console-output div {
+      margin-bottom: 0.1rem;
+    }
+  </style>
 </html>
+<!-- 
+<script>
+  // Reference to the div where console output will be displayed
+  const consoleOutputDiv = document.getElementById('console-output');
+
+  // Intercept console.log messages
+  const originalConsoleLog = console.log;
+  console.log = function () {
+    originalConsoleLog.apply(console, arguments);
+    const message = Array.from(arguments).map(arg => JSON.stringify(arg)).join(' ');
+    const newLine = document.createElement('div');
+    newLine.innerHTML = message;
+    consoleOutputDiv.appendChild(newLine);
+  };
+</script> -->

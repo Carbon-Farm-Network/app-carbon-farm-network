@@ -121,10 +121,9 @@
 
   onMount(async () => {
     if (browser) {
-      console.log(GET_PLAN)
-      fetchProposals()
-      
-      console.log(planId)
+      // console.log(GET_PLAN)
+      // fetchProposals()
+      // console.log(planId)
       getPlan.setVariables({
         id: planId
       });
@@ -135,7 +134,7 @@
 
       // assign all commitments and nest them under the "publishes" key
       commitments = [...plan.independentDemands]
-      console.log(commitments)
+      // console.log(commitments)
       
       let lastSeenProcessSpecification: any = undefined;
       let lastColumn: any = []

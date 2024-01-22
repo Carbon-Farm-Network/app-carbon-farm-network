@@ -6,11 +6,9 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
   import type { AgentConnection, Agent, Proposal, ProposalConnection, ProposedIntent } from '@valueflows/vf-graphql'
-
   import ErrorPage from './__error.svelte'
   import Search from '$lib/Search.svelte'
   import SidePanel from '$lib/SidePanel.svelte'
-
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
@@ -172,6 +170,22 @@
   let matchedAgents: AgentExtended[]
 
   $: agents, offersList;
+
+
+  // set up zome call signing when run outside of launcher
+  // export const authorizeClient = async (appInfo: AppInfo) => {
+  //   if (typeof window === "object" && !("__HC_LAUNCHER_ENV__" in window)) {
+  //     if (!(CellType.Provisioned in appInfo.cell_info.mewsfeed[0])) {
+  //       throw new Error("mewsfeed cell not provisioned");
+  //     }
+  //     const { cell_id } = appInfo.cell_info.mewsfeed[0][CellType.Provisioned];
+  //     const adminWs = await AdminWebsocket.connect(
+  //       new URL(`ws://localhost:${import.meta.env.VITE_HC_ADMIN_PORT}`)
+  //     );
+  //     await adminWs.authorizeSigningCredentials(cell_id);
+  //     console.log("Holochain app client authorized for zome calls");
+  //   }
+  // };
 </script>
 
 <div class="relative h-full w-full">
