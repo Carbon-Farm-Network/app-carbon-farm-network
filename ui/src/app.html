@@ -32,22 +32,45 @@
       word-wrap: break-word; /* for IE */
     }
     #console-output div {
-      margin-bottom: 0.1rem;
+      margin-bottom: 0.8rem;
     }
   </style>
 </html>
-<!-- 
-<script>
-  // Reference to the div where console output will be displayed
-  const consoleOutputDiv = document.getElementById('console-output');
 
-  // Intercept console.log messages
-  const originalConsoleLog = console.log;
-  console.log = function () {
-    originalConsoleLog.apply(console, arguments);
+<!-- <script>
+    const consoleOutputDiv = document.getElementById('console-output');
+
+// Intercept console methods to capture all types of console messages
+['log', 'warn', 'error', 'info', 'debug'].forEach(method => {
+  const originalConsoleMethod = console[method];
+  console[method] = function () {
+    originalConsoleMethod.apply(console, arguments);
     const message = Array.from(arguments).map(arg => JSON.stringify(arg)).join(' ');
     const newLine = document.createElement('div');
     newLine.innerHTML = message;
     consoleOutputDiv.appendChild(newLine);
   };
+});
+
+let isResizing = false;
+let initialX;
+let initialWidth;
+
+consoleOutputDiv.addEventListener('mousedown', (e) => {
+  if (e.target === consoleOutputDiv) {
+    isResizing = true;
+    initialX = e.clientX;
+    initialWidth = parseInt(getComputedStyle(consoleOutputDiv).width, 10);
+  }
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isResizing) return;
+  const newWidth = initialWidth + (e.clientX - initialX);
+  consoleOutputDiv.style.width = newWidth + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  isResizing = false;
+});
 </script> -->

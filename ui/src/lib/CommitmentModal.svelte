@@ -146,6 +146,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
 
   onMount(async() => {
     window.addEventListener('keydown', checkKey)
+    await fetchUnits();
     await fetchAgents();
     await fetchResourceSpecifications();
   })
@@ -208,15 +209,15 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     }
   }
 
-  onMount(async () => {
+  // onMount(async () => {
 
-    fetchUnits();
+  //   fetchUnits();
 
-    // selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
-    // if (!selectedCommitment) {
-    //   selectedCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)
-    // }
-  })
+  //   // selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
+  //   // if (!selectedCommitment) {
+  //   //   selectedCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)
+  //   // }
+  // })
 
 </script>
 

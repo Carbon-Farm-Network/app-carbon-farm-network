@@ -123,6 +123,7 @@
     "Weaving Factory",
     "Designer",
     "Shipping",
+    "Network",
   ]
   let roleImages = {
     "Farmer": "farm.svg",
@@ -132,6 +133,7 @@
     "Weaving Factory": "mill.svg",
     "Designer": "knitting.svg",
     "Shipping": "truck.svg",
+    "Network": "knitting.svg",
   }
 
   // let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
@@ -252,12 +254,12 @@
 
   $: isAgentValid = true && currentAgent.lat && currentAgent.long && currentAgent.name && currentAgent.imageUrl && currentAgent.role;
 
-  onMount(async () => {
+  // onMount(async () => {
     // console.log("mounted")
     // findAgent();
   //   // We pass '' as url because it will dynamically be replaced in launcher environments
   //   client = await AppAgentWebsocket.connect('', 'acfn');
-  });
+  // });
 </script>
 <!-- <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={() => testFacetsCall()}>
   test`

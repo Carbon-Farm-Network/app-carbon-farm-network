@@ -55,6 +55,7 @@ export const PLAN_RETURN_FIELDS = gql`
       committedInputs {
         id
         revisionId
+        hasBeginning
         action {
           id
           label
@@ -91,6 +92,7 @@ export const PLAN_RETURN_FIELDS = gql`
       committedOutputs {
         id
         revisionId
+        hasBeginning
         action {
           id
           label

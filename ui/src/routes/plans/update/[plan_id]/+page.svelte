@@ -6,7 +6,8 @@
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
-  import { Trash, Pencil, PlusCircle } from '$lib/icons'
+  import EconomicEventModal from '$lib/EconomicEventModal.svelte'
+  import { Trash, Pencil, PlusCircle, EconomicEvent } from '$lib/icons'
   import { page } from '$app/stores';
 
   // import plan from '$lib/data/plan.json'
@@ -41,7 +42,7 @@
     planId = $page.params.plan_id;
   }
 
-  $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen;
+  $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen, economicEventModalOpen;
 
   let requests: Proposal[] = [];
   let offers: Proposal[] = [];
@@ -179,6 +180,7 @@
 
   let planModalOpen = false
   let commitmentModalOpen = false
+  let economicEventModalOpen = false
   let selectedCommitmentId: string | undefined = undefined
 </script>
 
@@ -188,6 +190,20 @@
 
 {#if plan}
 <PlanModal bind:open={planModalOpen} planObject = {plan} {allColumns} {commitments} {commitmentsToDelete} editing={true}/>
+{/if}
+
+{#if economicEventModalOpen}
+<EconomicEventModal
+bind:open={economicEventModalOpen}
+  {selectedCommitmentId}
+  {commitmentModalProcess}
+  {commitmentModalColumn}
+  {commitmentModalSide}
+  process = {currentProcess}
+  bind:commitments
+  on:submit={(event) => {
+  }}
+/>
 {/if}
 
 <CommitmentModal
@@ -353,7 +369,20 @@ Loading plan...
                       </p>
                     {/if}
                     <div class="w-full flex justify-center">
-                      <button
+                    <!-- <button
+                      on:click={() => {
+                        commitmentModalProcess = processIndex
+                        commitmentModalColumn = columnIndex
+                        commitmentModalSide = "committedInputs"
+                        selectedCommitmentId = id
+                        currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                        economicEventModalOpen = true
+                      }}
+                    >
+                      <EconomicEvent/>
+                    </button> -->
+
+                    <button
                       on:click={() => {
                         commitmentModalProcess = processIndex
                         commitmentModalColumn = columnIndex
