@@ -9,9 +9,13 @@
     "preinstall": "npx only-allow pnpm",
     "postinstall": "pnpm run download-hrea-obs && pnpm run download-hrea-specification && pnpm run download-hrea-agent && pnpm run download-hrea-planning && pnpm run download-hrea-proposal && pnpm run download-hrea-plan && pnpm run download-hrea-agreement && pnpm run download-facets",
     "start": "AGENTS=1 pnpm run network",
-    "network": "hc s clean && pnpm run build:happ && UI_PORT=8888 concurrently \"cd ui && pnpm start\" \"pnpm run launch:happ\"",
+    "dev": "VITE_ADMIN_PORT=$(port) VITE_APP_PORT=$(port) SIGNAL_PORT=$(port) BOOTSTRAP_PORT=$(port) UI_PORT=8888 npm run x",
+    "x": "hc s clean &&  npm run build:happ && UI_PORT=8888 concurrently \"npm start -w ui\" \"npm run start:happ\" \"hc run-local-services -b $BOOTSTRAP_PORT -s $SIGNAL_PORT\"",
+    "network": "hc s clean && pnpm run build:happ && UI_PORT=8888 concurrently \"cd ui && pnpm start\" \"pnpm run launch:normal\"",
     "test": "pnpm run build:zomes && hc app pack workdir && cd tests && pnpm t",
-    "launch:happ": "echo \"pass\" | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/acfn.happ --ui-port $UI_PORT network mem",
+    "launch:happ": "concurrently \"hc run-local-services --bootstrap-port $BOOTSTRAP_PORT --signal-port $SIGNAL_PORT\" \"echo pass | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/acfn.happ --ui-port $UI_PORT network --bootstrap http://127.0.0.1:\"$BOOTSTRAP_PORT\" webrtc ws://127.0.0.1:\"$SIGNAL_PORT\"\"",   
+    "launch:normal": "echo \"pass\" | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/acfn.happ --ui-port $UI_PORT network mem",
+    "start:happ": "echo \"starting with admin $VITE_ADMIN_PORT\" && RUST_LOG=warn echo \"pass\" | hc s -f=$VITE_ADMIN_PORT --piped generate workdir/acfn.happ --run=$VITE_APP_PORT -a acfn network -b \"http://127.0.0.1:$BOOTSTRAP_PORT\"  webrtc \"ws://127.0.0.1:$SIGNAL_PORT\"",
     "package": "pnpm run build:happ && pushd ui && pnpm run package && popd && hc web-app pack workdir --recursive",
     "package2": "pnpm run build:happ && pnpm run package -w ui && hc web-app pack workdir --recursive",
     "build:happ": "pnpm run build:zomes && hc dna pack dnas/acfn/workdir && hc app pack workdir",
@@ -32,9 +36,11 @@
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.1.1",
+    "@holochain/hc-spin": "^0.200.3",
     "@types/svelte-leafletjs": "^0.8.3",
     "concurrently": "^6.2.1",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "new-port-cli": "^1.0.0"
   },
   "engines": {
     "npm": ">=7.0.0"

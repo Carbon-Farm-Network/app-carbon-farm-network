@@ -161,11 +161,8 @@
       // const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
       // console.log(value_id)
       const identifier = res.data.createOrganization.agent.id
-      console.log(identifier)
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in selectedFacets) {
-        console.log(facet)
-        console.log(selectedFacets[facet])
         if (selectedFacets[facet] == null) {
           continue
         }
@@ -192,9 +189,6 @@
   }
 
   async function handleUpdate() {
-    // getAgent();
-    console.log(currentAgent)
-
     let agent: OrganizationUpdateParams = {
         name: currentAgent.name,
         image: currentAgent.imageUrl,
@@ -228,25 +222,6 @@
       console.error(error)
     }
   }
-
-  // async function testFacetsCall() {
-  //   const facetGroupEntry = {
-  //     group_id: "groupId",
-  //     note: "note",
-  //   };
-
-  //   try {
-  //     const record = await client.callZome({
-  //       cap_secret: null,
-  //       role_name: 'hc_facets',
-  //       zome_name: 'hc_facets',
-  //       fn_name: 'create_facet_group',
-  //       payload: facetGroupEntry,
-  //     });
-  //   } catch (error) {
-  //     console.error(error)
-  //   }
-  // }
 
   // let client: AppAgentClient;
 

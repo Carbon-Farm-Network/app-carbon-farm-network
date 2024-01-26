@@ -15,6 +15,14 @@
   import { PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import type { AgentExtended } from '$lib/graphql/extension-schemas'
+  // import { AdminWebsocket } from '@holochain/client';
+  const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
+
+  // const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'acfn'
+  // const roleName = 'acfn'
+  // const appPort = import.meta.env.VITE_APP_PORT ? import.meta.env.VITE_APP_PORT : 8888
+  // const adminPort = import.meta.env.VITE_ADMIN_PORT
+  // const url = `ws://localhost:${appPort}`;
 
   let offersList: Proposal[] = [];
 
@@ -151,12 +159,12 @@
   // ===============GET OFFERS ENDS==========
 
   onMount(async () => {
-      await fetchOffers()
-      // await agentsQuery.getCurrentResult()
-      await fetchAgents()
-      // setInterval(function(){
-      //   fetchAgents()
-      // }, 20000)
+    await fetchOffers()
+    // await agentsQuery.getCurrentResult()
+    await fetchAgents()
+    // setInterval(function(){
+    //   fetchAgents()
+    // }, 20000)
 
     // defer Leaflet map load until rendering, and only in browser environment
     if (browser) {

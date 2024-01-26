@@ -22,7 +22,7 @@
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams } from '@valueflows/vf-graphql'
 
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
@@ -75,20 +75,18 @@
     }
   `
 
-  // const GET_COMMITMENTS = gql`
-  //   query {
-  //     commitments {
-  //       clauseOf {
-  //         id
-  //       }
-  //     }
-  //     agreements {
-  //       commitments {
-  //         id
-  //       }
-  //     }
-  //   }
-  // `
+  const CREATE_ECONOMIC_EVENT = gql`
+    mutation($ee: EconomicEventCreateParams!) {
+      createEconomicEvent(economicEvent: $ee) {
+        economicEvent {
+          id
+          revisionId
+        }
+      }
+    }
+  `
+
+  let addEconomicEvent: any = mutation(CREATE_ECONOMIC_EVENT)
 
   interface ProposalsQueryResponse {
     proposals: ProposalConnection & RelayConn<any>
@@ -101,8 +99,8 @@
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
   let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
 
-  // let getPlan: ReadableQuery<ProposalsQueryResponse> = query(GET_PLAN)
 
+    
   async function fetchProposals() {
     await getProposals.getCurrentResult()
     await getProposals.refetch().then((r) => {
@@ -118,6 +116,33 @@
         // console.log(requests)
       }
     })
+  }
+
+  async function saveEconomicEvent(event: any) {
+    try {
+      console.log("ho")
+      const economicEvent: EconomicEventCreateParams = {
+        note: event.detail.commitment.note,
+        action: event.detail.commitment.action,
+        provider: event.detail.commitment.provider,
+        receiver: event.detail.commitment.receiver,
+        hasPointInTime: new Date(),
+        resourceClassifiedAs: [event.detail.commitment.resourceConformsTo],
+        resourceQuantity: {
+          hasNumericalValue: event.detail.commitment.resourceQuantity.hasNumericalValue,
+          hasUnit: event.detail.commitment.resourceQuantity.hasUnit,
+        },
+        // inScopeOf: ['some-accounting-scope'],
+      }
+      let x = await addEconomicEvent({
+        variables: {
+          ee: economicEvent,
+        }
+      })
+      console.log(x)
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   onMount(async () => {
@@ -202,6 +227,8 @@ bind:open={economicEventModalOpen}
   process = {currentProcess}
   bind:commitments
   on:submit={(event) => {
+    console.log("hi")
+    saveEconomicEvent(event.detail.commitment)
   }}
 />
 {/if}
@@ -369,7 +396,7 @@ Loading plan...
                       </p>
                     {/if}
                     <div class="w-full flex justify-center">
-                    <!-- <button
+                    <button
                       on:click={() => {
                         commitmentModalProcess = processIndex
                         commitmentModalColumn = columnIndex
@@ -380,7 +407,7 @@ Loading plan...
                       }}
                     >
                       <EconomicEvent/>
-                    </button> -->
+                    </button>
 
                     <button
                       on:click={() => {
@@ -468,6 +495,18 @@ Loading plan...
                     </div>
                     <!-- {#if editable} -->
                       <div class="w-full flex justify-center">
+                        <button
+                          on:click={() => {
+                            commitmentModalProcess = processIndex
+                            commitmentModalColumn = columnIndex
+                            commitmentModalSide = "committedOutputs"
+                            selectedCommitmentId = id
+                            currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                            economicEventModalOpen = true
+                          }}
+                        >
+                          <EconomicEvent/>
+                        </button>
                         <button
                         on:click={() => {
                           commitmentModalProcess = processIndex
