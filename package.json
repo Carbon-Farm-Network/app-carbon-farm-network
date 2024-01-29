@@ -14,6 +14,7 @@
     "network": "hc s clean && pnpm run build:happ && UI_PORT=8888 concurrently \"cd ui && pnpm start\" \"pnpm run launch:normal\"",
     "test": "pnpm run build:zomes && hc app pack workdir && cd tests && pnpm t",
     "launch:happ": "concurrently \"hc run-local-services --bootstrap-port $BOOTSTRAP_PORT --signal-port $SIGNAL_PORT\" \"echo pass | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/acfn.happ --ui-port $UI_PORT network --bootstrap http://127.0.0.1:\"$BOOTSTRAP_PORT\" webrtc ws://127.0.0.1:\"$SIGNAL_PORT\"\"",   
+    "launch:spin": "echo \"pass\" | RUST_LOG=warn hc spin -n $AGENTS --ui-port $UI_PORT workdir/acfn.happ",
     "launch:normal": "echo \"pass\" | RUST_LOG=warn hc launch --piped -n $AGENTS workdir/acfn.happ --ui-port $UI_PORT network mem",
     "start:happ": "echo \"starting with admin $VITE_ADMIN_PORT\" && RUST_LOG=warn echo \"pass\" | hc s -f=$VITE_ADMIN_PORT --piped generate workdir/acfn.happ --run=$VITE_APP_PORT -a acfn network -b \"http://127.0.0.1:$BOOTSTRAP_PORT\"  webrtc \"ws://127.0.0.1:$SIGNAL_PORT\"",
     "package": "pnpm run build:happ && pushd ui && pnpm run package && popd && hc web-app pack workdir --recursive",

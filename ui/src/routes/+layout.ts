@@ -9,15 +9,17 @@ import extensionSchemas from '$lib/graphql/extension-schemas'
 import bindResolvers from '$lib/graphql/extension-resolvers'
 import type { ExtendedDnaConfig } from '$lib/graphql/extension-resolvers'
 
-const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'acfn'
+const appId = 'acfn'
 const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
 const adminPort = import.meta.env.VITE_ADMIN_PORT
-const appPort = import.meta.env.VITE_APP_PORT ? import.meta.env.VITE_APP_PORT : 8888
+const appPort = import.meta.env.VITE_APP_PORT
 const url = `ws://localhost:${appPort}`;
 
 export async function load() {
   if (!browser) return
   try {
+    // env.APP_INTERFACE_PORT = appPort
+    // window.env.APP_INTERFACE_PORT = appPort
     console.log("adminPort is", adminPort)
     console.log("url is", url)
     console.log("appId is", appId)
@@ -31,22 +33,27 @@ export async function load() {
     } else {
       console.log("no admin port")
     }
-    console.log('hi')
+    console.log('hi', url)
     // pull DNA config separately in order to bind to CFN-specific extension Cells
-    const conn = await AppWebsocket.connect(new URL(url))
+    const conn = await AppWebsocket.connect(url)
     // const conn = await AppWebsocket.connect(ENV_CONNECTION_URI)
-    console.log(conn)
-    const { dnaConfig } = await sniffHolochainAppCells(conn)
+    console.log("conn is ", conn)
+    const { dnaConfig } = await sniffHolochainAppCells(conn, appId)
     console.log("dna config", dnaConfig)
+    // const cl = await AppAgentWebsocket.connect(new URL(url), appId)
+    // console.log("cl", cl)
     return {
       client: await autoConnect({
+        appID: appId,
         // passthrough detected DNA config to skip unnecessary redetect
-        dnaConfig,
+        // dnaConfig,
         // bind extension GraphQL schema defs and bound resolver callbacks
         extensionSchemas,
         extensionResolvers: await bindResolvers(dnaConfig as ExtendedDnaConfig, url),
+        conductorUri: url,
+        adminConductorUri: `ws://localhost:${adminPort}`,
       }),
-      // client: await AppAgentWebsocket.connect(new URL(url), appId)
+      // client: cl
     }
   } catch (e) {
     console.error("Holochain connection error", e)
