@@ -23,7 +23,7 @@ if (browser) {
       </h1>
     </div>
   </section>
-{:else}
+  {:else}
   <div class="grid">
     <nav class="nav">
       <Nav path={$page.url.pathname} />

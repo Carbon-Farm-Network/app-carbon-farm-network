@@ -15,20 +15,23 @@
   import { goto } from '$app/navigation'
   import { gql } from 'graphql-tag'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
+  import { PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection } from '@valueflows/vf-graphql'
 
+  const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
   let commitmentModalSide: string | undefined;
   let currentProcess: any[];
   let commitmentsToDelete: string[] = []
+  let processesToLoadCount = 0;
+  let processesLoadedCount = 0;
 
   let processImages = {
     "Pick Up": "/farm.svg",
@@ -75,6 +78,24 @@
     }
   `
 
+  const GET_SIMPLIFIED_PLAN = gql`
+    ${SIMPLIFIED_PLAN_RETURN_FIELDS}
+    query GetPlan($id: ID!) {
+      plan(id: $id) {
+        ...SimplifiedPlanReturnFields
+      }
+    }
+  `
+
+  const GET_PROCESS = gql`
+    ${PROCESS_RETURN_FIELDS}
+    query GetProcess($id: ID!) {
+      process(id: $id) {
+        ...ProcessReturnFields
+      }
+    }
+  `
+
   const CREATE_ECONOMIC_EVENT = gql`
     mutation($ee: EconomicEventCreateParams!) {
       createEconomicEvent(economicEvent: $ee) {
@@ -96,10 +117,14 @@
     plan: PlanConnection & RelayConn<any>
   }
 
+  interface ProcessQueryResponse {
+    plan: ProcessConnection & RelayConn<any>
+  }
+
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
   let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
-
-
+  let getSimplifiedPlan: ReadableQuery<PlanQueryResponse> = query(GET_SIMPLIFIED_PLAN);
+  let getProcess: ReadableQuery<ProcessConnection> = query(GET_PROCESS);
     
   async function fetchProposals() {
     await getProposals.getCurrentResult()
@@ -150,21 +175,38 @@
       // console.log(GET_PLAN)
       // fetchProposals()
       // console.log(planId)
-      getPlan.setVariables({
+      console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
+      // getPlan.setVariables({
+      //   id: planId
+      // });
+      getSimplifiedPlan.setVariables({
         id: planId
       });
-      const res = await getPlan.refetch()
+      // const res = await getPlan.refetch()
+      const res = await getSimplifiedPlan.refetch()
       plan = {...res.data.plan}
+      // plan = {...res.data.plan}
       // alert(JSON.stringify(plan.independentDemands[0]))
-      console.log(plan)
+      console.log("00000", plan, "================================================================================")
 
       // assign all commitments and nest them under the "publishes" key
+      // commitments = [...plan.independentDemands]
       commitments = [...plan.independentDemands]
-      // console.log(commitments)
       
       let lastSeenProcessSpecification: any = undefined;
       let lastColumn: any = []
-      plan.processes.forEach((process: any) => {
+      // plan.processes.forEach((process: any) => {
+      // for (let i = 0; i < simplifiedPlan.processes.length; i++) {
+      processesToLoadCount = plan.processes.length
+      for (const p of plan.processes) {
+        getProcess.setVariables({
+          id: p.id
+        });
+        let processRes: any = await getProcess.refetch()
+        processesLoadedCount++
+        let process = processRes.data.process
+        console.log(process)
+        await delay(1000)
         console.log(JSON.stringify(process.basedOn))
         console.log(allColumns)
         console.log(process)
@@ -185,7 +227,7 @@
           }
           lastSeenProcessSpecification = process.basedOn.id
         }
-      })
+      }
 
       loadingPlan = false;
     }
@@ -284,7 +326,7 @@ bind:open={economicEventModalOpen}
 </div>
 
 {#if loadingPlan}
-Loading plan...
+Loading plan... ({processesLoadedCount}/{processesToLoadCount})
 {:else}
 <!-- plan name -->
 <!-- plan name -->

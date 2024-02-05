@@ -26,6 +26,8 @@
   let resourceSpecifications: any[];
   let processSpecifications: any[];
   let units: Unit[];
+  let commitmentsToSaveCount: number = 0;
+  let commitmentsSavedCount: number = 0;
 
   // let name = ''
   // let note = ''
@@ -344,6 +346,7 @@
             cm: o
           }
         })
+        commitmentsSavedCount++
       } catch (e) {
         console.log(e)
       }
@@ -368,6 +371,14 @@
 
   async function handleSubmit() {
     savingPlan = true;
+    commitmentsToSaveCount = commitments.length
+    for (const column of allColumns) {
+      for (const process of column) {
+        commitmentsToSaveCount += process.committedInputs.length
+        commitmentsToSaveCount += process.committedOutputs.length
+      }
+    }
+    commitmentsSavedCount = 0
     let p = await addOrUpdatePlan(editing)
     // SAVE INDEPENDENT DEMANDS (commitments with no input or output)
     for (const c of commitments) {
@@ -387,6 +398,7 @@
       }
       console.log("trying to add independent", o)
       await saveOrUpdateCommitment(o)
+      // commitmentsSavedCount++
       console.log('added independent', o)
     }
 
@@ -438,6 +450,7 @@
                   cm: payment
                 }
               })
+              // commitmentsSavedCount++
               console.log(paymentCommitment)
             } catch (e) {
               console.log(e)
@@ -457,7 +470,7 @@
           if (agreementId) {
             c.clauseOf = agreementId
           }
-          await delay(20)
+          await delay(30)
           console.log("about to save commitment", c)
 
           // TEMPORARY find unit id
@@ -479,7 +492,7 @@
           console.log("commitment before sending to function", c)
           await saveOrUpdateCommitment(c)
           // console.log("saving commitment",c)
-          await delay(20);
+          await delay(30);
         }
 
         for (const input of process.committedInputs) {
@@ -510,7 +523,7 @@
           // await saveCommitment(c)
           // await delay(20);
         }
-        await delay(20);
+        await delay(30);
       }
     }
 
@@ -725,6 +738,7 @@
                   <p class="text-sm text-gray-500">
                     Please wait while the plan saves.
                   </p>
+                  (saving {commitmentsSavedCount} of {commitmentsToSaveCount})
                 </div>
               </div>
             </div>

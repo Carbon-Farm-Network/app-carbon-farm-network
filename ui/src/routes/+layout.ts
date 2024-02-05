@@ -8,6 +8,7 @@ import { AppWebsocket, AdminWebsocket, AppAgentWebsocket } from '@holochain/clie
 import extensionSchemas from '$lib/graphql/extension-schemas'
 import bindResolvers from '$lib/graphql/extension-resolvers'
 import type { ExtendedDnaConfig } from '$lib/graphql/extension-resolvers'
+import type { AppSignalCb, CellId } from '@holochain/client'
 
 const appId = 'acfn'
 const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
@@ -23,11 +24,13 @@ export async function load() {
     console.log("adminPort is", adminPort)
     console.log("url is", url)
     console.log("appId is", appId)
+    let cellID: CellId;
     if (adminPort) {
       const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`))
       const x = await adminWebsocket.listApps({})
       console.log("apps", x)
       const cellIds = await adminWebsocket.listCellIds()
+      cellID = cellIds[0]
       console.log("CELL IDS",cellIds)
       await adminWebsocket.authorizeSigningCredentials(cellIds[0])
     } else {
@@ -42,12 +45,20 @@ export async function load() {
     console.log("dna config", dnaConfig)
     // const cl = await AppAgentWebsocket.connect(new URL(url), appId)
     // console.log("cl", cl)
+    // const traceAppSignals: AppSignalCb = (signal) => {
+    //   return {
+    //     cell_id: signal.cell_id,
+    //     zome_name: signal.zome_name,
+    //     payload: signal.payload,
+    //   }
+    // }
     return {
       client: await autoConnect({
         appID: appId,
         // passthrough detected DNA config to skip unnecessary redetect
-        // dnaConfig,
+        // dnaConfig: dnaConfig,
         // bind extension GraphQL schema defs and bound resolver callbacks
+        // traceAppSignals: traceAppSignals,
         extensionSchemas,
         extensionResolvers: await bindResolvers(dnaConfig as ExtendedDnaConfig, url),
         conductorUri: url,
