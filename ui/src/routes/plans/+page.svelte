@@ -24,6 +24,7 @@
               }
             }
             id
+            revisionId
             name
             note
           }
@@ -32,11 +33,16 @@
     }
   `
 
+  const DELETE_PLAN = gql`mutation($revisionId: ID!){
+    deletePlan(revisionId: $revisionId)
+  }`
+
   interface PlansQueryResponse {
     plans: PlanConnection & RelayConn<any>
   }
-
+  
   let plansQuery: ReadableQuery<PlansQueryResponse> = query(GET_PLANS)
+  let deletePlan: any = mutation(DELETE_PLAN)
 
   // let plansQuery = query(GET_PLANS)
 
@@ -45,6 +51,16 @@
     plans = res.data.plans.edges
     console.log('plans', plans)
     // plans = res2.data.plans
+  }
+
+  async function removePlan(revisionId: any) {
+    let areYouSure = await confirm("Are you sure you want to delete this plan?")
+    if (areYouSure == true) {
+      console.log('deletePlan', revisionId)
+      const res = await deletePlan({ variables: { revisionId } })
+      console.log('deletePlan res', res)
+      await fetchPlans()
+    }
   }
 
   onMount(async () => {
@@ -114,7 +130,12 @@
                   >Edit<span class="sr-only">, {name}</span></button
                   >
                   &nbsp;
-                  <button type="button" class="text-indigo-600 hover:text-indigo-900">
+                  <button type="button" class="text-indigo-600 hover:text-indigo-900"
+                  on:click={() => {
+                    console.log('delete', plan.node.id)
+                    removePlan(plan.node.revisionId)
+                  }}
+                  >
                     Delete</button
                   >
                 </td>
