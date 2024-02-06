@@ -22,7 +22,7 @@
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -32,6 +32,7 @@
   let commitmentsToDelete: string[] = []
   let processesToLoadCount = 0;
   let processesLoadedCount = 0;
+  let selectedProcessId: string | undefined = undefined;
   let error: any;
 
   let processImages = {
@@ -108,7 +109,19 @@
     }
   `
 
+  const CREATE_FULFILLMENT = gql`
+    mutation($fulfillment: FulfillmentCreateParams!) {
+      createFulfillment(fulfillment: $fulfillment) {
+        fulfillment {
+          id
+          revisionId
+        }
+      }
+    }
+  `
+
   let addEconomicEvent: any = mutation(CREATE_ECONOMIC_EVENT)
+  let addFulfillment: any = mutation(CREATE_FULFILLMENT)
 
   interface ProposalsQueryResponse {
     proposals: ProposalConnection & RelayConn<any>
@@ -151,7 +164,7 @@
 
   async function saveEconomicEvent(commitment: any, process: any) {
     try {
-      console.log("ho")
+      console.log("ho", commitment)
       const economicEvent: EconomicEventCreateParams = {
         // note: commitment.note,
         action: commitment.action.id,
@@ -165,15 +178,32 @@
           hasUnit: commitment.resourceQuantity.hasUnit.id,
         },
         hasBeginning: new Date(),
-        inputOf: process.id
+        inputOf: process
         // inScopeOf: ['some-accounting-scope'],
       }
+
+
+      console.log("economic event", economicEvent)
+      
       let x = await addEconomicEvent({
         variables: {
           event: economicEvent,
         }
       })
       console.log(x)
+
+      const fulfillment: FulfillmentCreateParams = {
+        fulfilledBy: x.data.createEconomicEvent.economicEvent.id,
+        fulfills: commitment.id,
+      }
+
+      console.log("fulfillment", fulfillment)
+      let y = await addFulfillment({
+        variables: {
+          fulfillment: fulfillment,
+        }
+      })
+      console.log("y", y)
     } catch (e) {
       console.log(e)
     }
@@ -283,8 +313,8 @@ bind:open={economicEventModalOpen}
   process = {currentProcess}
   bind:commitments
   on:submit={(event) => {
-    console.log("hi")
-    saveEconomicEvent(event.detail.commitment, commitmentModalProcess)
+    console.log("hi", currentProcess)
+    saveEconomicEvent(event.detail.commitment, selectedProcessId)
   }}
 />
 {/if}
@@ -415,8 +445,7 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                 >
                 <PlusCircle />
               </button>
-
-                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement }}
+                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy }}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -455,6 +484,11 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                         {commitment.resourceConformsTo.name}
                       </p>
                     {/if}
+                    {#if fulfilledBy && fulfilledBy.length > 0}
+                      <p>
+                        fulfilled by: {fulfilledBy[0]}
+                      </p>
+                    {/if}
                     <div class="w-full flex justify-center">
                     <button
                       on:click={() => {
@@ -462,6 +496,7 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                         commitmentModalColumn = columnIndex
                         commitmentModalSide = "committedInputs"
                         selectedCommitmentId = id
+                        selectedProcessId = processes[0].id
                         currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
                         economicEventModalOpen = true
                       }}
@@ -561,6 +596,7 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                             commitmentModalColumn = columnIndex
                             commitmentModalSide = "committedOutputs"
                             selectedCommitmentId = id
+                            selectedProcessId = processes[0].id
                             currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
                             economicEventModalOpen = true
                           }}

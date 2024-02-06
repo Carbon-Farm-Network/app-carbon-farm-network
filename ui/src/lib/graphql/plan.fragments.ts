@@ -107,6 +107,9 @@ export const PROCESS_RETURN_FIELDS = gql`
           label
         }
       }
+      fulfilledBy {
+        id
+      }
     }
     committedOutputs {
       id
