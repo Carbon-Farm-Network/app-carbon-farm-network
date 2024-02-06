@@ -110,6 +110,7 @@ export const PROCESS_RETURN_FIELDS = gql`
       fulfilledBy {
         id
       }
+      finished
     }
     committedOutputs {
       id
@@ -143,7 +144,14 @@ export const PROCESS_RETURN_FIELDS = gql`
       resourceConformsTo {
         id
         name
+        defaultUnitOfResource {
+          label
+        }
       }
+      fulfilledBy {
+        id
+      }
+      finished
     }
   }
 `

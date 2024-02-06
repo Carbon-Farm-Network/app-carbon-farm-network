@@ -215,6 +215,7 @@
             <button
               type="button"
               class="block px-4 py-2 text-sm text-gray-700"
+              style="text-align: left;"
               on:click={() => navigate('/resource_specifications')}
               role="menuitem"
               tabindex="-1"

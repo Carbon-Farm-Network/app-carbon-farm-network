@@ -305,7 +305,7 @@
     console.log(commitment)
     let o: CommitmentCreateParams = {
       plannedWithin: commitment.plannedWithin,
-      finished: false,
+      finished: commitment.finished,
       note: commitment.note,
       hasBeginning: new Date(Date.now()),
       resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,

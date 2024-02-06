@@ -175,7 +175,9 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
       id: '',
       name: ''
     },
-    note: ''
+    note: '',
+    fulfilledBy: [],
+    finished: false
   }
   let newCommitment = Object.assign({}, newCommitmentTemplate)
   let selectedCommitment = Object.assign({}, newCommitmentTemplate)

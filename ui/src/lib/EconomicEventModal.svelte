@@ -26,6 +26,7 @@
   let agents: Agent[];
   let resourceSpecifications: any[];
   let units: any[];
+  let finished = true;
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
@@ -466,7 +467,13 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                         class="block text-sm font-medium leading-6 text-gray-900"
                         >Commitment finished</label
                       >
-                        <input type="checkbox" id="finished" bind:checked={selectedCommitment.finished} class="mt-2">
+                        <input type="checkbox" id="finished" 
+                        on:change={(e) => {
+                          console.log("lkjjjjjjj", e)
+                          selectedCommitment.finished = e.target.checked
+                          console.log(selectedCommitment.finished)
+                        }}
+                        bind:checked={finished} class="mt-2">
                     </div>
                   </div>
                 </div>
@@ -499,6 +506,8 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
             if (!selectedCommitment.note) {
               updatedCommitment.note = newCommitment.note
             }
+
+            updatedCommitment.finished = finished
 
             dispatch('submit', {
               column: commitmentModalColumn,

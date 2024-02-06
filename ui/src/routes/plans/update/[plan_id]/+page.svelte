@@ -34,6 +34,7 @@
   let processesLoadedCount = 0;
   let selectedProcessId: string | undefined = undefined;
   let error: any;
+  let yellow: any[] = []
 
   let processImages = {
     "Pick Up": "/farm.svg",
@@ -120,8 +121,23 @@
     }
   `
 
+  const UPDATE_COMMITMENT = gql`
+    mutation($commitment: CommitmentUpdateParams!) {
+      updateCommitment(commitment: $commitment) {
+        commitment {
+          id
+          revisionId
+          plannedWithin {
+            id
+          }
+        }
+      }
+    }
+  `
+
   let addEconomicEvent: any = mutation(CREATE_ECONOMIC_EVENT)
   let addFulfillment: any = mutation(CREATE_FULFILLMENT)
+  let updateCommitment: any = mutation(UPDATE_COMMITMENT)
 
   interface ProposalsQueryResponse {
     proposals: ProposalConnection & RelayConn<any>
@@ -162,7 +178,24 @@
     }
   }
 
-  async function saveEconomicEvent(commitment: any, process: any) {
+  async function saveCommitment(commitment: any) {
+    try {
+      console.log("commitment!", commitment)
+      let x = await updateCommitment({
+        variables: {
+          commitment: {
+            revisionId: commitment.revisionId,
+            finished: commitment.finished,
+          },
+        }
+      })
+      console.log(x)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function saveEconomicEvent(commitment: any, process: any, side: string) {
     try {
       console.log("ho", commitment)
       const economicEvent: EconomicEventCreateParams = {
@@ -178,10 +211,14 @@
           hasUnit: commitment.resourceQuantity.hasUnit.id,
         },
         hasBeginning: new Date(),
-        inputOf: process
         // inScopeOf: ['some-accounting-scope'],
       }
 
+      if (side == "committedInputs") {
+        economicEvent.inputOf = process
+      } else if (side == "committedOutputs"){
+        economicEvent.outputOf = process
+      }
 
       console.log("economic event", economicEvent)
       
@@ -204,6 +241,8 @@
         }
       })
       console.log("y", y)
+
+      await saveCommitment(commitment)
     } catch (e) {
       console.log(e)
     }
@@ -313,8 +352,11 @@ bind:open={economicEventModalOpen}
   process = {currentProcess}
   bind:commitments
   on:submit={(event) => {
-    console.log("hi", currentProcess)
-    saveEconomicEvent(event.detail.commitment, selectedProcessId)
+    saveEconomicEvent(event.detail.commitment, selectedProcessId, commitmentModalSide)
+    let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == event.detail.commitment.id)
+    yellow.push(event.detail.commitment.id)
+    console.log("finished", event.detail.commitment.finished)
+    allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = event.detail.commitment
   }}
 />
 {/if}
@@ -346,6 +388,7 @@ bind:open={economicEventModalOpen}
         commitments.push(event.detail.commitment)
         commitments = [...commitments]
       } else {
+        console.log("adding commitment", event.detail.commitment)
         allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
       }
     }
@@ -445,10 +488,12 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                 >
                 <PlusCircle />
               </button>
-                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy }}
+                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished }}
+                  {@const color = finished ? "red" : (((fulfilledBy.length > 0) || yellow.includes(id)) ? "yellow" : "white")}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-                  >
+                    style="background-color: {color};"
+                    >
                     <p>{resourceConformsTo?.name}</p>
                     <div class="flex justify-between">
                       <!--
@@ -484,25 +529,28 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                         {commitment.resourceConformsTo.name}
                       </p>
                     {/if}
-                    {#if fulfilledBy && fulfilledBy.length > 0}
+                    {#if false && fulfilledBy && fulfilledBy.length > 0}
                       <p>
                         fulfilled by: {fulfilledBy[0]}
+                        finished: {finished}
                       </p>
                     {/if}
                     <div class="w-full flex justify-center">
-                    <button
-                      on:click={() => {
-                        commitmentModalProcess = processIndex
-                        commitmentModalColumn = columnIndex
-                        commitmentModalSide = "committedInputs"
-                        selectedCommitmentId = id
-                        selectedProcessId = processes[0].id
-                        currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                        economicEventModalOpen = true
-                      }}
-                    >
-                      <EconomicEvent/>
-                    </button>
+                    {#if revisionId}
+                      <button
+                        on:click={() => {
+                          commitmentModalProcess = processIndex
+                          commitmentModalColumn = columnIndex
+                          commitmentModalSide = "committedInputs"
+                          selectedCommitmentId = id
+                          selectedProcessId = processes[0].id
+                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                          economicEventModalOpen = true
+                        }}
+                      >
+                        <EconomicEvent/>
+                      </button>
+                    {/if}
 
                     <button
                       on:click={() => {
@@ -547,10 +595,12 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                   <PlusCircle />
                 </button>
 
-                {#each committedOutputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, revisionId, agreement }}
-                  <div
+                {#each committedOutputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished }}
+                {@const color = finished ? "red" : (((fulfilledBy.length > 0) || yellow.includes(id)) ? "yellow" : "white")}
+                <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-                  >
+                    style="background-color: {color};"
+                    >
                     <div>
                       <p>{resourceConformsTo?.name}</p>
                       <div class="flex justify-between">
@@ -590,19 +640,21 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                     </div>
                     <!-- {#if editable} -->
                       <div class="w-full flex justify-center">
-                        <button
-                          on:click={() => {
-                            commitmentModalProcess = processIndex
-                            commitmentModalColumn = columnIndex
-                            commitmentModalSide = "committedOutputs"
-                            selectedCommitmentId = id
-                            selectedProcessId = processes[0].id
-                            currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                            economicEventModalOpen = true
-                          }}
-                        >
-                          <EconomicEvent/>
-                        </button>
+                        {#if revisionId}
+                          <button
+                            on:click={() => {
+                              commitmentModalProcess = processIndex
+                              commitmentModalColumn = columnIndex
+                              commitmentModalSide = "committedOutputs"
+                              selectedCommitmentId = id
+                              selectedProcessId = processes[0].id
+                              currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                              economicEventModalOpen = true
+                            }}
+                          >
+                            <EconomicEvent/>
+                          </button>
+                        {/if}
                         <button
                         on:click={() => {
                           commitmentModalProcess = processIndex
