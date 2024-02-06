@@ -20,7 +20,7 @@
 
 <!-- This example requires Tailwind CSS v2.0+ -->
 <nav class="h-full">
-  <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-full">
+  <div class="px-2 sm:px-6 lg:px-8 h-full">
     <div class="relative flex items-center justify-between h-full">
       <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
         <!-- Mobile menu button-->
@@ -94,7 +94,7 @@
             alt="Workflow"
           /> -->
         </div>
-        <div class="hidden sm:block sm:ml-6 w-full">
+        <div class="hidden sm:block sm:ml-6 w-full sm:mt-3">
           <div class="flex justify-end space-x-4">
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
 
@@ -287,7 +287,7 @@
 
 <style>
   .nav-default {
-    @apply text-gray-300 px-3 py-2 rounded-md text-sm font-medium;
+    @apply text-gray-300 px-3 py-2 rounded-md text-base font-medium;
   }
 
   .nav-default:hover {
