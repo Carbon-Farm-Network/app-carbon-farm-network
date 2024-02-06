@@ -56,6 +56,50 @@ export const SIMPLIFIED_PLAN_RETURN_FIELDS = gql`
   }
 `
 
+export const COMMITMENT_RETURN_FIELDS = gql`
+  fragment CommitmentReturnFields on Commitment {
+    id
+    revisionId
+    hasBeginning
+    action {
+      id
+      label
+    }
+    meta {
+      retrievedRevision {
+        id
+        time
+      }
+    }
+    provider {
+      id
+      name
+    }
+    receiver {
+      id
+      name
+    }
+    resourceQuantity {
+      hasNumericalValue
+      hasUnit {
+        id
+        label
+      }
+    }
+    resourceConformsTo {
+      id
+      name
+      defaultUnitOfResource {
+        label
+      }
+    }
+    fulfilledBy {
+      id
+    }
+    finished
+  }
+`
+
 export const PROCESS_RETURN_FIELDS = gql`
   fragment ProcessReturnFields on Process {
     id
