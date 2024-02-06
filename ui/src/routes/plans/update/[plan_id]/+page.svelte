@@ -32,6 +32,7 @@
   let commitmentsToDelete: string[] = []
   let processesToLoadCount = 0;
   let processesLoadedCount = 0;
+  let error: any;
 
   let processImages = {
     "Pick Up": "/farm.svg",
@@ -97,8 +98,8 @@
   `
 
   const CREATE_ECONOMIC_EVENT = gql`
-    mutation($ee: EconomicEventCreateParams!) {
-      createEconomicEvent(economicEvent: $ee) {
+    mutation($event: EconomicEventCreateParams!) {
+      createEconomicEvent(event: $event) {
         economicEvent {
           id
           revisionId
@@ -127,41 +128,49 @@
   let getProcess: ReadableQuery<ProcessConnection> = query(GET_PROCESS);
     
   async function fetchProposals() {
-    await getProposals.getCurrentResult()
-    await getProposals.refetch().then((r) => {
-      if (r.data?.proposals.edges.length > 0) {
-        proposalsList = flattenRelayConnection(r.data?.proposals)
-        // {@const primary = publishes.find(it => !it.reciprocal)}
-        //       {#if primary?.publishes?.receiver}
-        requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
-        offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
-        // console.log(requests)
-        // console.log(offers)
-        // console.log(proposalsList[0].publishes[0].publishes)
-        // console.log(requests)
-      }
-    })
+    try {
+      await getProposals.getCurrentResult()
+      await getProposals.refetch().then((r) => {
+        if (r.data?.proposals.edges.length > 0) {
+          proposalsList = flattenRelayConnection(r.data?.proposals)
+          // {@const primary = publishes.find(it => !it.reciprocal)}
+          //       {#if primary?.publishes?.receiver}
+          requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
+          offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
+          // console.log(requests)
+          // console.log(offers)
+          // console.log(proposalsList[0].publishes[0].publishes)
+          // console.log(requests)
+        }
+      })
+    } catch (e) {
+      console.log(e)
+      error = e
+    }
   }
 
-  async function saveEconomicEvent(event: any) {
+  async function saveEconomicEvent(commitment: any, process: any) {
     try {
       console.log("ho")
       const economicEvent: EconomicEventCreateParams = {
-        note: event.detail.commitment.note,
-        action: event.detail.commitment.action,
-        provider: event.detail.commitment.provider,
-        receiver: event.detail.commitment.receiver,
-        hasPointInTime: new Date(),
-        resourceClassifiedAs: [event.detail.commitment.resourceConformsTo],
+        // note: commitment.note,
+        action: commitment.action.id,
+        provider: commitment.provider.id,
+        receiver: commitment.receiver.id,
+        // hasPointInTime: new Date(),
+        // resourceClassifiedAs: ["commitment.resourceConformsTo.id"],
+        resourceConformsTo: commitment.resourceConformsTo.id,
         resourceQuantity: {
-          hasNumericalValue: event.detail.commitment.resourceQuantity.hasNumericalValue,
-          hasUnit: event.detail.commitment.resourceQuantity.hasUnit,
+          hasNumericalValue: commitment.resourceQuantity.hasNumericalValue,
+          hasUnit: commitment.resourceQuantity.hasUnit.id,
         },
+        hasBeginning: new Date(),
+        inputOf: process.id
         // inScopeOf: ['some-accounting-scope'],
       }
       let x = await addEconomicEvent({
         variables: {
-          ee: economicEvent,
+          event: economicEvent,
         }
       })
       console.log(x)
@@ -172,64 +181,69 @@
 
   onMount(async () => {
     if (browser) {
-      // console.log(GET_PLAN)
-      // fetchProposals()
-      // console.log(planId)
-      console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
+      try {
+        // console.log(GET_PLAN)
+        // fetchProposals()
+        // console.log(planId)
+        console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
       // getPlan.setVariables({
-      //   id: planId
-      // });
-      getSimplifiedPlan.setVariables({
-        id: planId
-      });
-      // const res = await getPlan.refetch()
-      const res = await getSimplifiedPlan.refetch()
-      plan = {...res.data.plan}
-      // plan = {...res.data.plan}
-      // alert(JSON.stringify(plan.independentDemands[0]))
-      console.log("00000", plan, "================================================================================")
-
-      // assign all commitments and nest them under the "publishes" key
-      // commitments = [...plan.independentDemands]
-      commitments = [...plan.independentDemands]
-      
-      let lastSeenProcessSpecification: any = undefined;
-      let lastColumn: any = []
-      // plan.processes.forEach((process: any) => {
-      // for (let i = 0; i < simplifiedPlan.processes.length; i++) {
-      processesToLoadCount = plan.processes.length
-      for (const p of plan.processes) {
-        getProcess.setVariables({
-          id: p.id
+        //   id: planId
+        // });
+        getSimplifiedPlan.setVariables({
+          id: planId
         });
-        let processRes: any = await getProcess.refetch()
-        processesLoadedCount++
-        let process = processRes.data.process
-        console.log(process)
-        await delay(1000)
-        console.log(JSON.stringify(process.basedOn))
-        console.log(allColumns)
-        console.log(process)
-        lastColumn.unshift({
-          ...process,
-          basedOn: {
-            image: processImages[process.basedOn.name],
-            name: process.basedOn.name,
-            id: process.basedOn.id,
-          },
-          committedInputs: [...process.committedInputs].reverse(),
-          committedOutputs: [...process.committedOutputs].reverse(),
-        })
-        if (process.basedOn.id !=lastSeenProcessSpecification) {
-          if (lastColumn.length > 0) {
-            allColumns.unshift(lastColumn)
-            lastColumn = []
+        // const res = await getPlan.refetch()
+        const res = await getSimplifiedPlan.refetch()
+        plan = {...res.data.plan}
+        // plan = {...res.data.plan}
+        // alert(JSON.stringify(plan.independentDemands[0]))
+        console.log("00000", plan, "================================================================================")
+        
+        // assign all commitments and nest them under the "publishes" key
+        // commitments = [...plan.independentDemands]
+        commitments = [...plan.independentDemands]
+        
+        let lastSeenProcessSpecification: any = undefined;
+        let lastColumn: any = []
+        // plan.processes.forEach((process: any) => {
+          // for (let i = 0; i < simplifiedPlan.processes.length; i++) {
+            processesToLoadCount = plan.processes.length
+            for (const p of plan.processes) {
+              getProcess.setVariables({
+            id: p.id
+          });
+          let processRes: any = await getProcess.refetch()
+          processesLoadedCount++
+          let process = processRes.data.process
+          console.log(process)
+          await delay(1000)
+          console.log(JSON.stringify(process.basedOn))
+          console.log(allColumns)
+          console.log(process)
+          lastColumn.unshift({
+            ...process,
+            basedOn: {
+              image: processImages[process.basedOn.name],
+              name: process.basedOn.name,
+              id: process.basedOn.id,
+            },
+            committedInputs: [...process.committedInputs].reverse(),
+            committedOutputs: [...process.committedOutputs].reverse(),
+          })
+          if (process.basedOn.id !=lastSeenProcessSpecification) {
+            if (lastColumn.length > 0) {
+              allColumns.unshift(lastColumn)
+              lastColumn = []
+            }
+            lastSeenProcessSpecification = process.basedOn.id
           }
-          lastSeenProcessSpecification = process.basedOn.id
         }
+        
+        loadingPlan = false;
+      } catch (e) {
+        console.log("error", e)
+        error = e
       }
-
-      loadingPlan = false;
     }
   })
 
@@ -270,7 +284,7 @@ bind:open={economicEventModalOpen}
   bind:commitments
   on:submit={(event) => {
     console.log("hi")
-    saveEconomicEvent(event.detail.commitment)
+    saveEconomicEvent(event.detail.commitment, commitmentModalProcess)
   }}
 />
 {/if}
@@ -327,6 +341,10 @@ bind:open={economicEventModalOpen}
 
 {#if loadingPlan}
 Loading plan... ({processesLoadedCount}/{processesToLoadCount})
+{#if error}
+  <br>
+  {error}
+{/if}
 {:else}
 <!-- plan name -->
 <!-- plan name -->

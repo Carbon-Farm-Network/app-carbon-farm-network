@@ -28,7 +28,7 @@
   let units: Unit[];
   let commitmentsToSaveCount: number = 0;
   let commitmentsSavedCount: number = 0;
-
+  let error: any;
   // let name = ''
   // let note = ''
 
@@ -349,6 +349,7 @@
         commitmentsSavedCount++
       } catch (e) {
         console.log(e)
+        error = e
       }
     } else {
       let com: CommitmentUpdateParams = {
@@ -365,6 +366,7 @@
         console.log("updated commitment", res)
       } catch (e) {
         console.log(e)
+        error = e
       }
     }
   }
@@ -740,6 +742,12 @@
                   </p>
                   (saving {commitmentsSavedCount} of {commitmentsToSaveCount})
                 </div>
+                {#if error}
+                  <div class="mt-2">
+                    Error:
+                    {JSON.stringify(error)}
+                  </div>
+                {/if}
               </div>
             </div>
           </div>
