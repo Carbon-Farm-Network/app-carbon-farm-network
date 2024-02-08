@@ -16,10 +16,10 @@ const config = {
     //   }
     // }
     // other options...
-  },
-  optimizeDeps: {
-    include: ["@vf-ui/graphql-client-holochain", "@valueflows/vf-graphql-holochain"]
   }
+  // optimizeDeps: {
+  //   include: ["@vf-ui/graphql-client-holochain", "@valueflows/vf-graphql-holochain"]
+  // }
 }
 
 export default config;

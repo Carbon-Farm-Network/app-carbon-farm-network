@@ -9,12 +9,12 @@ export default defineConfig({
         },
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']
-	},
-	build: {
-    rollupOptions: {
-      external: ['@vf-ui/graphql-client-holochain', '@valueflows/vf-graphql-holochain']
-    }
-  },
+	}//,
+	// build: {
+  //   rollupOptions: {
+  //     external: ['@vf-ui/graphql-client-holochain', '@valueflows/vf-graphql-holochain']
+  //   }
+  // },
 });
 
 // import { defineConfig } from 'vite';
