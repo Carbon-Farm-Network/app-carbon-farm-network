@@ -15,14 +15,14 @@
   import { goto } from '$app/navigation'
   import { gql } from 'graphql-tag'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
+  import { COMMITMENT_RETURN_FIELDS, PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -99,6 +99,15 @@
     }
   `
 
+  const GET_COMMITMENT = gql`
+    ${COMMITMENT_RETURN_FIELDS}
+    query getCommitment($id: ID!) {
+      commitment(id: $id) {
+        ...CommitmentReturnFields
+      }
+    }
+  `
+
   const CREATE_ECONOMIC_EVENT = gql`
     mutation($event: EconomicEventCreateParams!) {
       createEconomicEvent(event: $event) {
@@ -148,13 +157,18 @@
   }
 
   interface ProcessQueryResponse {
-    plan: ProcessConnection & RelayConn<any>
+    process: ProcessConnection & RelayConn<any>
+  }
+
+  interface CommitmentQueryResponse {
+    commitment: CommitmentConnection & RelayConn<any>
   }
 
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
   let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
   let getSimplifiedPlan: ReadableQuery<PlanQueryResponse> = query(GET_SIMPLIFIED_PLAN);
-  let getProcess: ReadableQuery<ProcessConnection> = query(GET_PROCESS);
+  let getProcess: ReadableQuery<ProcessQueryResponse> = query(GET_PROCESS);
+  let getCommitment: ReadableQuery<CommitmentQueryResponse> = query(GET_COMMITMENT);
     
   async function fetchProposals() {
     try {
@@ -190,6 +204,20 @@
         }
       })
       console.log(x)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function fetchCommitment(id: string) {
+    try {
+      console.log("getting commitment", id)
+      getCommitment.setVariables({
+        id: id
+      });
+      const res = await getCommitment.refetch()
+      console.log(res)
+      return res.data.commitment
     } catch (e) {
       console.log(e)
     }
@@ -283,12 +311,42 @@
           });
           let processRes: any = await getProcess.refetch()
           processesLoadedCount++
-          let process = processRes.data.process
+          let process = {...processRes.data.process}
           console.log(process)
           await delay(1000)
-          console.log(JSON.stringify(process.basedOn))
-          console.log(allColumns)
-          console.log(process)
+          // console.log(JSON.stringify(process.basedOn))
+          // console.log(allColumns)
+          // console.log(process)
+          // try to get basedOn for each commitment
+
+          // for (const commitment of process.committedOutputs) {
+          //   console.log("commitment: ", commitment)
+          //   const fullCommitment = await fetchCommitment(commitment.id)
+          //   if (fullCommitment) {
+          //     // commitment.clauseOf = fullCommitment.clauseOf
+          //     // replace commitment with fullCommitment in the process
+          //     process.committedInputs = [...process.committedOutputs.map(it => it.id == commitment.id ? {...it, clauseOf: fullCommitment.clauseOf} : it)]
+          //   } else {
+          //     console.log("what")
+          //   }
+          //   console.log("cost commitment: ", fullCommitment)
+          //   await delay(100)
+          // }
+
+          for (const commitment of process.committedInputs) {
+            console.log("commitment: ", commitment)
+            const fullCommitment = await fetchCommitment(commitment.id)
+            if (fullCommitment) {
+              // commitment.clauseOf = fullCommitment.clauseOf
+              // replace commitment with fullCommitment in the process
+              process.committedInputs = [...process.committedInputs.map(it => it.id == commitment.id ? {...it, clauseOf: fullCommitment.clauseOf} : it)]
+            } else {
+              console.log("what")
+            }
+            console.log("cost commitment: ", fullCommitment)
+            await delay(100)
+          }
+
           lastColumn.unshift({
             ...process,
             basedOn: {
@@ -306,6 +364,7 @@
             }
             lastSeenProcessSpecification = process.basedOn.id
           }
+          console.log(lastColumn)
         }
         
         loadingPlan = false;
@@ -413,7 +472,7 @@ bind:open={economicEventModalOpen}
 </div>
 
 {#if loadingPlan}
-Loading plan... ({processesLoadedCount}/{processesToLoadCount})
+Loading {processesLoadedCount}/{processesToLoadCount} processes
 {#if error}
   <br>
   {error}
@@ -488,7 +547,7 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                 >
                 <PlusCircle />
               </button>
-                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished }}
+                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
                   {@const color = finished ? "red" : (((fulfilledBy.length > 0) || yellow.includes(id)) ? "yellow" : "white")}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
@@ -518,16 +577,16 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                       from: {provider?.name || ''}<br />
                       to: {receiver?.name || ''}
                     </p>
-                    {#if agreement}
-                      {@const commitment = agreement.commitment}
-                      <p>
-                        cost: {new Decimal(
-                          commitment.resourceQuantity.hasNumericalValue
-                        )
-                          .toFixed(2, Decimal.ROUND_HALF_UP)
-                          .toString()}
-                        {commitment.resourceConformsTo.name}
-                      </p>
+                    {#if clauseOf}
+                      {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
+                        <p>
+                          cost: {new Decimal(
+                            clause.resourceQuantity.hasNumericalValue
+                          )
+                            .toFixed(2, Decimal.ROUND_HALF_UP)
+                            .toString()}
+                          {clause.resourceConformsTo.name}
+                        </p>
                     {/if}
                     {#if false && fulfilledBy && fulfilledBy.length > 0}
                       <p>
@@ -595,7 +654,7 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                   <PlusCircle />
                 </button>
 
-                {#each committedOutputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished }}
+                {#each committedOutputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
                 {@const color = finished ? "red" : (((fulfilledBy.length > 0) || yellow.includes(id)) ? "yellow" : "white")}
                 <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
@@ -626,16 +685,16 @@ Loading plan... ({processesLoadedCount}/{processesToLoadCount})
                         from: {provider?.name || ''}<br />
                         to: {receiver?.name || ''}
                       </p>
-                      {#if agreement}
-                        {@const commitment = agreement.commitment}
-                        <p>
-                          cost: {new Decimal(
-                            commitment.resourceQuantity.hasNumericalValue
-                          )
-                            .toFixed(2, Decimal.ROUND_HALF_UP)
-                            .toString()}
-                          {commitment.resourceConformsTo.name}
-                        </p>
+                      {#if clauseOf}
+                        {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
+                          <p>
+                            cost: {new Decimal(
+                              clause.resourceQuantity.hasNumericalValue
+                            )
+                              .toFixed(2, Decimal.ROUND_HALF_UP)
+                              .toString()}
+                            {clause.resourceConformsTo.name}
+                          </p>
                       {/if}
                     </div>
                     <!-- {#if editable} -->

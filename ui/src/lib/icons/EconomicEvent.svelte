@@ -15,7 +15,7 @@
 
 <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg">
   <!-- Notebook cover -->
-  <rect x="10%" y="10%" width="80%" height="80%" fill="#fff" stroke="black" stroke-width="1"/>
+  <rect x="10%" y="10%" width="80%" height="80%" fill="transparent" stroke="black" stroke-width="1"/>
    
   <!-- Dollar sign -->
   <text x="48%" y="58%" font-size="80%" fill="black">☰</text>
