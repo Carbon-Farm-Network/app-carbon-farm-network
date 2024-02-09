@@ -431,7 +431,7 @@
             c.clauseOf = a.data.createAgreement.agreement.id
 
             // save cost commitment
-            let payment = {
+            let payment: CommitmentCreateParams = {
               clauseOf: a.data.createAgreement.agreement.id,
               action: "transfer",
               provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
@@ -440,7 +440,6 @@
               resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === "USD").node.id,
               resourceQuantity: {
                 hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue),
-                // defaultUnitOfResource: resourceSpecifications.find((rs) => rs.node.name === "USD").node.defaultUnitOfResource,
               },
               finished: false,
               note: c.agreement.commitment.note,
@@ -453,8 +452,9 @@
                 }
               })
               // commitmentsSavedCount++
-              console.log(paymentCommitment)
+              console.log("payment commitment", paymentCommitment)
             } catch (e) {
+              console.log("could not add payment commitment", e)
               console.log(e)
             }
           }
@@ -740,7 +740,7 @@
                   <p class="text-sm text-gray-500">
                     Please wait while the plan saves.
                   </p>
-                  (saving {commitmentsSavedCount} of {commitmentsToSaveCount})
+                  (saving {commitmentsSavedCount} of {commitmentsToSaveCount}) commitments
                 </div>
                 {#if error}
                   <div class="mt-2">

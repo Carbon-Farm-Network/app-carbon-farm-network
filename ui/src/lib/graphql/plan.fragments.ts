@@ -97,6 +97,28 @@ export const COMMITMENT_RETURN_FIELDS = gql`
       id
     }
     finished
+    clauseOf {
+      commitments {
+        id
+        action {
+          id
+          label
+        }
+        resourceConformsTo {
+          id
+          name
+          defaultUnitOfResource {
+            label
+          }
+        }
+        resourceQuantity {
+          hasNumericalValue
+          hasUnit {
+            label
+          }
+        }
+      }
+    }
   }
 `
 
