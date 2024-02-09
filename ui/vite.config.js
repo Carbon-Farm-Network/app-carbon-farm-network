@@ -10,11 +10,6 @@ export default defineConfig({
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	},
-	build: {
-    rollupOptions: {
-      external: ['@vf-ui/graphql-client-holochain', '@valueflows/vf-graphql-holochain']
-    }
-  },
   // needed for any external Nodejs modules to work when linked through `pnpm link`
   server: { fs: { allow: (process.env.ADDITIONAL_MODULE_DIRS || '').split(':') } },
 });
