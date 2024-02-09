@@ -4,17 +4,27 @@
 
 > PREREQUISITE: set up the [holochain development environment](https://developer.holochain.org/docs/install/).
 
-Enter the nix shell by running this in the root folder of the repository: 
+Enter the nix shell by running this in the root folder of the repository, then install Nodejs dependencies:
 
 ```bash
 nix develop
-npm install
+pnpm install
 ```
+
+There is currently no published release for the [Holochain Facets](https://github.com/Carbon-Farm-Network/holochain-facets/) module. You will need to download and build it yourself:
+
+	git clone git@github.com:Carbon-Farm-Network/holochain-facets.git
+	cd holochain-facets
+	CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown
+
+You should now have a built DNA bundle at `holochain-facets/dnas/hc_facets/workdir/hc_facets.dna`. Copy it into the `/workdir` of this repository.
+
+Note that you can also use this method to build custom versions of other Holochain DNA modules (eg. hREA components). Otherwise all necessary DNA dependencies are downloaded by the workspace `postinstall` script.
 
 **Run all the other instructions in this README from inside this nix-shell, otherwise they won't work**.
 
 ## Running 2 agents
- 
+
 ```bash
 npm start
 ```
@@ -49,17 +59,31 @@ npm run package
 You'll have the `acfn.webhapp` in `workdir`. This is what you should distribute so that the Holochain Launcher can install it.
 You will also have its subcomponent `acfn.happ` in the same folder`.
 
+## Advanced usage
+
+There are times when it becomes useful to link development versions of dependencies into this repo (eg. when developing new features for hREA).
+
+### Linking Nodejs modules for development
+
+You can use `pnpm link PATH/TO/LOCAL/MODULE/DIR` to override some module from the registry with a modified local copy. The target directory must reference the *packaged* version of a module as it would be delivered from an NPM registry, rather than any development artifacts. (For hREA's modules this means referencing the `build` subdirectory of each of its `/modules` folders after a successful `npm run build:graphql` script execution.)
+
+The caveat is that development versions of the app served through [Vite](http://vite.dev/) will crash when attempting to load such linked modules. Prepend a colon-separated list of any additional module dirs to all commands executed via the `ADDITIONAL_MODULE_DIRS` environment variable. For example:
+
+	ADDITIONAL_MODULE_DIRS=/PATH/TO/MODULE/1:/PATH/TO/MODULE/2 npm run dev
+
 ## Documentation
 
-This repository is using these tools:
-- [NPM Workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces/): npm v7's built-in monorepo capabilities.
+This repository is organised via the utilisation of these tools:
+
+- [Nix Flakes](https://nixos.wiki/wiki/Flakes): Management of infrastructural dependencies.
+- [PNPM Workspaces](https://pnpm.io/workspaces): PNPM's package manager handles monorepos and complex cross-repo development setups gracefully.
 - [hc](https://github.com/holochain/holochain/tree/develop/crates/hc): Holochain CLI to easily manage Holochain development instances.
-- [@holochain/tryorama](https://www.npmjs.com/package/@holochain/tryorama): test framework.
-- [@holochain/client](https://www.npmjs.com/package/@holochain/client): client library to connect to Holochain from the UI.
+- [@holochain/tryorama](https://www.npmjs.com/package/@holochain/tryorama): test framework; see `/tests`.
 - [@holochain-playground/cli](https://www.npmjs.com/package/@holochain-playground/cli): introspection tooling to understand what's going on in the Holochain nodes.
 
+## To do
 
-TODO fix the modals for the clickoutside action, only the facets modal has it working properly
+- [ ] fix the modals for the clickoutside action, only the facets modal has it working properly
 
 ## Legal
 
