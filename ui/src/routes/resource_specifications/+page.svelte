@@ -155,9 +155,9 @@ const GET_UNITS = gql`
   $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units;
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Resource Specifications" description="The types of resources your network creates, uses, trades; types of work; currencies, tokens." />
-</div>
+<!-- </div> -->
 <!-- <Units /> -->
 {#if units}
 <ResourceSpecificationModal bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={fetchResourceSpecifications} />

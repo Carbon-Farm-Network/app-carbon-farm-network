@@ -98,6 +98,7 @@ export const COMMITMENT_RETURN_FIELDS = gql`
     }
     finished
     clauseOf {
+      id
       commitments {
         id
         action {

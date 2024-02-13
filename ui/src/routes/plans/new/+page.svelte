@@ -2,7 +2,8 @@
   import recipes from '$lib/data/recipes-with-exchanges.json'
   // import requests from '$lib/data/requests.json'
   // import offers from '$lib/data/offers.json'
-  import agents from '$lib/data/agents.json'
+  // import agents from '$lib/data/agents.json'
+  import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
@@ -21,6 +22,7 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
 
+  let agents: Agent[] = []
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
   let commitmentModalSide: string | undefined;
@@ -53,6 +55,22 @@
     }
   `
 
+  const GET_ALL_AGENTS = gql`
+    ${AGENT_CORE_FIELDS}
+    query {
+      agents(last: 100000) {
+        edges {
+          cursor
+          node {
+            id
+            name
+            classifiedAs
+          }
+        }
+      }
+    }
+  `
+
   interface ProposalsQueryResponse {
     proposals: ProposalConnection & RelayConn<any>
   }
@@ -61,7 +79,12 @@
     plan: PlanConnection & RelayConn<any>
   }
 
+  interface AgentQueryResponse {
+    agents: AgentConnection & RelayConn<any>
+  }
+
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
+  let agentsQuery: ReadableQuery<AgentQueryResponse> = query(GET_ALL_AGENTS)
 
   async function fetchProposals() {
     await getProposals.getCurrentResult()
@@ -70,10 +93,11 @@
         proposalsList = flattenRelayConnection(r.data?.proposals)
         // {@const primary = publishes.find(it => !it.reciprocal)}
         //       {#if primary?.publishes?.receiver}
+        console.log("proposalsList", proposalsList)
         requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
-        offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
-        console.log(requests)
-        console.log(offers)
+        offers = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
+        console.log("requests init", requests)
+        console.log("offers init", offers)
         // console.log(proposalsList[0].publishes[0].publishes)
         // console.log(requests)
       }
@@ -82,7 +106,10 @@
 
   onMount(async () => {
     if (browser) {
-      fetchProposals()
+      const y = await agentsQuery.refetch()
+      agents = y.data.agents.edges.map((it) => {return {...it.node, role: it.node.classifiedAs[2]}})
+      console.log("agents", agents)
+      await fetchProposals()
       // console log url query values as object
     }
   })
@@ -110,6 +137,7 @@
   }
 
   const previousColumn = column => {
+    console.log("column", column)
     return column
       .reduce((acc, input) => {
         if (input.resourceQuantity.hasNumericalValue > 0) {
@@ -363,24 +391,35 @@
       ...process,
       committedOutputs: process.committedOutputs.map(output => {
         const output_exchange = findExchange(output, process.based_on.name)
-        const output_agreement = makeAgreement(output, output_exchange, offers)
-        if (output_agreement) {
-          return {
-            ...output,
-            agreement: output_agreement
+        console.log("output_exchange", output_exchange)
+        // if (output_exchange) {
+          console.log("maybe making agreement 1", output_exchange)
+          const output_agreement = makeAgreement(output, output_exchange, offers)
+          console.log('output_agreement', output_agreement)
+          if (output_agreement) {
+            console.log("actually making agreement 1", output, output_agreement)
+            return {
+              ...output,
+              agreement: output_agreement
+            }
           }
-        }
+        // }
         return output
       }),
       committedInputs: process.committedInputs.map(input => {
-        const input_exchange = findExchange(input, undefined)
-        const input_agreement = makeAgreement(input, input_exchange, offers)
-        if (input_agreement) {
-          return {
-            ...input,
-            agreement: input_agreement
+        const input_exchange = findExchange(input, process.based_on.name)
+        // if (input_exchange) {
+          console.log("maybe making agreement 2", input_exchange)
+          const input_agreement = makeAgreement(input, input_exchange, offers)
+          if (input_agreement) {
+            console.log("actually making agreement 2", input, input_agreement)
+            return {
+              ...input,
+              provider: input_agreement.commitment.provider,
+              agreement: input_agreement
+            }
           }
-        }
+        // }
         return input
       })
     }
@@ -470,6 +509,28 @@
     commitment: any,
     based_on_name: string | undefined
   ): undefined | { name: string; note: string } {
+    // let test = recipes
+    //   .filter(it => it.type == 'recipe_exchange')
+    //   .find(a_recipe => {
+    //     if (based_on_name) {
+    //       return a_recipe?.has_recipe_clause?.some(
+    //         clause =>
+    //           clause.resourceConformsTo.name ==
+    //             commitment?.resourceConformsTo?.name &&
+    //           clause.stage?.name == based_on_name
+    //       )
+    //     } else {
+    //       return a_recipe?.has_recipe_clause?.some(
+    //         clause => {
+    //           return clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
+    //           clause.stage?.name == commitment.stage?.name
+    //         }
+    //       )
+    //     }
+    //   })
+
+
+    // console.log("exchange test", test)
     return recipes
       .filter(it => it.type == 'recipe_exchange')
       .find(a_recipe => {
@@ -495,36 +556,56 @@
     offers: any[]
   ): undefined | any {
     const reciprocal_clause = recipe?.has_recipe_reciprocal_clause?.[0]
-    if (!reciprocal_clause) return
-    let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
-    let hasUnit = reciprocal_clause.resourceQuantity.hasUnit
+    // if (!reciprocal_clause) return
+    // let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
+    // let hasUnit = reciprocal_clause.resourceQuantity.hasUnit
+    let specific_provider = commitment.provider
+    console.log("specific provider", specific_provider)
+    let numerical_value;
+    let hasUnit;
+    let reciprocal_intent;
     // TODO get data to test the matching offer logic
-    // const matching_offer = offers.find(offer => {
-    //   offer.proposed_intents.find(
-    //     intent =>
-    //       intent.intent.resourceConformsTo.name == commitment.resourceConformsTo.name
-    //   )
-    // })
-    // if (matching_offer) {
-    //   const reciprocal_intent = matching_offer.proposed_intents.find(
-    //     intent => intent.reciprocal
-    //   )
-    //   numerical_value = reciprocal_intent.resourceQuantity.hasNumericalValue
-    //   hasUnit = reciprocal_intent.resourceQuantity
-    // }
+    const matching_offer = offers.find(offer => {
+      return offer.publishes.find(
+        intent => {
+          const offerName = intent.publishes?.resourceConformsTo?.name
+          // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
+          const correctProvider = specific_provider? (intent.publishes?.provider?.id == specific_provider?.id) : true
+          return offerName == commitment.resourceConformsTo.name && correctProvider
+        }
+      )
+    })
+    // console.log("matching offer 0", matching_offer)
+    if (matching_offer) {
+      // console.log("matching offer", matching_offer)
+      reciprocal_intent = matching_offer.publishes.find(
+        intent => intent.reciprocal
+      )
+      // console.log("TEMP", reciprocal_intent)
+      numerical_value = reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue
+      hasUnit = reciprocal_intent.publishes?.resourceQuantity
+      // console.log(numerical_value, hasUnit)
+      // console.log("made agreement", reciprocal_intent.publishes?.resourceConformsTo?.name, numerical_value, hasUnit)
+    } else {
+      return
+    }
+
+    if (!numerical_value || !hasUnit) return
+
     return {
-      name: recipe.name,
-      note: recipe.note,
+      name: recipe?.name,
+      note: recipe?.note,
       commitment: {
-        action: reciprocal_clause.action,
-        stage: reciprocal_clause.stage,
-        resourceConformsTo: reciprocal_clause.resourceConformsTo,
+        action:  reciprocal_intent?.publishes?.action?.label,
+        provider: reciprocal_intent?.publishes?.receiver,
+        // stage: reciprocal_clause?.stage,
+        resourceConformsTo: reciprocal_intent?.publishes?.resourceConformsTo,
         resourceQuantity: {
           hasNumericalValue: new Decimal(numerical_value)
             .mul(commitment.resourceQuantity.hasNumericalValue)
             .toDecimalPlaces(0, Decimal.ROUND_UP)
             .toString(),
-          hasUnit
+          hasUnit: hasUnit
         }
       }
     }
@@ -556,8 +637,14 @@
         commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
         commitments = [...commitments]
       } else {
+        let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name)
+        let agreement = makeAgreement(event.detail.commitment, exchange, offers)
+        let updatedCommitment = {
+          ...event.detail.commitment,
+          agreement: agreement
+        }
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
-        allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
+        allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = updatedCommitment
       }
     } else {
       console.log(event.detail)
@@ -580,7 +667,7 @@
 />
 
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
-<div class="custom-background" style="height: 15vh">
+<div class="custom-background" style="height: 15vh; margin-bottom: 6px">
   <div class="mx-auto px-2 sm:px-6 lg:px-8">
     <h2 class="pt-1 text-white text-3xl">Planning</h2>
     <p class="text-white text-xs">
@@ -623,13 +710,13 @@
                     <p>
                       {primary?.publishes?.availableQuantity?.hasNumericalValue}
                       {primary?.publishes?.availableQuantity?.hasUnit?.label},
-                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                      USD per lb
+                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}<br>
+                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                     </p>
                   {:else}
                     <p>
                       {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                      USD per lb
+                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                     </p>
                   {/if}
                   <p>{primary?.publishes?.provider?.name}</p>

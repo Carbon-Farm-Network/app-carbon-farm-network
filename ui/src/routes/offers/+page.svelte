@@ -265,9 +265,9 @@
   $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Offers" description="The goods or services you are offering within the network, now or generally." />
-</div>
+<!-- </div> -->
 
 <OfferModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 

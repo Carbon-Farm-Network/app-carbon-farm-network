@@ -201,11 +201,11 @@
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
 
-  interface QueryResponse {
+  interface ProcessQueryResponse {
     processSpecifications: AgentConnection & RelayConn<any>
   }
 
-  interface QueryResponse {
+  interface AgentQueryResponse {
     agents: AgentConnection & RelayConn<any>
   }
 
@@ -302,7 +302,7 @@
   }
 
   async function saveOrUpdateCommitment(commitment: CommitmentUpdateParams) {
-    console.log(commitment)
+    console.log("save or updated commitment", commitment.resourceConformsTo.name, resourceSpecifications)
     let o: CommitmentCreateParams = {
       plannedWithin: commitment.plannedWithin,
       finished: commitment.finished,
@@ -314,18 +314,26 @@
         hasUnit: commitment?.resourceQuantity?.hasUnit?.id
       },
     }
+    
+    const defaultAgent = agents.find((a) => a.node.name === "Carbon Farm Network").node
+
+    try {
+      o.provider = agents.find((a) => a.node.name === commitment.provider.name).node.id
+    } catch (e) {
+      console.log("can't find receiver", e)
+      o.provider = defaultAgent.id
+      console.log("saved by setting default agent", defaultAgent)
+    }
+    try {
+      o.receiver = agents.find((a) => a.node.name === commitment.receiver.name).node.id
+    } catch (e) {
+      console.log("can't find provider", e)
+      o.receiver = defaultAgent.id
+      console.log("saved by setting default agent", defaultAgent)
+    }
+
     if (commitment.clauseOf !== undefined) {
       o.clauseOf = commitment.clauseOf
-    }
-    if (o.provider == undefined) {
-      o.provider = agents.find((a) => a.node.name === "Carbon Farm Network").node.id
-    } else {
-      o.provider = agents.find((a) => a.node.name === commitment.provider.name).node.id
-    }
-    if (o.receiver == undefined) {
-      o.receiver = agents.find((a) => a.node.name === "Carbon Farm Network").node.id
-    } else {
-      o.receiver = agents.find((a) => a.node.name === commitment.receiver.name).node.id
     }
     if (commitment.outputOf !== undefined) {
       o.outputOf = commitment.outputOf
@@ -336,17 +344,18 @@
     if (commitment.independentDemandOf !== undefined) {
       o.independentDemandOf = commitment.independentDemandOf
     }
-    console.log("save or update commitment", commitment)
+    console.log("about to add or update commitment", commitment)
     if (commitment.revisionId == undefined) {
       o.action = commitment.action.label
       console.log("adding commitment", o)
       try {
-        await addCommitment({
+        const res = await addCommitment({
           variables: {
             cm: o
           }
         })
-        commitmentsSavedCount++
+        console.log("added commitment", res)
+        // commitmentsSavedCount++
       } catch (e) {
         console.log(e)
         error = e
@@ -356,9 +365,12 @@
         ...o,
         revisionId: commitment.revisionId,
       }
+      if (com.clauseOf?.id) {
+        com.clauseOf = com.clauseOf.id
+      }
       console.log("updating commitment", com)
       try {
-        let res = await updateCommitment({
+        const res = await updateCommitment({
           variables: {
             cm: com
           }
@@ -400,7 +412,7 @@
       }
       console.log("trying to add independent", o)
       await saveOrUpdateCommitment(o)
-      // commitmentsSavedCount++
+      commitmentsSavedCount++
       console.log('added independent', o)
     }
 
@@ -410,11 +422,19 @@
         // save process
         const processId = await saveOrUpdateProcess(process)
         console.log("compare ids", p, processId)
-        let agreementId: string;
         // save everything else
         async function handleCommitment(c: any) {          
+          let agreementId: string;
           // save cost if applicable
+          if (c.clauseOf) {
+            c.agreement = {
+              id: c.clauseOf.id,
+              commitment: c.clauseOf.commitments.find((cm) => cm.action.label === "transfer")
+            }
+          }
           if (c.agreement !== undefined) {
+            console.log("agreement exists!!", c.agreement)
+            console.log("commitment for agreement: ", c)
             // save agreement
             let ag = c.agreement
             let agCreateParams = {
@@ -426,18 +446,22 @@
                 ag: agCreateParams
               }
             })
-            console.log(a)
+            console.log("new agreement added", a)
             agreementId = a.data.createAgreement.agreement.id
             c.clauseOf = a.data.createAgreement.agreement.id
 
             // save cost commitment
+            const dollars = resourceSpecifications.find((rs) => rs.node.name === "USD")
+            console.log("dollars", dollars)
             let payment: CommitmentCreateParams = {
               clauseOf: a.data.createAgreement.agreement.id,
-              action: "transfer",
-              provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+              action: {
+                label: "transfer"
+              },
+              provider: c.receiver,
+              receiver: c.provider,
               plannedWithin: p.data.res.plan.id,
-              receiver: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
-              resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === "USD").node.id,
+              resourceConformsTo: dollars.node,
               resourceQuantity: {
                 hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue),
               },
@@ -445,24 +469,48 @@
               note: c.agreement.commitment.note,
               hasBeginning: new Date(Date.now()),
             }
+
+            console.log("payment commitment 1", payment)
+
+            // try {
+            //   payment.provider = agents.find((a) => a.node.name === c.receiver.name).node.id
+            // } catch (e) {
+            //   console.log("can't find receiver", e)
+            //   payment.provider = agents.find((a) => a.node.name === "Carbon Farm Network").node.id
+            // }
+            // try {
+            //   payment.receiver = agents.find((a) => a.node.name === c.provider.name).node.id
+            // } catch (e) {
+            //   console.log("can't find provider", e)
+            //   payment.receiver = agents.find((a) => a.node.name === "Carbon Farm Network").node.id
+            // }
+
+            console.log("payment commitment 2", payment)
+
+            // try  {
+            //   c.agreement.commitment.
+            // } catch (e) {
+            //   console.log("could not find unit", e)
+            // }
             try {
-              let paymentCommitment = await addCommitment({
-                variables: {
-                  cm: payment
-                }
-              })
-              // commitmentsSavedCount++
-              console.log("payment commitment", paymentCommitment)
+              // let paymentCommitment = await addCommitment({
+              //   variables: {
+              //     cm: payment
+              //   }
+              // })
+              console.log("trying to save payment commitment", payment)
+              let paymentCommitment = await saveOrUpdateCommitment(payment)
+              commitmentsSavedCount++
+              console.log("payment commitment 3", paymentCommitment)
             } catch (e) {
               console.log("could not add payment commitment", e)
-              console.log(e)
             }
           }
 
           // save primary commitment
           // c.process = x.data.createProcess.process
           c.plannedWithin = p.data.res.plan.id
-          console.log(c.process)
+          // console.log(c.process)
           if (c.provider === undefined) {
             c.provider = c.receiver
           }
@@ -498,14 +546,18 @@
         }
 
         for (const input of process.committedInputs) {
+          console.log("input is", input)
+          await delay(30);
           await handleCommitment({
             ...input,
             inputOf: processId,
           })
         }
-        for (const input of process.committedOutputs) {
+        for (const output of process.committedOutputs) {
+          console.log("output is", output)
+          await delay(30);
           await handleCommitment({
-            ...input,
+            ...output,
             outputOf: processId,
           })
 
@@ -568,12 +620,13 @@
     console.log(planObject)
     const x = await resourceSpecificationsQuery.refetch()
     resourceSpecifications = x.data.resourceSpecifications.edges
+    console.log("loaded resource specifications", resourceSpecifications)
     const z = await processSpecificationsQuery.refetch()
     processSpecifications = z.data.processSpecifications.edges
-    console.log(resourceSpecifications)
+    console.log("loaded process specifications", processSpecifications)
     const y = await agentsQuery.refetch()
     agents = y.data.agents.edges
-    console.log(agents)
+    console.log("loaded agents", agents)
     window.addEventListener('keydown', checkKey)
   })
 

@@ -70,9 +70,9 @@
 
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Plans" description="Current operational planning" />
-</div>
+<!-- </div> -->
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

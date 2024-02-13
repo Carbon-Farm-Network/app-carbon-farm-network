@@ -15,9 +15,9 @@
   const recipe_process = recipes[0]
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Recipes" description="The instructions for manufacturing a resource." />
-</div>
+<!-- </div> -->
 
 <RecipeProcessModal bind:open={recipeProcessModalOpen} />
 <RecipeInputModal bind:open={recipeInputModalOpen} />

@@ -117,9 +117,9 @@
   $: agents, modalOpen, editing, id, currentAgent, selectedFacets;
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Agents" description="A list of all the people, organizations and ecological agents related to the network." />
-</div>
+<!-- </div> -->
 <AgentModal bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={fetchAgents} />
 
 <div class="p-12">

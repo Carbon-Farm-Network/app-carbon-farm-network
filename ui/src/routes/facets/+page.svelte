@@ -77,9 +77,9 @@
 
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Facets" description="A list of all the facets and their values for the facet group." />
-</div>
+<!-- </div> -->
 
 {#if facetGroups && currentFacetGroup}
 <FacetModal bind:facetGroups bind:open={modalOpen} bind:currentFacetGroup bind:currentFacet on:submit={fetchFacets} />

@@ -20,7 +20,7 @@
   export let commitmentModalProcess: number | undefined;
   export let commitmentModalSide: string | undefined;
   export let selectedCommitmentId: string | undefined
-  export let process: any[];
+  export let process: any[] | undefined;
   export let commitments: any[]
   const dispatch = createEventDispatcher();
 
@@ -199,7 +199,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
   $: {
     if (selectedCommitmentId !== previousSelectedCommitmentId) {
       previousSelectedCommitmentId = selectedCommitmentId;
-      if (selectedCommitmentId && commitmentModalColumn > -1) {
+      if (process && selectedCommitmentId && commitmentModalColumn > -1) {
         selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
         console.log(commitments)

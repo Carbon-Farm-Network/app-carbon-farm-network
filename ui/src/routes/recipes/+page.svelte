@@ -4,9 +4,9 @@
   import { goto } from '$app/navigation'
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Recipes" description="The instructions for manufacturing a resource." />
-</div>
+<!-- </div> -->
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

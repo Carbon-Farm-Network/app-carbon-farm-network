@@ -86,9 +86,9 @@
   $: processSpecifications, modalOpen, editing, id, currentProcessSpecification, units;
 </script>
 
-<div style="height: 8vh">
+<!-- <div style="height: 8vh"> -->
   <Header title="Process Specifications" description="The types of processes your network creates, uses, trades; types of work; currencies, tokens." />
-</div>
+<!-- </div> -->
 <!-- <Units /> -->
 <ProcessSpecificationModal bind:open={modalOpen} {name} {editing} currentProcessSpecification={currentProcessSpecification} on:submit={fetchProcessSpecifications} />
 

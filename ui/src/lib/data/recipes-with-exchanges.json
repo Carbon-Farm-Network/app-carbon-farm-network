@@ -598,7 +598,7 @@
       "type": "recipe_process",
       "process_conforms_to": {
         "name": "Scour Fiber",
-        "image": "/mill.svg"
+        "image": "/washing-machine.svg"
       },
       "has_duration": {
         "numeric_duration": 7,
@@ -670,7 +670,7 @@
       "type": "recipe_process",
       "process_conforms_to": {
         "name": "Scour Fiber",
-        "image": "/mill.svg"
+        "image": "/washing-machine.svg"
       },
       "has_duration": {
         "numeric_duration": 7,
@@ -742,7 +742,7 @@
       "name": "Scour Gray Alpaca",
       "process_conforms_to": {
         "name": "Scour Fiber",
-        "image": "/mill.svg"
+        "image": "/washing-machine.svg"
       },
       "has_duration": {
         "numeric_duration": 7,
@@ -814,7 +814,7 @@
       "type": "recipe_process",
       "process_conforms_to": {
         "name": "Scour Fiber",
-        "image": "/mill.svg"
+        "image": "/washing-machine.svg"
       },
       "has_duration": {
         "numeric_duration": 7,

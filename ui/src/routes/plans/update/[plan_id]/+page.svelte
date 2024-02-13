@@ -2,7 +2,7 @@
   import recipes from '$lib/data/recipes-with-exchanges.json'
   // import requests from '$lib/data/requests.json'
   // import offers from '$lib/data/offers.json'
-  import agents from '$lib/data/agents.json'
+  // import agents from '$lib/data/agents.json'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
@@ -28,7 +28,7 @@
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
   let commitmentModalSide: string | undefined;
-  let currentProcess: any[];
+  let currentProcess: any[] | undefined;
   let commitmentsToDelete: string[] = []
   let processesToLoadCount = 0;
   let processesLoadedCount = 0;
@@ -40,7 +40,7 @@
     "Pick Up": "/farm.svg",
     "Ship": "/truck.svg",
     "Spin Yarn": "/socks.svg",
-    "Scour Fiber": "/mill.svg"
+    "Scour Fiber": "/washing-machine.svg"
   }
 
   let planId = ''
@@ -280,7 +280,6 @@
     if (browser) {
       try {
         // console.log(GET_PLAN)
-        // fetchProposals()
         // console.log(planId)
         console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
       // getPlan.setVariables({
@@ -319,19 +318,17 @@
           // console.log(process)
           // try to get basedOn for each commitment
 
-          // for (const commitment of process.committedOutputs) {
-          //   console.log("commitment: ", commitment)
-          //   const fullCommitment = await fetchCommitment(commitment.id)
-          //   if (fullCommitment) {
-          //     // commitment.clauseOf = fullCommitment.clauseOf
-          //     // replace commitment with fullCommitment in the process
-          //     process.committedInputs = [...process.committedOutputs.map(it => it.id == commitment.id ? {...it, clauseOf: fullCommitment.clauseOf} : it)]
-          //   } else {
-          //     console.log("what")
-          //   }
-          //   console.log("cost commitment: ", fullCommitment)
-          //   await delay(100)
-          // }
+          for (const commitment of process.committedOutputs) {
+            console.log("commitment: ", commitment)
+            const fullCommitment = await fetchCommitment(commitment.id)
+            if (fullCommitment) {
+              // commitment.clauseOf = fullCommitment.clauseOf
+              // replace commitment with fullCommitment in the process
+              process.committedOutputs = [...process.committedOutputs.map(it => it.id == commitment.id ? {...it, clauseOf: fullCommitment.clauseOf} : it)]
+            }
+            console.log("cost commitment: ", fullCommitment)
+            await delay(100)
+          }
 
           for (const commitment of process.committedInputs) {
             console.log("commitment: ", commitment)
@@ -340,14 +337,12 @@
               // commitment.clauseOf = fullCommitment.clauseOf
               // replace commitment with fullCommitment in the process
               process.committedInputs = [...process.committedInputs.map(it => it.id == commitment.id ? {...it, clauseOf: fullCommitment.clauseOf} : it)]
-            } else {
-              console.log("what")
             }
             console.log("cost commitment: ", fullCommitment)
             await delay(100)
           }
 
-          lastColumn.unshift({
+          const newProcess = {
             ...process,
             basedOn: {
               image: processImages[process.basedOn.name],
@@ -356,18 +351,34 @@
             },
             committedInputs: [...process.committedInputs].reverse(),
             committedOutputs: [...process.committedOutputs].reverse(),
-          })
-          if (process.basedOn.id !=lastSeenProcessSpecification) {
+          }
+
+          console.log("PROCESS TYPE", process.basedOn.name, newProcess)
+
+          // if this is a new process
+          if (process.basedOn.id !== lastSeenProcessSpecification) {
+            console.log("NEW PROCESS", process.basedOn.name)
+            // add last column to allColumns and reset
             if (lastColumn.length > 0) {
+              console.log("LAST COLUMN FULL", lastColumn)
               allColumns.unshift(lastColumn)
-              lastColumn = []
+              lastColumn = [newProcess]
+            } else {
+              console.log("LAST COLUMN NOT FULL", lastColumn)
+              lastColumn.unshift(newProcess)
             }
             lastSeenProcessSpecification = process.basedOn.id
+          } else {
+            console.log("SAME PROCESS", process.basedOn.name)
+            lastColumn.unshift(newProcess)
           }
           console.log(lastColumn)
         }
         
+        allColumns.unshift(lastColumn)
         loadingPlan = false;
+
+        await fetchProposals()
       } catch (e) {
         console.log("error", e)
         error = e
@@ -438,6 +449,14 @@ bind:open={economicEventModalOpen}
         commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
         commitments = [...commitments]
       } else {
+        let updatedCommitment = {
+          ...event.detail.commitment,
+          clauseOf: {
+            ...event.detail.commitment.clauseOf,
+            commitments: event.detail.commitment.clauseOf.commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : {...it, provider: event.detail.commitment.receiver, receiver: event.detail.commitment.provider} )
+          }
+        }
+        console.log("updated commitment", updatedCommitment)
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
         allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = {...event.detail.commitment}
       }
@@ -464,15 +483,18 @@ bind:open={economicEventModalOpen}
   }}
 />
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
-<div class="custom-background" style="height: 8vh">
+<div class="custom-background" style="height: 15vh">
   <div class="mx-auto px-2 sm:px-6 lg:px-8">
-    <h2 class="pt-1 text-white text-2xl">Planning</h2>
-    <p class="text-white text-xs">This page is for demonstration purposes only</p>
+    <h2 class="pt-1 text-white text-3xl">Planning</h2>
+    <p class="text-white text-xs">
+      Creating and modifying a plan, and recording actual activity
+    </p>
   </div>
 </div>
 
+
 {#if loadingPlan}
-Loading {processesLoadedCount}/{processesToLoadCount} processes
+Loading processes ({processesLoadedCount}/{processesToLoadCount})
 {#if error}
   <br>
   {error}
@@ -498,7 +520,40 @@ Loading {processesLoadedCount}/{processesToLoadCount} processes
           class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save changes</button
         >
-      </div>      
+      </div>    
+      <h2 class="text-center text-xl font-semibold">Offers</h2>
+      <div class="bg-blue-300 border border-gray-400 p-2">
+        <!-- Sub-columns -->
+        <div class="">
+          <div>
+            {#each proposalsList as { publishes }}
+              {@const reciprocal = publishes?.find(it => it.reciprocal)}
+              {@const primary = publishes?.find(it => !it.reciprocal)}
+              {#if primary?.publishes?.provider}
+                <div
+                  class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+                >
+                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
+                  {#if primary?.publishes?.availableQuantity}
+                    <p>
+                      {primary?.publishes?.availableQuantity?.hasNumericalValue}
+                      {primary?.publishes?.availableQuantity?.hasUnit?.label},
+                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
+                      USD per lb
+                    </p>
+                  {:else}
+                    <p>
+                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
+                      USD per lb
+                    </p>
+                  {/if}
+                  <p>{primary?.publishes?.provider?.name}</p>
+                </div>
+              {/if}
+            {/each}
+          </div>
+        </div>
+      </div>  
     </div>
 
     <!--
@@ -580,6 +635,7 @@ Loading {processesLoadedCount}/{processesToLoadCount} processes
                     {#if clauseOf}
                       {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
                         <p>
+                          <!-- {JSON.stringify(clause)} -->
                           cost: {new Decimal(
                             clause.resourceQuantity.hasNumericalValue
                           )
@@ -756,6 +812,10 @@ Loading {processesLoadedCount}/{processesToLoadCount} processes
             <button
               class="flex justify-center items-center w-full mb-2"
               on:click={() => {
+                commitmentModalProcess = undefined
+                commitmentModalColumn = undefined
+                selectedCommitmentId = undefined
+                commitmentModalSide = ""
                 commitmentModalOpen = true
               }}
             >
@@ -784,6 +844,7 @@ Loading {processesLoadedCount}/{processesToLoadCount} processes
                 <div class="w-full flex justify-center">
                   <button
                     on:click={() => {
+                      currentProcess = undefined
                       selectedCommitmentId = id
                       commitmentModalOpen = true
                     }}
@@ -800,6 +861,34 @@ Loading {processesLoadedCount}/{processesToLoadCount} processes
                   </button>
                 </div>
               </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="min-w-[200px] mt-20">
+      <h2 class="text-center text-xl font-semibold">Requests</h2>
+      <div class="bg-blue-300 border border-gray-400 p-2">
+        <!-- Sub-columns -->
+        <div class="">
+          <div>
+            {#each proposalsList as { publishes }}
+              {@const reciprocal = publishes.find(it => it.reciprocal)}
+              {@const primary = publishes.find(it => !it.reciprocal)}
+              {#if primary?.publishes?.receiver}
+                <div
+                  class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+                >
+                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
+                  <p>
+                    {primary?.publishes?.action?.label}
+                    {primary?.publishes?.resourceQuantity?.hasNumericalValue}
+                    {primary?.publishes?.availableQuantity?.hasUnit?.label}
+                  </p>
+                  <p>{primary?.publishes?.receiver?.name}</p>
+                </div>
+              {/if}
             {/each}
           </div>
         </div>
