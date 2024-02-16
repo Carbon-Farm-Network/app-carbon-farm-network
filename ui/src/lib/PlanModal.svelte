@@ -191,6 +191,7 @@
           node {
             id
             name
+            classifiedAs
           }
         }
       }
@@ -315,7 +316,7 @@
       },
     }
     
-    const defaultAgent = agents.find((a) => a.node.name === "Carbon Farm Network").node
+    const defaultAgent = agents.find((a) => a.node.classifiedAs[2] === "Network").node
 
     try {
       o.provider = agents.find((a) => a.node.name === commitment.provider.name).node.id
@@ -400,7 +401,7 @@
       let o = {
         ...c,
         // provider is carbon farm network
-        provider: agents.find((a) => a.node.name === "Carbon Farm Network").node.id,
+        provider: agents.find((a) => a.node.classifiedAs[2] === "Network").node.id,
         // reciever is agent for request
         plannedWithin: p.data.res.plan.id,
         // references plan with independentDemandOf
@@ -584,12 +585,16 @@
     // delete commitments
     console.log(commitmentsToDelete)
     for (const c of commitmentsToDelete) {
-      console.log("deleting commitment", c)
-      await deleteCommitment({
-        variables: {
-          revisionId: c
-        }
-      })
+      try {
+        console.log("deleting commitment", c)
+        await deleteCommitment({
+          variables: {
+            revisionId: c
+          }
+        })
+      } catch (e) {
+        console.log("could not delete commitment", e)
+      }
     }
 
     savingPlan = false;
@@ -625,6 +630,7 @@
     processSpecifications = z.data.processSpecifications.edges
     console.log("loaded process specifications", processSpecifications)
     const y = await agentsQuery.refetch()
+    console.log(y)
     agents = y.data.agents.edges
     console.log("loaded agents", agents)
     window.addEventListener('keydown', checkKey)

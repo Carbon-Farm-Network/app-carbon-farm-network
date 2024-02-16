@@ -21,6 +21,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
+  import { dragscroll } from '@svelte-put/dragscroll';
 
   let agents: Agent[] = []
   let commitmentModalProcess: number | undefined;
@@ -96,6 +97,10 @@
         console.log("proposalsList", proposalsList)
         requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
         offers = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
+        requestsPerOffer = offers.map(it => it.publishes.find(it => !it.reciprocal).id).reduce((acc, it) => {
+          acc[it] = {}
+          return acc
+        }, {})
         console.log("requests init", requests)
         console.log("offers init", offers)
         // console.log(proposalsList[0].publishes[0].publishes)
@@ -440,6 +445,7 @@
   $: aggregatedCommitments = aggregateCommitments(commitments)
   $: if (!plan_created) {
     allColumns = generateColumns(aggregatedCommitments);
+    console.log("all columns", allColumns)
   }
   function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
     console.log(requests[0].publishes.filter(it => !it.reciprocal))
@@ -564,6 +570,7 @@
     let numerical_value;
     let hasUnit;
     let reciprocal_intent;
+    let primary_intent;
     // TODO get data to test the matching offer logic
     const matching_offer = offers.find(offer => {
       return offer.publishes.find(
@@ -581,16 +588,26 @@
       reciprocal_intent = matching_offer.publishes.find(
         intent => intent.reciprocal
       )
+      primary_intent = matching_offer.publishes.find(
+        intent => !intent.reciprocal
+      )
       // console.log("TEMP", reciprocal_intent)
-      numerical_value = reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue
-      hasUnit = reciprocal_intent.publishes?.resourceQuantity
-      // console.log(numerical_value, hasUnit)
+      numerical_value = reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue / primary_intent.publishes?.resourceQuantity.hasNumericalValue
+      hasUnit = primary_intent.publishes?.resourceQuantity.hasUnit
+      console.log(numerical_value, hasUnit)
       // console.log("made agreement", reciprocal_intent.publishes?.resourceConformsTo?.name, numerical_value, hasUnit)
     } else {
       return
     }
 
     if (!numerical_value || !hasUnit) return
+
+    if (!requestsPerOffer[primary_intent.id]) {
+      requestsPerOffer[primary_intent.id] = {}
+    }
+    if (commitment.action.label == "pickup") {
+      requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue)
+    }
 
     return {
       name: recipe?.name,
@@ -614,6 +631,29 @@
   let planModalOpen = false
   let commitmentModalOpen = false
   let selectedCommitmentId: string | undefined = undefined
+  let requestsPerOffer: { [key: string]: any } = {}
+
+  let totalCost: Decimal = new Decimal(0);
+  $: if (allColumns) {
+    console.log("--totalcost--")
+    totalCost = new Decimal(0)
+    for (let i = 0; i < allColumns.length; i++) {
+      console.log("column", i)
+      console.log(allColumns[i])
+      for (let j = 0; j < allColumns[i].length; j++) {
+        console.log("process", j)
+        let inputsAndOutputs = allColumns[i][j].committedInputs.concat(allColumns[i][j].committedOutputs)
+        for (let k = 0; k < inputsAndOutputs.length; k++) {
+          console.log("cost", inputsAndOutputs[k])
+          console.log("cost", inputsAndOutputs[k].agreement)
+          if (inputsAndOutputs[k].agreement) {
+            totalCost = totalCost.add(inputsAndOutputs[k].agreement.commitment.resourceQuantity.hasNumericalValue)
+          }
+        }
+      }
+    }
+    console.log("total cost", totalCost.toString())
+  }
 </script>
 
 <!-- {JSON.stringify(allColumns)} -->
@@ -637,12 +677,26 @@
         commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
         commitments = [...commitments]
       } else {
-        let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name)
-        let agreement = makeAgreement(event.detail.commitment, exchange, offers)
+        // check if provider changed, and if so, update the cost
         let updatedCommitment = {
           ...event.detail.commitment,
-          agreement: agreement
         }
+        
+        // let providerChanged = false;
+        // try {
+        //   providerChanged = event.detail.commitment.provider?.id != allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == event.detail.commitment.id)?.provider?.id
+        // } catch (e) {
+        //   console.log(e)
+        // }
+        // console.log("provider changed? ", providerChanged, event.detail.commitment.provider)
+        // if (providerChanged) {
+          // plan_created = true
+          let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name)
+          let agreement = makeAgreement(event.detail.commitment, exchange, offers)
+          updatedCommitment.agreement = agreement
+        // }
+
+        console.log("done...", updatedCommitment)
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
         allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = updatedCommitment
       }
@@ -652,6 +706,10 @@
         commitments.push(event.detail.commitment)
         commitments = [...commitments]
       } else {
+        plan_created = true
+        let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name)
+        let agreement = makeAgreement(event.detail.commitment, exchange, offers)
+        event.detail.commitment.agreement = agreement
         allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
       }
     }
@@ -680,7 +738,8 @@
   <!-- <div class="outer-div justify-center items-center">
   <div class="scroll-div justify-center items-center">
   <div class="content-div flex space-x-8 mx-4"> -->
-  <div class="flex space-x-8 mx-4 overflow-x-scroll">
+  <div class="flex space-x-8 mx-4 overflow-x-scroll overflow-y-scroll" style="height: calc(100vh - 172px)" use:dragscroll={{ axis: 'both' }}>
+  <!-- <div class="flex space-x-8 mx-4 h-64"> -->
     <div class="min-w-[200px]">
       <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
         <button
@@ -701,25 +760,34 @@
             {#each proposalsList as { publishes }}
               {@const reciprocal = publishes?.find(it => it.reciprocal)}
               {@const primary = publishes?.find(it => !it.reciprocal)}
+              <!-- {@const requestsTotalAll = requestsPerOffer[primary?.id]} -->
+              <!-- {@const requestsTotal = requestsTotalAll ? Object.values(requestsTotalAll).map(it => new Decimal(it)).reduce((acc, it) => acc.add(it), new Decimal(0)) : new Decimal(0)} -->
+              <!-- {@const requestsTotal = requestsPerOffer[primary?.id]} -->
               {#if primary?.publishes?.provider}
-                <div
-                  class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-                >
+              <div
+              class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
+              >
                   <p>{primary?.publishes?.resourceConformsTo?.name}</p>
                   {#if primary?.publishes?.availableQuantity}
                     <p>
-                      {primary?.publishes?.availableQuantity?.hasNumericalValue}
-                      {primary?.publishes?.availableQuantity?.hasUnit?.label},
-                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}<br>
-                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasUnit?.label}
+                      {#if primary?.publishes?.availableQuantity?.hasNumericalValue && primary?.publishes?.availableQuantity?.hasNumericalValue > 0}
+                        {primary?.publishes?.availableQuantity?.hasNumericalValue}
+                        {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
+                      {/if}
+                      <!-- <span style="color: {(requestsTotal > primary?.publishes?.availableQuantity?.hasNumericalValue) ? 'red' : ''
+                      }">
+                      {requestsTotal} of {primary?.publishes?.availableQuantity?.hasNumericalValue} requested<br>
+                      </span> -->
+                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
+                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                     </p>
                   {:else}
                     <p>
                       {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasUnit?.label}
+                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue}  {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                     </p>
                   {/if}
-                  <p>{primary?.publishes?.provider?.name}</p>
+                  <p>from {primary?.publishes?.provider?.name}</p>
                 </div>
               {/if}
             {/each}
@@ -753,7 +821,7 @@
     {/each} -->
     {#each allColumns as processes, columnIndex}
       {@const { image, name } = processes[0].based_on}
-      <div class="min-w-[400px]">
+      <div class="min-w-[420px]">
         <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
         <h2 class="text-center text-xl font-semibold">{name}</h2>
         {#each processes as { committedInputs, committedOutputs }, processIndex}
@@ -761,7 +829,7 @@
             <!-- Sub-columns -->
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <button
+                <!-- <button
                   class="flex justify-center items-center w-full mb-2"
                   on:click={() => {
                     commitmentModalProcess = processIndex
@@ -772,7 +840,7 @@
                   }}
                 >
                   <PlusCircle />
-                </button>
+                </button> -->
 
                 {#each committedInputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
@@ -799,13 +867,15 @@
                       -->
                     </div>
                     <p>
-                      from: {provider?.name || ''}<br />
-                      to: {receiver?.name || ''}
+                      from {provider?.name || ''}<br />
+                      to {receiver?.name || ''}
                     </p>
                     {#if agreement}
                       {@const commitment = agreement.commitment}
+                      <!-- {JSON.stringify(agreement)} -->
+
                       <p>
-                        cost: {new Decimal(
+                        cost {new Decimal(
                           commitment.resourceQuantity.hasNumericalValue
                         )
                           .toFixed(2, Decimal.ROUND_HALF_UP)
@@ -813,7 +883,7 @@
                         {commitment.resourceConformsTo.name}
                       </p>
                     {/if}
-                    <div class="w-full flex justify-center">
+                    <!-- <div class="w-full flex justify-center">
                       <button
                         on:click={() => {
                           commitmentModalProcess = processIndex
@@ -834,12 +904,12 @@
                       >
                         <Trash />
                       </button>
-                    </div>
+                    </div> -->
                   </div>
                 {/each}
               </div>
               <div>
-                <button
+                <!-- <button
                   class="flex justify-center items-center w-full mb-2"
                   on:click={() => {
                     commitmentModalProcess = processIndex
@@ -850,7 +920,7 @@
                   }}
                 >
                   <PlusCircle />
-                </button>
+                </button> -->
 
                 {#each committedOutputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
@@ -878,13 +948,13 @@
                       -->
                       </div>
                       <p>
-                        from: {provider?.name || ''}<br />
-                        to: {receiver?.name || ''}
+                        from {provider?.name || ''}<br />
+                        to {receiver?.name || ''}
                       </p>
                       {#if agreement}
                         {@const commitment = agreement.commitment}
                         <p>
-                          cost: {new Decimal(
+                          cost {new Decimal(
                             commitment.resourceQuantity.hasNumericalValue
                           )
                             .toFixed(2, Decimal.ROUND_HALF_UP)
@@ -894,7 +964,7 @@
                       {/if}
                     </div>
                     <!-- {#if editable} -->
-                    <div class="w-full flex justify-center">
+                    <!-- <div class="w-full flex justify-center">
                       <button
                         on:click={() => {
                           commitmentModalProcess = processIndex
@@ -915,7 +985,7 @@
                       >
                         <Trash />
                       </button>
-                    </div>
+                    </div> -->
                     <!-- {/if} -->
                   </div>
                 {/each}
@@ -926,7 +996,14 @@
       </div>
     {/each}
 
-    <div class="min-w-[250px] mt-20">
+    <div class="min-w-[250px]">
+      <h2 class="text-center" style="margin-top: 45px; margin-bottom: 11px;">Total cost: ${
+        totalCost
+        
+      }</h2>
+      <!-- // new Decimal(
+        //   allColumns.flat().flat().flat().filter(it => it.clauseOf).map(it => it.clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue).reduce((a, b) => new Decimal(a).add(b), 0)
+        // ).toFixed(2, Decimal.ROUND_HALF_UP).toString() -->
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
       <div class="bg-blue-300 border border-gray-400 p-2">
         <!-- Sub-columns -->
@@ -967,7 +1044,7 @@
                     {resourceQuantity?.hasNumericalValue}
                     {resourceQuantity?.hasUnit?.label}
                   </p>
-                  <p>to: {receiver?.name}</p>
+                  <p>to {receiver?.name}</p>
                 </div>
                 <div class="w-full flex justify-center">
                   <button
@@ -1010,7 +1087,7 @@
                     {primary?.publishes?.resourceQuantity?.hasNumericalValue}
                     {primary?.publishes?.availableQuantity?.hasUnit?.label}
                   </p>
-                  <p>{primary?.publishes?.receiver?.name}</p>
+                  <p>to {primary?.publishes?.receiver?.name}</p>
                 </div>
               {/if}
             {/each}
@@ -1022,11 +1099,10 @@
   <!-- </div>
   </div> -->
 </div>
-
 <style>
   /* Custom CSS */
   .custom-background {
-    background-image: url('/heading3.png');
+    background-image: url('/dsf.jpg');
     background-size: cover;
     background-position: center;
   }

@@ -29,6 +29,17 @@
   let agents: Agent[];
   let resourceSpecifications: any[];
   let units: any[];
+  let saveCost: boolean = false;
+
+  $: saveCost;
+
+  $: if (selectedCommitment) {
+    if (selectedCommitment.clauseOf && selectedCommitment.clauseOf.commitments.length > 0) {
+      saveCost = true
+    } else {
+      saveCost = false
+    }
+  }
 
   // $: if (open) {
     // newCommitment.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -399,10 +410,12 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                     id="defaultUnitOfResource"
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.resourceConformsTo.name}
+                    value={newCommitment.resourceConformsTo.name}
                     on:change={(e) => {
                       newCommitment.resourceQuantity.hasUnit = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource
-                      newCommitment.resourceConformsTo.defaultUnitOfResource = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource
+                      // newCommitment.resourceConformsTo.defaultUnitOfResource = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource
+                      let x = resourceSpecifications.find((rs) => rs.name === e.target.value)
+                      newCommitment.resourceConformsTo = x
                     }}
                   >
                     {#each resourceSpecifications as rs}
@@ -491,7 +504,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   >
                     {#if units}
                       {#each units as unit}
-                        <option value={unit.label}>{unit.symbol}</option>
+                        <option value={unit.label}>{unit.label}</option>
                       {/each}
                     {/if}
                   </select>
@@ -525,6 +538,22 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                     />
                   {/if}
                 </div>
+
+                <!-- save cost? checkbox -->
+                <div class="mt-4 flex items-center">
+                  <input
+                    id="save_cost"
+                    name="save_cost"
+                    type="checkbox"
+                    checked={saveCost}
+                    on:change={(e) => {
+                      saveCost = e.target.checked
+                    }}
+                    class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
+                </div>
+
                 <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
                 </p> -->
@@ -577,13 +606,13 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
             //   selectedCommitment = Object.assign({}, newCommitmentTemplate)
 
             }
-            // console.log("hihi")
             dispatch('submit', {
               column: commitmentModalColumn,
               process: commitmentModalProcess,
               side: commitmentModalSide,
               commitment: updatedCommitment,
-              useAs: 'update'
+              useAs: 'update',
+              saveCost: saveCost
             });
             open = false;
           }}
@@ -614,7 +643,8 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                     ...newCommitment,
                     id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
                   },
-                  useAs: 'new'
+                  useAs: 'new',
+                  saveCost: saveCost
                 });
               // }
 

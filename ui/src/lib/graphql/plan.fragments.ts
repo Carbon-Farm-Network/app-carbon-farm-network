@@ -99,8 +99,10 @@ export const COMMITMENT_RETURN_FIELDS = gql`
     finished
     clauseOf {
       id
+      revisionId
       commitments {
         id
+        revisionId
         action {
           id
           label

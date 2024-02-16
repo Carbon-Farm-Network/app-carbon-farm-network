@@ -26,7 +26,7 @@
 <style>
   /* Custom CSS */
   .custom-background {
-    background-image: url('/heading3.png');
+    background-image: url('/dsf.jpg');
     background-size: cover;
     background-position: center;
   }

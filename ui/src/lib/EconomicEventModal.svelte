@@ -426,7 +426,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   >
                     {#if units}
                       {#each units as unit}
-                        <option value={unit.label}>{unit.symbol}</option>
+                        <option value={unit.label}>{unit.labell}</option>
                       {/each}
                     {/if}
                   </select>
@@ -461,19 +461,33 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                   {/if}
 
                   <div class="mt-4 text-left">
-                    <div>
-                      <label
-                        for="date"
-                        class="block text-sm font-medium leading-6 text-gray-900"
-                        >Commitment finished</label
-                      >
-                        <input type="checkbox" id="finished" 
+                    <!-- <div class="mt-4 flex items-center">
+                      <input
+                        id="save_cost"
+                        name="save_cost"
+                        type="checkbox"
+                        checked={saveCost}
                         on:change={(e) => {
-                          console.log("lkjjjjjjj", e)
+                          saveCost = e.target.checked
+                        }}
+                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
+                    </div> -->
+                    <div class="mt-4 flex items-center">
+                      <input type="checkbox" id="finished" 
+                        on:change={(e) => {
                           selectedCommitment.finished = e.target.checked
                           console.log(selectedCommitment.finished)
                         }}
-                        bind:checked={finished} class="mt-2">
+                        bind:checked={finished} 
+                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        >
+
+                        <label
+                        for="date"
+                        class="block text-sm font-medium leading-6 text-gray-900"
+                        >&nbsp;Commitment finished</label>
                     </div>
                   </div>
                 </div>
