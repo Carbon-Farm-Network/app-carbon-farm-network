@@ -19,14 +19,14 @@
   export let selectedCommitmentId: string | undefined
   export let process: any[];
   export let commitments: any[]
+  export let agents: Agent[];
+  export let resourceSpecifications: any[];
+  export let units: any[];
+
   const dispatch = createEventDispatcher();
 
   let name = ''
   let note = ''
-  let agents: Agent[];
-  let resourceSpecifications: any[];
-  let units: any[];
-  let finished = true;
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
@@ -35,110 +35,110 @@
     }
   }
 
-  const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
-        }
-      }
-    }
-  `
+//   const GET_UNITS = gql`
+//     query GetUnits {
+//       units {
+//         edges {
+//           cursor
+//           node {
+//             id
+//             label
+//             symbol
+//           }
+//         }
+//       }
+//     }
+//   `
 
-  const GET_ALL_AGENTS = gql`
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            id
-            name
-          }
-        }
-      }
-    }
-  `
+//   const GET_ALL_AGENTS = gql`
+//     query {
+//       agents(last: 100000) {
+//         edges {
+//           cursor
+//           node {
+//             id
+//             name
+//           }
+//         }
+//       }
+//     }
+//   `
 
-const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    query {
-      resourceSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ResourceSpecificationCoreFields
-            defaultUnitOfResource {
-              ...UnitCoreFields
-            }
-          }
-        }
-      }
-    }
-  `
+// const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+//     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+//     ${UNIT_CORE_FIELDS}
+//     query {
+//       resourceSpecifications(last: 100000) {
+//         edges {
+//           cursor
+//           node {
+//             ...ResourceSpecificationCoreFields
+//             defaultUnitOfResource {
+//               ...UnitCoreFields
+//             }
+//           }
+//         }
+//       }
+//     }
+//   `
 
-  interface QueryResponse {
-    agents: AgentConnection & RelayConn<any>
-  }
+//   interface QueryResponse {
+//     agents: AgentConnection & RelayConn<any>
+//   }
 
-  interface RspecResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
+//   interface RspecResponse {
+//     resourceSpecifications: AgentConnection & RelayConn<any>
+//   }
 
 
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  }
+//   interface UnitsQueryResponse {
+//     units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+//   }
 
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+//   let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
   
-  // map component state
-  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+//   // map component state
+//   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
-  let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+//   let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
 
-  async function fetchUnits() {
-    getUnits.getCurrentResult()
-    getUnits.refetch().then((r) => {
-      if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units)
-      }
-    })
-  }
+//   async function fetchUnits() {
+//     getUnits.getCurrentResult()
+//     getUnits.refetch().then((r) => {
+//       if (r.data?.units.edges.length > 0) {
+//         units = flattenRelayConnection(r.data?.units)
+//       }
+//     })
+//   }
 
-  async function fetchAgents() {
-    await agentsQuery.getCurrentResult()
-    const a = await agentsQuery.refetch()
-    agents = flattenRelayConnection(a.data?.agents).map((a) => {
-      return {
-        ...a,
-      }
-    })
-    console.log(agents)
-  }
+//   async function fetchAgents() {
+//     await agentsQuery.getCurrentResult()
+//     const a = await agentsQuery.refetch()
+//     agents = flattenRelayConnection(a.data?.agents).map((a) => {
+//       return {
+//         ...a,
+//       }
+//     })
+//     console.log(agents)
+//   }
 
-  async function fetchResourceSpecifications() {
-    await resourceSpecificationsQuery.getCurrentResult()
-    let r = await resourceSpecificationsQuery.refetch()
-    resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
-      return {
-        ...a,
-        defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
-      }
-    })
-    console.log(resourceSpecifications)
-  }
+//   async function fetchResourceSpecifications() {
+//     await resourceSpecificationsQuery.getCurrentResult()
+//     let r = await resourceSpecificationsQuery.refetch()
+//     resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+//       return {
+//         ...a,
+//         defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
+//       }
+//     })
+//     console.log(resourceSpecifications)
+//   }
 
   onMount(async() => {
     window.addEventListener('keydown', checkKey)
-    await fetchUnits();
-    await fetchAgents();
-    await fetchResourceSpecifications();
+    // await fetchUnits();
+    // await fetchAgents();
+    // await fetchResourceSpecifications();
   })
 
   let newCommitmentTemplate = {
@@ -480,7 +480,7 @@ const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
                           selectedCommitment.finished = e.target.checked
                           console.log(selectedCommitment.finished)
                         }}
-                        bind:checked={finished} 
+                        bind:checked={selectedCommitment.finished} 
                         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         >
 

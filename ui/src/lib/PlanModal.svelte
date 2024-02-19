@@ -20,12 +20,12 @@
   export let commitments: any;
   export let allColumns: any[];
   export let commitmentsToDelete: any[] = [];
-  let agents: any[];
+  export let units: Unit[];
+  export let agents: any[];
+  export let resourceSpecifications: any[];
+  export let processSpecifications: any[];
   let savingPlan: boolean = false;
   const delay = ms => new Promise(res => setTimeout(res, ms));
-  let resourceSpecifications: any[];
-  let processSpecifications: any[];
-  let units: Unit[];
   let commitmentsToSaveCount: number = 0;
   let commitmentsSavedCount: number = 0;
   let error: any;
@@ -41,20 +41,20 @@
     }
   }
 
-  const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
-        }
-      }
-    }
-  `
+  // const GET_UNITS = gql`
+  //   query GetUnits {
+  //     units {
+  //       edges {
+  //         cursor
+  //         node {
+  //           id
+  //           label
+  //           symbol
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
   const CREATE_PLAN = gql`
     mutation($rs: PlanCreateParams!) {
@@ -154,69 +154,69 @@
     }
   `
 
-  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    query {
-      resourceSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ResourceSpecificationCoreFields
-          }
-        }
-      }
-    }
-  `
+  // const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+  //   ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+  //   query {
+  //     resourceSpecifications(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           ...ResourceSpecificationCoreFields
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
-  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
-    ${PROCESS_SPECIFICATION_CORE_FIELDS}
-    query {
-      processSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProcessSpecificationCoreFields
-          }
-        }
-      }
-    }
-  `
+  // const GET_ALL_PROCESS_SPECIFICATIONS = gql`
+  //   ${PROCESS_SPECIFICATION_CORE_FIELDS}
+  //   query {
+  //     processSpecifications(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           ...ProcessSpecificationCoreFields
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
-  const GET_ALL_AGENTS = gql`
-    ${AGENT_CORE_FIELDS}
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            id
-            name
-            classifiedAs
-          }
-        }
-      }
-    }
-  `
+  // const GET_ALL_AGENTS = gql`
+  //   ${AGENT_CORE_FIELDS}
+  //   query {
+  //     agents(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           id
+  //           name
+  //           classifiedAs
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
-  interface QueryResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
+  // interface QueryResponse {
+  //   resourceSpecifications: AgentConnection & RelayConn<any>
+  // }
 
-  interface ProcessQueryResponse {
-    processSpecifications: AgentConnection & RelayConn<any>
-  }
+  // interface ProcessQueryResponse {
+  //   processSpecifications: AgentConnection & RelayConn<any>
+  // }
 
-  interface AgentQueryResponse {
-    agents: AgentConnection & RelayConn<any>
-  }
+  // interface AgentQueryResponse {
+  //   agents: AgentConnection & RelayConn<any>
+  // }
 
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  }
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
-  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+  // interface UnitsQueryResponse {
+  //   units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  // }
+  // let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+  // let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  // let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
+  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   let addPlan: any = mutation(CREATE_PLAN)
   let updatePlan: any = mutation(UPDATE_PLAN)
@@ -235,7 +235,7 @@
       name: process.name,
       note: process.note,
       plannedWithin: process.plannedWithin,
-      basedOn: processSpecifications.find((rs) => rs.node.name === process.based_on.name).node.id,
+      basedOn: processSpecifications.find((rs) => rs.name === process.based_on.name).id,
     }
     let p = await addProcess({
       variables: {
@@ -309,24 +309,24 @@
       finished: commitment.finished,
       note: commitment.note,
       hasBeginning: new Date(Date.now()),
-      resourceConformsTo: resourceSpecifications.find((rs) => rs.node.name === commitment.resourceConformsTo.name).node.id,
+      resourceConformsTo: resourceSpecifications.find((rs) => rs.name === commitment.resourceConformsTo.name).id,
       resourceQuantity: {
         hasNumericalValue: Number(commitment?.resourceQuantity?.hasNumericalValue),
         hasUnit: commitment?.resourceQuantity?.hasUnit?.id
       },
     }
     
-    const defaultAgent = agents.find((a) => a.node.classifiedAs[2] === "Network").node
+    const defaultAgent = agents.find((a) => a.classifiedAs[2] === "Network")
 
     try {
-      o.provider = agents.find((a) => a.node.name === commitment.provider.name).node.id
+      o.provider = agents.find((a) => a.name === commitment.provider.name).id
     } catch (e) {
       console.log("can't find receiver", e)
       o.provider = defaultAgent.id
       console.log("saved by setting default agent", defaultAgent)
     }
     try {
-      o.receiver = agents.find((a) => a.node.name === commitment.receiver.name).node.id
+      o.receiver = agents.find((a) => a.name === commitment.receiver.name).id
     } catch (e) {
       console.log("can't find provider", e)
       o.receiver = defaultAgent.id
@@ -398,10 +398,11 @@
     // SAVE INDEPENDENT DEMANDS (commitments with no input or output)
     for (const c of commitments) {
       console.log(c)
+      console.log("agents", agents)
       let o = {
         ...c,
         // provider is carbon farm network
-        provider: agents.find((a) => a.node.classifiedAs[2] === "Network").node.id,
+        provider: agents.find((a) => a.classifiedAs[2] === "Network").id,
         // reciever is agent for request
         plannedWithin: p.data.res.plan.id,
         // references plan with independentDemandOf
@@ -452,7 +453,7 @@
             c.clauseOf = a.data.createAgreement.agreement.id
 
             // save cost commitment
-            const dollars = resourceSpecifications.find((rs) => rs.node.name === "USD")
+            const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
             console.log("dollars", dollars)
             let payment: CommitmentCreateParams = {
               clauseOf: a.data.createAgreement.agreement.id,
@@ -462,7 +463,7 @@
               provider: c.receiver,
               receiver: c.provider,
               plannedWithin: p.data.res.plan.id,
-              resourceConformsTo: dollars.node,
+              resourceConformsTo: dollars,
               resourceQuantity: {
                 hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue),
               },
@@ -611,28 +612,28 @@
 
   }
 
-  async function fetchUnits() {
-    getUnits.getCurrentResult()
-    getUnits.refetch().then((r) => {
-      if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units)
-      }
-    })
-  }
+  // async function fetchUnits() {
+  //   getUnits.getCurrentResult()
+  //   getUnits.refetch().then((r) => {
+  //     if (r.data?.units.edges.length > 0) {
+  //       units = flattenRelayConnection(r.data?.units)
+  //     }
+  //   })
+  // }
 
   onMount(async () => {
-    await fetchUnits();
-    console.log(planObject)
-    const x = await resourceSpecificationsQuery.refetch()
-    resourceSpecifications = x.data.resourceSpecifications.edges
-    console.log("loaded resource specifications", resourceSpecifications)
-    const z = await processSpecificationsQuery.refetch()
-    processSpecifications = z.data.processSpecifications.edges
-    console.log("loaded process specifications", processSpecifications)
-    const y = await agentsQuery.refetch()
-    console.log(y)
-    agents = y.data.agents.edges
-    console.log("loaded agents", agents)
+    // await fetchUnits();
+    // console.log(planObject)
+    // const x = await resourceSpecificationsQuery.refetch()
+    // resourceSpecifications = x.data.resourceSpecifications.edges
+    // console.log("loaded resource specifications", resourceSpecifications)
+    // const z = await processSpecificationsQuery.refetch()
+    // processSpecifications = z.data.processSpecifications.edges
+    // console.log("loaded process specifications", processSpecifications)
+    // const y = await agentsQuery.refetch()
+    // console.log(y)
+    // agents = y.data.agents.edges
+    // console.log("loaded agents", agents)
     window.addEventListener('keydown', checkKey)
   })
 

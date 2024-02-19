@@ -16,13 +16,15 @@
   import { gql } from 'graphql-tag'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { COMMITMENT_RETURN_FIELDS, PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
   import { dragscroll } from '@svelte-put/dragscroll';
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -37,6 +39,10 @@
   let selectedProcessId: string | undefined = undefined;
   let error: any;
   let yellow: any[] = []
+  let units: Unit[] = []
+  let agents: Agent[] = []
+  let resourceSpecifications: ResourceSpecification[] = []
+  let processSpecifications: ProcessSpecification[] = []
 
   let processImages = {
     "Pick Up": "/farm.svg",
@@ -59,6 +65,68 @@
   let loadingPlan: boolean = true;
   let allColumns: any = []
   $: loadingPlan, currentProcess
+
+  const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
+
+  const GET_ALL_AGENTS = gql`
+    query {
+      agents(last: 100000) {
+        edges {
+          cursor
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  `
+
+  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    ${UNIT_CORE_FIELDS}
+    query {
+      resourceSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ResourceSpecificationCoreFields
+            defaultUnitOfResource {
+              ...UnitCoreFields
+            }
+          }
+        }
+      }
+    }
+  `
+
+  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
+    ${PROCESS_SPECIFICATION_CORE_FIELDS}
+    query {
+      processSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ProcessSpecificationCoreFields
+          }
+        }
+      }
+    }
+  `
+
 
   const GET_All_PROPOSALS = gql`
     ${PROPOSAL_RETURN_FIELDS}
@@ -150,6 +218,10 @@
   let addFulfillment: any = mutation(CREATE_FULFILLMENT)
   let updateCommitment: any = mutation(UPDATE_COMMITMENT)
 
+  interface ProcessQueryResponse {
+    processSpecifications: AgentConnection & RelayConn<any>
+  }
+
   interface ProposalsQueryResponse {
     proposals: ProposalConnection & RelayConn<any>
   }
@@ -166,11 +238,73 @@
     commitment: CommitmentConnection & RelayConn<any>
   }
 
+  interface QueryResponse {
+    agents: AgentConnection & RelayConn<any>
+  }
+
+  interface RspecResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
+
+  interface UnitsQueryResponse {
+    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  }
+
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+  // map component state
+  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+  let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
   let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
   let getSimplifiedPlan: ReadableQuery<PlanQueryResponse> = query(GET_SIMPLIFIED_PLAN);
   let getProcess: ReadableQuery<ProcessQueryResponse> = query(GET_PROCESS);
   let getCommitment: ReadableQuery<CommitmentQueryResponse> = query(GET_COMMITMENT);
+    
+
+  async function fetchUnits() {
+    getUnits.getCurrentResult()
+    getUnits.refetch().then((r) => {
+      if (r.data?.units.edges.length > 0) {
+        units = flattenRelayConnection(r.data?.units)
+      }
+    })
+  }
+
+  async function fetchAgents() {
+    await agentsQuery.getCurrentResult()
+    const a = await agentsQuery.refetch()
+    agents = flattenRelayConnection(a.data?.agents).map((a) => {
+      return {
+        ...a,
+      }
+    })
+    console.log(agents)
+  }
+
+  async function fetchResourceSpecifications() {
+    await resourceSpecificationsQuery.getCurrentResult()
+    let r = await resourceSpecificationsQuery.refetch()
+    resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+      return {
+        ...a,
+        defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
+      }
+    })
+    console.log(resourceSpecifications)
+  }
+
+  async function fetchProcessSpecifications() {
+    await processSpecificationsQuery.getCurrentResult()
+    let r = await processSpecificationsQuery.refetch()
+    processSpecifications = flattenRelayConnection(r.data?.processSpecifications).map((a) => {
+      return {
+        ...a,
+      }
+    })
+    console.log(processSpecifications)
+  }
+
     
   async function fetchProposals() {
     try {
@@ -380,6 +514,11 @@
       // getPlan.setVariables({
         //   id: planId
         // });
+        await fetchUnits()
+        await fetchAgents()
+        await fetchResourceSpecifications()
+        await fetchProcessSpecifications()
+
         getSimplifiedPlan.setVariables({
           id: planId
         });
@@ -529,7 +668,16 @@
 
 
 {#if plan}
-<PlanModal bind:open={planModalOpen} planObject = {plan} {allColumns} {commitments} {commitmentsToDelete} editing={true}/>
+<PlanModal bind:open={planModalOpen} planObject = 
+  {plan} 
+  {allColumns} 
+  {commitments} 
+  {commitmentsToDelete}
+  {units}
+  {agents}
+  {resourceSpecifications}
+  {processSpecifications}
+editing={true}/>
 {/if}
 
 {#if economicEventModalOpen}
@@ -539,6 +687,10 @@ bind:open={economicEventModalOpen}
   {commitmentModalProcess}
   {commitmentModalColumn}
   {commitmentModalSide}
+  {units}
+  {agents}
+  {resourceSpecifications}
+  {processSpecifications}
   process = {currentProcess}
   bind:commitments
   on:submit={(event) => {
@@ -557,6 +709,9 @@ bind:open={economicEventModalOpen}
   {commitmentModalProcess}
   {commitmentModalColumn}
   {commitmentModalSide}
+  {units}
+  {agents}
+  {resourceSpecifications}
   process = {currentProcess}
   bind:commitments
   on:submit={(event) => {
@@ -879,7 +1034,8 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
               </div>
               <div>
                 <button
-                  class="flex items-center w-full mb-2"
+                  class="flex justify-center items-center w-full mb-2"
+
                   on:click={() => {
                     commitmentModalProcess = processIndex
                     commitmentModalColumn = columnIndex

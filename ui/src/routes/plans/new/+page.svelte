@@ -8,22 +8,28 @@
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
+  
 
   // import plan from '$lib/data/plan.json'
   import Header from '$lib/Header.svelte'
   import { goto } from '$app/navigation'
   import { gql } from 'graphql-tag'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, ProcessConnection, CommitmentConnection } from '@valueflows/vf-graphql'
   import { dragscroll } from '@svelte-put/dragscroll';
 
   let agents: Agent[] = []
+  let units: Unit[] = []
+  let resourceSpecifications: ResourceSpecification[] = []
+  let processSpecifications: any[] = []
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
   let commitmentModalSide: string | undefined;
@@ -41,6 +47,53 @@
   // $: if (commitmentModalColumn) {
   //   currentProcess = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide];
   // }
+
+  const GET_UNITS = gql`
+    query GetUnits {
+      units {
+        edges {
+          cursor
+          node {
+            id
+            label
+            symbol
+          }
+        }
+      }
+    }
+  `
+
+  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    ${UNIT_CORE_FIELDS}
+    query {
+      resourceSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ResourceSpecificationCoreFields
+            defaultUnitOfResource {
+              ...UnitCoreFields
+            }
+          }
+        }
+      }
+    }
+  `
+
+  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
+    ${PROCESS_SPECIFICATION_CORE_FIELDS}
+    query {
+      processSpecifications(last: 100000) {
+        edges {
+          cursor
+          node {
+            ...ProcessSpecificationCoreFields
+          }
+        }
+      }
+    }
+  `
 
   const GET_All_PROPOSALS = gql`
     ${PROPOSAL_RETURN_FIELDS}
@@ -84,9 +137,75 @@
     agents: AgentConnection & RelayConn<any>
   }
 
+  interface ProcessQueryResponse {
+    processSpecifications: AgentConnection & RelayConn<any>
+  }
+
+  interface PlanQueryResponse {
+    plan: PlanConnection & RelayConn<any>
+  }
+
+  interface ProcessQueryResponse {
+    process: ProcessConnection & RelayConn<any>
+  }
+
+  interface RspecResponse {
+    resourceSpecifications: AgentConnection & RelayConn<any>
+  }
+
+  interface UnitsQueryResponse {
+    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
+  }
+
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
   let agentsQuery: ReadableQuery<AgentQueryResponse> = query(GET_ALL_AGENTS)
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+  let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
 
+  async function fetchUnits() {
+    getUnits.getCurrentResult()
+    getUnits.refetch().then((r) => {
+      if (r.data?.units.edges.length > 0) {
+        units = flattenRelayConnection(r.data?.units)
+      }
+    })
+  }
+
+  async function fetchAgents() {
+    await agentsQuery.getCurrentResult()
+    const a = await agentsQuery.refetch()
+    agents = flattenRelayConnection(a.data?.agents).map((a) => {
+      return {
+        ...a,
+      }
+    })
+    console.log(agents)
+  }
+
+  async function fetchResourceSpecifications() {
+    await resourceSpecificationsQuery.getCurrentResult()
+    let r = await resourceSpecificationsQuery.refetch()
+    resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
+      return {
+        ...a,
+        defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
+      }
+    })
+    console.log(resourceSpecifications)
+  }
+
+  async function fetchProcessSpecifications() {
+    await processSpecificationsQuery.getCurrentResult()
+    let r = await processSpecificationsQuery.refetch()
+    processSpecifications = flattenRelayConnection(r.data?.processSpecifications).map((a) => {
+      return {
+        ...a,
+      }
+    })
+    console.log(processSpecifications)
+  }
+    
   async function fetchProposals() {
     await getProposals.getCurrentResult()
     await getProposals.refetch().then((r) => {
@@ -111,6 +230,10 @@
 
   onMount(async () => {
     if (browser) {
+      await fetchUnits()
+      await fetchResourceSpecifications()
+      await fetchProcessSpecifications()
+      await fetchAgents()
       const y = await agentsQuery.refetch()
       agents = y.data.agents.edges.map((it) => {return {...it.node, role: it.node.classifiedAs[2]}})
       console.log("agents", agents)
@@ -658,7 +781,15 @@
 
 <!-- {JSON.stringify(allColumns)} -->
 
-<PlanModal bind:open={planModalOpen} planObject = {createPlan} {allColumns} {commitments} editing={false}/>
+<PlanModal bind:open={planModalOpen} planObject = 
+  {createPlan} 
+  {allColumns} 
+  {commitments} 
+  {agents}
+  {resourceSpecifications}
+  {units}
+  {processSpecifications}
+editing={false}/>
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}
@@ -666,6 +797,9 @@
   {commitmentModalColumn}
   {commitmentModalSide}
   {commitments}
+  {agents}
+  {resourceSpecifications}
+  {units}
   process = {currentProcess}
   on:submit={(event) => {
     console.log(event.detail)
