@@ -8,9 +8,9 @@
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
   import { onMount } from 'svelte'
-  import { map } from "leaflet"
   import { goto } from '$app/navigation';
   import Header from "$lib/Header.svelte"
+  import Export from "$lib/Export.svelte"
 
   function navigate(location: string) {
     goto(location);
@@ -119,6 +119,7 @@
         >Add a facet</button
       >
     </div>
+    <Export dataName="Facets" fileName="cfn-facets" data={facetGroups} />
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -149,9 +150,9 @@
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit facet</span>
               </th>
-              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+              <!-- <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit facet values</span>
-              </th>
+              </th> -->
             </tr>
           </thead>
           <tbody class="bg-white">

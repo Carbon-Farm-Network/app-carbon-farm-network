@@ -17,6 +17,7 @@
   import { loop_guard } from 'svelte/internal'
   import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
   import Header from '$lib/Header.svelte'
+  import Export from "$lib/Export.svelte"
 
   // externally provided data
   let units: Unit[];
@@ -295,6 +296,7 @@
         >Add a request</button
       >
     </div>
+    <Export dataName="list of requests" fileName="cfn-requests" data={offersList} />
     {:else}
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button

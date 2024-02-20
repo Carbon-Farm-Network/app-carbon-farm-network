@@ -25,6 +25,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
+  import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -250,8 +251,8 @@
     units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
   }
 
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
   // map component state
+  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
   let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
   let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
@@ -666,7 +667,6 @@
 
 <!-- {JSON.stringify(aggregatedCommitments)} -->
 
-
 {#if plan}
 <PlanModal bind:open={planModalOpen} planObject = 
   {plan} 
@@ -807,7 +807,11 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
 <!-- plan name -->
 <!-- plan name -->
 <h1 class="text-center text-xl font-semibold">{plan.name}</h1>
-
+{@const exportData = {
+  plan: plan,
+  allColumns: allColumns,
+  commitments: commitments,
+}}
 <div class="flex justify-center items-center">
   <!-- <div class="outer-div justify-center items-center">
   <div class="scroll-div justify-center items-center">
@@ -826,7 +830,8 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
           class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save changes</button
         >
-      </div>    
+        <Export dataName="plan" fileName="cfn-plan-{plan.name}" data={exportData} />
+      </div>
       <h2 class="text-center text-xl font-semibold">Offers</h2>
       <div class="bg-blue-300 border border-gray-400 p-2">
         <!-- Sub-columns -->

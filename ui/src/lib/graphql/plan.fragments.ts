@@ -178,6 +178,33 @@ export const PROCESS_RETURN_FIELDS = gql`
       }
       fulfilledBy {
         id
+        action {
+          id
+          label
+        }
+        provider {
+          id
+          name
+        }
+        receiver {
+          id
+          name
+        }
+        resourceConformsTo {
+          id
+          name
+          defaultUnitOfResource {
+            label
+          }
+        }
+        resourceQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+            label
+          }
+        }
+        hasBeginning
       }
       finished
     }
@@ -219,6 +246,33 @@ export const PROCESS_RETURN_FIELDS = gql`
       }
       fulfilledBy {
         id
+        action {
+          id
+          label
+        }
+        provider {
+          id
+          name
+        }
+        receiver {
+          id
+          name
+        }
+        resourceConformsTo {
+          id
+          name
+          defaultUnitOfResource {
+            label
+          }
+        }
+        resourceQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+            label
+          }
+        }
+        hasBeginning
       }
       finished
     }
