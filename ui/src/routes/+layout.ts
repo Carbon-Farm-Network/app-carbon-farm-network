@@ -4,18 +4,100 @@ import { error } from '@sveltejs/kit'
 import autoConnect from '@vf-ui/graphql-client-holochain'
 import { sniffHolochainAppCells } from '@valueflows/vf-graphql-holochain'
 import { AppWebsocket, AdminWebsocket, AppAgentWebsocket } from '@holochain/client'
-
+// import { WeClient, isWeContext, initializeHotReload, type HrlWithContext, type Hrl } from '@lightningrodlabs/we-applet';
 import extensionSchemas from '$lib/graphql/extension-schemas'
 import bindResolvers from '$lib/graphql/extension-resolvers'
 import type { ExtendedDnaConfig } from '$lib/graphql/extension-resolvers'
 import type { AppSignalCb, CellId } from '@holochain/client'
+import { appletServices } from '../../we';
 
 const appId = 'acfn'
 const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
 const adminPort = import.meta.env.VITE_ADMIN_PORT
 const appPort = import.meta.env.VITE_APP_PORT
 const url = `ws://localhost:${appPort}`;
+// let weClient: WeClient
+let connected = false
 
+// enum RenderType {
+//   App,
+//   Hrl,
+//   BlockActiveBoards
+// }
+
+// let renderType = RenderType.App
+// let hrlWithContext: HrlWithContext
+
+// export async function load() : Promise<void> {
+//   console.log("loading......")
+//   if ((import.meta as any).env.DEV) {
+//     try {
+//       await initializeHotReload();
+//     } catch (e) {
+//       console.warn("Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode.")
+//     }
+//   }
+//   if (!isWeContext()) {
+//       loadNormal();
+//   }
+//   else {
+//     weClient = await WeClient.connect(appletServices);
+
+//     switch (weClient.renderInfo.type) {
+//       case "applet-view":
+//         switch (weClient.renderInfo.view.type) {
+//           case "main":
+//             // here comes your rendering logic for the main view
+//             break;
+//           case "block":
+//             switch(weClient.renderInfo.view.block) {
+//               case "active_boards":
+//                 renderType = RenderType.BlockActiveBoards
+//                 break;
+//               default:
+//                 throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
+//             }
+//             break;
+//           case "attachable":
+//             switch (weClient.renderInfo.view.roleName) {
+//               case "calcy":
+//                 switch (weClient.renderInfo.view.integrityZomeName) {
+//                   case "syn_integrity":
+//                     switch (weClient.renderInfo.view.entryType) {
+//                       case "document":
+//                         renderType = RenderType.Hrl
+//                         hrlWithContext = weClient.renderInfo.view.hrlWithContext
+//                         break;
+//                       default:
+//                         throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
+//                     }
+//                     break;
+//                   default:
+//                     throw new Error("Unknown integrity zome:"+weClient.renderInfo.view.integrityZomeName);
+//                 }
+//                 break;
+//               default:
+//                 throw new Error("Unknown role name:"+weClient.renderInfo.view.roleName);
+//             }
+//             break;
+//           default:
+//             throw new Error("Unsupported applet-view type");
+//         }
+//         break;
+//       default:
+//         throw new Error("Unknown render view type");
+
+//     }
+    
+//     //@ts-ignore
+//     client = weClient.renderInfo.appletClient;
+//     //@ts-ignore
+//     profilesClient = weClient.renderInfo.profilesClient;
+//   }
+//   connected = true
+// }
+
+// export async function loadNormal() {
 export async function load() {
   if (!browser) return
   try {

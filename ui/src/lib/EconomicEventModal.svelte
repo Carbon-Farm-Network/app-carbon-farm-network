@@ -477,7 +477,9 @@
                     <div class="mt-4 flex items-center">
                       <input type="checkbox" id="finished" 
                         on:change={(e) => {
-                          selectedCommitment.finished = e.target.checked
+                          let tempFinished = e.target.checked
+                          console.log(tempFinished)
+                          selectedCommitment.finished = tempFinished
                           console.log(selectedCommitment.finished)
                         }}
                         bind:checked={selectedCommitment.finished} 
@@ -501,6 +503,7 @@
           type="button"
           class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
           on:click={() => {
+            console.log("selected commitment", selectedCommitment)
             let updatedCommitment = {...selectedCommitment}
             if (!selectedCommitment.provider) {
               updatedCommitment.provider = newCommitment.provider
@@ -521,7 +524,8 @@
               updatedCommitment.note = newCommitment.note
             }
 
-            updatedCommitment.finished = finished
+            // updatedCommitment.finished = selectedCommitment.finished
+            console.log("selected commitment2 ", selectedCommitment)
 
             dispatch('submit', {
               column: commitmentModalColumn,

@@ -696,7 +696,14 @@ bind:open={economicEventModalOpen}
   on:submit={(event) => {
     saveEconomicEvent(event.detail.commitment, selectedProcessId, commitmentModalSide)
     let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == event.detail.commitment.id)
-    yellow.push(event.detail.commitment.id)
+    console.log(event.detail)
+    if (event.detail.commitment.finished) {
+      console.log("yes")
+      yellow = yellow.filter(it => it != event.detail.commitment.id)
+    } else {
+      yellow.push(event.detail.commitment.id)
+      console.log("no")
+    }
     console.log("finished", event.detail.commitment.finished)
     allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = event.detail.commitment
   }}
