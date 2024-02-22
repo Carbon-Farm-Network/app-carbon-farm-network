@@ -15,6 +15,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.14",
     "@holochain/client": "^0.16.7",
+    "@lightningrodlabs/we-applet": "^0.14.2",
     "@msgpack/msgpack": "^2.7.2",
     "@tailwindcss/forms": "^0.5.3",
     "@vaadin/date-time-picker": "^23.3.13",

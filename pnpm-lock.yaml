@@ -53,6 +53,9 @@ importers:
       '@holochain/client':
         specifier: ^0.16.7
         version: 0.16.7
+      '@lightningrodlabs/we-applet':
+        specifier: ^0.14.2
+        version: 0.14.2
       '@msgpack/msgpack':
         specifier: ^2.7.2
         version: 2.8.0
@@ -946,6 +949,24 @@ packages:
       - ws
     dev: false
 
+  /@holochain/client@0.16.6:
+    resolution: {integrity: sha512-p6Vt8Ka6bLNAgCOXKs+wwgSg9vF9ZLp6iEJaNcmv71wmtf3d8YuqCtQXn6fL7/IW/I/SxPHvlihjo9jstdeC7w==}
+    engines: {node: '>=18.0.0 || >=20.0.0'}
+    dependencies:
+      '@holochain/serialization': 0.1.0-beta-rc.3
+      '@msgpack/msgpack': 2.8.0
+      '@tauri-apps/api': 1.5.1
+      emittery: 1.0.1
+      isomorphic-ws: 5.0.0(ws@8.14.2)
+      js-base64: 3.7.5
+      libsodium-wrappers: 0.7.13
+      lodash-es: 4.17.21
+      ws: 8.14.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
   /@holochain/client@0.16.7:
     resolution: {integrity: sha512-wCFm71HUnZ9vxmuguqKqDOhqjE5Qq5e8bM4q9W1ginel3UAZF3LmYym5Ny4pOG2aqf2tD5mpf7xTZjBxPDGnjA==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
@@ -1083,6 +1104,15 @@ packages:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
+
+  /@lightningrodlabs/we-applet@0.14.2:
+    resolution: {integrity: sha512-TXXQj8CSCxmDlMKkYBZMlktxeD/wrgPj2mIivTFA0VzEbtz2rVnxr4ZR5q+vP0fs6h82Che/9zaYOHjjaRdx/Q==}
+    dependencies:
+      '@holochain/client': 0.16.6
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
 
   /@lit-labs/ssr-dom-shim@1.1.2:
     resolution: {integrity: sha512-jnOD+/+dSrfTWYfSXBXlo5l5f0q1UuJo3tkbMDCYA2lKUYq79jaxqtGEvnRoh049nt1vdo1+45RinipU6FGY2g==}

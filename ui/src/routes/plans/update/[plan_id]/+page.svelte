@@ -90,6 +90,7 @@
           node {
             id
             name
+            classifiedAs
           }
         }
       }
@@ -280,7 +281,7 @@
         ...a,
       }
     })
-    console.log(agents)
+    console.log("AGENTS *********", agents)
   }
 
   async function fetchResourceSpecifications() {

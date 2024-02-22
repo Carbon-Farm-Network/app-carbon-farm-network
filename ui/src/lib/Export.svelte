@@ -4,6 +4,39 @@
   export let data: any;
   let open = false;
 
+  // import { writeFile } from 'fs'
+
+// const download = async (filename: string, text: string) => {
+//   try {
+//     await writeFile(
+//       fileName,
+//       text,
+//       null,
+//       (err) => {
+//         if (err) {
+//           console.error('Failed to save file:', err);
+//         } else {
+//           console.log('File saved successfully');
+//         }
+//       }
+//       // {
+//       //   create: true,
+//       //   overwrite: true
+//       // }
+//       // callback: NoParamCallback,
+//       // path: filename,
+//       // contents: text,
+//       // options: {
+//       //   create: true,
+//       //   overwrite: true
+//       // }
+//     );
+//     console.log('File saved successfully');
+//   } catch (error) {
+//     console.error('Failed to save file:', error);
+//   }
+// }
+
   const download = (filename: string, text: string) => {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
@@ -17,15 +50,15 @@
     document.body.removeChild(element);
   }
 </script>
-
+<!-- 
 <div class="mt-4 sm:ml-1 sm:mt-0 sm:flex-none">
   <button
     type="button"
-    on:click={() => {open = true; console.log("hello!")}}
+    on:click={() => {open = true; console.log("opened export modal")}}
     >
-    <img src="/static/file-export-solid.svg" class="inline-block w-8 h-8 ml-2" />
+    <svg class="inline-block w-10 h-10 ml-2" fill="rgb(79, 70, 229)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M0 64C0 28.7 28.7 0 64 0H224V128c0 17.7 14.3 32 32 32H384V288H216c-13.3 0-24 10.7-24 24s10.7 24 24 24H384V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zM384 336V288H494.1l-39-39c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l80 80c9.4 9.4 9.4 24.6 0 33.9l-80 80c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l39-39H384zm0-208H256V0L384 128z"/></svg>
   </button>
-</div>
+</div> -->
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" class:hidden={!open}/>
@@ -78,7 +111,7 @@
             type="button"
             class="inline-flex justify-center w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
             on:click={() => {
-              console.log("hello!!")
+              console.log("exporting data")
               console.log(data)
               let currentTime = new Date().toISOString().replace(/:/g, '-')
               console.log(currentTime)
