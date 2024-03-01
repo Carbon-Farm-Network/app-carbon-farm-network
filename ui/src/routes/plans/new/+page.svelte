@@ -1175,7 +1175,7 @@ editing={false}/>
         //   allColumns.flat().flat().flat().filter(it => it.clauseOf).map(it => it.clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue).reduce((a, b) => new Decimal(a).add(b), 0)
         // ).toFixed(2, Decimal.ROUND_HALF_UP).toString() -->
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #CFBAAS;">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #EEEEEE;">
         <!-- Sub-columns -->
         <div class="">
           <div>
