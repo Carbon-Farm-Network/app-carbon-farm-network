@@ -1066,7 +1066,7 @@
       "name": "Pick Up Fiber",
       "process_conforms_to": {
         "name": "Pick Up",
-        "image": "/farm.svg"
+        "image": "/pickup.svg"
       },
       "has_duration": {
         "numeric_duration": 7,

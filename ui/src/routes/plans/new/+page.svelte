@@ -23,11 +23,12 @@
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, ProcessConnection, CommitmentConnection } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Action, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, ProcessConnection, CommitmentConnection } from '@valueflows/vf-graphql'
   import { dragscroll } from '@svelte-put/dragscroll';
 
   let agents: Agent[] = []
   let units: Unit[] = []
+  let actions: Action[] = []
   let resourceSpecifications: ResourceSpecification[] = []
   let processSpecifications: any[] = []
   let commitmentModalProcess: number | undefined;
@@ -43,7 +44,7 @@
     note: '',
   }
 
-  $: currentProcess;
+  $: currentProcess, actions;
   // $: if (commitmentModalColumn) {
   //   currentProcess = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide];
   // }
@@ -109,6 +110,17 @@
     }
   `
 
+
+  const GET_All_ACTIONS = gql`
+    query {
+      actions(last: 100000) {
+        id
+        label
+        inputOutput
+      }
+    }
+  `
+
   const GET_ALL_AGENTS = gql`
     ${AGENT_CORE_FIELDS}
     query {
@@ -158,10 +170,19 @@
   }
 
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
+  let getActions: ReadableQuery<QueryResponse> = query(GET_All_ACTIONS)
   let agentsQuery: ReadableQuery<AgentQueryResponse> = query(GET_ALL_AGENTS)
   let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
   let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
   let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
+
+  async function fetchActions() {
+    await getActions.getCurrentResult()
+    let r = await getActions.refetch()
+    console.log("*******actions*******")
+    console.log(r)
+    actions = r.data?.actions
+  }
 
   async function fetchUnits() {
     getUnits.getCurrentResult()
@@ -230,6 +251,7 @@
 
   onMount(async () => {
     if (browser) {
+      await fetchActions()
       await fetchUnits()
       await fetchResourceSpecifications()
       await fetchProcessSpecifications()
@@ -246,6 +268,7 @@
   // ===========================================
 
   function assignProviderReceiver(commitment, agents) {
+    console.log("******assing provider receiver", commitment, agents)
     const receivers = agents.filter(it => it.role == commitment?.receiver_role)
     const providers = agents.filter(it => it.role == commitment?.provider_role)
     return Object.assign(
@@ -287,8 +310,14 @@
                 )
               }
             })
+            console.log("1")
+            console.log("acc", acc)
+            console.log("input", input)
           // if there is no recipe we just continue
-          if (!recipe) return acc
+          if (!recipe) {
+            return acc
+          }
+          console.log("2")
           // find the output that matches the demand
           let matching_output = recipe?.has_recipe_output?.find(
             output => output.resourceConformsTo.name == input.resourceConformsTo.name
@@ -758,17 +787,17 @@
 
   let totalCost: Decimal = new Decimal(0);
   $: if (allColumns) {
-    console.log("--totalcost--")
+    // console.log("--totalcost--")
     totalCost = new Decimal(0)
     for (let i = 0; i < allColumns.length; i++) {
-      console.log("column", i)
+      // console.log("column", i)
       console.log(allColumns[i])
       for (let j = 0; j < allColumns[i].length; j++) {
-        console.log("process", j)
+        // console.log("process", j)
         let inputsAndOutputs = allColumns[i][j].committedInputs.concat(allColumns[i][j].committedOutputs)
         for (let k = 0; k < inputsAndOutputs.length; k++) {
-          console.log("cost", inputsAndOutputs[k])
-          console.log("cost", inputsAndOutputs[k].agreement)
+          // console.log("cost", inputsAndOutputs[k])
+          // console.log("cost", inputsAndOutputs[k].agreement)
           if (inputsAndOutputs[k].agreement) {
             totalCost = totalCost.add(inputsAndOutputs[k].agreement.commitment.resourceQuantity.hasNumericalValue)
           }
@@ -800,6 +829,7 @@ editing={false}/>
   {agents}
   {resourceSpecifications}
   {units}
+  {actions}
   process = {currentProcess}
   on:submit={(event) => {
     console.log(event.detail)
@@ -882,12 +912,12 @@ editing={false}/>
             planModalOpen = true
             // plan_created = true
           }}
-          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save plan</button
         >
       </div>
       <h2 class="text-center text-xl font-semibold">Offers</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
         <!-- Sub-columns -->
         <div class="">
           <div>
@@ -959,7 +989,8 @@ editing={false}/>
         <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
         <h2 class="text-center text-xl font-semibold">{name}</h2>
         {#each processes as { committedInputs, committedOutputs }, processIndex}
-          <div class="bg-gray-400 border border-gray-400 p-2">
+          <div class="border-gray-400 p-2" style="background-color: #BFBFBF;">
+          <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
             <!-- Sub-columns -->
             <div class="grid grid-cols-2 gap-2">
               <div>
@@ -977,6 +1008,7 @@ editing={false}/>
                 </button> -->
 
                 {#each committedInputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
+                {@const networkReceiver = agents.find((a) => a.classifiedAs[2] === "Network")}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                   >
@@ -1002,7 +1034,11 @@ editing={false}/>
                     </div>
                     <p>
                       from {provider?.name || ''}<br />
-                      to {receiver?.name || ''}
+                      {#if receiver}
+                        to {receiver?.name || ''}
+                      {:else}
+                        to {networkReceiver?.name || ''}
+                      {/if}
                     </p>
                     {#if agreement}
                       {@const commitment = agreement.commitment}
@@ -1139,7 +1175,7 @@ editing={false}/>
         //   allColumns.flat().flat().flat().filter(it => it.clauseOf).map(it => it.clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue).reduce((a, b) => new Decimal(a).add(b), 0)
         // ).toFixed(2, Decimal.ROUND_HALF_UP).toString() -->
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #CFBAAS;">
         <!-- Sub-columns -->
         <div class="">
           <div>
@@ -1157,7 +1193,7 @@ editing={false}/>
                 <button
                   type="button"
                   on:click={() => (commitments = createCommitments(requests))}
-                  class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >Create from requests</button
                 >
               </div>
@@ -1204,7 +1240,7 @@ editing={false}/>
 
     <div class="min-w-[200px] mt-20">
       <h2 class="text-center text-xl font-semibold">Requests</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
         <!-- Sub-columns -->
         <div class="">
           <div>

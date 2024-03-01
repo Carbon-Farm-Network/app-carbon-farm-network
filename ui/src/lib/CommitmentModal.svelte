@@ -3,7 +3,7 @@
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   // import agents from '$lib/data/agents.json'
-  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection, Action } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
@@ -11,7 +11,7 @@
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   // import resource_specifications from '$lib/data/resource_specifications.json'
   // import units from '$lib/data/units.json'
-  import actions from '$lib/data/actions.json'
+  // import actions from '$lib/data/actions.json'
   import { gql } from 'graphql-tag'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
 
@@ -25,6 +25,9 @@
   export let agents: Agent[];
   export let resourceSpecifications: any[];
   export let units: any[];
+  export let actions: Action[];
+
+  let filteredActions: Action[] = []
 
   const dispatch = createEventDispatcher();
 
@@ -33,7 +36,14 @@
   let saveCost: boolean = false;
   let finished: boolean = false;
 
-  $: saveCost;
+  $: saveCost, actions, filteredActions;
+  $: if (commitmentModalSide == 'committedInputs' && actions) {
+    filteredActions = actions.filter((a) => a.inputOutput == 'input' || a.inputOutput == 'outputInput')
+  } else if (commitmentModalSide == 'committedOutputs' && actions) {
+    filteredActions = actions.filter((a) => a.inputOutput == 'output' || a.inputOutput == 'outputInput')
+  } else if (actions) {
+    filteredActions = actions.filter((a) => a.label == 'transfer')
+  }
 
   $: if (selectedCommitment) {
     if (selectedCommitment.clauseOf && selectedCommitment.clauseOf.commitments.length > 0) {
@@ -445,9 +455,11 @@
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.action.label}
                   >
-                    {#each actions as action}
-                      <option value={action}>{action}</option>
+                  {#if filteredActions}
+                    {#each filteredActions as action}
+                      <option value={action.id}>{action.label}</option>
                     {/each}
+                  {/if}
                   </select>
                 {/if}
               </div>
@@ -585,7 +597,7 @@
           {#if selectedCommitmentId}
           <button
           type="button"
-          class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+          class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
           on:click={() => {
             // console.log(JSON.stringify(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].provider.name))
 
@@ -640,7 +652,7 @@
           {:else}
           <button
             type="button"
-            class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+            class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             on:click={() => {
               // if (commitmentModalColumn == undefined) {
                 // let commitmentIndex = commitments.findIndex(

@@ -176,7 +176,7 @@ const GET_UNITS = gql`
       <button
         type="button"
         on:click={() => {modalOpen = true; editing = false; currentResourceSpecification = {}}}
-        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a resource specification</button>
     </div>
     <Export dataName="list of Resource Specifications" fileName="cfn-resource-specifications" data={resourceSpecifications} />

@@ -105,7 +105,7 @@
       <button
         type="button"
         on:click={() => {modalOpen = true; editing = false; currentProcessSpecification = {}; console.log('o')}}
-        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a process specification</button>
     </div>
     <Export dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications} />

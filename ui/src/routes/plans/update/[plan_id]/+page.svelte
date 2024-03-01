@@ -24,7 +24,7 @@
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Action, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
   import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
 
@@ -40,13 +40,16 @@
   let selectedProcessId: string | undefined = undefined;
   let error: any;
   let yellow: any[] = []
+  let yellowAmounts: any = {}
   let units: Unit[] = []
+  let actions: Action[] = []
   let agents: Agent[] = []
   let resourceSpecifications: ResourceSpecification[] = []
   let processSpecifications: ProcessSpecification[] = []
+  let requestsPerOffer: { [key: string]: any } = {}
 
   let processImages = {
-    "Pick Up": "/farm.svg",
+    "Pick Up": "/pickup.svg",
     "Ship": "/truck.svg",
     "Spin Yarn": "/socks.svg",
     "Scour Fiber": "/washing-machine.svg"
@@ -140,6 +143,16 @@
             ...ProposalReturnFields
           }
         }
+      }
+    }
+  `
+
+  const GET_All_ACTIONS = gql`
+    query {
+      actions(last: 100000) {
+        id
+        label
+        inputOutput
       }
     }
   `
@@ -258,11 +271,19 @@
   let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
   let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
   let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
+  let getActions: ReadableQuery<QueryResponse> = query(GET_All_ACTIONS)
   let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
   let getSimplifiedPlan: ReadableQuery<PlanQueryResponse> = query(GET_SIMPLIFIED_PLAN);
   let getProcess: ReadableQuery<ProcessQueryResponse> = query(GET_PROCESS);
   let getCommitment: ReadableQuery<CommitmentQueryResponse> = query(GET_COMMITMENT);
-    
+
+  async function fetchActions() {
+    await getActions.getCurrentResult()
+    let r = await getActions.refetch()
+    console.log("*******actions*******")
+    console.log(r)
+    actions = r.data?.actions
+  }
 
   async function fetchUnits() {
     getUnits.getCurrentResult()
@@ -322,6 +343,10 @@
           // console.log(offers)
           // console.log(proposalsList[0].publishes[0].publishes)
           // console.log(requests)
+          requestsPerOffer = offers.map(it => it.publishes.find(it => !it.reciprocal).id).reduce((acc, it) => {
+            acc[it] = {}
+            return acc
+          }, {})
         }
       })
     } catch (e) {
@@ -469,6 +494,14 @@
     console.log("numerical value", numerical_value, hasUnit)
     if (!numerical_value || !hasUnit) return
 
+    if (!requestsPerOffer[primary_intent.id]) {
+      requestsPerOffer[primary_intent.id] = {}
+    }
+    if (commitment.action.label == "pickup") {
+      console.log("*****pickup*****", commitment.resourceQuantity.hasNumericalValue)
+      requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
+    }
+
     // return {
     //   name: agreement?.name,
     //   note: agreement?.note,
@@ -516,6 +549,7 @@
       // getPlan.setVariables({
         //   id: planId
         // });
+        await fetchActions()
         await fetchUnits()
         await fetchAgents()
         await fetchResourceSpecifications()
@@ -695,6 +729,7 @@ bind:open={economicEventModalOpen}
   process = {currentProcess}
   bind:commitments
   on:submit={(event) => {
+    console.log("economic event: ", event.detail.commitment)
     saveEconomicEvent(event.detail.commitment, selectedProcessId, commitmentModalSide)
     let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == event.detail.commitment.id)
     console.log(event.detail)
@@ -703,6 +738,13 @@ bind:open={economicEventModalOpen}
       yellow = yellow.filter(it => it != event.detail.commitment.id)
     } else {
       yellow.push(event.detail.commitment.id)
+      if (yellowAmounts[event.detail.commitment.id]) {
+        yellowAmounts[event.detail.commitment.id] = yellowAmounts[event.detail.commitment.id] + event.detail.commitment.resourceQuantity.hasNumericalValue
+      } else {
+        yellowAmounts[event.detail.commitment.id] = event.detail.commitment.resourceQuantity.hasNumericalValue
+      }
+      // add all economic event amounts to yellowAmounts
+      
       console.log("no")
     }
     console.log("finished", event.detail.commitment.finished)
@@ -718,6 +760,7 @@ bind:open={economicEventModalOpen}
   {commitmentModalColumn}
   {commitmentModalSide}
   {units}
+  {actions}
   {agents}
   {resourceSpecifications}
   process = {currentProcess}
@@ -827,7 +870,7 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
   <!-- <div class="flex space-x-8 mx-4 overflow-x-scroll"> -->
   <div class="flex space-x-8 mx-4 overflow-x-scroll overflow-y-scroll" style="height: calc(100vh - 172px)" use:dragscroll={{ axis: 'both' }}>
 
-    <div class="min-w-[200px]">
+    <div class="min-w-[250px]">
       <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
         <button
           type="button"
@@ -835,19 +878,22 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
             planModalOpen = true
             // plan_created = true
           }}
-          class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save changes</button
         >
         <Export dataName="plan" fileName="cfn-plan-{plan.name}" data={exportData} />
       </div>
       <h2 class="text-center text-xl font-semibold">Offers</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
         <!-- Sub-columns -->
         <div class="">
           <div>
             {#each proposalsList as { publishes }}
               {@const reciprocal = publishes?.find(it => it.reciprocal)}
               {@const primary = publishes?.find(it => !it.reciprocal)}
+              {@const requestsTotalAll = requestsPerOffer[primary?.id]}
+              {@const requestsTotal = requestsTotalAll ? Object.values(requestsTotalAll).map(it => new Decimal(it)).reduce((acc, it) => acc.add(it), new Decimal(0)) : new Decimal(0)}
+              <!-- {@const requestsTotal = requestsPerOffer[primary?.id]} -->
               {#if primary?.publishes?.provider}
                 <div
                   class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
@@ -859,6 +905,10 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
                       {primary?.publishes?.availableQuantity?.hasNumericalValue}
                       {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
                     {/if}
+                    <span style="color: {(requestsTotal > primary?.publishes?.availableQuantity?.hasNumericalValue) ? 'red' : ''
+                      }">
+                      {requestsTotal} of {primary?.publishes?.availableQuantity?.hasNumericalValue} requested<br>
+                    </span>
                     {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
                     {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                   </p>
@@ -907,7 +957,8 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
       <h2 class="text-center text-xl font-semibold">{name}</h2>
       {#each processes as { committedInputs, committedOutputs }, processIndex}
 
-      <div class="bg-gray-400 border border-gray-400 p-2">
+      <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
+      <div class="border-gray-400 p-2" style="background-color: #BFBFBF;">
         <!-- Sub-columns -->
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -928,7 +979,7 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                     style="background-color: {color};"
-                    >
+                    >                  
                     <p>{resourceConformsTo?.name}</p>
                     <div class="flex justify-between">
                       <!--
@@ -939,8 +990,20 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
                       -->
                       <p>
                         {action.label}
-                        {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                        {resourceQuantity?.hasUnit?.label}
+
+                        <!-- sum of all fulfilledby numericalvalues -->
+                        {#if fulfilledBy.length > 0}
+                          {@const yellowAmount = yellowAmounts[id] || 0}
+                          {@const amount = fulfilledBy.map(it => it.fulfilledBy.resourceQuantity.hasNumericalValue).reduce((acc, it) => new Decimal(acc).add(it), new Decimal(0)).toString()}
+                          {new Decimal(amount).add(yellowAmount).toString()}
+                          {fulfilledBy[0].fulfilledBy.resourceQuantity.hasUnit.label}
+                        {:else if yellowAmounts[id]}
+                          {yellowAmounts[id]}
+                          {resourceQuantity?.hasUnit?.label}
+                        {:else}
+                          {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                          {resourceQuantity?.hasUnit?.label}
+                        {/if}
                       </p>
                       <!--
                       <p>
@@ -1079,8 +1142,18 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
                       -->
                         <p>
                           {action.label}
-                          {resourceQuantity?.hasNumericalValue}
+                          {#if fulfilledBy.length > 0}
+                          {@const yellowAmount = yellowAmounts[id] || 0}
+                          {@const amount = fulfilledBy.map(it => it.fulfilledBy.resourceQuantity.hasNumericalValue).reduce((acc, it) => new Decimal(acc).add(it), new Decimal(0)).toString()}
+                          {new Decimal(amount).add(yellowAmount).toString()}
+                          {fulfilledBy[0].fulfilledBy.resourceQuantity.hasUnit.label}
+                        {:else if yellowAmounts[id]}
+                          {yellowAmounts[id]}
                           {resourceQuantity?.hasUnit?.label}
+                        {:else}
+                          {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                          {resourceQuantity?.hasUnit?.label}
+                        {/if}
                         </p>
                         <!--
                       <p>
@@ -1188,7 +1261,7 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
       <h2 class="text-center" style="margin-top: 42px; margin-bottom: 11px;">Total cost: ${totalCost}</h2>
       <!-- <h2 class="text-center text-xl font-semibold">{name}</h2> -->
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
         <!-- Sub-columns -->
         <div class="">
           <div>
@@ -1252,7 +1325,7 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
 
     <div class="min-w-[200px] mt-20">
       <h2 class="text-center text-xl font-semibold">Requests</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
         <!-- Sub-columns -->
         <div class="">
           <div>

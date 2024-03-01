@@ -94,7 +94,36 @@ export const COMMITMENT_RETURN_FIELDS = gql`
       }
     }
     fulfilledBy {
-      id
+      fulfilledBy {
+        id
+        action {
+          id
+          label
+        }
+        provider {
+          id
+          name
+        }
+        receiver {
+          id
+          name
+        }
+        resourceConformsTo {
+          id
+          name
+          defaultUnitOfResource {
+            label
+          }
+        }
+        resourceQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+            label
+          }
+        }
+        hasBeginning
+      }
     }
     finished
     clauseOf {
@@ -177,34 +206,36 @@ export const PROCESS_RETURN_FIELDS = gql`
         }
       }
       fulfilledBy {
-        id
-        action {
+        fulfilledBy {
           id
-          label
-        }
-        provider {
-          id
-          name
-        }
-        receiver {
-          id
-          name
-        }
-        resourceConformsTo {
-          id
-          name
-          defaultUnitOfResource {
-            label
-          }
-        }
-        resourceQuantity {
-          hasNumericalValue
-          hasUnit {
+          action {
             id
             label
           }
+          provider {
+            id
+            name
+          }
+          receiver {
+            id
+            name
+          }
+          resourceConformsTo {
+            id
+            name
+            defaultUnitOfResource {
+              label
+            }
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnit {
+              id
+              label
+            }
+          }
+          hasBeginning
         }
-        hasBeginning
       }
       finished
     }
@@ -245,34 +276,36 @@ export const PROCESS_RETURN_FIELDS = gql`
         }
       }
       fulfilledBy {
-        id
-        action {
+        fulfilledBy {
           id
-          label
-        }
-        provider {
-          id
-          name
-        }
-        receiver {
-          id
-          name
-        }
-        resourceConformsTo {
-          id
-          name
-          defaultUnitOfResource {
-            label
-          }
-        }
-        resourceQuantity {
-          hasNumericalValue
-          hasUnit {
+          action {
             id
             label
           }
+          provider {
+            id
+            name
+          }
+          receiver {
+            id
+            name
+          }
+          resourceConformsTo {
+            id
+            name
+            defaultUnitOfResource {
+              label
+            }
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnit {
+              id
+              label
+            }
+          }
+          hasBeginning
         }
-        hasBeginning
       }
       finished
     }
