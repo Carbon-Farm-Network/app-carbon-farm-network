@@ -328,7 +328,8 @@
       "type": "recipe_process",
       "name": "Spin Gray Yarn",
       "process_conforms_to": {
-        "name": "Spin Yarn"
+        "name": "Spin Yarn",
+        "image": "/socks.svg"
         },
       "has_duration": {
         "numeric_duration": 5,
