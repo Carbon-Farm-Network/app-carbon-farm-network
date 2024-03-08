@@ -343,10 +343,10 @@
           // console.log(offers)
           // console.log(proposalsList[0].publishes[0].publishes)
           // console.log(requests)
-          requestsPerOffer = offers.map(it => it.publishes.find(it => !it.reciprocal).id).reduce((acc, it) => {
-            acc[it] = {}
-            return acc
-          }, {})
+          // requestsPerOffer = offers.map(it => it.publishes.find(it => !it.reciprocal).id).reduce((acc, it) => {
+          //   acc[it] = {}
+          //   return acc
+          // }, {})
         }
       })
     } catch (e) {
@@ -380,6 +380,37 @@
       });
       const res = await getCommitment.refetch()
       console.log(res)
+      // if primary intent, add to requestsPerOffer
+      let commitment = res.data.commitment
+      if (commitment.clauseOf) {
+        console.log("primary intent candidates", offers)
+        const matching_offer = offers.find(offer => {
+          return offer.publishes.find(
+            intent => {
+              const offerName = intent.publishes?.resourceConformsTo?.name
+              // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
+              const correctProvider = commitment.provider? (intent.publishes?.provider?.id == commitment.provider?.id) : true
+              return offerName == commitment.resourceConformsTo.name && correctProvider
+            }
+          )
+        })
+
+        const primary_intent = matching_offer?.publishes.find(
+          intent => !intent.reciprocal
+        )
+        
+        
+        if (!requestsPerOffer[primary_intent.id]) {
+          requestsPerOffer[primary_intent.id] = {}
+        }
+        
+        console.log("res", commitment)
+        console.log("adding ", commitment.resourceQuantity.hasNumericalValue)
+        if (commitment.action.label == "pickup") {
+          requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
+        }
+        console.log(requestsPerOffer)
+      }
       return res.data.commitment
     } catch (e) {
       console.log(e)
@@ -554,6 +585,7 @@
         await fetchAgents()
         await fetchResourceSpecifications()
         await fetchProcessSpecifications()
+        await fetchProposals()
 
         getSimplifiedPlan.setVariables({
           id: planId
@@ -652,7 +684,6 @@
         console.log("allColumns", allColumns)
         allColumns = [...allColumns]
 
-        await fetchProposals()
       } catch (e) {
         console.log("error", e)
         error = e
@@ -849,7 +880,7 @@ bind:open={economicEventModalOpen}
 
 
 {#if loadingPlan}
-Loading processes ({processesLoadedCount}/{processesToLoadCount})
+Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
 {#if error}
   <br>
   {error}
@@ -904,11 +935,12 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
                     {#if primary?.publishes?.availableQuantity?.hasNumericalValue && primary?.publishes?.availableQuantity?.hasNumericalValue > 0}
                       {primary?.publishes?.availableQuantity?.hasNumericalValue}
                       {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
+                      <span style="color: {(requestsTotal > primary?.publishes?.availableQuantity?.hasNumericalValue) ? 'red' : ''
+                        }">
+                        {requestsTotal} requested<br>
+                        <!-- {requestsTotal} of {primary?.publishes?.availableQuantity?.hasNumericalValue} requested<br> -->
+                      </span>
                     {/if}
-                    <span style="color: {(requestsTotal > primary?.publishes?.availableQuantity?.hasNumericalValue) ? 'red' : ''
-                      }">
-                      {requestsTotal} of {primary?.publishes?.availableQuantity?.hasNumericalValue} requested<br>
-                    </span>
                     {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
                     {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                   </p>
@@ -1261,7 +1293,7 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount})
       <h2 class="text-center" style="margin-top: 42px; margin-bottom: 11px;">Total cost: ${totalCost}</h2>
       <!-- <h2 class="text-center text-xl font-semibold">{name}</h2> -->
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
+      <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #EEEEEE;">
         <!-- Sub-columns -->
         <div class="">
           <div>
