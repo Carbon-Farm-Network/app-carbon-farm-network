@@ -246,6 +246,75 @@
   }
   // DELETE RESOURCE SPECIFICATION ENDS
 
+  // IMPORT ALL OFFERS
+  const IMPORT_PROPOSALS = gql`
+    ${PROPOSAL_CORE_FIELDS},
+    mutation($proposals: [ProposalCreateParams!]!){
+      createProposals(proposals: $proposals) {
+        proposals {
+          ...ProposalCoreFields
+        }
+      }
+    }
+  `
+  let importOffers: any = mutation(IMPORT_PROPOSALS)
+
+  async function importData({ variables }: { variables: { proposals: ProposalCreateParams[] } }) {
+    console.log("importing data 2", variables.proposals)
+    // convert returned data to the format expected by the GraphQL API
+    variables = {
+      proposals: variables.proposals.map((p) => {
+      //   const intent: IntentCreateParams = {
+      //   action: currentIntent.action as string,
+      //   resourceConformsTo: currentIntent.resourceConformsTo || undefined,
+      //   resourceInventoriedAs: currentIntent.resourceInventoriedAs || undefined,
+      //   inScopeOf: currentIntent.inScopeOf || undefined,
+      //   inputOf: currentIntent.inputOf || undefined,
+      //   outputOf: currentIntent.outputOf || undefined,
+      //   provider: currentIntent.provider || undefined,
+      //   receiver: currentIntent.receiver || undefined,
+      //   note: currentIntent.note || undefined,
+      //   resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
+      //   availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
+      //   effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
+      // }
+        // let intent1 = p.publishes[0].map((i) => {
+        //   let intent: IntentCreateParams = {
+        //     action: i.action as string,
+        //     resourceConformsTo: i.resourceConformsTo || undefined,
+        //     resourceInventoriedAs: i.resourceInventoriedAs || undefined,
+        //     inScopeOf: i.inScopeOf || undefined,
+        //     inputOf: i.inputOf || undefined,
+        //     outputOf: i.outputOf || undefined,
+        //     provider: i.provider || undefined,
+        //     receiver: i.receiver || undefined,
+        //     note: i.note || undefined,
+        //     resourceQuantity: i.resourceQuantity ? parseFormValues(i.resourceQuantity as IMeasure) : undefined,
+        //     availableQuantity: i.availableQuantity ? parseFormValues(i.availableQuantity as IMeasure) : undefined,
+        //     effortQuantity: i.effortQuantity ? parseFormValues(i.effortQuantity as IMeasure) : undefined,
+        //   }
+        //   return intent
+        // })
+        console.log(p)
+        let proposalToCreate: ProposalCreateParams = {
+            name: p.name,
+            note: p.note,
+            hasBeginning: p.hasBeginning,
+            hasEnd: p.hasEnd,
+            inScopeOf: p.inScopeOf,
+            unitBased: p.unitBased,
+        }
+        console.log(proposalToCreate)
+        return proposalToCreate
+      }),
+    }
+    
+    const res = await importOffers({ variables })
+    console.log(res)
+    await fetchOffers()
+  }
+  // IMPORT ALL OFFERS ENDS
+
   onMount(() => {
     if (browser) {
       fetchResourceSpecifications()
@@ -296,7 +365,14 @@
         >Add an offer</button
       >
     </div>
-    <Export dataName="list of offers" fileName="cfn-offers" data={offersList} />
+    <Export dataName="list of offers" fileName="cfn-offers"
+    data={offersList}
+    on:import={(event) => {
+      console.log("importing data", event.detail)
+      console.log("hi")
+      importData({ variables: { proposals: event.detail } })
+    }}
+    />
     {:else}
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button

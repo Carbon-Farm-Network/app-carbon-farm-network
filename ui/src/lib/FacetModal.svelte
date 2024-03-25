@@ -53,21 +53,22 @@
   let addFacet: any = mutation(CREATE_FACET)
   let addValue: any = mutation(CREATE_VALUE)
 
-  async function submit() {
+  export async function submit(facet, facetGroup) {
     let groupID: String = facetGroups[0].id
 
     let f = await addFacet({
       variables: {
         facet: {
-          name: currentFacet.name,
-          note: currentFacet.note,
-          facetGroupId: currentFacetGroup.id
+          name: facet.name,
+          note: facet.note,
+          facetGroupId: facetGroup.id
         }
       }
     })
     console.log(f)
     dispatch("submit")
     open = false
+    return f
   }
 
   onMount(async () => {
@@ -222,7 +223,7 @@
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-            on:click={submit}
+            on:click={() => submit(currentFacet, currentFacetGroup)}
             >Create</button
           >
           <button

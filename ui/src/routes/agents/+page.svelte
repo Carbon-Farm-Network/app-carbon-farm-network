@@ -7,16 +7,18 @@
   import { mutation, query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, AgentCreateParams } from '@valueflows/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"
   import { flattenRelayConnection } from '$lib/graphql/helpers'
-  import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
+  import type { Facet, FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
+  import Error from "$lib/Error.svelte"
 
+  let error: any;
   let modalOpen = false;
   let editing = false;
   let name = "";
@@ -25,6 +27,10 @@
   let agents: any[]
   let facets: Facet[] | undefined;
   let selectedFacets: any = {};
+  let createAgent: any;
+  let associateAgentWithValue: any;
+  let importing = false;
+  let exportOpen = false;
 
   const GET_FACET_GROUPS = gql`
     ${FACET_GROUP_CORE_FIELDS}
@@ -95,6 +101,8 @@
     console.log(agents)
   }
 
+
+
   const DELETE_AGENT = gql`mutation($revisionId: ID!){
     deleteOrganization(revisionId: $revisionId)
   }`
@@ -106,6 +114,32 @@
       const res = await deleteAgent({ variables: { revisionId } })
       console.log(res)
       await fetchAgents()
+    }
+  }
+
+  async function importData(data: any) {
+    try {
+
+      console.log("importing data", data)
+      for (let i = 0; i < data.length; i++) {
+        let agent: AgentCreateParams = {
+          name: data[i].name,
+          note: data[i].note,
+          image: data[i].image,
+          classifiedAs: data[i].classifiedAs,
+        }
+        console.log(agent)
+        let res = await createAgent(agent, data[i].facets.map((f) => f.id))
+        console.log(res)
+      }
+      await fetchAgents()
+      importing = false;
+      exportOpen = false;
+    } catch (e) {
+      error = e
+      console.log(e)
+      importing = false;
+      exportOpen = false;
     }
   }
 
@@ -121,7 +155,9 @@
 <!-- <div style="height: 8vh"> -->
   <Header title="Agents" description="A list of all the people, organizations and ecological agents related to the network." />
 <!-- </div> -->
-<AgentModal bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={fetchAgents} />
+<AgentModal bind:createAgent bind:associateAgentWithValue bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={fetchAgents} />
+
+<Error {error} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -138,7 +174,16 @@
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an agent</button>
     </div>
-    <Export dataName="list of agents" fileName="cfn-agents" data={agents} />
+    <Export dataName="list of agents" fileName="cfn-agents" data={agents} 
+    bind:open={exportOpen}
+    bind:importing
+    on:import={(event) => {
+      importData(event.detail)
+      // console.log("importing data", event.detail)
+      // console.log("hi")
+      // importData({ variables: { proposals: event.detail } })
+    }}
+    />
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

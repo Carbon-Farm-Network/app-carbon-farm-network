@@ -113,6 +113,63 @@
     return val
   }
 
+  export async function createRequest(proposal: any, localIntent: any, localReciprocalIntent: any) {
+    
+    console.log("1")
+    const res1 = await addProposal({ variables: { proposal } })
+    console.log("2")
+    const res1ID: String = String(res1.data.createProposal.proposal.id)
+
+    // create intent
+    const intent: IntentCreateParams = {
+      action: localIntent.action as string,
+      resourceConformsTo: localIntent.resourceConformsTo || undefined,
+      resourceInventoriedAs: localIntent.resourceInventoriedAs || undefined,
+      inScopeOf: localIntent.inScopeOf || undefined,
+      inputOf: localIntent.inputOf || undefined,
+      outputOf: localIntent.outputOf || undefined,
+      provider: localIntent.provider || undefined,
+      receiver: localIntent.receiver || undefined,
+      note: localIntent.note || undefined,
+      resourceQuantity: localIntent.resourceQuantity ? parseFormValues(localIntent.resourceQuantity as IMeasure) : undefined,
+      availableQuantity: localIntent.availableQuantity ? parseFormValues(localIntent.availableQuantity as IMeasure) : undefined,
+      effortQuantity: localIntent.effortQuantity ? parseFormValues(localIntent.effortQuantity as IMeasure) : undefined,
+    }
+    if (intent.resourceQuantity) {
+      intent.resourceQuantity.hasUnit = localIntent.availableQuantity?.hasUnit
+    }
+    console.info(intent)
+    const res2 = await addIntent({ variables: { intent } });
+    const res2ID = res2.data.createIntent.intent.id
+    console.log(res2);
+
+    // create reciprocal intent
+    const recipIntent = {
+      receiver: localIntent.receiver,
+      action: "transfer",
+      resourceConformsTo: localReciprocalIntent.resourceConformsTo,
+      resourceQuantity: localReciprocalIntent.resourceQuantity ? parseFormValues(localReciprocalIntent.resourceQuantity as IMeasure) : undefined,
+    }
+    console.info(recipIntent)
+    const res3 = await addIntent({ variables: { intent: recipIntent } })
+    const res3ID: String = String(res3.data.createIntent.intent.id)
+    console.log(res3);
+
+
+    let reciprocal: Boolean = false
+    let publishedIn = res1ID
+    let publishes = res2ID
+
+    const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+    console.log(res4)
+
+    reciprocal = true
+    publishes = res3ID
+
+    const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+    console.log(res5)
+  }
+
   async function handleSubmit() {
     submitting = true;
     console.log(currentProposal)
@@ -127,59 +184,7 @@
         unitBased: true,
         note: "shearing end of May"
       }
-      const res1 = await addProposal({ variables: { proposal } })
-      const res1ID: String = String(res1.data.createProposal.proposal.id)
-
-      // create intent
-      const intent: IntentCreateParams = {
-        action: currentIntent.action as string,
-        resourceConformsTo: currentIntent.resourceConformsTo || undefined,
-        resourceInventoriedAs: currentIntent.resourceInventoriedAs || undefined,
-        inScopeOf: currentIntent.inScopeOf || undefined,
-        inputOf: currentIntent.inputOf || undefined,
-        outputOf: currentIntent.outputOf || undefined,
-        provider: currentIntent.provider || undefined,
-        receiver: currentIntent.receiver || undefined,
-        note: currentIntent.note || undefined,
-        resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
-        availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
-        effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
-      }
-      if (intent.resourceQuantity) {
-        intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
-      }
-      console.info(intent)
-      const res2 = await addIntent({ variables: { intent } });
-      const res2ID = res2.data.createIntent.intent.id
-      console.log(res2);
-
-      // create reciprocal intent
-      const recipIntent = {
-        receiver: currentIntent.receiver,
-        action: "transfer",
-        resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
-        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
-      }
-      console.info(recipIntent)
-      const res3 = await addIntent({ variables: { intent: recipIntent } })
-      const res3ID: String = String(res3.data.createIntent.intent.id)
-      console.log(res3);
-
-
-      let reciprocal: Boolean = false
-      let publishedIn = res1ID
-      let publishes = res2ID
-
-      const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
-      console.log(res4)
-
-      reciprocal = true
-      publishes = res3ID
-
-      const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
-      console.log(res5)
-
-
+      createRequest(proposal, currentIntent, currentReciprocalIntent)
       dispatch("submit");
       submitting = false;
       open = false;

@@ -3,7 +3,7 @@
   // import allFacetGroups from '$lib/data/facet_groups.json'
   // import facets from '$lib/data/facets.json'
   import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"
-  import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
+  import type { Facet, FacetGroup, FacetParams, FacetGroupParams } from "$lib/graphql/extension-schemas"
   import type { ReadableQuery } from 'svelte-apollo'
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
@@ -20,6 +20,11 @@
   let currentFacetGroup: FacetGroup | undefined;
   let facetGroups: FacetGroup[];
   let currentFacet: any = {name: '', note: ''};
+  let addFacet: any;
+  let addFacetGroup: any;
+  let addFacetValue: any;
+  let importing: boolean = false;
+  let showExport: boolean = false;
 
 
   // DELETE FACET
@@ -68,12 +73,72 @@
     currentFacetGroup = facetGroups.find((g) => {return g.id == selectedGroupId})
   }
 
+  const CREATE_VALUE = gql`
+    mutation($facetValue: FacetValueParams!){
+      putFacetValue(facetValue: $facetValue) {
+        facetValue {
+          value
+          note
+          id
+          revisionId
+        }
+      }
+    }
+  `
+  let addValue: any = mutation(CREATE_VALUE)
+
+  async function importData(data: any) {
+    console.log("importing data", data)
+    // add facets
+    for (let i = 0; i < data.length; i++) {
+      // let facetGroup: FacetGroupParams = {
+      //   name: data[i].name,
+      //   note: data[i].note
+      // }
+      // let g = await addFacetGroup(facetGroup)
+      // console.log(g)
+
+      let facetGroupId = data[i].id
+      console.log(facetGroupId)
+
+      let facets = data[i].facets
+
+      for (let j = 0; j < facets.length; j++) {
+        let facet: FacetParams = {
+          name: facets[j].name,
+          note: facets[j].note,
+          // facetGroupId: g.data.putFacetGroup.facetGroup.id
+          facetGroupId: facetGroupId
+        }
+        let f = await addFacet(facet, {id: facetGroupId})
+        console.log(f)
+
+        // add facet values
+        let facetValues = facets[j].values
+        for (let k = 0; k < facetValues.length; k++) {
+          let facetValue = {
+            value: facetValues[k].value,
+            note: facetValues[k].note,
+            facetId: f.data.putFacet.facet.id
+          }
+
+          let fv = await addValue({ variables: { facetValue } })
+
+          console.log(fv)
+        }
+      }
+    }
+    importing = false
+    showExport = false
+    console.log("imported data ......")
+  }
+
   onMount(async () => {
     await fetchFacets()
     currentFacetGroup = facetGroups[0]
   })
 
-  $: facetGroups, currentFacetGroup;
+  $: facetGroups, currentFacetGroup, importing;
 
 </script>
 
@@ -82,7 +147,13 @@
 <!-- </div> -->
 
 {#if facetGroups && currentFacetGroup}
-<FacetModal bind:facetGroups bind:open={modalOpen} bind:currentFacetGroup bind:currentFacet on:submit={fetchFacets} />
+<FacetModal 
+bind:facetGroups 
+bind:submit={addFacet} 
+bind:open={modalOpen} 
+bind:currentFacetGroup
+bind:currentFacet 
+on:submit={fetchFacets} />
 {/if}
 
 {#if true}
@@ -119,7 +190,14 @@
         >Add a facet</button
       >
     </div>
-    <Export dataName="Facets" fileName="cfn-facets" data={facetGroups} />
+    <Export dataName="Facets" fileName="cfn-facets" data={facetGroups}
+      bind:importing
+      bind:open={showExport}
+      on:import={(e) => {
+        console.log("importing data", e.detail)
+        importData(e.detail)
+      }}
+    />
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

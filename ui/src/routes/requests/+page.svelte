@@ -18,6 +18,7 @@
   import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
+  import Error from "$lib/Error.svelte"
 
   // externally provided data
   let units: Unit[];
@@ -30,6 +31,12 @@
   let editing = false;
   let usdRSpecId: string | undefined;
   let name = ''
+  let error: any;
+
+  // Export
+  let exportOpen = false;
+  let importing = false;
+  let createRequest: any;
 
   // Valueflows data state
   let currentProposal: any = {};
@@ -221,13 +228,17 @@
   }
 
   async function fetchOffers() {
-    await getOffers.getCurrentResult()
-    await getOffers.refetch().then((r) => {
-      if (r.data?.proposals.edges.length > 0) {
-        offersList = flattenRelayConnection(r.data?.proposals)
-        console.log(offersList)
-      }
-    })
+    try {
+      getOffers.getCurrentResult()
+      await getOffers.refetch().then((r) => {
+        if (r.data?.proposals.edges.length > 0) {
+          offersList = flattenRelayConnection(r.data?.proposals)
+          console.log(offersList)
+        }
+      })
+    } catch (e) {
+      error = e
+    }
   }
 
   // DELETE PROPOSAL  
@@ -245,6 +256,87 @@
     }
   }
   // DELETE RESOURCE SPECIFICATION ENDS
+
+  // EXPORT
+  async function importData(data: any) {
+    try {
+      console.log("importing data", data)
+      for (let i = 0; i < data.length; i++) {
+        try {
+          console.log(data[i])
+          let proposal: ProposalCreateParams = {
+            unitBased: data[i].unitBased,
+            note: data[i].note,
+            hasBeginning: data[i].hasBeginning,
+          }
+          let intentRaw: IntentCreateParams = data[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
+          let intent: IntentCreateParams = {
+            ...intentRaw,
+            action: intentRaw.action?.id,
+            atLocation: intentRaw.atLocation?.id,
+            availableQuantity: intentRaw.availableQuantity ? {
+              hasNumericalValue: intentRaw.availableQuantity.hasNumericalValue,
+              hasUnit: intentRaw.availableQuantity.hasUnit?.id,
+            } : undefined,
+            effortQuantity: intentRaw.effortQuantity ? {
+              hasNumericalValue: intentRaw.effortQuantity.hasNumericalValue,
+              hasUnit: intentRaw.effortQuantity.hasUnit?.id,
+            } : undefined,
+            resourceQuantity: intentRaw.resourceQuantity ? {
+              hasNumericalValue: intentRaw.resourceQuantity.hasNumericalValue,
+              hasUnit: intentRaw.resourceQuantity.hasUnit?.id,
+            } : undefined,
+            inScopeOf: (intentRaw.inScopeOf || []).map(s => s.id),
+            inputOf: intentRaw.inputOf?.id,
+            outputOf: intentRaw.outputOf?.id,
+            provider: intentRaw.provider?.id,
+            receiver: intentRaw.receiver?.id,
+            resourceConformsTo: intentRaw.resourceConformsTo?.id,
+            resourceInventoriedAs: intentRaw.resourceInventoriedAs?.id,
+          }
+          let reciprocalIntentRaw: IntentCreateParams = data[i].publishes.find(({ reciprocal }) => reciprocal).publishes
+          let reciprocalIntent: IntentCreateParams = {
+            ...reciprocalIntentRaw,
+            action: reciprocalIntentRaw.action?.id,
+            atLocation: reciprocalIntentRaw.atLocation?.id,
+            availableQuantity: reciprocalIntentRaw.availableQuantity ? {
+              hasNumericalValue: reciprocalIntentRaw.availableQuantity.hasNumericalValue,
+              hasUnit: reciprocalIntentRaw.availableQuantity.hasUnit?.id,
+            } : undefined,
+            effortQuantity: reciprocalIntentRaw.effortQuantity ? {
+              hasNumericalValue: reciprocalIntentRaw.effortQuantity.hasNumericalValue,
+              hasUnit: reciprocalIntentRaw.effortQuantity.hasUnit?.id,
+            } : undefined,
+            resourceQuantity: reciprocalIntentRaw.resourceQuantity ? {
+              hasNumericalValue: reciprocalIntentRaw.resourceQuantity.hasNumericalValue,
+              hasUnit: reciprocalIntentRaw.resourceQuantity.hasUnit?.id,
+            } : undefined,
+            inScopeOf: (reciprocalIntentRaw.inScopeOf || []).map(s => s.id),
+            inputOf: reciprocalIntentRaw.inputOf?.id,
+            outputOf: reciprocalIntentRaw.outputOf?.id,
+            provider: reciprocalIntentRaw.provider?.id,
+            receiver: reciprocalIntentRaw.receiver?.id,
+            resourceConformsTo: reciprocalIntentRaw.resourceConformsTo?.id,
+            resourceInventoriedAs: reciprocalIntentRaw.resourceInventoriedAs?.id,
+          }
+          console.log(proposal)
+          let res = await createRequest(proposal, intent, reciprocalIntent)
+          console.log(res)
+        } catch (e) {
+          console.log(e)
+        }
+      }
+      await fetchOffers()
+      importing = false;
+      exportOpen = false;
+    } catch (e) {
+      error = e
+      console.log(e)
+      importing = false;
+      exportOpen = false;
+    }
+  }  
+  // EXPORT ENDS
 
   onMount(() => {
     if (browser) {
@@ -266,11 +358,14 @@
   $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
 </script>
 
+
 <!-- <div style="height: 8vh"> -->
   <Header title="Requests" description="The goods or services you are requesting within the network, now or generally." />
-<!-- </div> -->
+  <!-- </div> -->
+  
+<Error {error} />
 
-<RequestModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<RequestModal bind:createRequest on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -296,7 +391,14 @@
         >Add a request</button
       >
     </div>
-    <Export dataName="list of requests" fileName="cfn-requests" data={offersList} />
+    <Export dataName="list of requests" fileName="cfn-requests" 
+      data={offersList} 
+      bind:open={exportOpen}
+      bind:importing
+      on:import={(event) => {
+        importData(event.detail)
+      }}
+      />
     {:else}
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button

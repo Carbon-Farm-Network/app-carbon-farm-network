@@ -35,29 +35,6 @@
 
   const dispatch = createEventDispatcher();
 
-  // const GET_FACET_GROUPS = gql`
-  //   query GetFacets {
-  //     facetGroups {
-  //       id
-  //       revisionId
-  //       name
-  //       note
-  //       facets {
-  //         id
-  //         revisionId
-  //         name
-  //         note
-  //         values {
-  //           id
-  //           revisionId
-  //           value
-  //           note
-  //         }
-  //       }
-  //     }
-  //   }
-  // `
-
   const ADD_AGENT = gql`
     ${AGENT_CORE_FIELDS},
     mutation($agent: OrganizationCreateParams!){
@@ -85,16 +62,6 @@
       }
     }
   `
-
-  // const GET_AGENT = gql`
-  //   ${AGENT_CORE_FIELDS},
-  //   query($o: ID!){
-  //     organization(id: id
-  //     ) {
-  //       ...AgentCoreFields
-  //     }
-  //   }
-  // `
 
   const GET_ORGANIZATION = gql`
     ${AGENT_CORE_FIELDS},
@@ -138,12 +105,40 @@
 
   // let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
   let addAgent: any= mutation(ADD_AGENT)
-  let associateAgentWithValue: any = mutation(ASSOCIATE_AGENT_AND_FACET_VALUE)
+  export let associateAgentWithValue: any = mutation(ASSOCIATE_AGENT_AND_FACET_VALUE)
 
   let getAgent: ReadableQuery<QueryResponse> = query(GET_ORGANIZATION)
 
   // let updateAgent: Mutate<QueryResponse> = mutation(UPDATE_AGENT)
   let updateAgent: any = mutation(UPDATE_AGENT)
+
+  export async function createAgent(agent: OrganizationCreateParams, facetsToAssociate: Facet[]) {
+    try {
+      const res = await addAgent({ variables: { agent } })
+      console.log("res", res)
+      // const groups = (await queryFacetGroups.result())
+      // console.log(groups)
+      // const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
+      // console.log(value_id)
+      const identifier = res.data.createOrganization.agent.id
+      // for each facet in selectedFacets, associate the agent with the selected value
+      for (let facet in facetsToAssociate) {
+        if (facetsToAssociate[facet] == null) {
+          continue
+        }
+        const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: facetsToAssociate[facet] }})
+        console.log("associate", res2)
+      }
+      // const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: value_id }})
+      // console.log("associate", res2)
+      dispatch("submit");
+      open = false;
+      console.log(res)
+      return res
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   async function handleSubmit() {
     let agent: OrganizationCreateParams = {
@@ -154,29 +149,7 @@
 
         // $: name, latitude, longitude, note, logo, type, role, certification;
     }
-    try {
-      const res = await addAgent({ variables: { agent } })
-      // const groups = (await queryFacetGroups.result())
-      // console.log(groups)
-      // const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
-      // console.log(value_id)
-      const identifier = res.data.createOrganization.agent.id
-      // for each facet in selectedFacets, associate the agent with the selected value
-      for (let facet in selectedFacets) {
-        if (selectedFacets[facet] == null) {
-          continue
-        }
-        const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
-        console.log("associate", res2)
-      }
-      // const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: value_id }})
-      // console.log("associate", res2)
-      dispatch("submit");
-      open = false;
-      console.log(res)
-    } catch (error) {
-      console.error(error)
-    }
+    await createAgent(agent, selectedFacets)
   }
 
   async function findAgent(id: String) {
