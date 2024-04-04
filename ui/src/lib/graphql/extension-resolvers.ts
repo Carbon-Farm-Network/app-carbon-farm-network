@@ -8,8 +8,8 @@
  * @since   2023-05-24
  */
 import { encodeHashToBase64, decodeHashFromBase64, type CellId, type EntryHash, type EntryHashB64 } from '@holochain/client'
-import { mapZomeFn } from '@valueflows/vf-graphql-holochain'
-import type { DNAIdMappings } from '@valueflows/vf-graphql-holochain'
+import { mapZomeFn } from '@leosprograms/vf-graphql-holochain'
+import type { DNAIdMappings } from '@leosprograms/vf-graphql-holochain'
 
 import type { Organization, ResourceSpecification } from '@valueflows/vf-graphql'
 import type {

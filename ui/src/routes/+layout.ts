@@ -1,8 +1,8 @@
 import { browser } from '$app/environment'
 import { error } from '@sveltejs/kit'
 // import autoConnect from '@vf-ui/graphql-client-mock' // enable to use in-memory mock API
-import autoConnect from '@vf-ui/graphql-client-holochain'
-import { sniffHolochainAppCells } from '@valueflows/vf-graphql-holochain'
+import autoConnect from '@leosprograms/graphql-client-holochain'
+import { sniffHolochainAppCells } from '@leosprograms/vf-graphql-holochain'
 import { AppWebsocket, AdminWebsocket, AppAgentWebsocket } from '@holochain/client'
 // import { WeClient, isWeContext, initializeHotReload, type HrlWithContext, type Hrl } from '@lightningrodlabs/we-applet';
 import extensionSchemas from '$lib/graphql/extension-schemas'
@@ -108,7 +108,10 @@ export async function load() {
     console.log("appId is", appId)
     let cellID: CellId;
     if (adminPort) {
+      console.log("1")
+      console.log(new URL(`ws://localhost:${adminPort}`))
       const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`))
+      console.log("2")
       const x = await adminWebsocket.listApps({})
       console.log("apps", x)
       const cellIds = await adminWebsocket.listCellIds()
