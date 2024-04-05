@@ -110,7 +110,7 @@ export async function load() {
     if (adminPort) {
       console.log("1")
       console.log(new URL(`ws://localhost:${adminPort}`))
-      const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`))
+      const adminWebsocket = await AdminWebsocket.connect({url: new URL(`ws://localhost:${adminPort}`)})
       console.log("2")
       const x = await adminWebsocket.listApps({})
       console.log("apps", x)
@@ -121,9 +121,9 @@ export async function load() {
     } else {
       console.log("no admin port")
     }
-    console.log('hi', url)
+    console.log('hi', new URL(url))
     // pull DNA config separately in order to bind to CFN-specific extension Cells
-    const conn = await AppWebsocket.connect(url)
+    const conn = await AppWebsocket.connect({url: new URL(url)})
     // const conn = await AppWebsocket.connect(ENV_CONNECTION_URI)
     console.log("conn is ", conn)
     const { dnaConfig } = await sniffHolochainAppCells(conn, appId)

@@ -54,11 +54,11 @@ importers:
         specifier: ^0.17.0-dev.7
         version: 0.17.0-dev.7
       '@leosprograms/graphql-client-holochain':
-        specifier: ^0.1.1
-        version: 0.1.1(@apollo/client@3.8.10)(graphql@15.8.0)
+        specifier: ^0.1.2
+        version: 0.1.2(@apollo/client@3.8.10)(graphql@15.8.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: ^0.1.1
-        version: 0.1.1(graphql@15.8.0)
+        specifier: ^0.1.2
+        version: 0.1.2(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.14.2
         version: 0.14.2
@@ -1109,15 +1109,15 @@ packages:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  /@leosprograms/graphql-client-holochain@0.1.1(@apollo/client@3.8.10)(graphql@15.8.0):
-    resolution: {integrity: sha512-SEmLkUR0vkYR1aj0ZQD0W/+LxzlT6ir+epF2ZR5xrrcZvGJrusRqsqN1Qwh7+3VmVdhEc7mNfHjG9hJeJiicAQ==}
+  /@leosprograms/graphql-client-holochain@0.1.2(@apollo/client@3.8.10)(graphql@15.8.0):
+    resolution: {integrity: sha512-RNq5VsAeKOE/IRRLhVBNhAoOPCJH3weM7R6unyOoQ5fTLdKs8zHUUJG2nHURcd8Z2VF6mgzAhj67uK4a9h6jMQ==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '>=14'
     dependencies:
       '@apollo/client': 3.8.10(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(graphql@15.8.0)
-      '@leosprograms/vf-graphql-holochain': 0.1.1(graphql@15.8.0)
+      '@leosprograms/vf-graphql-holochain': 0.1.2(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -1129,8 +1129,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql-holochain@0.1.1(graphql@15.8.0):
-    resolution: {integrity: sha512-+J2RoBsk1Htcff74tMF4ojj1w41ssDY8Bq5O6RwbCsaUUTn2i7I4RQcOEuBbFvoT2IRnzn2YK35g6UiWwUawuQ==}
+  /@leosprograms/vf-graphql-holochain@0.1.2(graphql@15.8.0):
+    resolution: {integrity: sha512-dW2KJZd9aLSG40EXFBHzq7r+Cq79Q0BZSqM5+YE+rDQ/xmBhv/+/Z51yZ9VCGBhN8VNluo57Mm01xyiTMfVR2g==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
