@@ -32,6 +32,8 @@
   // let name = ''
   // let note = ''
 
+  $: commitmentsSavedCount;
+
   const dispatch = createEventDispatcher();
 
   function checkKey(e: any) {
@@ -599,7 +601,9 @@
     }
 
     savingPlan = false;
-    goto(`/plans/update/${p.data.res.plan.id}`)
+    // goto(`/plans/update/${p.data.res.plan.id}`)
+    console.log("Go To Plan Update Page", encodeURIComponent(p.data.res.plan.id))
+    goto(`/plans/update/${encodeURIComponent(p.data.res.plan.id)}`)
 
 
 

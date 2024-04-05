@@ -18,96 +18,12 @@ roles:
       version: ~
       clone_limit: 0
 
-  - name: hrea_observation_0
+  - name: hrea_combined_0
     provisioning:
       strategy: create
       deferred: false
     dna:
-      bundled: "./hrea_observation.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      version: ~
-      clone_limit: 0
-
-  - name: hrea_specification_0
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "./hrea_specification.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      version: ~
-      clone_limit: 0
-
-  - name: hrea_agent_0
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "./hrea_agent.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      version: ~
-      clone_limit: 0
-
-  - name: hrea_planning_0
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "./hrea_planning.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      version: ~
-      clone_limit: 0
-
-  - name: hrea_proposal_0
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "./hrea_proposal.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      version: ~
-      clone_limit: 0
-
-  - name: hrea_plan_0
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "./hrea_plan.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      version: ~
-      clone_limit: 0
-
-  - name: hrea_agreement_0
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "./hrea_agreement.dna"
+      bundled: "./hrea_combined.dna"
       modifiers:
         network_seed: ~
         properties: ~
