@@ -1,6 +1,7 @@
 <script lang="ts">
 import { browser } from '$app/environment'
 import { setClient } from 'svelte-apollo'
+import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 
 import "../global.css"
 import { page } from '$app/stores'
@@ -11,10 +12,16 @@ import Nav from '$lib/Nav.svelte'
 /** @type {import('./$types').LayoutData} */
 export let data: any;
 if (browser) {
-  setClient(data.client)
+  if (isWeContext()) {
+    console.log("hihiii")
+    console.log("we client ---- ", data)
+    setClient(data.client)
+  }
+  else {
+    setClient(data.client)
+  }
 }
 </script>
-
 {#if !data || !data.client}
   <section class="overflow-x-hidden w-screen relative">
     <div class="fade-in h-screen flex flex-col items-center justify-center">
