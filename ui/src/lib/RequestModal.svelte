@@ -39,6 +39,7 @@
   });
 
   let submitting: boolean = false;
+  $: submitting;
 
   const dispatch = createEventDispatcher();
 
@@ -172,6 +173,7 @@
 
   async function handleSubmit() {
     submitting = true;
+    console.log("submitting", submitting)
     console.log(currentProposal)
     console.log(currentIntent)
     console.log(currentReciprocalIntent)

@@ -169,31 +169,32 @@ export async function load() {
       // console.log("applet info 1", weAppId)
       let weAppWebsocket = weClient.renderInfo.appletClient.appWebsocket
       const weAppWebsocketUrl = weAppWebsocket.client.url
-      // console.log("render info", weAppWebsocket)
+      console.log("render info", weClient.renderInfo)
       const { dnaConfig } = await sniffHolochainAppCells(weAppWebsocket, weAppId)
       console.log("applet info", weClient.renderInfo)
-
-      // -----------------
-      let adminConn: AdminWebsocket | null = null
-      // if (adminConductorUri) {
-      //   adminConn = await AdminWebsocket.connect({url: adminConductorUri})
-      //   for await (let cellId of Object.values(dnaConfig)) {
-      //     await adminConn.authorizeSigningCredentials(cellId)
-      //   }
-      // }
-      // -----------------
-
       console.log("hi-2")
+      console.log("dna config", dnaConfig)
 
-      const output = await autoConnect({
+      const extensionResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, weAppWebsocketUrl)
+
+      console.log("Hi-3")
+
+      const autoConnectInput = {
+        weaveAppAgentClient: weClient.renderInfo.appletClient,
         appID: weAppId,
         extensionSchemas,
-        extensionResolvers: await bindResolvers(dnaConfig as ExtendedDnaConfig, weAppWebsocketUrl),
+        extensionResolvers,
         conductorUri: weAppWebsocketUrl,
         adminConductorUri: undefined,
-      })
+      }
 
-      console.log("output", output)
+      console.log("autoConnectInput", autoConnectInput)
+      console.log("autoConnectInput 2", autoConnectInput.weaveAppAgentClient)
+
+      const output = await autoConnect(autoConnectInput)
+      // autoconnect ends
+
+      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", output)
 
       return {
         client: output
@@ -230,6 +231,7 @@ export async function load() {
       console.log("dna config", dnaConfig)
       return {
         client: await autoConnect({
+          weaveAppAgentClient: undefined,
           appID: appId,
           extensionSchemas,
           extensionResolvers: await bindResolvers(dnaConfig as ExtendedDnaConfig, url),

@@ -57,11 +57,11 @@ importers:
         specifier: ^0.17.0-dev.7
         version: 0.17.0-dev.8(bufferutil@4.0.8)
       '@leosprograms/graphql-client-holochain':
-        specifier: ^0.1.3
-        version: 0.1.3(@apollo/client@3.9.10)(graphql@15.8.0)
+        specifier: ^0.3.2
+        version: 0.3.2(@apollo/client@3.9.10)(graphql@15.8.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: ^0.1.3
-        version: 0.1.3(graphql@15.8.0)
+        specifier: ^0.3.2
+        version: 0.3.2(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.16.2
         version: 0.16.2
@@ -99,8 +99,8 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0(@apollo/client@3.9.10)(graphql@15.8.0)(svelte@3.59.2)
       svelte-leafletjs:
-        specifier: ^0.10.0
-        version: 0.10.1
+        specifier: 0.10.0
+        version: 0.10.0
       ws:
         specifier: ^8.13.0
         version: 8.16.0(bufferutil@4.0.8)
@@ -1173,15 +1173,16 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@leosprograms/graphql-client-holochain@0.1.3(@apollo/client@3.9.10)(graphql@15.8.0):
-    resolution: {integrity: sha512-zFeR2Vf2ww2/Vm/+NmzOtB5ns5zhkjFgXh3kBAKocSTZRhh4HxwHgGMKj/PsSLQZ2hgpYlJcouTmsKYBObOzLQ==}
+  /@leosprograms/graphql-client-holochain@0.3.2(@apollo/client@3.9.10)(graphql@15.8.0):
+    resolution: {integrity: sha512-tMa3Uue3skJQYJ05girRdCii30NQFb5fG8EbQVZUzv4/dl6dcOQL5wmmqwjFYwIpQQKCoadjyEOZCfSHdTspfg==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '14'
     dependencies:
       '@apollo/client': 3.9.10(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(graphql@15.8.0)
-      '@leosprograms/vf-graphql-holochain': 0.1.3(graphql@15.8.0)
+      '@holochain/client': 0.17.0-dev.8(bufferutil@4.0.8)
+      '@leosprograms/vf-graphql-holochain': 0.3.2(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -1194,8 +1195,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql-holochain@0.1.3(graphql@15.8.0):
-    resolution: {integrity: sha512-K632jA/Qdqc4YFlIT8z+XwwhIB14aOieyGiePg0udaS5JkDt6SAq+n+kCxPK4c5hOfN+JhhoSW8QNqT2/YUU9w==}
+  /@leosprograms/vf-graphql-holochain@0.3.2(graphql@15.8.0):
+    resolution: {integrity: sha512-7lanHwbQ6ZpRU86cgwh54Mlh1ANgeFl2Gmxo5GsF9VxLD1Nk4rZaXiYWBmjlE1E0OG2oZqtEd/yA4+D/dhgh7g==}
     peerDependencies:
       graphql: '14'
     dependencies:
@@ -5673,8 +5674,8 @@ packages:
       svelte: 3.59.2
     dev: true
 
-  /svelte-leafletjs@0.10.1:
-    resolution: {integrity: sha512-stvz2/3Ig9f1HQOHCeXQ6vUdWZZJoUiLLifBaJ1u4p7fAOy5yE+gO/UD01T7iItVJ+9rmGqQub0sM6Bbv7gBAw==}
+  /svelte-leafletjs@0.10.0:
+    resolution: {integrity: sha512-xKIwHZAsdI2EoYvSEp4IDAeLFTaWx/e+gPs7G3Z6MLHNcFieDRKjVHgLt9ilM+xpw1A8Cx0qbtwrfdCYwWfG8g==}
     dependencies:
       leaflet: 1.9.4
     dev: false
