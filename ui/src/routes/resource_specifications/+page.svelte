@@ -145,8 +145,8 @@ const GET_UNITS = gql`
   onMount(async () => {
     if (browser) {
       await fetchResourceSpecifications()
-      await fetchFacets()
-      await fetchUnits()
+      // await fetchFacets()
+      // await fetchUnits()
     }
   })
 

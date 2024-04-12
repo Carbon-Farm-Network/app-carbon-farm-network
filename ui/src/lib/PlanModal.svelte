@@ -32,7 +32,9 @@
   // let name = ''
   // let note = ''
 
-  $: commitmentsSavedCount;
+  $: if (commitmentsSavedCount > 0) {
+    commitmentsSavedCount = commitmentsSavedCount
+  };
 
   const dispatch = createEventDispatcher();
 
@@ -314,10 +316,11 @@
       resourceConformsTo: resourceSpecifications.find((rs) => rs.name === commitment.resourceConformsTo.name).id,
       resourceQuantity: {
         hasNumericalValue: Number(commitment?.resourceQuantity?.hasNumericalValue),
-        hasUnit: commitment?.resourceQuantity?.hasUnit?.id
+        hasUnit: commitment?.resourceQuantity?.hasUnitId ? commitment?.resourceQuantity?.hasUnitId : units.find((u) => u.label === commitment?.resourceQuantity?.hasUnit?.label).id,
       },
     }
-    
+    console.log("commitment check unit id", commitment)
+
     const defaultAgent = agents.find((a) => a.classifiedAs[2] === "Network")
 
     try {
@@ -359,6 +362,7 @@
         })
         console.log("added commitment", res)
         // commitmentsSavedCount++
+        await new Promise(r => setTimeout(r, 100));
       } catch (e) {
         console.log(e)
         error = e
@@ -416,7 +420,9 @@
       }
       console.log("trying to add independent", o)
       await saveOrUpdateCommitment(o)
-      commitmentsSavedCount++
+      commitmentsSavedCount = commitmentsSavedCount + 1
+      await new Promise(r => setTimeout(r, 1000));
+
       console.log('added independent', o)
     }
 
@@ -504,7 +510,8 @@
               // })
               console.log("trying to save payment commitment", payment)
               let paymentCommitment = await saveOrUpdateCommitment(payment)
-              commitmentsSavedCount++
+              commitmentsSavedCount = commitmentsSavedCount + 1
+              await new Promise(r => setTimeout(r, 1000));
               console.log("payment commitment 3", paymentCommitment)
             } catch (e) {
               console.log("could not add payment commitment", e)
@@ -529,14 +536,15 @@
 
           // TEMPORARY find unit id
           if (c.revisionId == undefined) {
-            console.log("finding unit id", c.resourceQuantity.hasUnit.label)
+            console.log("finding unit id", c.resourceQuantity)
             c = {
               ...c,
               resourceQuantity: {
                 ...c.resourceQuantity,
                 hasUnit: {
                   ...c.resourceQuantity.hasUnit,
-                  id: units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
+                  // id: c.resourceQuantity.hasUnit.id
+                  id: c.resourceQuantity?.hasUnitId ? c?.resourceQuantity?.hasUnitId : units.find((u) => u.label === c?.resourceQuantity?.hasUnit?.label).id,
                 }
               }
             }
@@ -804,7 +812,9 @@
                   <p class="text-sm text-gray-500">
                     Please wait while the plan saves.
                   </p>
-                  (saving {commitmentsSavedCount} of {commitmentsToSaveCount}) commitments
+                  <!-- {#if commitmentsSavedCount > -1}
+                    (saving {commitmentsSavedCount} of {commitmentsToSaveCount}) commitments
+                  {/if} -->
                 </div>
                 {#if error}
                   <div class="mt-2">

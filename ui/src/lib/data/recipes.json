@@ -774,7 +774,7 @@
           },
           "action": "consume",
           "resourceConformsTo": {
-            "name": "White Wool Dirty"
+            "name": "White Wool Greasy"
           },
           "stage": {
             "name": "Ship"
@@ -852,7 +852,7 @@
           },
           "action": "dropoff",
           "resourceConformsTo": {
-            "name": "White Wool Dirty"
+            "name": "White Wool Greasy"
           },
           "stage": {
             "name": ""
@@ -934,7 +934,7 @@
           },
           "action": "pickup",
           "resourceConformsTo": {
-            "name": "White Wool Dirty"
+            "name": "White Wool Greasy"
           },
           "stage": {
             "name": "Pick Up"
@@ -1012,7 +1012,7 @@
           },
           "action": "dropoff",
           "resourceConformsTo": {
-            "name": "White Wool Dirty"
+            "name": "White Wool Greasy"
           },
           "stage": {
             "name": ""
@@ -1078,7 +1078,7 @@
           },
           "action": "pickup",
           "resourceConformsTo": {
-            "name": "White Wool Dirty"
+            "name": "White Wool Greasy"
           },
           "stage": {
             "name": ""

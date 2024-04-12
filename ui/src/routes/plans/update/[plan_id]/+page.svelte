@@ -184,14 +184,14 @@
     }
   `
 
-  const GET_COMMITMENT = gql`
-    ${COMMITMENT_RETURN_FIELDS}
-    query getCommitment($id: ID!) {
-      commitment(id: $id) {
-        ...CommitmentReturnFields
-      }
-    }
-  `
+  // const GET_COMMITMENT = gql`
+  //   ${COMMITMENT_RETURN_FIELDS}
+  //   query getCommitment($id: ID!) {
+  //     commitment(id: $id) {
+  //       ...CommitmentReturnFields
+  //     }
+  //   }
+  // `
 
   const CREATE_ECONOMIC_EVENT = gql`
     mutation($event: EconomicEventCreateParams!) {
@@ -249,9 +249,9 @@
     process: ProcessConnection & RelayConn<any>
   }
 
-  interface CommitmentQueryResponse {
-    commitment: CommitmentConnection & RelayConn<any>
-  }
+  // interface CommitmentQueryResponse {
+  //   commitment: CommitmentConnection & RelayConn<any>
+  // }
 
   interface QueryResponse {
     agents: AgentConnection & RelayConn<any>
@@ -275,7 +275,7 @@
   let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
   let getSimplifiedPlan: ReadableQuery<PlanQueryResponse> = query(GET_SIMPLIFIED_PLAN);
   let getProcess: ReadableQuery<ProcessQueryResponse> = query(GET_PROCESS);
-  let getCommitment: ReadableQuery<CommitmentQueryResponse> = query(GET_COMMITMENT);
+  // let getCommitment: ReadableQuery<CommitmentQueryResponse> = query(GET_COMMITMENT);
 
   async function fetchActions() {
     await getActions.getCurrentResult()
@@ -311,7 +311,7 @@
     resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
       return {
         ...a,
-        defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
+        // defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
       }
     })
     console.log(resourceSpecifications)
@@ -337,8 +337,8 @@
           proposalsList = flattenRelayConnection(r.data?.proposals)
           // {@const primary = publishes.find(it => !it.reciprocal)}
           //       {#if primary?.publishes?.receiver}
-          requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
-          offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
+          requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiverId)
+          offers = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiverId)
           // console.log(requests)
           // console.log(offers)
           // console.log(proposalsList[0].publishes[0].publishes)
@@ -372,50 +372,50 @@
     }
   }
 
-  async function fetchCommitment(id: string) {
-    try {
-      console.log("getting commitment", id)
-      getCommitment.setVariables({
-        id: id
-      });
-      const res = await getCommitment.refetch()
-      console.log(res)
-      // if primary intent, add to requestsPerOffer
-      let commitment = res.data.commitment
-      if (commitment.clauseOf) {
-        console.log("primary intent candidates", offers)
-        const matching_offer = offers.find(offer => {
-          return offer.publishes.find(
-            intent => {
-              const offerName = intent.publishes?.resourceConformsTo?.name
-              // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
-              const correctProvider = commitment.provider? (intent.publishes?.provider?.id == commitment.provider?.id) : true
-              return offerName == commitment.resourceConformsTo.name && correctProvider
-            }
-          )
-        })
+  // async function fetchCommitment(id: string) {
+  //   try {
+  //     console.log("getting commitment", id)
+  //     getCommitment.setVariables({
+  //       id: id
+  //     });
+  //     const res = await getCommitment.refetch()
+  //     console.log(res)
+  //     // if primary intent, add to requestsPerOffer
+  //     let commitment = res.data.commitment
+  //     if (commitment.clauseOf) {
+  //       console.log("primary intent candidates", offers)
+  //       const matching_offer = offers.find(offer => {
+  //         return offer.publishes.find(
+  //           intent => {
+  //             const offerName = intent.publishes?.resourceConformsTo?.name
+  //             // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
+  //             const correctProvider = commitment.provider ? (intent.publishes?.provider?.id == commitment.provider?.id) : true
+  //             return offerName == commitment.resourceConformsTo.name && correctProvider
+  //           }
+  //         )
+  //       })
 
-        const primary_intent = matching_offer?.publishes.find(
-          intent => !intent.reciprocal
-        )
+  //       const primary_intent = matching_offer?.publishes.find(
+  //         intent => !intent.reciprocal
+  //       )
         
         
-        if (!requestsPerOffer[primary_intent.id]) {
-          requestsPerOffer[primary_intent.id] = {}
-        }
+  //       if (!requestsPerOffer[primary_intent.id]) {
+  //         requestsPerOffer[primary_intent.id] = {}
+  //       }
         
-        console.log("res", commitment)
-        console.log("adding ", commitment.resourceQuantity.hasNumericalValue)
-        if (commitment.action.label == "pickup") {
-          requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
-        }
-        console.log(requestsPerOffer)
-      }
-      return res.data.commitment
-    } catch (e) {
-      console.log(e)
-    }
-  }
+  //       console.log("res", commitment)
+  //       console.log("adding ", commitment.resourceQuantity.hasNumericalValue)
+  //       if (commitment.action.label == "pickup") {
+  //         requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
+  //       }
+  //       console.log(requestsPerOffer)
+  //     }
+  //     return res.data.commitment
+  //   } catch (e) {
+  //     console.log(e)
+  //   }
+  // }
 
   async function saveEconomicEvent(commitment: any, process: any, side: string) {
     try {
@@ -423,18 +423,20 @@
       const economicEvent: EconomicEventCreateParams = {
         // note: commitment.note,
         action: commitment.action.id,
-        provider: commitment.provider.id,
-        receiver: commitment.receiver.id,
+        provider: commitment.providerId,
+        receiver: commitment.receiverId,
         // hasPointInTime: new Date(),
         // resourceClassifiedAs: ["commitment.resourceConformsTo.id"],
         resourceConformsTo: commitment.resourceConformsTo.id,
         resourceQuantity: {
           hasNumericalValue: commitment.resourceQuantity.hasNumericalValue,
-          hasUnit: commitment.resourceQuantity.hasUnit.id,
+          hasUnit: commitment.resourceQuantity.hasUnitId,
         },
         hasBeginning: new Date(),
         // inScopeOf: ['some-accounting-scope'],
       }
+
+      console.log("economic event", economicEvent)
 
       if (side == "committedInputs") {
         economicEvent.inputOf = process
@@ -515,7 +517,12 @@
             )
       console.log("has unit?", primary_intent)
       // hasUnit = reciprocal_intent.publishes?.resourceQuantity
-      hasUnit = primary_intent.publishes?.resourceQuantity?.hasUnit
+      // hasUnit = primary_intent.publishes?.resourceQuantity?.hasUnit
+      units.forEach((unit) => {
+        if (unit.id == primary_intent.publishes?.resourceQuantity?.hasUnitId) {
+          hasUnit = unit
+        }
+      })
       // console.log(numerical_value, hasUnit)
       // console.log("made agreement", reciprocal_intent.publishes?.resourceConformsTo?.name, numerical_value, hasUnit)
     } else {
@@ -557,7 +564,7 @@
         action: {
           label: reciprocal_intent?.publishes?.action?.label
         },
-        provider: reciprocal_intent?.publishes?.receiver,
+        provider: reciprocal_intent?.publishes?.receiverId,
         // stage: reciprocal_clause?.stage,
         resourceConformsTo: reciprocal_intent?.publishes?.resourceConformsTo,
         resourceQuantity: {
@@ -574,6 +581,60 @@
   onMount(async () => {
     if (browser) {
       try {
+        if (false) {
+          getPlan.setVariables({
+            id: planId
+          });
+          const res = await getPlan.refetch()
+          console.log(res)
+          plan = {...res.data.plan}
+          commitments = [...plan.independentDemands]
+          console.log("plan", plan)
+          console.log("commitments", commitments)
+          let lastSeenProcessSpecification: any = undefined;
+          let lastColumn: any = []
+          allColumns = []
+          plan.processes.forEach((process: any) => {
+            const newProcess = {
+              ...process,
+              basedOn: {
+                image: processImages[process.basedOn.name],
+                name: process.basedOn.name,
+                id: process.basedOn.id,
+              },
+              // sort committedInputs by last modified
+              committedInputs: [...process.committedInputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
+              // committedInputs: [...process.committedInputs].reverse(),
+              committedOutputs: [...process.committedOutputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
+              
+            }
+            console.log("PROCESS TYPE", process.basedOn.name, newProcess)
+            
+            // if this is a new process
+            if (process.basedOn.id !== lastSeenProcessSpecification) {
+              console.log("NEW PROCESS", process.basedOn.name)
+              // add last column to allColumns and reset
+              if (lastColumn.length > 0) {
+                console.log("LAST COLUMN FULL", lastColumn)
+                allColumns.unshift(lastColumn)
+                lastColumn = [newProcess]
+              } else {
+                console.log("LAST COLUMN NOT FULL", lastColumn)
+                lastColumn.unshift(newProcess)
+              }
+              lastSeenProcessSpecification = process.basedOn.id
+            } else {
+              console.log("SAME PROCESS", process.basedOn.name)
+              lastColumn.unshift(newProcess)
+            }
+
+            allColumns.unshift(lastColumn)
+            loadingPlan = false;
+            console.log("allColumns", allColumns)
+            allColumns = [...allColumns]
+          })
+          console.log(allColumns)
+        } else {
         // console.log(GET_PLAN)
         // console.log(planId)
         console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
@@ -593,12 +654,6 @@
         // const res = await getPlan.refetch()
         const res = await getSimplifiedPlan.refetch()
         plan = {...res.data.plan}
-        // plan = {...res.data.plan}
-        // alert(JSON.stringify(plan.independentDemands[0]))
-        console.log("00000", plan, "================================================================================")
-        
-        // assign all commitments and nest them under the "publishes" key
-        // commitments = [...plan.independentDemands]
         commitments = [...plan.independentDemands]
         
         let lastSeenProcessSpecification: any = undefined;
@@ -622,25 +677,25 @@
 
           for (const commitment of process.committedOutputs) {
             console.log("commitment: ", commitment)
-            const fullCommitment = await fetchCommitment(commitment.id)
-            if (fullCommitment) {
+            // const fullCommitment = await fetchCommitment(commitment.id)
+            // if (fullCommitment) {
               // commitment.clauseOf = fullCommitment.clauseOf
               // replace commitment with fullCommitment in the process
-              process.committedOutputs = [...process.committedOutputs.map(it => it.id == commitment.id ? {...it, clauseOf: fullCommitment.clauseOf} : it)]
-            }
-            console.log("cost commitment: ", fullCommitment)
+              process.committedOutputs = [...process.committedOutputs.map(it => it.id == commitment.id ? {...it, clauseOf: commitment.clauseOf} : it)]
+            // }
+            console.log("cost commitment: ", commitment)
             await delay(100)
           }
 
           for (const commitment of process.committedInputs) {
             console.log("commitment: ", commitment)
-            const fullCommitment = await fetchCommitment(commitment.id)
-            if (fullCommitment) {
+            // const fullCommitment = await fetchCommitment(commitment.id)
+            // if (fullCommitment) {
               // commitment.clauseOf = fullCommitment.clauseOf
               // replace commitment with fullCommitment in the process
-              process.committedInputs = [...process.committedInputs.map(it => it.id == commitment.id ? {...it, clauseOf: fullCommitment.clauseOf} : it)]
-            }
-            console.log("cost commitment: ", fullCommitment)
+              process.committedInputs = [...process.committedInputs.map(it => it.id == commitment.id ? {...it, clauseOf: commitment.clauseOf} : it)]
+            // }
+            console.log("cost commitment: ", commitment)
             await delay(100)
           }
 
@@ -683,7 +738,7 @@
         loadingPlan = false;
         console.log("allColumns", allColumns)
         allColumns = [...allColumns]
-
+      }
       } catch (e) {
         console.log("error", e)
         error = e
@@ -942,7 +997,13 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                       </span>
                     {/if}
                     {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                    {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} {primary?.publishes?.resourceQuantity?.hasUnit?.label}
+                    {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} 
+                    <!-- {primary?.publishes?.resourceQuantity?.hasUnit?.label} -->
+                    {#each units as unit}
+                      {#if unit.id == primary?.publishes?.resourceQuantity?.hasUnitId}
+                        {unit.label}
+                      {/if}
+                    {/each}
                   </p>
                   {:else}
                     <p>
@@ -950,7 +1011,14 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                       USD per lb
                     </p>
                   {/if}
-                  <p>from {primary?.publishes?.provider?.name}</p>
+                  <p>from 
+                    <!-- {primary?.publishes?.provider?.name} -->
+                    {#each agents as agent}
+                      {#if agent.id == primary?.publishes?.providerId}
+                        {agent.name}
+                      {/if}
+                    {/each}
+                  </p>
                 </div>
               {/if}
             {/each}
@@ -959,23 +1027,6 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
       </div>  
     </div>
 
-    <!--
-    <div>
-      <h2 class="text-center">Offers</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
-        <div
-          class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-        >
-          <p>Brown Alpaca Dirty</p>
-          <div class="flex justify-between">
-            <p>20 lbs</p>
-            <p>20 lbs</p>
-          </div>
-          <p>WoodLand Meadow</p>
-        </div>
-      </div>
-    </div>
-    -->
     <!-- Main Columns -->
     <!-- {JSON.stringify(allColumns[0])} -->
     <!-- {#each allColumns as processes}
@@ -1006,8 +1057,8 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                 >
                 <PlusCircle />
               </button>
-                {#each committedInputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished, clauseOf, meta }}
-                  {@const color = finished ? "#c4fbc4" : (((fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
+                {#each committedInputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf, meta }}
+                  {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                     style="background-color: {color};"
@@ -1022,19 +1073,28 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                       -->
                       <p>
                         {action.label}
-
                         <!-- sum of all fulfilledby numericalvalues -->
-                        {#if fulfilledBy.length > 0}
+                        {#if fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
                           {@const yellowAmount = yellowAmounts[id] || 0}
                           {@const amount = fulfilledBy.map(it => it.fulfilledBy.resourceQuantity.hasNumericalValue).reduce((acc, it) => new Decimal(acc).add(it), new Decimal(0)).toString()}
                           {new Decimal(amount).add(yellowAmount).toString()}
                           {fulfilledBy[0].fulfilledBy.resourceQuantity.hasUnit.label}
                         {:else if yellowAmounts[id]}
                           {yellowAmounts[id]}
-                          {resourceQuantity?.hasUnit?.label}
+                          <!-- {resourceQuantity?.hasUnit?.label} -->
+                          {#each units as unit}
+                            {#if unit.id == resourceQuantity.hasUnitId}
+                              {unit.label}
+                            {/if}
+                          {/each}
                         {:else}
                           {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                          {resourceQuantity?.hasUnit?.label}
+                          <!-- {resourceQuantity?.hasUnit?.label} -->
+                          {#each units as unit}
+                            {#if unit.id == resourceQuantity.hasUnitId}
+                              {unit.label}
+                            {/if}
+                          {/each}
                         {/if}
                       </p>
                       <!--
@@ -1045,8 +1105,19 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                       -->
                     </div>
                     <p>
-                      from {provider?.name || ''}<br />
-                      to {receiver?.name || ''}
+                      from 
+                      {#each agents as agent}
+                        {#if agent.id == providerId}
+                          {agent.name}
+                        {/if}
+                      {/each}
+                      <br />
+                      to 
+                      {#each agents as agent}
+                        {#if agent.id == receiverId}
+                          {agent.name}
+                        {/if}
+                      {/each}
                     </p>
                     {#if clauseOf}
                       {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
@@ -1157,8 +1228,8 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                   <PlusCircle />
                 </button>
 
-                {#each committedOutputs as { resourceConformsTo, provider, resourceQuantity, action, receiver, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
-                {@const color = finished ? "#c4fbc4" : (((fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
+                {#each committedOutputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
+                {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
                 <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                     style="background-color: {color};"
@@ -1174,18 +1245,29 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                       -->
                         <p>
                           {action.label}
-                          {#if fulfilledBy.length > 0}
-                          {@const yellowAmount = yellowAmounts[id] || 0}
-                          {@const amount = fulfilledBy.map(it => it.fulfilledBy.resourceQuantity.hasNumericalValue).reduce((acc, it) => new Decimal(acc).add(it), new Decimal(0)).toString()}
-                          {new Decimal(amount).add(yellowAmount).toString()}
-                          {fulfilledBy[0].fulfilledBy.resourceQuantity.hasUnit.label}
-                        {:else if yellowAmounts[id]}
-                          {yellowAmounts[id]}
-                          {resourceQuantity?.hasUnit?.label}
-                        {:else}
-                          {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                          {resourceQuantity?.hasUnit?.label}
-                        {/if}
+
+                          {#if fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
+                            {@const yellowAmount = yellowAmounts[id] || 0}
+                            {@const amount = fulfilledBy.map(it => it.fulfilledBy.resourceQuantity.hasNumericalValue).reduce((acc, it) => new Decimal(acc).add(it), new Decimal(0)).toString()}
+                            {new Decimal(amount).add(yellowAmount).toString()}
+                            {fulfilledBy[0].fulfilledBy.resourceQuantity.hasUnit.label}
+                          {:else if yellowAmounts[id]}
+                            {yellowAmounts[id]}
+                            <!-- {resourceQuantity?.hasUnit?.label} -->
+                            {#each units as unit}
+                              {#if unit.id == resourceQuantity.hasUnitId}
+                                {unit.label}
+                              {/if}
+                            {/each}
+                          {:else}
+                            {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                            <!-- {resourceQuantity?.hasUnit?.label} -->
+                            {#each units as unit}
+                              {#if unit.id == resourceQuantity.hasUnitId}
+                                {unit.label}
+                              {/if}
+                            {/each}
+                          {/if}
                         </p>
                         <!--
                       <p>
@@ -1195,8 +1277,19 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                       -->
                       </div>
                       <p>
-                        from {provider?.name || ''}<br />
-                        to {receiver?.name || ''}
+                        from 
+                        {#each agents as agent}
+                          {#if agent.id == providerId}
+                            {agent.name}
+                          {/if}
+                        {/each}
+                        <br />
+                        to 
+                        {#each agents as agent}
+                          {#if agent.id == receiverId}
+                            {agent.name}
+                          {/if}
+                        {/each}
                       </p>
                       {#if clauseOf}
                         {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
@@ -1313,7 +1406,7 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
               <!-- {JSON.stringify(c)} -->
               {@const resourceConformsTo = c.resourceConformsTo}
               {@const resourceQuantity = c.resourceQuantity}
-              {@const receiver = c.receiver}
+              <!-- {@const receiver = c.receiver} -->
               {@const id = c.id}
               {@const revisionId = c.revisionId}
               {@const action = c.action}
@@ -1325,9 +1418,20 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
                   <p>
                     {action.label}
                     {resourceQuantity?.hasNumericalValue}
-                    {resourceConformsTo?.defaultUnitOfResource?.label}
+                    <!-- {resourceConformsTo?.defaultUnitOfResource?.label} -->
+                    {#each units as unit}
+                      {#if unit.id == resourceConformsTo?.defaultUnitOfResourceId}
+                        {unit.label}
+                      {/if}
+                    {/each}
                   </p>
-                  <p>to {receiver?.name}</p>
+                  <p>to 
+                    {#each agents as agent}
+                      {#if agent.id == c.receiverId}
+                        {agent.name}
+                      {/if}
+                    {/each}
+                  </p>
                 </div>
                 <div class="w-full flex justify-center">
                   <button
@@ -1364,7 +1468,7 @@ Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
             {#each proposalsList as { publishes }}
               {@const reciprocal = publishes.find(it => it.reciprocal)}
               {@const primary = publishes.find(it => !it.reciprocal)}
-              {#if primary?.publishes?.receiver}
+              {#if primary?.publishes?.receiverId}
                 <div
                   class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                 >

@@ -4,20 +4,6 @@ name: acfn
 description: ~
 roles:
 
-  - name: acfn
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "../dnas/acfn/workdir/acfn.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      version: ~
-      clone_limit: 0
-
   - name: hrea_combined_0
     provisioning:
       strategy: create

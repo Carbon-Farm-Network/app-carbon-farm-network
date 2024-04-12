@@ -19,23 +19,15 @@ export const SIMPLIFIED_PLAN_RETURN_FIELDS = gql`
         id
         label
       }
-      receiver {
-        id
-        name
-      }
+      receiverId
       resourceQuantity {
         hasNumericalValue
-        hasUnit {
-          id
-          label
-        }
+        hasUnitId
       }
       resourceConformsTo {
         id
         name
-        defaultUnitOfResource {
-          label
-        }
+        defaultUnitOfResourceId
       }
     }
     processes {
@@ -71,27 +63,20 @@ export const COMMITMENT_RETURN_FIELDS = gql`
         time
       }
     }
+    providerId
     provider {
       id
       name
     }
-    receiver {
-      id
-      name
-    }
+    receiverId
     resourceQuantity {
       hasNumericalValue
-      hasUnit {
-        id
-        label
-      }
+      hasUnitId
     }
     resourceConformsTo {
       id
       name
-      defaultUnitOfResource {
-        label
-      }
+      defaultUnitOfResourceId
     }
     fulfilledBy {
       fulfilledBy {
@@ -100,27 +85,20 @@ export const COMMITMENT_RETURN_FIELDS = gql`
           id
           label
         }
+        providerId
         provider {
           id
           name
         }
-        receiver {
-          id
-          name
-        }
+        receiverId
         resourceConformsTo {
           id
           name
-          defaultUnitOfResource {
-            label
-          }
+          defaultUnitOfResourceId
         }
         resourceQuantity {
           hasNumericalValue
-          hasUnit {
-            id
-            label
-          }
+          hasUnitId
         }
         hasBeginning
       }
@@ -139,15 +117,11 @@ export const COMMITMENT_RETURN_FIELDS = gql`
         resourceConformsTo {
           id
           name
-          defaultUnitOfResource {
-            label
-          }
+          defaultUnitOfResourceId
         }
         resourceQuantity {
           hasNumericalValue
-          hasUnit {
-            label
-          }
+          hasUnitId
         }
       }
     }
@@ -183,58 +157,49 @@ export const PROCESS_RETURN_FIELDS = gql`
           time
         }
       }
+      providerId
       provider {
         id
         name
       }
-      receiver {
-        id
-        name
-      }
+      receiverId
       resourceQuantity {
         hasNumericalValue
-        hasUnit {
-          id
-          label
-        }
+        hasUnitId
       }
       resourceConformsTo {
         id
         name
-        defaultUnitOfResource {
-          label
-        }
+        defaultUnitOfResourceId
       }
       fulfilledBy {
-        fulfilledBy {
+        pageInfo
+        edges {
+          cursor
+          node {
+            id
+          }
+        }
+      }
+      clauseOf {
+        id
+        revisionId
+        commitments {
           id
+          revisionId
           action {
             id
             label
           }
-          provider {
-            id
-            name
-          }
-          receiver {
-            id
-            name
-          }
           resourceConformsTo {
             id
             name
-            defaultUnitOfResource {
-              label
-            }
+            defaultUnitOfResourceId
           }
           resourceQuantity {
             hasNumericalValue
-            hasUnit {
-              id
-              label
-            }
+            hasUnitId
           }
-          hasBeginning
         }
       }
       finished
@@ -253,58 +218,40 @@ export const PROCESS_RETURN_FIELDS = gql`
           time
         }
       }
+      providerId
       provider {
         id
         name
       }
-      receiver {
-        id
-        name
-      }
+      receiverId
       resourceQuantity {
         hasNumericalValue
-        hasUnit {
-          id
-          label
-        }
+        hasUnitId
       }
       resourceConformsTo {
         id
         name
-        defaultUnitOfResource {
-          label
-        }
+        defaultUnitOfResourceId
       }
-      fulfilledBy {
-        fulfilledBy {
+      clauseOf {
+        id
+        revisionId
+        commitments {
           id
+          revisionId
           action {
             id
             label
           }
-          provider {
-            id
-            name
-          }
-          receiver {
-            id
-            name
-          }
           resourceConformsTo {
             id
             name
-            defaultUnitOfResource {
-              label
-            }
+            defaultUnitOfResourceId
           }
           resourceQuantity {
             hasNumericalValue
-            hasUnit {
-              id
-              label
-            }
+            hasUnitId
           }
-          hasBeginning
         }
       }
       finished
@@ -331,23 +278,15 @@ export const PLAN_RETURN_FIELDS = gql`
         id
         label
       }
-      receiver {
-        id
-        name
-      }
+      receiverId
       resourceQuantity {
         hasNumericalValue
-        hasUnit {
-          id
-          label
-        }
+        hasUnitId
       }
       resourceConformsTo {
         id
         name
-        defaultUnitOfResource {
-          label
-        }
+        defaultUnitOfResourceId
       }
     }
     processes {
@@ -378,14 +317,12 @@ export const PLAN_RETURN_FIELDS = gql`
             time
           }
         }
+        providerId
         provider {
           id
           name
         }
-        receiver {
-          id
-          name
-        }
+        receiverId
         resourceQuantity {
           hasNumericalValue
           hasUnit {
@@ -396,9 +333,7 @@ export const PLAN_RETURN_FIELDS = gql`
         resourceConformsTo {
           id
           name
-          defaultUnitOfResource {
-            label
-          }
+          defaultUnitOfResourceId
         }
       }
       committedOutputs {
@@ -415,14 +350,12 @@ export const PLAN_RETURN_FIELDS = gql`
             time
           }
         }
+        providerId
         provider {
           id
           name
         }
-        receiver {
-          id
-          name
-        }
+        receiverId
         resourceQuantity {
           hasNumericalValue
           hasUnit {

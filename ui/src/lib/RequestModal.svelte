@@ -39,8 +39,8 @@
   });
 
   let submitting: boolean = false;
-  $: submitting;
-
+  let xyz: boolean = false;
+  
   const dispatch = createEventDispatcher();
 
   // GraphQL query bindings
@@ -171,14 +171,33 @@
     console.log(res5)
   }
 
-  async function handleSubmit() {
-    submitting = true;
-    console.log("submitting", submitting)
+  async function handleSubmit2() {
     console.log(currentProposal)
     console.log(currentIntent)
     console.log(currentReciprocalIntent)
     console.log(currentProposedIntent)
     try {
+      submitting = true;
+      submitting = submitting;
+      console.log("submitting", submitting)
+    }
+    catch (error) {
+      console.error(error)
+    }
+  }
+
+  async function handleSubmit() {
+    console.log(currentProposal)
+    console.log(currentIntent)
+    console.log(currentReciprocalIntent)
+    console.log(currentProposedIntent)
+    try {
+      submitting = true;
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      submitting = submitting;
+      console.log("submitting", submitting)
       // create proposal
       var d = new Date(Date.now());
       let proposal: ProposalCreateParams = {
@@ -351,7 +370,7 @@
                 {/each}
                 <!-- <option selected>Brown alpacca dirty</option>
                   <option>White alpacca dirty</option>
-                  <option>White wool dirty</option> -->
+                  <option>White wool greasy</option> -->
                 </select>
               </div>
             </div>

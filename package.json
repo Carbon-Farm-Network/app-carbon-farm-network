@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "postinstall": "pnpm run download-hrea-obs && pnpm run download-hrea-specification && pnpm run download-hrea-agent && pnpm run download-hrea-planning && pnpm run download-hrea-proposal && pnpm run download-hrea-plan && pnpm run download-hrea-agreement && pnpm run download-facets",
+    "postinstall1": "pnpm run download-hrea-obs && pnpm run download-hrea-specification && pnpm run download-hrea-agent && pnpm run download-hrea-planning && pnpm run download-hrea-proposal && pnpm run download-hrea-plan && pnpm run download-hrea-agreement && pnpm run download-facets",
     "start": "AGENTS=1 pnpm run network",
     "dev": "VITE_ADMIN_PORT=$(port) VITE_APP_PORT=$(port) SIGNAL_PORT=$(port) BOOTSTRAP_PORT=$(port) UI_PORT=8888 npm run x",
     "x": "hc s clean &&  npm run build:happ && UI_PORT=8888 concurrently \"npm start -w ui\" \"npm run start:happ\" \"hc run-local-services -b $BOOTSTRAP_PORT -s $SIGNAL_PORT\"",

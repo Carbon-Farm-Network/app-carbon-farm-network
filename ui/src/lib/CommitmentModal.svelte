@@ -53,12 +53,6 @@
     }
   }
 
-  // $: if (open) {
-    // newCommitment.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    // console.log(newCommitment.id)
-    // console.log(process)
-  // }
-
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
       e.preventDefault()
@@ -67,105 +61,6 @@
       open = false
     }
   }
-
-//   const GET_UNITS = gql`
-//     query GetUnits {
-//       units {
-//         edges {
-//           cursor
-//           node {
-//             id
-//             label
-//             symbol
-//           }
-//         }
-//       }
-//     }
-//   `
-
-//   const GET_ALL_AGENTS = gql`
-//     query {
-//       agents(last: 100000) {
-//         edges {
-//           cursor
-//           node {
-//             id
-//             name
-//           }
-//         }
-//       }
-//     }
-//   `
-
-// const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-//     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-//     ${UNIT_CORE_FIELDS}
-//     query {
-//       resourceSpecifications(last: 100000) {
-//         edges {
-//           cursor
-//           node {
-//             ...ResourceSpecificationCoreFields
-//             defaultUnitOfResource {
-//               ...UnitCoreFields
-//             }
-//           }
-//         }
-//       }
-//     }
-//   `
-
-//   interface QueryResponse {
-//     agents: AgentConnection & RelayConn<any>
-//   }
-
-//   interface RspecResponse {
-//     resourceSpecifications: AgentConnection & RelayConn<any>
-//   }
-
-
-//   interface UnitsQueryResponse {
-//     units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-//   }
-
-//   let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-  
-//   // map component state
-//   let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
-
-//   let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-
-//   async function fetchUnits() {
-//     getUnits.getCurrentResult()
-//     getUnits.refetch().then((r) => {
-//       if (r.data?.units.edges.length > 0) {
-//         units = flattenRelayConnection(r.data?.units)
-//       }
-//     })
-//   }
-
-//   async function fetchAgents() {
-//     await agentsQuery.getCurrentResult()
-//     const a = await agentsQuery.refetch()
-//     agents = flattenRelayConnection(a.data?.agents).map((a) => {
-//       return {
-//         ...a,
-//       }
-//     })
-//     console.log(agents)
-//   }
-
-//   async function fetchResourceSpecifications() {
-//     await resourceSpecificationsQuery.getCurrentResult()
-//     let r = await resourceSpecificationsQuery.refetch()
-//     resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
-//       return {
-//         ...a,
-//         defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
-//       }
-//     })
-//     console.log(resourceSpecifications)
-//   }
 
   onMount(async() => {
     window.addEventListener('keydown', checkKey)
@@ -186,37 +81,25 @@
     action: {label: ''},
     resourceQuantity: {
       hasNumericalValue: 0,
-      hasUnit: {
-        label: ''
-      }
+      hasUnitId: ''
     },
-    receiver: {
-      id: '',
-      name: ''
-    },
-    provider: {
-      id: '',
-      name: ''
-    },
+    receiverId: '',
+    providerId: '',
+    // receiver: {
+    //   id: '',
+    //   name: ''
+    // },
+    // provider: {
+    //   id: '',
+    //   name: ''
+    // },
     note: '',
     fulfilledBy: [],
     finished: false
   }
   let newCommitment = Object.assign({}, newCommitmentTemplate)
   let selectedCommitment = Object.assign({}, newCommitmentTemplate)
-  // $: selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
   $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide, selectedCommitment, selectedCommitmentId
-  // $: if (selectedCommitmentId && commitmentModalColumn > -1) {
-  //   // selectedCommitment = {...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)}
-  //   // console.log(selectedCommitmentId)
-  //   // console.log(process)
-  //   // selectedCommitment = process.find(it => it.id == selectedCommitmentId)
-  //   selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
-  //   console.log(selectedCommitment)
-  // } else {
-  //   // console.log(selectedCommitmentId, commitmentModalColumn)
-  //   // selectedCommitment = {}
-  // }
 
   let previousSelectedCommitmentId: string | undefined;
   $: {
@@ -233,16 +116,6 @@
       }
     }
   }
-
-  // onMount(async () => {
-
-  //   fetchUnits();
-
-  //   // selectedCommitment = commitments.find(it => it.id == selectedCommitmentId)
-  //   // if (!selectedCommitment) {
-  //   //   selectedCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == selectedCommitmentId)
-  //   // }
-  // })
 
 </script>
 
@@ -309,13 +182,14 @@
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)
-                      let selectedAgent = agents.find((rs) => rs.id === id)
-                      console.log(selectedAgent.name)
-                      if (selectedCommitment.provider) {
-                        selectedCommitment.provider = selectedAgent
-                      } else {
-                        console.log(selectedCommitment.provider)
-                      }
+                      selectedCommitment.providerId = id
+                      // let selectedAgent = agents.find((rs) => rs.id === id)
+                      // console.log(selectedAgent.name)
+                      // if (selectedCommitment.provider) {
+                      //   selectedCommitment.provider = selectedAgent
+                      // } else {
+                      //   console.log(selectedCommitment.provider)
+                      // }
                     }}
 
                     >
@@ -334,12 +208,13 @@
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)
-                      let selectedAgent = agents.find((rs) => rs.id === id)
-                      if (newCommitment.provider) {
-                        newCommitment.provider = selectedAgent
-                      } else {
-                        console.log(newCommitment.provider)
-                      }
+                      newCommitment.providerId = id
+                      // let selectedAgent = agents.find((rs) => rs.id === id)
+                      // if (newCommitment.providerId) {
+                      //   newCommitment.providerId = selectedAgent.id
+                      // } else {
+                      //   console.log(newCommitment.providerId)
+                      // }
                     }}
                     >
                     {#each agents as agent}
@@ -357,8 +232,13 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Receiver</label
                 >
-                {#if selectedCommitment?.id && selectedCommitment.receiver}
-                  <p>{selectedCommitment.receiver.name}</p>
+                {#if selectedCommitment?.id && selectedCommitment.receiverId}
+                  <!-- <p>{selectedCommitment.receiver.name}</p> -->
+                  {#each agents as agent}
+                    {#if agent.id == selectedCommitment.receiverId}
+                      {agent.name}
+                    {/if}
+                  {/each}
                 {:else if selectedCommitment?.id && agents}
                   <select
                     id="receiver"
@@ -368,12 +248,7 @@
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)
-                      let selectedAgent = agents.find((rs) => rs.id === id)
-                      if (newCommitment.receiver) {
-                        selectedCommitment.receiver = selectedAgent
-                      } else {
-                        console.log(selectedCommitment.receiver)
-                      }
+                      selectedCommitment.receiverId = id
                     }}
                     >
                     {#each agents as agent}
@@ -385,23 +260,16 @@
                     id="receiver"
                     name="receiver"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={newCommitment.receiver.id}
+                    value={newCommitment.receiverId}
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)
-                      let selectedAgent = agents.find((rs) => rs.id === id)
-                      if (newCommitment.receiver) {
-                        newCommitment.receiver = selectedAgent
-                      } else {
-                        console.log(newCommitment.receiver)
-                      }
+                      newCommitment.receiverId = id
                     }}
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
                     {/each}
-                    <!-- <option selected>Lazy Acre Alpacca</option>
-                  <option>Woodland meadow farm</option> -->
                   </select>
                 {/if}
               </div>
@@ -423,13 +291,13 @@
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     value={newCommitment.resourceConformsTo.name}
-                    on:change={(e) => {
-                      newCommitment.resourceQuantity.hasUnit = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource
-                      // newCommitment.resourceConformsTo.defaultUnitOfResource = resourceSpecifications.find((rs) => rs.name === e.target.value).defaultUnitOfResource
-                      let x = resourceSpecifications.find((rs) => rs.name === e.target.value)
-                      newCommitment.resourceConformsTo = x
-                    }}
-                  >
+                      on:change={(e) => {
+                        console.log(e.target.value)
+                        const rspec = resourceSpecifications.find((rs) => rs.name === e.target.value)
+                        newCommitment.resourceConformsTo.defaultUnitOfResource = rspec.defaultUnitOfResource
+                        newCommitment.resourceConformsTo = rspec
+                      }}
+                    >
                     {#each resourceSpecifications as rs}
                       <option value={rs.name}>{rs.name}</option>
                     {/each}
@@ -508,17 +376,22 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
                 {#if selectedCommitment?.id && selectedCommitment?.resourceQuantity}
-                  <p>{selectedCommitment?.resourceQuantity.hasUnit.label}</p>
+                  <!-- <p>{selectedCommitment?.resourceQuantity.hasUnit.label}</p> -->
+                  {#each units as unit}
+                    {#if unit.id == selectedCommitment?.resourceQuantity?.hasUnitId}
+                      {unit.label}
+                    {/if}
+                  {/each}
                 {:else}
                   <select
                     id="unit"
                     name="unit"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.resourceQuantity.hasUnit.label}
+                    bind:value={newCommitment.resourceQuantity.hasUnitId}
                   >
                     {#if units}
                       {#each units as unit}
-                        <option value={unit.label}>{unit.label}</option>
+                        <option value={unit.id}>{unit.label}</option>
                       {/each}
                     {/if}
                   </select>
@@ -606,10 +479,10 @@
             // plan_created = true;
             let updatedCommitment = {...selectedCommitment}
             if (!selectedCommitment.provider) {
-              updatedCommitment.provider = newCommitment.provider
+              updatedCommitment.providerId = newCommitment.providerId
             }
             if (!selectedCommitment.receiver) {
-              updatedCommitment.receiver = newCommitment.receiver
+              updatedCommitment.receiverId = newCommitment.receiverId
             }
             if (!selectedCommitment.resourceConformsTo) {
               updatedCommitment.resourceConformsTo = newCommitment.resourceConformsTo

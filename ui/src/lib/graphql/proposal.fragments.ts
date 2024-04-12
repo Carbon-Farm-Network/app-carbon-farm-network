@@ -21,12 +21,14 @@ export const INTENT_CORE_FIELDS = gql`
     availableQuantity {
       hasNumericalValue
       hasUnit {
+        id
         label
       }
     }
     resourceQuantity {
       hasNumericalValue
       hasUnit {
+        id
         label
       }
     }

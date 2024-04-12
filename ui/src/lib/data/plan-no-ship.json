@@ -266,7 +266,7 @@
               "id": "input_id",
               "type": "Commitment",
               "resource_conforms_to": {
-                "name": "White wool dirty"
+                "name": "White wool greasy"
               },
               "resource_quantity": {
                 "has_numerical_value": 420,
@@ -294,7 +294,7 @@
               "id": "input_id",
               "type": "Commitment",
               "resource_conforms_to": {
-                "name": "White wool dirty"
+                "name": "White wool greasy"
               },
               "resource_quantity": {
                 "has_numerical_value": 100,
@@ -322,7 +322,7 @@
               "id": "input_id",
               "type": "Commitment",
               "resource_conforms_to": {
-                "name": "White wool dirty"
+                "name": "White wool greasy"
               },
               "resource_quantity": {
                 "has_numerical_value": 55,
@@ -350,7 +350,7 @@
               "id": "input_id",
               "type": "Commitment",
               "resource_conforms_to": {
-                "name": "White wool dirty"
+                "name": "White wool greasy"
               },
               "resource_quantity": {
                 "has_numerical_value": 420,
@@ -492,7 +492,7 @@
               "id": "output_id",
               "type": "Commitment",
               "resource_conforms_to": {
-                "name": "White wool dirty"
+                "name": "White wool greasy"
               },
               "resource_quantity": {
                 "has_numerical_value": 554,
@@ -644,7 +644,7 @@
               "id": "input_id",
               "type": "Commitment",
               "resource_conforms_to": {
-                "name": "White wool dirty"
+                "name": "White wool greasy"
               },
               "resource_quantity": {
                 "has_numerical_value": 554,

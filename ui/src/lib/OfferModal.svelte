@@ -337,7 +337,7 @@
                 {/each}
                 <!-- <option selected>Brown alpacca dirty</option>
                   <option>White alpacca dirty</option>
-                  <option>White wool dirty</option> -->
+                  <option>White wool greasy</option> -->
                 </select>
               </div>
             </div>

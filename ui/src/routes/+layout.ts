@@ -33,122 +33,6 @@ enum RenderType {
 let renderType = RenderType.App
 let wal: WAL
 
-
-
-// initialize()
-  
-async function initialize() : Promise<void> {
-  console.log("initialize")
-  console.log("browser", browser)
-  if (!browser) return
-  // let profilesClient
-  if ((import.meta as any).env.DEV) {
-    try {
-      await initializeHotReload();
-    } catch (e) {
-      console.warn("Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode.")
-    }
-  }
-  // if (!isWeContext()) {
-  //     // console.log("adminPort is", adminPort)
-  //     // if (adminPort) {
-  //     //   const url = `ws://localhost:${adminPort}`
-  //     //   const adminWebsocket = await AdminWebsocket.connect({url: new URL(url)})
-  //     //   const x = await adminWebsocket.listApps({})
-  //     //   console.log("apps", x)
-  //     //   const cellIds = await adminWebsocket.listCellIds()
-  //     //   console.log("CELL IDS",cellIds)
-  //     //   await adminWebsocket.authorizeSigningCredentials(cellIds[0])
-  //     // }
-  //     // console.log("appPort and Id is", appPort, appId)
-  //     // client = await AppAgentWebsocket.connect(appId, {url: new URL(url)})
-
-  //     // console.log('hi', new URL(url))
-  //     // // pull DNA config separately in order to bind to CFN-specific extension Cells
-  //     // const conn = await AppWebsocket.connect({url: new URL(url)})
-  //     // // const conn = await AppWebsocket.connect(ENV_CONNECTION_URI)
-  //     // console.log("conn is ", conn)
-  //     // const { dnaConfig } = await sniffHolochainAppCells(conn, appId)
-  //     // console.log("dna config", dnaConfig)
-  // }
-  else {
-    weClient = await WeClient.connect(appletServices);
-    console.log(weClient.appletInfo)
-    // const { dnaConfig } = await sniffHolochainAppCells(weClient, appId)
-
-    switch (weClient.renderInfo.type) {
-      case "applet-view":
-        switch (weClient.renderInfo.view.type) {
-          case "main":
-            // here comes your rendering logic for the main view
-            break;
-          case "block":
-            switch(weClient.renderInfo.view.block) {
-              case "active_boards":
-                renderType = RenderType.BlockActiveBoards
-                break;
-              default:
-                throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
-            }
-            break;
-          case "creatable":
-          switch (weClient.renderInfo.view.name) {
-              case "spreadsheet":
-                renderType = RenderType.CreateSpreadsheet
-                createView = weClient.renderInfo.view
-            }              
-            break;
-          case "asset":
-            switch (weClient.renderInfo.view.roleName) {
-              case "calcy":
-                switch (weClient.renderInfo.view.integrityZomeName) {
-                  case "syn_integrity":
-                    switch (weClient.renderInfo.view.entryType) {
-                      case "document":
-                        renderType = RenderType.WAL
-                        wal = weClient.renderInfo.view.wal
-                        break;
-                      default:
-                        throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
-                    }
-                    break;
-                  default:
-                    throw new Error("Unknown integrity zome:"+weClient.renderInfo.view.integrityZomeName);
-                }
-                break;
-              default:
-                throw new Error("Unknown role name:"+weClient.renderInfo.view.roleName);
-            }
-            break;
-          default:
-            throw new Error("Unsupported applet-view type");
-        }
-        break;
-      // case "cross-applet-view":
-      //   switch (this.weClient.renderInfo.view.type) {
-      //     case "main":
-      //       // here comes your rendering logic for the cross-applet main view
-      //       //break;
-      //     case "block":
-      //       //
-      //       //break;
-      //     default:
-      //       throw new Error("Unknown cross-applet-view render type.")
-      //   }
-      //   break;
-      default:
-        throw new Error("Unknown render view type");
-
-    }
-    
-    //@ts-ignore
-    client = weClient.renderInfo.appletClient;
-    //@ts-ignore
-    profilesClient = weClient.renderInfo.profilesClient;
-  }
-  connected = true
-}
-
 // export async function loadNormal() {
 export async function load() {
   if (!browser) return
@@ -200,7 +84,7 @@ export async function load() {
         client: output
       }
       
-    } else {
+    } else if (appPort) {
       // env.APP_INTERFACE_PORT = appPort
       // window.env.APP_INTERFACE_PORT = appPort
       console.log("adminPort is", adminPort)
@@ -239,6 +123,8 @@ export async function load() {
           adminConductorUri: `ws://localhost:${adminPort}`,
         }),
       }
+    } else {
+      throw error(500, "Holochain connection error, couldn't connect to client")
     }
   } catch (e) {
     console.error("Holochain connection error", e)

@@ -13,8 +13,6 @@ import Nav from '$lib/Nav.svelte'
 export let data: any;
 if (browser) {
   if (isWeContext()) {
-    console.log("hihiii")
-    console.log("we client ---- ", data)
     setClient(data.client)
   }
   else {
