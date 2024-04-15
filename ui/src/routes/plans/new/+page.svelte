@@ -549,7 +549,7 @@
       committedOutputs: process.committedOutputs.map(output => {
         const output_exchange = findExchange(output, process.based_on.name)
         console.log("output_exchange", output_exchange)
-        // if (output_exchange) {
+        if (output_exchange) {
           console.log("maybe making agreement 1", output_exchange)
           const output_agreement = makeAgreement(output, output_exchange, offers)
           console.log('output_agreement', output_agreement)
@@ -560,12 +560,13 @@
               agreement: output_agreement
             }
           }
-        // }
+        }
         return output
       }),
       committedInputs: process.committedInputs.map(input => {
+        // if there is no input, we don't need to make an agreement
         const input_exchange = findExchange(input, process.based_on.name)
-        // if (input_exchange) {
+        if (input_exchange) {
           console.log("maybe making agreement 2", input_exchange)
           const input_agreement = makeAgreement(input, input_exchange, offers)
           if (input_agreement) {
@@ -576,7 +577,7 @@
               agreement: input_agreement
             }
           }
-        // }
+        }
         return input
       })
     }
@@ -672,10 +673,12 @@
     //   .find(a_recipe => {
     //     if (based_on_name) {
     //       return a_recipe?.has_recipe_clause?.some(
-    //         clause =>
-    //           clause.resourceConformsTo.name ==
+    //         clause => {
+    //           console.log("stage", clause.stage?.name, based_on_name)
+    //           return clause.resourceConformsTo.name ==
     //             commitment?.resourceConformsTo?.name &&
     //           clause.stage?.name == based_on_name
+    //         }
     //       )
     //     } else {
     //       return a_recipe?.has_recipe_clause?.some(
@@ -686,6 +689,8 @@
     //       )
     //     }
     //   })
+
+    // console.log(commitment, based_on_name, recipes, test)
 
 
     // console.log("exchange test", test)
@@ -717,7 +722,7 @@
     // if (!reciprocal_clause) return
     // let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
     // let hasUnit = reciprocal_clause.resourceQuantity.hasUnit
-    let specific_provider = commitment.provider
+    let specific_provider = agents.find(it => it.id == commitment.providerId)
     console.log("specific provider", specific_provider)
     let numerical_value;
     let hasUnit;

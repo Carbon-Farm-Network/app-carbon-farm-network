@@ -265,6 +265,7 @@
                       let id = e.target.value
                       console.log(id)
                       newCommitment.receiverId = id
+                      console.log(newCommitment)
                     }}
                     >
                     {#each agents as agent}
@@ -475,14 +476,20 @@
             // console.log(JSON.stringify(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].provider.name))
 
             // let allColumnsCopy = [...allColumns]
-
+            
             // plan_created = true;
             let updatedCommitment = {...selectedCommitment}
-            if (!selectedCommitment.provider) {
+            if (!selectedCommitment.providerId) {
               updatedCommitment.providerId = newCommitment.providerId
             }
-            if (!selectedCommitment.receiver) {
+            if (!selectedCommitment.provider) {
+              updatedCommitment.provider = newCommitment.provider
+            }
+            if (!selectedCommitment.receiverId) {
               updatedCommitment.receiverId = newCommitment.receiverId
+            }
+            if (!selectedCommitment.receiver) {
+              updatedCommitment.receiver = newCommitment.receiver
             }
             if (!selectedCommitment.resourceConformsTo) {
               updatedCommitment.resourceConformsTo = newCommitment.resourceConformsTo

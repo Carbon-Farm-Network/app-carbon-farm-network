@@ -307,16 +307,20 @@
   }
 
   async function saveOrUpdateCommitment(commitment: CommitmentUpdateParams) {
-    console.log("save or updated commitment", commitment.resourceConformsTo.name, resourceSpecifications)
+    console.log("save or updated commitment", commitment.resourceConformsTo?.name, resourceSpecifications)
+    let unitId = commitment.resourceQuantity?.hasUnitId ? commitment.resourceQuantity?.hasUnitId : commitment.resourceQuantity?.hasUnit?.id
+    if (unitId === undefined) {
+      unitId = units.find((u) => u.label === commitment.resourceQuantity?.hasUnit?.label)?.id
+    }
     let o: CommitmentCreateParams = {
       plannedWithin: commitment.plannedWithin,
       finished: commitment.finished,
       note: commitment.note,
       hasBeginning: new Date(Date.now()),
-      resourceConformsTo: resourceSpecifications.find((rs) => rs.name === commitment.resourceConformsTo.name).id,
+      resourceConformsTo: resourceSpecifications.find((rs) => rs.name === commitment.resourceConformsTo?.name).id,
       resourceQuantity: {
         hasNumericalValue: Number(commitment?.resourceQuantity?.hasNumericalValue),
-        hasUnit: commitment?.resourceQuantity?.hasUnitId ? commitment?.resourceQuantity?.hasUnitId : units.find((u) => u.label === commitment?.resourceQuantity?.hasUnit?.label).id,
+        hasUnit: unitId
       },
     }
     console.log("commitment check unit id", commitment)
@@ -362,7 +366,7 @@
         })
         console.log("added commitment", res)
         // commitmentsSavedCount++
-        await new Promise(r => setTimeout(r, 100));
+        // await new Promise(r => setTimeout(r, 100));
       } catch (e) {
         console.log(e)
         error = e
@@ -474,6 +478,11 @@
               resourceConformsTo: dollars,
               resourceQuantity: {
                 hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue),
+                hasUnitId: dollars.defaultUnitOfResource.id,
+                hasUnit: {
+                  id: dollars.defaultUnitOfResource.id,
+                  label: dollars.defaultUnitOfResource.label
+                }
               },
               finished: false,
               note: c.agreement.commitment.note,
@@ -511,7 +520,7 @@
               console.log("trying to save payment commitment", payment)
               let paymentCommitment = await saveOrUpdateCommitment(payment)
               commitmentsSavedCount = commitmentsSavedCount + 1
-              await new Promise(r => setTimeout(r, 1000));
+              // await new Promise(r => setTimeout(r, 1000));
               console.log("payment commitment 3", paymentCommitment)
             } catch (e) {
               console.log("could not add payment commitment", e)
@@ -537,17 +546,22 @@
           // TEMPORARY find unit id
           if (c.revisionId == undefined) {
             console.log("finding unit id", c.resourceQuantity)
+            let unitId = c.resourceQuantity?.hasUnitId ? c.resourceQuantity?.hasUnitId : c.resourceQuantity?.hasUnit?.id
+            if (unitId === undefined) {
+              unitId = units.find((u) => u.label === c.resourceQuantity?.hasUnit?.label)?.id
+            }
             c = {
               ...c,
               resourceQuantity: {
-                ...c.resourceQuantity,
+                // ...c.resourceQuantity,
+                ...((({ hasUnitId, ...o }) => o)(c.resourceQuantity)),
                 hasUnit: {
-                  ...c.resourceQuantity.hasUnit,
                   // id: c.resourceQuantity.hasUnit.id
-                  id: c.resourceQuantity?.hasUnitId ? c?.resourceQuantity?.hasUnitId : units.find((u) => u.label === c?.resourceQuantity?.hasUnit?.label).id,
+                  id: unitId
                 }
               }
             }
+            console.log("HERE IS THE C", c)
             // c.resourceQuantity.hasUnit.id = units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
           }
           // UNIT ID FIND ENDS

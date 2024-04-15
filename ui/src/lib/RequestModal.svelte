@@ -205,7 +205,7 @@
         unitBased: true,
         note: "shearing end of May"
       }
-      createRequest(proposal, currentIntent, currentReciprocalIntent)
+      await createRequest(proposal, currentIntent, currentReciprocalIntent)
       dispatch("submit");
       submitting = false;
       open = false;
@@ -305,7 +305,7 @@
           From: "opacity-100 translate-y-0 sm:scale-100"
           To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
       -->
-      {#if !submitting}
+      <!-- {#if !submitting} -->
       <div
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
         class:hidden={!open}
@@ -500,20 +500,16 @@
           >
         </div>
       </div>
-      {:else}
+      <!-- {:else}
         <div
           class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
           class:hidden={!submitting}
         >
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
-              <!-- <div
-                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10"
-              > -->
               <svg width="50" height="50" viewBox="0 0 50 50">
                 <circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="rgb(99,102,241)" stroke-dasharray="31.415, 31.415" />
               </svg>
-              <!-- </div> -->
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                 <h3
                   class="text-lg leading-6 font-medium text-gray-900"
@@ -530,7 +526,7 @@
             </div>
           </div>
         </div>
-      {/if}
+      {/if} -->
     </div>
   </div>
 </div>
