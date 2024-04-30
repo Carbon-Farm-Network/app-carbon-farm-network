@@ -682,11 +682,17 @@
         //   id: planId
         // });
         await fetchActions()
+        await delay(1000)
         await fetchUnits()
+        await delay(1000)
         await fetchAgents()
+        await delay(1000)
         await fetchResourceSpecifications()
+        await delay(1000)
         await fetchProcessSpecifications()
+        await delay(1000)
         await fetchProposals()
+        await delay(1000)
 
         console.log("HERE ARE OFFERS", offers)
 
