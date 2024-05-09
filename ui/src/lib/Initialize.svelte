@@ -205,6 +205,7 @@
 
   async function checkDependencies() {
     const res = await getUnits.refetch()
+    console.log("****************************************************************************", res)
     let units = flattenRelayConnection(res.data?.units)
     dependenciesOk = units.length > 0
   }

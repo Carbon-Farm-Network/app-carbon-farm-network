@@ -33,6 +33,19 @@
     }
   `
 
+  const GET_PROCESSES = gql`
+    query fetchProcesses {
+      processes {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  `
+
   const DELETE_PLAN = gql`mutation($revisionId: ID!){
     deletePlan(revisionId: $revisionId)
   }`
@@ -40,8 +53,13 @@
   interface PlansQueryResponse {
     plans: PlanConnection & RelayConn<any>
   }
+
+  interface ProcessesQueryResponse {
+    processes: PlanConnection & RelayConn<any>
+  }
   
   let plansQuery: ReadableQuery<PlansQueryResponse> = query(GET_PLANS)
+  let processesQuery: ReadableQuery<ProcessesQueryResponse> = query(GET_PROCESSES)
   let deletePlan: any = mutation(DELETE_PLAN)
 
   // let plansQuery = query(GET_PLANS)
@@ -51,6 +69,11 @@
     plans = res.data.plans.edges
     console.log('plans', plans)
     // plans = res2.data.plans
+  }
+
+  async function fetchProcesses() {
+    const res = await processesQuery.refetch()
+    console.log('processes', res.data.processes.edges)
   }
 
   async function removePlan(revisionId: any) {
@@ -65,6 +88,7 @@
 
   onMount(async () => {
     await fetchPlans()
+    await fetchProcesses()
   })
 
 

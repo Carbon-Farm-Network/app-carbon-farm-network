@@ -2,7 +2,7 @@ import { browser } from '$app/environment'
 import { error } from '@sveltejs/kit'
 // import autoConnect from '@vf-ui/graphql-client-mock' // enable to use in-memory mock API
 import autoConnect from '@leosprograms/graphql-client-holochain'
-import { sniffHolochainAppCells } from '@leosprograms/vf-graphql-holochain'
+import { openConnection, sniffHolochainAppCells } from '@leosprograms/vf-graphql-holochain'
 import { AppWebsocket, AdminWebsocket, AppAgentWebsocket } from '@holochain/client'
 import extensionSchemas from '$lib/graphql/extension-schemas'
 import bindResolvers from '$lib/graphql/extension-resolvers'
@@ -113,16 +113,30 @@ export async function load() {
       console.log("conn is ", conn)
       const { dnaConfig } = await sniffHolochainAppCells(conn, appId)
       console.log("dna config", dnaConfig)
-      return {
-        client: await autoConnect({
-          weaveAppAgentClient: undefined,
-          appID: appId,
-          extensionSchemas,
-          extensionResolvers: await bindResolvers(dnaConfig as ExtendedDnaConfig, url),
-          conductorUri: url,
-          adminConductorUri: `ws://localhost:${adminPort}`,
-        }),
+      let boundResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, url)
+      let oc = await openConnection(url)
+      console.log("oc", oc)
+      const autoConnectInput = {
+        weaveAppAgentClient: undefined,
+        appID: appId,
+        extensionSchemas,
+        extensionResolvers: boundResolvers,
+        conductorUri: url,
+        adminConductorUri: undefined,
       }
+      const output = await autoConnect(autoConnectInput)
+      return {
+        client: output
+      }      // return {
+      //   client: await autoConnect({
+      //     weaveAppAgentClient: undefined,
+      //     appID: appId,
+      //     extensionSchemas,
+      //     extensionResolvers: await bindResolvers(dnaConfig as ExtendedDnaConfig, url),
+      //     conductorUri: url,
+      //     adminConductorUri: `ws://localhost:${adminPort}`,
+      //   }),
+      // }
     } else {
       throw error(500, "Holochain connection error, couldn't connect to client")
     }

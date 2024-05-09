@@ -302,7 +302,7 @@
         ...a,
       }
     })
-    console.log("AGENTS *********", agents)
+    console.log("AGENTS", agents)
   }
 
   async function fetchResourceSpecifications() {
@@ -459,7 +459,7 @@
 
   async function saveEconomicEvent(commitment: any, process: any, side: string) {
     try {
-      console.log("ho", commitment)
+      console.log("commitment: ", commitment)
       const economicEvent: EconomicEventCreateParams = {
         // note: commitment.note,
         action: commitment.action.id,
@@ -701,7 +701,11 @@
         });
         // const res = await getPlan.refetch()
         const res = await getSimplifiedPlan.refetch()
+
         plan = {...res.data.plan}
+
+        console.log("HERE IS THE PLAN", plan)
+
         commitments = [...plan.independentDemands]
         
         let lastSeenProcessSpecification: any = undefined;
@@ -717,7 +721,7 @@
           processesLoadedCount++
           let process = {...processRes.data.process}
           console.log(process)
-          await delay(1000)
+          // await delay(1000)
           // console.log(JSON.stringify(process.basedOn))
           // console.log(allColumns)
           // console.log(process)
@@ -733,7 +737,7 @@
               process.committedOutputs = [...process.committedOutputs.map(it => it.id == commitment.id ? {...it, clauseOf: commitment.clauseOf} : it)]
             // }
             console.log("cost commitment: ", commitment)
-            await delay(100)
+            // await delay(100)
           }
 
           for (const commitment of process.committedInputs) {
@@ -748,7 +752,7 @@
               process.committedInputs = [...process.committedInputs.map(it => it.id == commitment.id ? {...it, clauseOf: commitment.clauseOf} : it)]
             // }
             console.log("cost commitment: ", commitment)
-            await delay(100)
+            // await delay(100)
           }
 
           const newProcess = {
