@@ -294,13 +294,14 @@
                     value={newCommitment.resourceConformsTo.name}
                       on:change={(e) => {
                         console.log(e.target.value)
-                        const rspec = resourceSpecifications.find((rs) => rs.name === e.target.value)
-                        newCommitment.resourceConformsTo.defaultUnitOfResource = rspec.defaultUnitOfResource
+                        const rspec = resourceSpecifications.find((rs) => rs.id === e.target.value)
+                        // newCommitment.resourceConformsTo.defaultUnitOfResource = rspec.defaultUnitOfResource
                         newCommitment.resourceConformsTo = rspec
+                        console.log(newCommitment)
                       }}
                     >
                     {#each resourceSpecifications as rs}
-                      <option value={rs.name}>{rs.name}</option>
+                      <option value={rs.id}>{rs.name}</option>
                     {/each}
                   </select>
                 {/if}

@@ -331,7 +331,7 @@
     
   async function fetchProposals() {
     try {
-      await getProposals.getCurrentResult()
+      // await getProposals.getCurrentResult()
       await getProposals.refetch().then((r) => {
         if (r.data?.proposals.edges.length > 0) {
           proposalsList = flattenRelayConnection(r.data?.proposals)
@@ -677,22 +677,28 @@
         } else {
         // console.log(GET_PLAN)
         // console.log(planId)
-        console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
+        // console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
       // getPlan.setVariables({
         //   id: planId
         // });
         await fetchActions()
-        await delay(1000)
+        processesLoadedCount ++
+        // await delay(1000)
         await fetchUnits()
-        await delay(1000)
+        processesLoadedCount ++
+        // await delay(1000)
         await fetchAgents()
-        await delay(1000)
+        processesLoadedCount ++
+        // await delay(1000)
         await fetchResourceSpecifications()
-        await delay(1000)
+        processesLoadedCount ++
+        // await delay(1000)
         await fetchProcessSpecifications()
-        await delay(1000)
+        processesLoadedCount ++
+        // await delay(1000)
         await fetchProposals()
-        await delay(1000)
+        processesLoadedCount ++
+        // await delay(1000)
 
         console.log("HERE ARE OFFERS", offers)
 
@@ -712,7 +718,7 @@
         let lastColumn: any = []
         // plan.processes.forEach((process: any) => {
           // for (let i = 0; i < simplifiedPlan.processes.length; i++) {
-            processesToLoadCount = plan.processes.length
+            processesToLoadCount += plan.processes.length
             for (const p of plan.processes) {
               getProcess.setVariables({
             id: p.id
@@ -776,21 +782,21 @@
             // add last column to allColumns and reset
             if (lastColumn.length > 0) {
               console.log("LAST COLUMN FULL", lastColumn)
-              allColumns.unshift(lastColumn)
+              allColumns.push(lastColumn)
               lastColumn = [newProcess]
             } else {
               console.log("LAST COLUMN NOT FULL", lastColumn)
-              lastColumn.unshift(newProcess)
+              lastColumn.push(newProcess)
             }
             lastSeenProcessSpecification = process.basedOn.id
           } else {
             console.log("SAME PROCESS", process.basedOn.name)
-            lastColumn.unshift(newProcess)
+            lastColumn.push(newProcess)
           }
           console.log(lastColumn)
         }
         
-        allColumns.unshift(lastColumn)
+        allColumns.push(lastColumn)
         loadingPlan = false;
         console.log("allColumns", allColumns)
         allColumns = [...allColumns]
@@ -991,7 +997,12 @@ bind:open={economicEventModalOpen}
 
 
 {#if loadingPlan}
-Loading processes ({processesLoadedCount}/{processesToLoadCount + 1})
+<!-- Loading processes ({processesLoadedCount}/{processesToLoadCount + 1}) -->
+Loading plan
+<!-- processesLoadedCount number of dots -->
+{#each Array.from({ length: processesLoadedCount }, (_, i) => i) as dot}
+.
+{/each}
 {#if error}
   <br>
   {error}

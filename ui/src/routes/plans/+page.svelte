@@ -88,7 +88,7 @@
 
   onMount(async () => {
     await fetchPlans()
-    await fetchProcesses()
+    // await fetchProcesses()
   })
 
 

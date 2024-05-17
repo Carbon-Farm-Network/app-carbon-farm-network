@@ -425,7 +425,7 @@
       console.log("trying to add independent", o)
       await saveOrUpdateCommitment(o)
       commitmentsSavedCount = commitmentsSavedCount + 1
-      await new Promise(r => setTimeout(r, 1000));
+      // await new Promise(r => setTimeout(r, 1000));
 
       console.log('added independent', o)
     }
@@ -540,7 +540,7 @@
           if (agreementId) {
             c.clauseOf = agreementId
           }
-          await delay(30)
+          // await delay(30)
           console.log("about to save commitment", c)
 
           // TEMPORARY find unit id
@@ -568,12 +568,12 @@
           console.log("commitment before sending to function", c)
           await saveOrUpdateCommitment(c)
           // console.log("saving commitment",c)
-          await delay(30);
+          // await delay(30);
         }
 
         for (const input of process.committedInputs) {
           console.log("input is", input)
-          await delay(30);
+          // await delay(30);
           await handleCommitment({
             ...input,
             inputOf: processId,
@@ -581,7 +581,7 @@
         }
         for (const output of process.committedOutputs) {
           console.log("output is", output)
-          await delay(30);
+          // await delay(30);
           await handleCommitment({
             ...output,
             outputOf: processId,
@@ -603,7 +603,7 @@
           // await saveCommitment(c)
           // await delay(20);
         }
-        await delay(30);
+        // await delay(30);
       }
     }
 
