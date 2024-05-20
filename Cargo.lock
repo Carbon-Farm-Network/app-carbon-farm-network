@@ -796,9 +796,9 @@ checksum = "290f1a1d9242c78d09ce40a5e87e7554ee637af1351968159f4952f028f75604"
 
 [[package]]
 name = "hdi"
-version = "0.4.0-beta-dev.33"
+version = "0.4.0-beta-dev.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8004daeef35f31fbcdab99788d9329675830be1801f49824c5ded2c0b10bf34"
+checksum = "e9b10e28b62f081933f7c176ec16a2924afb05c74b56197882cff3b7ca24f84c"
 dependencies = [
  "getrandom",
  "hdk_derive",
@@ -814,9 +814,9 @@ dependencies = [
 
 [[package]]
 name = "hdk"
-version = "0.3.0-beta-dev.37"
+version = "0.3.0-beta-dev.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c7c4738bce1eff73c94ff739623f5bc81a8602266dceb5bb9be30435e41334b"
+checksum = "4dbd50ff3d475e269285f01e04ad1bd341a7ce8c0619d1985e7de25fbd125094"
 dependencies = [
  "getrandom",
  "hdi",
@@ -1263,6 +1263,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "migrate"
+version = "0.0.1"
+dependencies = [
+ "hdk",
+ "migrate_integrity",
+ "serde",
+]
+
+[[package]]
+name = "migrate_integrity"
+version = "0.0.1"
+dependencies = [
+ "hdi",
+ "serde",
+]
+
+[[package]]
 name = "miniz_oxide"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1464,23 +1481,6 @@ checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
-]
-
-[[package]]
-name = "rea_map"
-version = "0.0.1"
-dependencies = [
- "hdk",
- "rea_map_integrity",
- "serde",
-]
-
-[[package]]
-name = "rea_map_integrity"
-version = "0.0.1"
-dependencies = [
- "hdi",
- "serde",
 ]
 
 [[package]]

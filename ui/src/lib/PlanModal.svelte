@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from './utils'
+  import { clickOutside } from '../utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
@@ -29,8 +29,6 @@
   let commitmentsToSaveCount: number = 0;
   let commitmentsSavedCount: number = 0;
   let error: any;
-  // let name = ''
-  // let note = ''
 
   $: if (commitmentsSavedCount > 0) {
     commitmentsSavedCount = commitmentsSavedCount
@@ -44,21 +42,6 @@
       open = false
     }
   }
-
-  // const GET_UNITS = gql`
-  //   query GetUnits {
-  //     units {
-  //       edges {
-  //         cursor
-  //         node {
-  //           id
-  //           label
-  //           symbol
-  //         }
-  //       }
-  //     }
-  //   }
-  // `
 
   const CREATE_PLAN = gql`
     mutation($rs: PlanCreateParams!) {
@@ -157,70 +140,6 @@
       }
     }
   `
-
-  // const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-  //   ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-  //   query {
-  //     resourceSpecifications(last: 100000) {
-  //       edges {
-  //         cursor
-  //         node {
-  //           ...ResourceSpecificationCoreFields
-  //         }
-  //       }
-  //     }
-  //   }
-  // `
-
-  // const GET_ALL_PROCESS_SPECIFICATIONS = gql`
-  //   ${PROCESS_SPECIFICATION_CORE_FIELDS}
-  //   query {
-  //     processSpecifications(last: 100000) {
-  //       edges {
-  //         cursor
-  //         node {
-  //           ...ProcessSpecificationCoreFields
-  //         }
-  //       }
-  //     }
-  //   }
-  // `
-
-  // const GET_ALL_AGENTS = gql`
-  //   ${AGENT_CORE_FIELDS}
-  //   query {
-  //     agents(last: 100000) {
-  //       edges {
-  //         cursor
-  //         node {
-  //           id
-  //           name
-  //           classifiedAs
-  //         }
-  //       }
-  //     }
-  //   }
-  // `
-
-  // interface QueryResponse {
-  //   resourceSpecifications: AgentConnection & RelayConn<any>
-  // }
-
-  // interface ProcessQueryResponse {
-  //   processSpecifications: AgentConnection & RelayConn<any>
-  // }
-
-  // interface AgentQueryResponse {
-  //   agents: AgentConnection & RelayConn<any>
-  // }
-
-  // interface UnitsQueryResponse {
-  //   units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  // }
-  // let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-  // let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-  // let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
-  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
   let addPlan: any = mutation(CREATE_PLAN)
   let updatePlan: any = mutation(UPDATE_PLAN)
@@ -328,14 +247,22 @@
     const defaultAgent = agents.find((a) => a.classifiedAs[2] === "Network")
 
     try {
-      o.provider = agents.find((a) => a.name === commitment.provider.name).id
+      if (commitment.providerId) {
+        o.provider = commitment.providerId
+      } else {
+        o.provider = agents.find((a) => a.name === commitment.provider.name).id
+      }
     } catch (e) {
       console.log("can't find receiver", e)
       o.provider = defaultAgent.id
       console.log("saved by setting default agent", defaultAgent)
     }
     try {
-      o.receiver = agents.find((a) => a.name === commitment.receiver.name).id
+      if (commitment.receiverId) {
+        o.receiver = commitment.receiverId
+      } else {
+        o.receiver = agents.find((a) => a.name === commitment.receiver.name).id
+      }
     } catch (e) {
       console.log("can't find provider", e)
       o.receiver = defaultAgent.id
@@ -441,6 +368,7 @@
           let agreementId: string;
           // save cost if applicable
           if (c.clauseOf) {
+            console.log("There is a clause of", c.clauseOf)
             c.agreement = {
               id: c.clauseOf.id,
               commitment: c.clauseOf.commitments.find((cm) => cm.action.label === "transfer")
@@ -625,10 +553,8 @@
     savingPlan = false;
     // goto(`/plans/update/${p.data.res.plan.id}`)
     console.log("Go To Plan Update Page", encodeURIComponent(p.data.res.plan.id))
+    dispatch('saved', p.data.res.plan.id)
     goto(`/plans/update/${encodeURIComponent(p.data.res.plan.id)}`)
-
-
-
     open = false
     // dispatch('create', plan)
   }
@@ -812,7 +738,7 @@
                 class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10"
               > -->
               <svg width="50" height="50" viewBox="0 0 50 50">
-                <circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="rgb(99,102,241)" stroke-dasharray="31.415, 31.415" />
+                <circle cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="black" stroke-dasharray="31.415, 31.415" />
               </svg>
               <!-- </div> -->
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">

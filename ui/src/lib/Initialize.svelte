@@ -143,55 +143,66 @@
         g2: {
           name: "Resource Specification",
           note: "All facet classifications relevant to types of resources.",
-        },
-        resource: {
-          name: "USD",
-          defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
-        },
-        agent: {
-          name: "Carbon Farm Network",
-          classifiedAs: ["40.689247", "-74.044502", "Network"],
-          image: "knitting.svg"
         }
       }})
 
-      // let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
-      let rSpecs: any[] = []
-      let pSpecs: any[] = []
+      // await initData({ variables: {
+      //   g1: {
+      //     name: "Agent",
+      //     note: "All facet classifications relevant to Agent records.",
+      //   },
+      //   g2: {
+      //     name: "Resource Specification",
+      //     note: "All facet classifications relevant to types of resources.",
+      //   },
+      //   resource: {
+      //     name: "USD",
+      //     defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
+      //   },
+      //   agent: {
+      //     name: "Carbon Farm Network",
+      //     classifiedAs: ["40.689247", "-74.044502", "Network"],
+      //     image: "knitting.svg"
+      //   }
+      // }})
 
-      for (let r of recipes) {
-        if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
-          console.log(r.process_conforms_to)
-          pSpecs.push(r.process_conforms_to.name)
-        }
-        let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
-        let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
-        let combined = input.concat(output)
-        for (let s of combined) {
-          if (!rSpecs.includes(s.resourceConformsTo.name)) {
-            rSpecs.push(s.resourceConformsTo.name)
-          }
-        }
-      }
-      for (let r of rSpecs) {
-        let x = await addResourceSpecification({ variables: {
-          resource: {
-            name: r,
-            defaultUnitOfResource: units.find(u => u.symbol === 'lb')?.id,
-          },
-        }})
-      }
+      // // let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
+      // let rSpecs: any[] = []
+      // let pSpecs: any[] = []
 
-      console.log(pSpecs)
-      for (let p of pSpecs) {
-        console.log(p)
-        let x = await addProcessSpecification({ variables: {
-          process: {
-            name: p
-          },
-        }})
-        console.log(x)
-      }
+      // for (let r of recipes) {
+      //   if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
+      //     console.log(r.process_conforms_to)
+      //     pSpecs.push(r.process_conforms_to.name)
+      //   }
+      //   let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
+      //   let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
+      //   let combined = input.concat(output)
+      //   for (let s of combined) {
+      //     if (!rSpecs.includes(s.resourceConformsTo.name)) {
+      //       rSpecs.push(s.resourceConformsTo.name)
+      //     }
+      //   }
+      // }
+      // for (let r of rSpecs) {
+      //   let x = await addResourceSpecification({ variables: {
+      //     resource: {
+      //       name: r,
+      //       defaultUnitOfResource: units.find(u => u.symbol === 'lb')?.id,
+      //     },
+      //   }})
+      // }
+
+      // console.log(pSpecs)
+      // for (let p of pSpecs) {
+      //   console.log(p)
+      //   let x = await addProcessSpecification({ variables: {
+      //     process: {
+      //       name: p
+      //     },
+      //   }})
+      //   console.log(x)
+      // }
 
       
     } catch(e) {
@@ -205,7 +216,6 @@
 
   async function checkDependencies() {
     const res = await getUnits.refetch()
-    console.log("****************************************************************************", res)
     let units = flattenRelayConnection(res.data?.units)
     dependenciesOk = units.length > 0
   }

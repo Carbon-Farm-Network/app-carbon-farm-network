@@ -6,13 +6,18 @@ opt-level = "z"
 
 [workspace]
 members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
-
 resolver = "2"
 
 [workspace.dependencies]
-hdi = "0.4.0-beta-dev.30"
-hdk = "0.3.0-beta-dev.34"
-serde = "1"
+hdi = "=0.4.0-beta-dev.30"
+hdk = "=0.3.0-beta-dev.34"
+serde = "1.0"
+
+[workspace.dependencies.migrate]
+path = "dnas/migration/zomes/coordinator/migrate"
+
+[workspace.dependencies.migrate_integrity]
+path = "dnas/migration/zomes/integrity/migrate"
 
 [workspace.dependencies.rea_map]
 path = "dnas/acfn/zomes/coordinator/rea_map"

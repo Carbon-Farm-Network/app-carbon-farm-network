@@ -24,8 +24,16 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, AgentConnection, Action, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, ProcessConnection, CommitmentConnection } from '@valueflows/vf-graphql'
+  import { allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../store'
+  import { getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits } from '../../../utils'
   import { dragscroll } from '@svelte-put/dragscroll';
+  import { allHashChanges } from '../../../store'
+  import Export from '$lib/Export.svelte'
 
+  let hashChanges: any = {}
+  allHashChanges.subscribe((res) => {
+    hashChanges = res
+  })
   let agents: Agent[] = []
   let units: Unit[] = []
   let actions: Action[] = []
@@ -45,222 +53,72 @@
   }
 
   $: currentProcess, actions;
-  // $: if (commitmentModalColumn) {
-  //   currentProcess = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide];
-  // }
-
-  const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
-        }
-      }
-    }
-  `
-
-  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    query {
-      resourceSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ResourceSpecificationCoreFields
-            defaultUnitOfResource {
-              ...UnitCoreFields
-            }
-          }
-        }
-      }
-    }
-  `
-
-  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
-    ${PROCESS_SPECIFICATION_CORE_FIELDS}
-    query {
-      processSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProcessSpecificationCoreFields
-          }
-        }
-      }
-    }
-  `
-
-  const GET_All_PROPOSALS = gql`
-    ${PROPOSAL_RETURN_FIELDS}
-    query {
-      proposals(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProposalReturnFields
-          }
-        }
-      }
-    }
-  `
 
 
-  const GET_All_ACTIONS = gql`
-    query {
-      actions(last: 100000) {
-        id
-        label
-        inputOutput
-      }
-    }
-  `
-
-  const GET_ALL_AGENTS = gql`
-    ${AGENT_CORE_FIELDS}
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            id
-            name
-            classifiedAs
-          }
-        }
-      }
-    }
-  `
-
-  interface ProposalsQueryResponse {
-    proposals: ProposalConnection & RelayConn<any>
-  }
-
-  interface PlanQueryResponse {
-    plan: PlanConnection & RelayConn<any>
-  }
-
-  interface AgentQueryResponse {
-    agents: AgentConnection & RelayConn<any>
-  }
-
-  interface ProcessQueryResponse {
-    processSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  interface PlanQueryResponse {
-    plan: PlanConnection & RelayConn<any>
-  }
-
-  interface ProcessQueryResponse {
-    process: ProcessConnection & RelayConn<any>
-  }
-
-  interface RspecResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  }
-
-  let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
-  let getActions: ReadableQuery<QueryResponse> = query(GET_All_ACTIONS)
-  let agentsQuery: ReadableQuery<AgentQueryResponse> = query(GET_ALL_AGENTS)
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-  let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
-
-  async function fetchActions() {
-    await getActions.getCurrentResult()
-    let r = await getActions.refetch()
-    console.log("*******actions*******")
-    console.log(r)
-    actions = r.data?.actions
-  }
-
-  async function fetchUnits() {
-    getUnits.getCurrentResult()
-    getUnits.refetch().then((r) => {
-      if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units)
+  allAgents.subscribe((res) => {
+    console.log("agents change", res)
+    agents = res.map((a) => {
+      return {
+        ...a,
+        "name": a.name,
+        "imageUrl": a.image,
+        "iconUrl": a.image,
+        "lat": a.classifiedAs[0],
+        "long": a.classifiedAs[1],
+        "role": a.classifiedAs[2],
+        "address": a.note,
+        "facets": a.facets
       }
     })
-  }
+  })
 
-  async function fetchAgents() {
-    await agentsQuery.getCurrentResult()
-    const a = await agentsQuery.refetch()
-    agents = flattenRelayConnection(a.data?.agents).map((a) => {
+  allUnits.subscribe((res) => {
+    console.log("units change", res)
+    units = res.map((a) => {
+      return {
+        ...a,
+        "label": a.label,
+        "symbol": a.symbol,
+      }
+    })
+  })
+
+  allResourceSpecifications.subscribe((res) => {
+    console.log("resourceSpecifications change", res)
+    resourceSpecifications = res.map((a) => {
+      return {
+        ...a,
+        // defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
+      }
+    })
+  })
+
+  allProcessSpecifications.subscribe((res) => {
+    console.log("processSpecifications change", res)
+    processSpecifications = res.map((a) => {
       return {
         ...a,
       }
     })
-    console.log(agents)
-  }
+  })
 
-  async function fetchResourceSpecifications() {
-    await resourceSpecificationsQuery.getCurrentResult()
-    let r = await resourceSpecificationsQuery.refetch()
-    resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
-      return {
-        ...a,
-        defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
-      }
-    })
-    console.log(resourceSpecifications)
-  }
-
-  async function fetchProcessSpecifications() {
-    await processSpecificationsQuery.getCurrentResult()
-    let r = await processSpecificationsQuery.refetch()
-    processSpecifications = flattenRelayConnection(r.data?.processSpecifications).map((a) => {
-      return {
-        ...a,
-      }
-    })
-    console.log(processSpecifications)
-  }
-    
-  async function fetchProposals() {
-    await getProposals.getCurrentResult()
-    await getProposals.refetch().then((r) => {
-      if (r.data?.proposals.edges.length > 0) {
-        proposalsList = flattenRelayConnection(r.data?.proposals)
-        // {@const primary = publishes.find(it => !it.reciprocal)}
-        //       {#if primary?.publishes?.receiver}
-        console.log("proposalsList", proposalsList)
-        requests = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
-        offers = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
-        requestsPerOffer = offers.map(it => it.publishes.find(it => !it.reciprocal).id).reduce((acc, it) => {
-          acc[it] = {}
-          return acc
-        }, {})
-        console.log("requests init", requests)
-        console.log("offers init", offers)
-        // console.log(proposalsList[0].publishes[0].publishes)
-        // console.log(requests)
-      }
-    })
-  }
+  allProposals.subscribe((res) => {
+    if (!res.length || res.length == 0) return
+    console.log("proposals change", res)
+    requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
+    offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
+    proposalsList = res
+    console.log("offers here", offers)
+  })
 
   onMount(async () => {
     if (browser) {
-      await fetchActions()
-      await fetchUnits()
-      await fetchResourceSpecifications()
-      await fetchProcessSpecifications()
-      await fetchAgents()
-      const y = await agentsQuery.refetch()
-      agents = y.data.agents.edges.map((it) => {return {...it.node, role: it.node.classifiedAs[2]}})
-      console.log("agents", agents)
-      await fetchProposals()
-      // console log url query values as object
+      await getAllHashChanges()
+      await getAllAgents()
+      await getAllUnits()
+      await getAllResourceSpecifications()
+      await getAllProcessSpecifications()
+      await getAllProposals()
     }
   })
 
@@ -1201,6 +1059,41 @@ editing={false}/>
                   class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >Create from requests</button
                 >
+              </div>
+              <div class="flex justify-center my-4">
+                <Export dataName="plan" fileName="cfn-plan" data={null} hideExport={true}
+                  on:import={event => {
+                    commitments = event.detail.commitments
+                    .map(it => {
+                      return {
+                        ...it,
+                        receiverId: agents.find(agent => agent.id == hashChanges[it.receiverId]),
+                        // resourceConformsTo: resourceSpecifications.find(spec => spec.id == hashChanges[it.resourceConformsTo.id]),
+                      }
+                    })
+                    allColumns = event.detail.allColumns
+                    // change the providerId to the new hash in each column
+                    allColumns = allColumns.map(column => {
+                      return column.map(process => {
+                        return {
+                          ...process,
+                          committedInputs: process.committedInputs.map(it => {
+                            return {
+                              ...it,
+                              providerId: hashChanges[it.providerId]
+                            }
+                          }),
+                          committedOutputs: process.committedOutputs.map(it => {
+                            return {
+                              ...it,
+                              providerId: hashChanges[it.providerId]
+                            }
+                          })
+                        }
+                      })
+                    })
+                  }}
+                />
               </div>
             {/if}
             {#each commitments as c}

@@ -252,35 +252,28 @@
   </div>
 
   <!-- Mobile menu, show/hide based on menu state. -->
-  <div class="{mobileMenuOpen ? '' : 'hidden'} sm:hidden" id="mobile-menu">
+  <div class="{mobileMenuOpen ? '' : 'hidden'} sm:hidden" id="mobile-menu" style="z-index: 99999999; position: relative; background: white;">
     <div class="px-2 pt-2 pb-3 space-y-1">
       <a href="/" class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default block"
         >Map</a
       >
 
       <a
-        href="/agents"
-        class="{path === '/agents' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Agents</a
-      >
-
-      <a
-        href="/resource_specifications"
-        class="{path === '/resource_specifications'
-          ? 'nav-active'
-          : 'nav-inactive'} nav-default block">Resource specifications</a
-      >
-
-      <a
-        href="/facets"
-        class="{path === '/facets' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Facets</a
-      >
-
-      <a
         href="/offers"
         class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default block"
         >Offers</a
+      >
+
+      <a
+        href="/requests"
+        class="{path === '/requests' ? 'nav-active' : 'nav-inactive'} nav-default block"
+        >Requests</a
+      >
+
+      <a
+        href="/plans"
+        class="{path === '/plans' ? 'nav-active' : 'nav-inactive'} nav-default block"
+        >Plans</a
       >
     </div>
   </div>

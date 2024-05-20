@@ -1,11 +1,11 @@
 [package]
-name = "rea_map_integrity"
+name = "migrate_integrity"
 version = "0.0.1"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "rea_map_integrity"
+name = "migrate_integrity"
 
 [dependencies]
 hdi = { workspace = true }

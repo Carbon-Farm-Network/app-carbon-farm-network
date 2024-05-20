@@ -27,6 +27,9 @@
   import type { Unit, AgentConnection, Agent, Action, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
   import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
+  import { getAllAgents, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits } from '../../../../utils'
+  import { allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../../store'
+  import Loading from '$lib/Loading.svelte'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -47,6 +50,68 @@
   let resourceSpecifications: ResourceSpecification[] = []
   let processSpecifications: ProcessSpecification[] = []
   let requestsPerOffer: { [key: string]: any } = {}
+  let requests: Proposal[] = [];
+  let offers: Proposal[] = [];
+  let proposalsList: Proposal[] = []
+  let plan: any;
+  let loadingPlan: boolean = true;
+  let allColumns: any = []
+
+  allAgents.subscribe((res) => {
+    console.log("agents change", res)
+    agents = res.map((a) => {
+      return {
+        ...a,
+        "name": a.name,
+        "imageUrl": a.image,
+        "iconUrl": a.image,
+        "lat": a.classifiedAs[0],
+        "long": a.classifiedAs[1],
+        "role": a.classifiedAs[2],
+        "address": a.note,
+        "facets": a.facets
+      }
+    })
+  })
+
+  allUnits.subscribe((res) => {
+    console.log("units change", res)
+    units = res.map((a) => {
+      return {
+        ...a,
+        "label": a.label,
+        "symbol": a.symbol,
+      }
+    })
+  })
+
+  allResourceSpecifications.subscribe((res) => {
+    console.log("resourceSpecifications change", res)
+    resourceSpecifications = res.map((a) => {
+      return {
+        ...a,
+        // defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
+      }
+    })
+  })
+
+  allProcessSpecifications.subscribe((res) => {
+    console.log("processSpecifications change", res)
+    processSpecifications = res.map((a) => {
+      return {
+        ...a,
+      }
+    })
+  })
+
+  allProposals.subscribe((res) => {
+    if (!res.length || res.length == 0) return
+    console.log("proposals change", res)
+    requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
+    offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
+    proposalsList = res
+    console.log("offers here", offers)
+  })
 
   let processImages = {
     "Pick Up": "/pickup.svg",
@@ -60,92 +125,7 @@
     planId = $page.params.plan_id;
   }
 
-  $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen, economicEventModalOpen;
-
-  let requests: Proposal[] = [];
-  let offers: Proposal[] = [];
-  let proposalsList: Proposal[] = []
-  let plan: any;
-  let loadingPlan: boolean = true;
-  let allColumns: any = []
-  $: loadingPlan, currentProcess
-
-  const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
-        }
-      }
-    }
-  `
-
-  const GET_ALL_AGENTS = gql`
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            id
-            name
-            classifiedAs
-          }
-        }
-      }
-    }
-  `
-
-  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    query {
-      resourceSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ResourceSpecificationCoreFields
-            defaultUnitOfResource {
-              ...UnitCoreFields
-            }
-          }
-        }
-      }
-    }
-  `
-
-  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
-    ${PROCESS_SPECIFICATION_CORE_FIELDS}
-    query {
-      processSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProcessSpecificationCoreFields
-          }
-        }
-      }
-    }
-  `
-
-
-  const GET_All_PROPOSALS = gql`
-    ${PROPOSAL_RETURN_FIELDS}
-    query {
-      proposals(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProposalReturnFields
-          }
-        }
-      }
-    }
-  `
+  $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen, economicEventModalOpen, loadingPlan, currentProcess
 
   const GET_All_ACTIONS = gql`
     query {
@@ -266,11 +246,11 @@
   }
 
   // map component state
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
-  let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
-  let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
+  // let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
+  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+  // let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  // let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
+  // let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
   let getActions: ReadableQuery<QueryResponse> = query(GET_All_ACTIONS)
   let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
   let getSimplifiedPlan: ReadableQuery<PlanQueryResponse> = query(GET_SIMPLIFIED_PLAN);
@@ -283,78 +263,6 @@
     console.log("*******actions*******")
     console.log(r)
     actions = r.data?.actions
-  }
-
-  async function fetchUnits() {
-    getUnits.getCurrentResult()
-    getUnits.refetch().then((r) => {
-      if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units)
-      }
-    })
-  }
-
-  async function fetchAgents() {
-    await agentsQuery.getCurrentResult()
-    const a = await agentsQuery.refetch()
-    agents = flattenRelayConnection(a.data?.agents).map((a) => {
-      return {
-        ...a,
-      }
-    })
-    console.log("AGENTS", agents)
-  }
-
-  async function fetchResourceSpecifications() {
-    await resourceSpecificationsQuery.getCurrentResult()
-    let r = await resourceSpecificationsQuery.refetch()
-    resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
-      return {
-        ...a,
-        // defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
-      }
-    })
-    console.log(resourceSpecifications)
-  }
-
-  async function fetchProcessSpecifications() {
-    await processSpecificationsQuery.getCurrentResult()
-    let r = await processSpecificationsQuery.refetch()
-    processSpecifications = flattenRelayConnection(r.data?.processSpecifications).map((a) => {
-      return {
-        ...a,
-      }
-    })
-    console.log(processSpecifications)
-  }
-
-    
-  async function fetchProposals() {
-    try {
-      // await getProposals.getCurrentResult()
-      await getProposals.refetch().then((r) => {
-        if (r.data?.proposals.edges.length > 0) {
-          proposalsList = flattenRelayConnection(r.data?.proposals)
-          console.log("HERE ARE PROPOSALS", proposalsList)
-          // {@const primary = publishes.find(it => !it.reciprocal)}
-          //       {#if primary?.publishes?.receiver}
-          requests = proposalsList.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
-          offers = proposalsList.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
-          console.log("offers here", offers)
-          // console.log(requests)
-          // console.log(offers)
-          // console.log(proposalsList[0].publishes[0].publishes)
-          // console.log(requests)
-          // requestsPerOffer = offers.map(it => it.publishes.find(it => !it.reciprocal).id).reduce((acc, it) => {
-          //   acc[it] = {}
-          //   return acc
-          // }, {})
-        }
-      })
-    } catch (e) {
-      console.log(e)
-      error = e
-    }
   }
 
   async function saveCommitment(commitment: any) {
@@ -378,26 +286,12 @@
     try {
       // if primary intent, add to requestsPerOffer
       if (commitment.clauseOf) {
-        // console.log("primary intent candidates", offers)
-        const matching_offer = offers.find(offer => {
-          return offer.publishes.find(
-            intent => {
-              const offerName = intent.publishes?.resourceConformsTo?.name
-              // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
-              const correctProvider = commitment.providerId ? (intent.publishes?.providerIid == commitment.providerIid) : true
-              return offerName == commitment.resourceConformsTo.name && correctProvider
-            }
-          )
-        })
-
-        // console.log("primary intent candidates matches", matching_offer)
+        const matching_offer = matchingOffer(commitment)
 
         const primary_intent = matching_offer?.publishes.find(
           intent => !intent.reciprocal
         )
-        
-        // console.log("candidate primary intent", primary_intent)
-        
+                
         if (!requestsPerOffer[primary_intent.id]) {
           requestsPerOffer[primary_intent.id] = {}
         }
@@ -411,51 +305,6 @@
       console.log("include commitment error", e)
     }
   }
-
-  // async function fetchCommitment(id: string) {
-  //   try {
-  //     console.log("getting commitment", id)
-  //     getCommitment.setVariables({
-  //       id: id
-  //     });
-  //     const res = await getCommitment.refetch()
-  //     console.log(res)
-  //     // if primary intent, add to requestsPerOffer
-  //     let commitment = res.data.commitment
-  //     if (commitment.clauseOf) {
-  //       console.log("primary intent candidates", offers)
-  //       const matching_offer = offers.find(offer => {
-  //         return offer.publishes.find(
-  //           intent => {
-  //             const offerName = intent.publishes?.resourceConformsTo?.name
-  //             // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
-  //             const correctProvider = commitment.provider ? (intent.publishes?.provider?.id == commitment.provider?.id) : true
-  //             return offerName == commitment.resourceConformsTo.name && correctProvider
-  //           }
-  //         )
-  //       })
-
-  //       const primary_intent = matching_offer?.publishes.find(
-  //         intent => !intent.reciprocal
-  //       )
-        
-        
-  //       if (!requestsPerOffer[primary_intent.id]) {
-  //         requestsPerOffer[primary_intent.id] = {}
-  //       }
-        
-  //       console.log("res", commitment)
-  //       console.log("adding ", commitment.resourceQuantity.hasNumericalValue)
-  //       if (commitment.action.label == "pickup") {
-  //         requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
-  //       }
-  //       console.log(requestsPerOffer)
-  //     }
-  //     return res.data.commitment
-  //   } catch (e) {
-  //     console.log(e)
-  //   }
-  // }
 
   async function saveEconomicEvent(commitment: any, process: any, side: string) {
     try {
@@ -512,6 +361,20 @@
     }
   }
 
+  function matchingOffer(commitment: any) {
+    return offers.find(offer => {
+      return offer?.publishes?.find(
+        intent => {
+          const offerName = intent.publishes?.resourceConformsTo?.name
+          console.log(offerName, " ==?", commitment.resourceConformsTo.name)
+          const correctProvider = commitment.providerId ? (intent.publishes?.provider?.id == commitment.providerId) : true
+          console.log(intent.publishes.provider?.id, " ==?", commitment.providerId, correctProvider, intent.publishes?.provider?.name)
+          return offerName == commitment.resourceConformsTo.name && correctProvider
+        }
+      )
+    })
+  }
+
   function makeAgreement(
     commitment: any,
     agreement: undefined | any,
@@ -528,16 +391,7 @@
     let reciprocal_intent;
     let primary_intent;
     // TODO get data to test the matching offer logic
-    const matching_offer = offers.find(offer => {
-      return offer.publishes.find(
-        intent => {
-          const offerName = intent.publishes?.resourceConformsTo?.name
-          // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
-          const correctProvider = specific_provider? (intent.publishes?.provider?.id == specific_provider?.id) : true
-          return offerName == commitment.resourceConformsTo.name && correctProvider
-        }
-      )
-    })
+    const matching_offer = matchingOffer(commitment)
     // console.log("matching offer 0", matching_offer)
     if (matching_offer) {
       // console.log("matching offer", matching_offer)
@@ -618,193 +472,108 @@
     }
   }
 
-  onMount(async () => {
-    if (browser) {
-      try {
-        if (false) {
-          getPlan.setVariables({
-            id: planId
-          });
-          const res = await getPlan.refetch()
-          console.log(res)
-          plan = {...res.data.plan}
-          commitments = [...plan.independentDemands]
-          console.log("plan", plan)
-          console.log("commitments", commitments)
-          let lastSeenProcessSpecification: any = undefined;
-          let lastColumn: any = []
-          allColumns = []
-          plan.processes.forEach((process: any) => {
-            const newProcess = {
-              ...process,
-              basedOn: {
-                image: processImages[process.basedOn.name],
-                name: process.basedOn.name,
-                id: process.basedOn.id,
-              },
-              // sort committedInputs by last modified
-              committedInputs: [...process.committedInputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
-              // committedInputs: [...process.committedInputs].reverse(),
-              committedOutputs: [...process.committedOutputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
-              
-            }
-            console.log("PROCESS TYPE", process.basedOn.name, newProcess)
-            
-            // if this is a new process
-            if (process.basedOn.id !== lastSeenProcessSpecification) {
-              console.log("NEW PROCESS", process.basedOn.name)
-              // add last column to allColumns and reset
-              if (lastColumn.length > 0) {
-                console.log("LAST COLUMN FULL", lastColumn)
-                allColumns.unshift(lastColumn)
-                lastColumn = [newProcess]
-              } else {
-                console.log("LAST COLUMN NOT FULL", lastColumn)
-                lastColumn.unshift(newProcess)
-              }
-              lastSeenProcessSpecification = process.basedOn.id
-            } else {
-              console.log("SAME PROCESS", process.basedOn.name)
-              lastColumn.unshift(newProcess)
-            }
+  async function resetColumns() {
+    requestsPerOffer = {}
+    for (let i = 0; i < allColumns.length; i++) {
+      for (let j = 0; j < allColumns[i].length; j++) {
+        let inputsAndOutputs = allColumns[i][j].committedInputs.concat(allColumns[i][j].committedOutputs)
+        for (let k = 0; k < inputsAndOutputs.length; k++) {
+          inputsAndOutputs[k].clauseOf = null
+          await includeCommitment(inputsAndOutputs[k])
+          try {
+            const addedValue = new Decimal(inputsAndOutputs[k].clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue)
+            totalCost = totalCost.add(addedValue)
+          } catch {}
+        }
+      }
+    }
+  }
 
-            allColumns.unshift(lastColumn)
-            loadingPlan = false;
-            console.log("allColumns", allColumns)
-            allColumns = [...allColumns]
-          })
-          console.log(allColumns)
+  async function setColumns(plan: any) {
+    let lastSeenProcessSpecification: any = undefined;
+    let lastColumn: any = []
+    allColumns = []
+
+    plan.processes.forEach(async (process: any) => {
+      const newProcess = {
+        ...process,
+        basedOn: {
+          image: processImages[process.basedOn.name],
+          name: process.basedOn.name,
+          id: process.basedOn.id,
+        },
+        // sort committedInputs by last modified
+        committedInputs: [...process.committedInputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
+        // committedInputs: [...process.committedInputs].reverse(),
+        committedOutputs: [...process.committedOutputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
+        
+      }
+
+      for (const commitment of process.committedOutputs) {
+        await includeCommitment(commitment)
+      }
+
+      for (const commitment of process.committedInputs) {
+        await includeCommitment(commitment)
+      }
+
+      console.log("PROCESS TYPE", process.basedOn.name, newProcess)
+      
+      // if this is a new process
+      if (process.basedOn.id !== lastSeenProcessSpecification) {
+        console.log("NEW PROCESS", process.basedOn.name)
+        // add last column to allColumns and reset
+        if (lastColumn.length > 0) {
+          console.log("LAST COLUMN FULL", lastColumn)
+          // allColumns.unshift(lastColumn)
+          lastColumn = [newProcess]
         } else {
-        // console.log(GET_PLAN)
-        // console.log(planId)
-        // console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++")
-      // getPlan.setVariables({
-        //   id: planId
-        // });
-        await fetchActions()
-        processesLoadedCount ++
-        // await delay(1000)
-        await fetchUnits()
-        processesLoadedCount ++
-        // await delay(1000)
-        await fetchAgents()
-        processesLoadedCount ++
-        // await delay(1000)
-        await fetchResourceSpecifications()
-        processesLoadedCount ++
-        // await delay(1000)
-        await fetchProcessSpecifications()
-        processesLoadedCount ++
-        // await delay(1000)
-        await fetchProposals()
-        processesLoadedCount ++
-        // await delay(1000)
+          console.log("LAST COLUMN NOT FULL", lastColumn)
+          lastColumn.unshift(newProcess)
+        }
+        lastSeenProcessSpecification = process.basedOn.id
+      } else {
+        console.log("SAME PROCESS", process.basedOn.name)
+        lastColumn.unshift(newProcess)
+      }
 
-        console.log("HERE ARE OFFERS", offers)
+      allColumns.unshift(lastColumn)
+      loadingPlan = false;
+      console.log("allColumns", allColumns)
+      allColumns = [...allColumns]
+    })
+  }
 
-        getSimplifiedPlan.setVariables({
+  export async function fetchThePlan() {
+
+    try {
+        getPlan.setVariables({
           id: planId
         });
-        // const res = await getPlan.refetch()
-        const res = await getSimplifiedPlan.refetch()
-
+        const res = await getPlan.refetch()
+        console.log(res)
         plan = {...res.data.plan}
-
-        console.log("HERE IS THE PLAN", plan)
-
         commitments = [...plan.independentDemands]
+        console.log("plan", plan)
+        console.log("commitments", commitments)
         
-        let lastSeenProcessSpecification: any = undefined;
-        let lastColumn: any = []
-        // plan.processes.forEach((process: any) => {
-          // for (let i = 0; i < simplifiedPlan.processes.length; i++) {
-            processesToLoadCount += plan.processes.length
-            for (const p of plan.processes) {
-              getProcess.setVariables({
-            id: p.id
-          });
-          let processRes: any = await getProcess.refetch()
-          processesLoadedCount++
-          let process = {...processRes.data.process}
-          console.log(process)
-          // await delay(1000)
-          // console.log(JSON.stringify(process.basedOn))
-          // console.log(allColumns)
-          // console.log(process)
-          // try to get basedOn for each commitment
-
-          for (const commitment of process.committedOutputs) {
-            console.log("commitment: ", commitment)
-            // const fullCommitment = await fetchCommitment(commitment.id)
-            await includeCommitment(commitment)
-            // if (fullCommitment) {
-              // commitment.clauseOf = fullCommitment.clauseOf
-              // replace commitment with fullCommitment in the process
-              process.committedOutputs = [...process.committedOutputs.map(it => it.id == commitment.id ? {...it, clauseOf: commitment.clauseOf} : it)]
-            // }
-            console.log("cost commitment: ", commitment)
-            // await delay(100)
-          }
-
-          for (const commitment of process.committedInputs) {
-            console.log("commitment: ", commitment)
-
-            await includeCommitment(commitment)
-            
-            // const fullCommitment = await fetchCommitment(commitment.id)
-            // if (fullCommitment) {
-              // commitment.clauseOf = fullCommitment.clauseOf
-              // replace commitment with fullCommitment in the process
-              process.committedInputs = [...process.committedInputs.map(it => it.id == commitment.id ? {...it, clauseOf: commitment.clauseOf} : it)]
-            // }
-            console.log("cost commitment: ", commitment)
-            // await delay(100)
-          }
-
-          const newProcess = {
-            ...process,
-            basedOn: {
-              image: processImages[process.basedOn.name],
-              name: process.basedOn.name,
-              id: process.basedOn.id,
-            },
-            // sort committedInputs by last modified
-            committedInputs: [...process.committedInputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
-            // committedInputs: [...process.committedInputs].reverse(),
-            committedOutputs: [...process.committedOutputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
-          }
-
-          console.log("PROCESS TYPE", process.basedOn.name, newProcess)
-
-          // if this is a new process
-          if (process.basedOn.id !== lastSeenProcessSpecification) {
-            console.log("NEW PROCESS", process.basedOn.name)
-            // add last column to allColumns and reset
-            if (lastColumn.length > 0) {
-              console.log("LAST COLUMN FULL", lastColumn)
-              allColumns.push(lastColumn)
-              lastColumn = [newProcess]
-            } else {
-              console.log("LAST COLUMN NOT FULL", lastColumn)
-              lastColumn.push(newProcess)
-            }
-            lastSeenProcessSpecification = process.basedOn.id
-          } else {
-            console.log("SAME PROCESS", process.basedOn.name)
-            lastColumn.push(newProcess)
-          }
-          console.log(lastColumn)
-        }
-        
-        allColumns.push(lastColumn)
-        loadingPlan = false;
-        console.log("allColumns", allColumns)
-        allColumns = [...allColumns]
-      }
+        await setColumns(plan)
+        await fetchActions()
+        await getAllUnits()
+        await getAllAgents()
+        await getAllProposals()
+        await getAllResourceSpecifications()
+        await getAllProcessSpecifications()
+        console.log(allColumns)
       } catch (e) {
         console.log("error", e)
         error = e
       }
+  }
+
+  onMount(async () => {
+    if (browser) {
+      await fetchThePlan()
     }
   })
 
@@ -829,14 +598,9 @@
   $: if (allColumns) {
     totalCost = new Decimal(0)
     for (let i = 0; i < allColumns.length; i++) {
-      console.log("column", i)
-      console.log(allColumns[i])
       for (let j = 0; j < allColumns[i].length; j++) {
-        console.log("process", j)
         let inputsAndOutputs = allColumns[i][j].committedInputs.concat(allColumns[i][j].committedOutputs)
         for (let k = 0; k < inputsAndOutputs.length; k++) {
-          console.log("cost", inputsAndOutputs[k])
-          console.log("clauseOf", inputsAndOutputs[k].clauseOf)
           if (inputsAndOutputs[k].clauseOf) {
             const addedValue = new Decimal(inputsAndOutputs[k].clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue)
             totalCost = totalCost.add(addedValue)
@@ -860,7 +624,11 @@
   {agents}
   {resourceSpecifications}
   {processSpecifications}
-editing={true}/>
+editing={true}
+on:saved={(event) => {
+  fetchThePlan()
+}}
+/>
 {/if}
 
 {#if economicEventModalOpen}
@@ -882,7 +650,6 @@ bind:open={economicEventModalOpen}
     let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == event.detail.commitment.id)
     console.log(event.detail)
     if (event.detail.commitment.finished) {
-      console.log("yes")
       yellow = yellow.filter(it => it != event.detail.commitment.id)
     } else {
       yellow.push(event.detail.commitment.id)
@@ -892,8 +659,6 @@ bind:open={economicEventModalOpen}
         yellowAmounts[event.detail.commitment.id] = event.detail.commitment.resourceQuantity.hasNumericalValue
       }
       // add all economic event amounts to yellowAmounts
-      
-      console.log("no")
     }
     console.log("finished", event.detail.commitment.finished)
     allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = event.detail.commitment
@@ -914,10 +679,7 @@ bind:open={economicEventModalOpen}
   process = {currentProcess}
   bind:commitments
   on:submit={(event) => {
-    console.log(allColumns)
-    console.log("commitment submit event", event)
-    // console.log(JSON.stringify(allColumns[event.detail.column][event.detail.process][event.detail.side][0].id))
-    console.log("ID: ", event.detail.commitment.id)
+    console.log("START COMMIT", event.detail)
     if (event.detail.useAs == "update") {
       if (event.detail.column == undefined) {
         commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
@@ -939,8 +701,13 @@ bind:open={economicEventModalOpen}
           if (costAgreement) {
             agreementsToDelete.push(costAgreement.revisionId)
             commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
+            // resetColumns()
           }
           costAgreement = makeAgreement(event.detail.commitment, costAgreement, offers)
+          console.log("cost agreement", costAgreement)
+          if (costAgreement) {
+            event.detail.commitment.clauseOf = costAgreement
+          }          
         }
         // possible cost update ends
 
@@ -956,6 +723,7 @@ bind:open={economicEventModalOpen}
         console.log("updated commitment", updatedCommitment)
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
         allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = updatedCommitment
+        // resetColumns()
       }
     } else {
       console.log(event.detail)
@@ -998,11 +766,12 @@ bind:open={economicEventModalOpen}
 
 {#if loadingPlan}
 <!-- Loading processes ({processesLoadedCount}/{processesToLoadCount + 1}) -->
-Loading plan
+<!-- Loading plan... -->
+<Loading />
 <!-- processesLoadedCount number of dots -->
-{#each Array.from({ length: processesLoadedCount }, (_, i) => i) as dot}
+<!-- {#each Array.from({ length: processesLoadedCount }, (_, i) => i) as dot}
 .
-{/each}
+{/each} -->
 {#if error}
   <br>
   {error}
@@ -1034,7 +803,7 @@ Loading plan
           class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save changes</button
         >
-        <Export dataName="plan" fileName="cfn-plan-{plan.name}" data={exportData} />
+        <Export dataName="plan" fileName="cfn-plan-{plan.name}" data={exportData} hideImport={true} />
       </div>
       <h2 class="text-center text-xl font-semibold">Offers</h2>
       <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
@@ -1057,12 +826,13 @@ Loading plan
                   <p>
                     {#if primary?.publishes?.availableQuantity?.hasNumericalValue && primary?.publishes?.availableQuantity?.hasNumericalValue > 0}
                       {primary?.publishes?.availableQuantity?.hasNumericalValue}
-                      {#each units as unit}
+                      {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
+                      <!-- {#each units as unit}
                         {#if unit.id == primary?.publishes?.availableQuantity?.hasUnitId}
                           {unit.label}
                         {/if}
-                      {/each}
-                       available<br>
+                      {/each} 
+                       available<br>-->
                       <span style="color: {(requestsTotal  > primary?.publishes?.availableQuantity?.hasNumericalValue) ? 'red' : ''
                         }">
                         {requestsTotal} requested<br>
@@ -1071,12 +841,12 @@ Loading plan
                     {/if}
                     {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
                     {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} 
-                    <!-- {primary?.publishes?.resourceQuantity?.hasUnit?.label} -->
-                    {#each units as unit}
+                    {primary?.publishes?.resourceQuantity?.hasUnit?.label}
+                    <!-- {#each units as unit}
                       {#if unit.id == primary?.publishes?.resourceQuantity?.hasUnitId}
                         {unit.label}
                       {/if}
-                    {/each}
+                    {/each} -->
                   </p>
                   {:else}
                     <p>
@@ -1136,7 +906,9 @@ Loading plan
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                     style="background-color: {color};"
                     >
+                    <!-- {JSON.stringify(clauseOf?.commitments[0].providerId)} -->
                     <p>{resourceConformsTo?.name}</p>
+                    <!-- {JSON.stringify(clauseOf)} -->
                     <!-- <p>{id}</p> -->
                     <div class="flex justify-between">
                       <!--
@@ -1192,6 +964,10 @@ Loading plan
                           {agent.name}
                         {/if}
                       {/each}
+                      {#if fulfilledBy?.length > 0}
+                        <br />
+                        Economic Events: {fulfilledBy?.length}
+                      {/if}
                     </p>
                     {#if clauseOf}
                       {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
@@ -1255,11 +1031,24 @@ Loading plan
                     </button>
                     <button
                       on:click={() => {
-                        allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
-                        if (revisionId) {
+                        // allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
+                        // if (revisionId) {
+                        //   commitmentsToDelete.push(revisionId)
+                        // }
+                        // console.log(commitmentsToDelete, revisionId)
+                        if (revisionId != undefined) {
                           commitmentsToDelete.push(revisionId)
                         }
-                        console.log(commitmentsToDelete, revisionId)
+                        
+                        // remove cost agreement if present
+                        let costAgreement = clauseOf
+                        if (costAgreement) {
+                          console.log("DEE", costAgreement)
+                          // resetColumns()
+                          agreementsToDelete.push(costAgreement.revisionId)
+                          commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
+                        }
+                        allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
                       }}
                     >
                       <Trash />
@@ -1267,20 +1056,20 @@ Loading plan
                     </div>
 
                     {#if revisionId}
-                    <button
-                      style="margin-top: -3px;"
-                      on:click={() => {
-                        commitmentModalProcess = processIndex
-                        commitmentModalColumn = columnIndex
-                        commitmentModalSide = "committedInputs"
-                        selectedCommitmentId = id
-                        selectedProcessId = processes[0].id
-                        currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                        economicEventModalOpen = true
-                      }}
-                    >
-                      <EconomicEvent/>
-                    </button>
+                      <button
+                        style="margin-top: -3px;"
+                        on:click={() => {
+                          commitmentModalProcess = processIndex
+                          commitmentModalColumn = columnIndex
+                          commitmentModalSide = "committedInputs"
+                          selectedCommitmentId = id
+                          selectedProcessId = processes[0].id
+                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                          economicEventModalOpen = true
+                        }}
+                      >
+                        <EconomicEvent/>
+                      </button>
                     {/if}
 
                     </div>
@@ -1366,6 +1155,10 @@ Loading plan
                             {agent.name}
                           {/if}
                         {/each}
+                        {#if fulfilledBy?.length > 0}
+                          <br />
+                          Economic Events: {fulfilledBy?.length}
+                        {/if}
                       </p>
                       {#if clauseOf}
                         {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
@@ -1421,10 +1214,20 @@ Loading plan
                     </button>
                     <button
                     on:click={() => {
-                      allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
+                      console.log("DEEEEEEElete")
                       if (revisionId != undefined) {
                         commitmentsToDelete.push(revisionId)
                       }
+
+                      // remove cost agreement if present
+                      let costAgreement = clauseOf
+                      if (costAgreement) {
+                        agreementsToDelete.push(costAgreement.revisionId)
+                        commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
+                        // requestsPerOffer[costAgreement.providerId] = requestsPerOffer[costAgreement.providerId] - costAgreement.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue
+                        resetColumns()
+                      }
+                      allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
                     }}
                       >
                       <Trash />
@@ -1497,6 +1300,7 @@ Loading plan
                     {action.label}
                     {resourceQuantity?.hasNumericalValue}
                     <!-- {resourceConformsTo?.defaultUnitOfResource?.label} -->
+                    <!-- {JSON.stringify(resourceConformsTo)} -->
                     {#each units as unit}
                       {#if unit.id == resourceConformsTo?.defaultUnitOfResourceId}
                         {unit.label}
@@ -1554,11 +1358,12 @@ Loading plan
                   <p>
                     {primary?.publishes?.action?.label}
                     {primary?.publishes?.resourceQuantity?.hasNumericalValue}
-                    {#each units as unit}
+                    {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
+                    <!-- {#each units as unit}
                       {#if unit.id == primary?.publishes?.resourceQuantity?.hasUnitId}
                         {unit.label}
                       {/if}
-                    {/each}
+                    {/each} -->
                   </p>
                   <p>to 
                     {#each agents as agent}

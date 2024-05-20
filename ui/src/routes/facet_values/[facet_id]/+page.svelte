@@ -8,6 +8,7 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Facet, FacetGroup, FacetParams, FacetValue } from "$lib/graphql/extension-schemas"
   import { page } from "$app/stores"
+  import { goto } from "$app/navigation"
   let modalOpen = false;
   let selectedId: string;
   let localFacet: Facet;
@@ -103,7 +104,12 @@
     
     <div class="sm:flex-auto">
 
+      
       <h1 class="text-base font-semibold leading-6 text-gray-900 pt-6">
+        <button
+          type="button"
+          class="text-gray-500 hover:text-gray-900"
+         on:click={()=>{goto('/facets')}}>↵</button>
         Facet 
         {localFacet.name}
       </h1>

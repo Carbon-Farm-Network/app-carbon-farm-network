@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from './utils'
+  import { clickOutside } from '../utils'
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'

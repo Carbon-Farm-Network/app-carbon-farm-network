@@ -15,6 +15,9 @@
   import { PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import type { AgentExtended } from '$lib/graphql/extension-schemas'
+  import { getAllAgents, getAllProposals } from '../utils'
+  import { allAgents, allProposals } from '../store'
+  import Loading from '$lib/Loading.svelte'
   // import { AdminWebsocket } from '@holochain/client';
   const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
 
@@ -24,7 +27,45 @@
   // const adminPort = import.meta.env.VITE_ADMIN_PORT
   // const url = `ws://localhost:${appPort}`;
 
+  let loading = true;
+  let error: any;
+  let agents: AgentExtended[];
+  let matchedAgents: AgentExtended[];
   let offersList: Proposal[] = [];
+  let roleImages = {
+    "Farmer": "farm.svg",
+    "Scouring Mill": "mill.svg",
+    "Spinning Mill": "mill.svg",
+    "Knitting Factory": "mill.svg",
+    "Weaving Factory": "mill.svg",
+    "Designer": "knitting.svg",
+    "Shipping": "truck.svg",
+  }
+
+
+  let panelInfo: any,
+      MapComponent: ComponentType
+
+  allAgents.subscribe((res) => {
+    agents = res.map((a) => {
+      // @ts-ignore
+      let iconUrl = roleImages[a.classifiedAs[2]] || 'mill.svg'
+      return {
+        ...a,
+        "name": a.name,
+        "imageUrl": a.image,
+        "iconUrl": iconUrl,
+        "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+        "address": a.note,
+        "offers": offersList?.filter((o: Proposal) => (o.publishes || [])
+          .filter((pi: ProposedIntent) => !pi.reciprocal && pi.publishes.provider?.id === a.id).length > 0)
+      }
+    })
+  })
+
+  allProposals.subscribe((res) => {
+    offersList = res
+  })
 
   // query & data bindings
 
@@ -61,107 +102,94 @@
   //   }
   // `
 
-  const GET_ALL_AGENTS = gql`
-    ${AGENT_CORE_FIELDS}
-    ${PERSON_CORE_FIELDS}
-    ${ORGANIZATION_CORE_FIELDS}
-    ${FACET_VALUE_CORE_FIELDS}
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...AgentCoreFields
-            ...PersonCoreFields
-            ...OrganizationCoreFields
-            facets {
-              ...FacetValueCoreFields
-            }
-          }
-        }
-      }
-    }
-  `
+  // const GET_ALL_AGENTS = gql`
+  //   ${AGENT_CORE_FIELDS}
+  //   ${PERSON_CORE_FIELDS}
+  //   ${ORGANIZATION_CORE_FIELDS}
+  //   ${FACET_VALUE_CORE_FIELDS}
+  //   query {
+  //     agents(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           ...AgentCoreFields
+  //           ...PersonCoreFields
+  //           ...OrganizationCoreFields
+  //           facets {
+  //             ...FacetValueCoreFields
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
-  interface QueryResponse {
-    // agents: AgentConnection & RelayConn<Agent>
-      agents: AgentConnection & RelayConn<any>
-  }
+  // interface QueryResponse {
+  //   // agents: AgentConnection & RelayConn<Agent>
+  //     agents: AgentConnection & RelayConn<any>
+  // }
 
   // map component state
 
-  let roleImages = {
-    "Farmer": "farm.svg",
-    "Scouring Mill": "mill.svg",
-    "Spinning Mill": "mill.svg",
-    "Knitting Factory": "mill.svg",
-    "Weaving Factory": "mill.svg",
-    "Designer": "knitting.svg",
-    "Shipping": "truck.svg",
-  }
-
-  let panelInfo: any,
-      MapComponent: ComponentType,
-      agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
-
-    async function fetchAgents() {
-    // setInterval(function(){
-      await agentsQuery.getCurrentResult()
-      await agentsQuery.refetch().then((r) => {
-        agents = flattenRelayConnection(r.data?.agents).map((a) => {
-          // @ts-ignore
-          let iconUrl = roleImages[a.classifiedAs[2]] || 'mill.svg'
-          return {
-            ...a,
-            "name": a.name,
-            "imageUrl": a.image,
-            "iconUrl": iconUrl,
-            "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-            "address": a.note,
-            "offers": offersList?.filter((o: Proposal) => (o.publishes || [])
-              .filter((pi: ProposedIntent) => !pi.reciprocal && pi.publishes.provider?.id === a.id).length > 0)
-          }
-        })
-      })
-    // }, 20000)
-  }
+  //   async function fetchAgents() {
+  //   // setInterval(function(){
+  //     await agentsQuery.getCurrentResult()
+  //     await agentsQuery.refetch().then((r) => {
+  //       agents = flattenRelayConnection(r.data?.agents).map((a) => {
+  //         // @ts-ignore
+  //         let iconUrl = roleImages[a.classifiedAs[2]] || 'mill.svg'
+  //         return {
+  //           ...a,
+  //           "name": a.name,
+  //           "imageUrl": a.image,
+  //           "iconUrl": iconUrl,
+  //           "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+  //           "address": a.note,
+  //           "offers": offersList?.filter((o: Proposal) => (o.publishes || [])
+  //             .filter((pi: ProposedIntent) => !pi.reciprocal && pi.publishes.provider?.id === a.id).length > 0)
+  //         }
+  //       })
+  //     })
+  //   // }, 20000)
+  // }
 
   // ===============GET OFFERS===============
-  const GET_All_PROPOSALS = gql`
-    ${PROPOSAL_RETURN_FIELDS}
-    query {
-      proposals(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProposalReturnFields
-          }
-        }
-      }
-    }
-  `
+  // const GET_All_PROPOSALS = gql`
+  //   ${PROPOSAL_RETURN_FIELDS}
+  //   query {
+  //     proposals(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           ...ProposalReturnFields
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
-  interface OffersQueryResponse {
-    proposals: ProposalConnection & RelayConn<any>
-  }
+  // interface OffersQueryResponse {
+  //   proposals: ProposalConnection & RelayConn<any>
+  // }
 
-  let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
+  // let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
 
-  async function fetchOffers() {
-    await getOffers.getCurrentResult()
-    await getOffers.refetch().then((r) => {
-      if (r.data?.proposals.edges.length > 0) {
-        offersList = flattenRelayConnection(r.data?.proposals)
-        offersList = [...offersList]
-      }
-    })
-  }
+  // async function fetchOffers() {
+  //   await getOffers.getCurrentResult()
+  //   await getOffers.refetch().then((r) => {
+  //     if (r.data?.proposals.edges.length > 0) {
+  //       offersList = flattenRelayConnection(r.data?.proposals)
+  //       offersList = [...offersList]
+  //     }
+  //   })
+  // }
   // ===============GET OFFERS ENDS==========
 
   onMount(async () => {
-    await fetchOffers()
+    await getAllProposals()
     // await agentsQuery.getCurrentResult()
-    await fetchAgents()
+    await getAllAgents()
+    loading = false
     // setInterval(function(){
     //   fetchAgents()
     // }, 20000)
@@ -173,9 +201,6 @@
   })
 
   // reactive data bindings
-
-  let agents: AgentExtended[]
-  let matchedAgents: AgentExtended[]
 
   $: agents, offersList;
 
@@ -197,12 +222,13 @@
 </script>
 
 <div class="relative h-full w-full">
-  {#if agents && agentsQuery !== undefined}
+  {#if agents}
     <!-- {JSON.stringify(agents[0].latlng)} -->
-    {#if $agentsQuery.loading && false}
-      <svelte:component this={MapComponent} agents={[]} bind:panelInfo />
-    {:else if $agentsQuery.error}
-      <ErrorPage status="Problem loading network Agents" error={$agentsQuery.error} />
+    {#if loading}
+      <Loading />
+      <!-- <svelte:component this={MapComponent} agents={[]} bind:panelInfo /> -->
+    {:else if error}
+      <ErrorPage status="Problem loading network Agents" error={error} />
     {:else if agents}
       <svelte:component this={MapComponent} agents={agents} bind:panelInfo />
       <Search bind:allData={agents} bind:matchedData={matchedAgents} bind:panelInfo/>

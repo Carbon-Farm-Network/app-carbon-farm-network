@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from './utils'
+  import { clickOutside } from '../utils'
   import gql from 'graphql-tag'
   import { mutation } from 'svelte-apollo';
   import { onMount } from 'svelte'

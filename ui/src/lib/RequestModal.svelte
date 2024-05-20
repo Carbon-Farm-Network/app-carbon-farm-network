@@ -5,7 +5,7 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { gql } from 'graphql-tag'
   import type { ReadableQuery } from 'svelte-apollo'
-  import { clickOutside } from './utils'
+  import { clickOutside } from '../utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
@@ -146,9 +146,9 @@
 
     // create reciprocal intent
     const recipIntent = {
-      receiver: localIntent.receiver,
+      provider: localIntent.receiver,
       action: "transfer",
-      resourceConformsTo: localReciprocalIntent.resourceConformsTo,
+      resourceConformsTo: localIntent.resourceConformsTo,
       resourceQuantity: localReciprocalIntent.resourceQuantity ? parseFormValues(localReciprocalIntent.resourceQuantity as IMeasure) : undefined,
     }
     console.info(recipIntent)
@@ -222,7 +222,7 @@
     submitting = true;
     // console.log(currentProposal)
     let proposal = currentProposal
-    updateProposal({ variables: { proposal: proposal } })
+    await updateProposal({ variables: { proposal: proposal } })
     // let intent = currentIntent
     let intent = {
       revisionId: currentIntent.revisionId,
@@ -268,7 +268,6 @@
     // let x = cri1()
     // console.log(x)
     if (browser) {
-      console.log('hello')
       console.log(currentIntent)
     }
     // handleSubmit()
@@ -360,7 +359,7 @@
                     if (currentIntent.availableQuantity) {
                       currentIntent.availableQuantity.hasUnit = selectedResource.defaultUnitOfResource.id
                     } else {
-                      console.log(currentIntent.availableQuantity)
+                      console.log("no availablequantity")
                     }
                     console.log(currentIntent.availableQuantity)
                   }}

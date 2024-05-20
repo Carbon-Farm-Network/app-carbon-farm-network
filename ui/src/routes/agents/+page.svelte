@@ -1,19 +1,11 @@
 <script lang="ts">
   import AgentModal from "$lib/AgentModal.svelte"
-  import allAgents from '$lib/data/agents.json'
-  import { browser } from '$app/environment'
   import { onMount } from 'svelte'
-  import type { ComponentType } from 'svelte'
-  import { mutation, query } from 'svelte-apollo'
-  import type { ReadableQuery } from 'svelte-apollo'
-  import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent, AgentCreateParams } from '@valueflows/vf-graphql'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
-  import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-  import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
+  import { getAllFacetGroups, getAllAgents, deleteAgent, addHashChange } from '../../utils'
+  import { allHashChanges } from "../../store"
+  import { allAgents } from '../../store'
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
@@ -31,61 +23,14 @@
   let associateAgentWithValue: any;
   let importing = false;
   let exportOpen = false;
+  let hashChanges: any = {}
+  allHashChanges.subscribe((res) => {
+    hashChanges = res
+  })
 
-  const GET_FACET_GROUPS = gql`
-    ${FACET_GROUP_CORE_FIELDS}
-    query GetFacets {
-      facetGroups {
-        ...FacetGroupCoreFields
-      }
-    }
-  `
-
-  interface FacetGroupResponse {
-    facetGroups: FacetGroup[]
-  }
-  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
-
-  async function fetchFacets() {
-    await queryFacetGroups.getCurrentResult()
-    let y = await queryFacetGroups.refetch()
-    let facetGroups = y.data.facetGroups
-    facets = facetGroups.find((g) => {return g.name == "Agent"})?.facets
-  }
-
-  const GET_ALL_AGENTS = gql`
-    ${AGENT_CORE_FIELDS}
-    ${PERSON_CORE_FIELDS}
-    ${ORGANIZATION_CORE_FIELDS}
-    ${FACET_VALUE_CORE_FIELDS}
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...AgentCoreFields
-            ...PersonCoreFields
-            ...OrganizationCoreFields
-            facets {
-              ...FacetValueCoreFields
-            }
-          }
-        }
-      }
-    }
-  `
-
-  interface QueryResponse {
-    agents: AgentConnection & RelayConn<any>
-  }
-
-  // map component state
-  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
-
-  async function fetchAgents() {
-    await agentsQuery.getCurrentResult()
-    const a = await agentsQuery.refetch()
-    agents = flattenRelayConnection(a.data?.agents).map((a) => {
+  allAgents.subscribe((res) => {
+    console.log("agents change", res)
+    agents = res.map((a) => {
       return {
         ...a,
         "name": a.name,
@@ -98,22 +43,21 @@
         "facets": a.facets
       }
     })
-    console.log(agents)
+  })
+
+  async function fetchFacets() {
+    let res = await getAllFacetGroups()
+    let facetGroups = res.data.facetGroups
+    facets = facetGroups.find((g) => {return g.name == "Agent"})?.facets
   }
-
-
-
-  const DELETE_AGENT = gql`mutation($revisionId: ID!){
-    deleteOrganization(revisionId: $revisionId)
-  }`
-  let deleteAgent: any = mutation(DELETE_AGENT)
 
   async function deleteAnAgent(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this agent?")
     if (areYouSure == true) {
-      const res = await deleteAgent({ variables: { revisionId } })
+      // const res = await deleteAgent({ variables: { revisionId } })
+      const res = await deleteAgent(revisionId)
       console.log(res)
-      await fetchAgents()
+      getAllAgents()
     }
   }
 
@@ -128,11 +72,14 @@
           image: data[i].image,
           classifiedAs: data[i].classifiedAs,
         }
+        let facets = data[i].facets.map((f) => hashChanges[f.id])
         console.log(agent)
-        let res = await createAgent(agent, data[i].facets.map((f) => f.id))
+        let res = await createAgent(agent, facets)
         console.log(res)
+        console.log("adding hash change", data[i].id, res.data.createOrganization.agent.id)
+        addHashChange(data[i].id, res.data.createOrganization.agent.id)
       }
-      await fetchAgents()
+      await getAllAgents()
       importing = false;
       exportOpen = false;
     } catch (e) {
@@ -144,7 +91,7 @@
   }
 
   onMount(async () => {
-    await fetchAgents();
+    await getAllAgents();
     await fetchFacets();
   })
 
@@ -155,7 +102,7 @@
 <!-- <div style="height: 8vh"> -->
   <Header title="Agents" description="A list of all the people, organizations and ecological agents related to the network." />
 <!-- </div> -->
-<AgentModal bind:createAgent bind:associateAgentWithValue bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={fetchAgents} />
+<AgentModal bind:createAgent bind:associateAgentWithValue bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={getAllAgents} />
 
 <Error {error} />
 

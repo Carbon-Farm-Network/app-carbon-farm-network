@@ -1,0 +1,21 @@
+---
+manifest_version: "1"
+name: migration
+integrity:
+  network_seed: ~
+  properties: ~
+  origin_time: 1716135750268077
+  zomes:
+    - name: migrate_integrity
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/migrate_integrity.wasm"
+      dependencies: ~
+      dylib: ~
+coordinator:
+  zomes:
+    - name: migrate
+      hash: ~
+      bundled: "../../../target/wasm32-unknown-unknown/release/migrate.wasm"
+      dependencies:
+        - name: migrate_integrity
+      dylib: ~

@@ -12,6 +12,7 @@
   import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
+  import { addHashChange } from "../../utils"
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
 
@@ -21,6 +22,8 @@
   let id = "";
   let currentProcessSpecification: any;
   let units: any[];
+  let handleSubmit: any;
+  let importing: boolean = false;
 
   const GET_ALL_PROCESS_SPECIFICATIONS = gql`
     ${PROCESS_SPECIFICATION_CORE_FIELDS}
@@ -91,7 +94,7 @@
   <Header title="Process Specifications" description="The types of processes your network creates, uses, trades; types of work; currencies, tokens." />
 <!-- </div> -->
 <!-- <Units /> -->
-<ProcessSpecificationModal bind:open={modalOpen} {name} {editing} currentProcessSpecification={currentProcessSpecification} on:submit={fetchProcessSpecifications} />
+<ProcessSpecificationModal bind:handleSubmit bind:open={modalOpen} {name} {editing} {currentProcessSpecification} on:submit={fetchProcessSpecifications} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -108,7 +111,16 @@
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a process specification</button>
     </div>
-    <Export dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications} />
+    <Export bind:importing dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications}
+    on:import={async (event) => {
+      for (let i = 0; i < event.detail.length; i++) {
+        let newPS = await handleSubmit(event.detail[i])
+        await addHashChange(event.detail[i].id, newPS.data.createProcessSpecification.processSpecification.id)
+      }
+      console.log("++++++++++++FINSIHED++++++++++++")
+      importing = false
+    }}
+    />
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

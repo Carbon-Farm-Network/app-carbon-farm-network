@@ -12,6 +12,7 @@ import { appletServices } from '../../we';
 import { onMount } from 'svelte';
 import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { ApolloClient } from "@apollo/client/core";
+import { setClient } from "../store"
 
 const appId = 'acfn'
 const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
@@ -53,11 +54,11 @@ export async function load() {
       // console.log("applet info 1", weAppId)
       let weAppWebsocket = weClient.renderInfo.appletClient.appWebsocket
       const weAppWebsocketUrl = weAppWebsocket.client.url
-      console.log("render info", weClient.renderInfo)
+      // console.log("render info", weClient.renderInfo)
       const { dnaConfig } = await sniffHolochainAppCells(weAppWebsocket, weAppId)
-      console.log("applet info", weClient.renderInfo)
-      console.log("hi-2")
-      console.log("dna config", dnaConfig)
+      // console.log("applet info", weClient.renderInfo)
+      // console.log("hi-2")
+      // console.log("dna config", dnaConfig)
 
       const extensionResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, weAppWebsocketUrl)
 
@@ -78,6 +79,7 @@ export async function load() {
       const output = await autoConnect(autoConnectInput)
       // autoconnect ends
 
+      await setClient(output)
       console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", output)
 
       return {
@@ -125,6 +127,7 @@ export async function load() {
         adminConductorUri: undefined,
       }
       const output = await autoConnect(autoConnectInput)
+      await setClient(output)
       return {
         client: output
       }      // return {

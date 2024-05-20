@@ -15,9 +15,11 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
-  import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
+  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../utils'
+  import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../store'
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
+  import Error from "$lib/Error.svelte"
 
   // externally provided data
   let units: Unit[];
@@ -29,7 +31,18 @@
   let modalOpen = false
   let editing = false;
   let usdRSpecId: string | undefined;
+  let error: any;
   let name = ''
+
+  // Export
+  let handleSubmit: any;
+  let exportOpen = false;
+  let importing = false;
+  let createRequest: any;
+  let hashChanges: any = {}
+  allHashChanges.subscribe((res) => {
+    hashChanges = res
+  })
 
   // Valueflows data state
   let currentProposal: any = {};
@@ -46,76 +59,6 @@
   }
   let currentProposedIntent: any = {};
 
-  // GraphQL bindings
-
-  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    query {
-      resourceSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ResourceSpecificationCoreFields
-            defaultUnitOfResource {
-              ...UnitCoreFields
-            }
-          }
-        }
-      }
-    }
-  `
-
-  const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
-        }
-      }
-    }
-  `
-
-  const GET_All_PROPOSALS = gql`
-    ${PROPOSAL_RETURN_FIELDS}
-    query {
-      proposals(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProposalReturnFields
-          }
-        }
-      }
-    }
-  `
-
-  // interface ProposalsQueryResponse {
-  //   resourceSpecifications: AgentConnection & RelayConn<any>
-  // }
-
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  }
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-
-  interface QueryResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  interface OffersQueryResponse {
-    proposals: ProposalConnection & RelayConn<any>
-  }
-
-  let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
-
-  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-
   function makeEmptyIntent(): IntentUpdateParams {
     return {
       revisionId: '',
@@ -130,50 +73,53 @@
     }
   }
 
-  // // helper to assign `Unit` identifiers to `Intent` data after binding to pre-created `Unit` records from GraphQL
-  // function assignUSDId(intent: IntentUpdateParams) {
-  //   if (intent.resourceConformsTo === "USD") {
-  //     intent.resourceConformsTo = usdRSpecId
-  //   }
-  // }
+  allProposals.subscribe((res) => {
+    offersList = res.map((p) => {
+      console.log("p", p)
+      return {
+        ...p,
+        publishes: p.publishes.map((i) => {
+          return {
+            ...i,
+            action: i.action,
+            atLocation: i.atLocation,
+            availableQuantity: i.availableQuantity,
+            effortQuantity: i.effortQuantity,
+            resourceQuantity: i.resourceQuantity,
+            inScopeOf: i.inScopeOf,
+            inputOf: i.inputOf,
+            outputOf: i.outputOf,
+            provider: i.provider,
+            receiver: i.receiver,
+            resourceConformsTo: i.resourceConformsTo,
+            resourceInventoriedAs: i.resourceInventoriedAs,
+          }
+        })
+      }
+    })
+  })
 
-  async function fetchResourceSpecifications() {
-    resourceSpecificationsQuery.getCurrentResult()
+  allResourceSpecifications.subscribe((res) => {
+    resourceSpecifications = res
+  })
 
-    resourceSpecificationsQuery.refetch().then((r) => {
-      resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications)
-      resourceSpecifications.forEach((a) => {
-        // assign USD `Unit` identifiers when loaded
-        if (a.name === "USD") {
-          usdRSpecId = a.id
+  allUnits.subscribe((res) => {
+    units = res
+  })
 
-          // override / set USD reference in Intent data payloads
-          // assignUSDId(_defaultReciprocalIntent)
-          // assignUSDId(currentReciprocalIntent)
-          _defaultReciprocalIntent.resourceConformsTo = usdRSpecId;
-          currentReciprocalIntent.resourceConformsTo = usdRSpecId;
+  allAgents.subscribe((res) => {
+    agents = res.map((a) => {
+        return {
+          ...a,
+          "name": a.name,
+          "imageUrl": a.image,
+          "iconUrl": a.image,
+          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+          "role": a.classifiedAs[2],
+          "address": a.note,
         }
       })
-    })
-  }
-
-  const GET_ALL_AGENTS = gql`
-    ${AGENT_CORE_FIELDS}
-    ${PERSON_CORE_FIELDS}
-    ${ORGANIZATION_CORE_FIELDS}
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...AgentCoreFields
-            ...PersonCoreFields
-            ...OrganizationCoreFields
-          }
-        }
-      }
-    }
-  `
+  })
 
   const UPDATE_PROPOSAL = gql`
     ${PROPOSAL_CORE_FIELDS},
@@ -187,49 +133,6 @@
   `
   let updateProposal: any = mutation(UPDATE_PROPOSAL)
 
-  interface QueryResponse {
-    agents: AgentConnection & RelayConn<any>
-  }
-
-  // map component state
-  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
-
-  async function fetchAgents() {
-    agentsQuery.refetch().then((r) => {
-      agents = flattenRelayConnection(r.data?.agents).map((a) => {
-        return {
-          ...a,
-          "name": a.name,
-          "imageUrl": a.image,
-          "iconUrl": a.image,
-          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-          "role": a.classifiedAs[2],
-          "address": a.note,
-        }
-      })
-      // console.log(agents)
-    })
-  }
-
-  async function fetchUnits() {
-    getUnits.getCurrentResult()
-    getUnits.refetch().then((r) => {
-      if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units)
-      }
-    })
-  }
-
-  async function fetchOffers() {
-    await getOffers.getCurrentResult()
-    await getOffers.refetch().then((r) => {
-      if (r.data?.proposals.edges.length > 0) {
-        offersList = flattenRelayConnection(r.data?.proposals)
-        console.log(offersList)
-      }
-    })
-  }
-
   // DELETE PROPOSAL  
   const DELETE_PROPOSAL = gql`mutation($revisionId: ID!){
     deleteProposal(revisionId: $revisionId)
@@ -241,94 +144,16 @@
     if (areYouSure == true) {
       const res = await deleteProposal({ variables: { revisionId } })
       console.log(res)
-      await fetchOffers()
+      await getAllProposals()
     }
   }
-  // DELETE RESOURCE SPECIFICATION ENDS
 
-  // IMPORT ALL OFFERS
-  const IMPORT_PROPOSALS = gql`
-    ${PROPOSAL_CORE_FIELDS},
-    mutation($proposals: [ProposalCreateParams!]!){
-      createProposals(proposals: $proposals) {
-        proposals {
-          ...ProposalCoreFields
-        }
-      }
-    }
-  `
-  let importOffers: any = mutation(IMPORT_PROPOSALS)
-
-  async function importData({ variables }: { variables: { proposals: ProposalCreateParams[] } }) {
-    console.log("importing data 2", variables.proposals)
-    // convert returned data to the format expected by the GraphQL API
-    variables = {
-      proposals: variables.proposals.map((p) => {
-      //   const intent: IntentCreateParams = {
-      //   action: currentIntent.action as string,
-      //   resourceConformsTo: currentIntent.resourceConformsTo || undefined,
-      //   resourceInventoriedAs: currentIntent.resourceInventoriedAs || undefined,
-      //   inScopeOf: currentIntent.inScopeOf || undefined,
-      //   inputOf: currentIntent.inputOf || undefined,
-      //   outputOf: currentIntent.outputOf || undefined,
-      //   provider: currentIntent.provider || undefined,
-      //   receiver: currentIntent.receiver || undefined,
-      //   note: currentIntent.note || undefined,
-      //   resourceQuantity: currentIntent.resourceQuantity ? parseFormValues(currentIntent.resourceQuantity as IMeasure) : undefined,
-      //   availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
-      //   effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
-      // }
-        // let intent1 = p.publishes[0].map((i) => {
-        //   let intent: IntentCreateParams = {
-        //     action: i.action as string,
-        //     resourceConformsTo: i.resourceConformsTo || undefined,
-        //     resourceInventoriedAs: i.resourceInventoriedAs || undefined,
-        //     inScopeOf: i.inScopeOf || undefined,
-        //     inputOf: i.inputOf || undefined,
-        //     outputOf: i.outputOf || undefined,
-        //     provider: i.provider || undefined,
-        //     receiver: i.receiver || undefined,
-        //     note: i.note || undefined,
-        //     resourceQuantity: i.resourceQuantity ? parseFormValues(i.resourceQuantity as IMeasure) : undefined,
-        //     availableQuantity: i.availableQuantity ? parseFormValues(i.availableQuantity as IMeasure) : undefined,
-        //     effortQuantity: i.effortQuantity ? parseFormValues(i.effortQuantity as IMeasure) : undefined,
-        //   }
-        //   return intent
-        // })
-        console.log(p)
-        let proposalToCreate: ProposalCreateParams = {
-            name: p.name,
-            note: p.note,
-            hasBeginning: p.hasBeginning,
-            hasEnd: p.hasEnd,
-            inScopeOf: p.inScopeOf,
-            unitBased: p.unitBased,
-        }
-        console.log(proposalToCreate)
-        return proposalToCreate
-      }),
-    }
-    
-    const res = await importOffers({ variables })
-    console.log(res)
-    await fetchOffers()
-  }
-  // IMPORT ALL OFFERS ENDS
-
-  onMount(() => {
+  onMount(async () => {
     if (browser) {
-      fetchResourceSpecifications()
-      fetchAgents()
-      fetchUnits()
-      fetchOffers()
-      // setInterval(function(){
-      //   if (!units) {
-      //     fetchUnits()
-      //   } else {
-
-      //   }
-      // }, 10000)
-      // console.log(offers)
+      await getAllResourceSpecifications()
+      await getAllAgents()
+      await getAllUnits()
+      await getAllProposals()
     }
   })
 
@@ -339,7 +164,8 @@
   <Header title="Offers" description="The goods or services you are offering within the network, now or generally." />
 <!-- </div> -->
 
-<OfferModal on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<Error {error} />
+<OfferModal on:submit={getAllProposals} bind:open={modalOpen} bind:handleSubmit bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -365,12 +191,39 @@
         >Add an offer</button
       >
     </div>
-    <Export dataName="list of offers" fileName="cfn-offers"
+    <Export bind:importing dataName="list of offers" fileName="cfn-offers"
     data={offersList}
-    on:import={(event) => {
+    on:import={async (event) => {
       console.log("importing data", event.detail)
-      console.log("hi")
-      importData({ variables: { proposals: event.detail } })
+      for (let i = 0; i < event.detail.length; i++) {
+        console.log(event.detail[i])
+        let currentIntent = event.detail[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
+        if (currentIntent.provider) {
+          let currentReciprocalIntent = event.detail[i].publishes.find(({ reciprocal }) => reciprocal).publishes
+          console.log(currentIntent, currentReciprocalIntent)
+          currentIntent.action = currentIntent.action.id
+          currentIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
+          if (!currentIntent.resourceConformsTo) { importing = false; error = "Stopped import due to dependency data"; return }
+          console.log(currentIntent.provider)        
+          currentIntent.provider = hashChanges[currentIntent.provider.id]
+          console.log(currentIntent.provider)
+          if (!currentIntent.provider) { importing = false; error = "Stopped import due to dependency data"; return }
+          currentIntent.resourceQuantity = {
+            hasUnit: currentIntent.resourceQuantity.hasUnit.id,
+            hasNumericalValue: currentIntent.resourceQuantity.hasNumericalValue
+          }
+          currentIntent.availableQuantity.hasUnit = currentIntent.availableQuantity = {
+            hasUnit: currentIntent.availableQuantity.hasUnit.id,
+            hasNumericalValue: currentIntent.availableQuantity.hasNumericalValue
+          }
+          currentReciprocalIntent.resourceQuantity = {
+            hasNumericalValue: currentReciprocalIntent.resourceQuantity.hasNumericalValue,
+            hasUnit: currentReciprocalIntent.resourceQuantity.hasUnit
+          }
+          await handleSubmit(currentIntent, currentReciprocalIntent, true)
+        }
+      }
+      importing = false
     }}
     />
     {:else}
@@ -470,7 +323,7 @@
 
                         updateProposal({ variables: { proposal: proposal } });
 
-                        fetchOffers();
+                        getAllProposals();
                       } else {
                         console.log(p)
 
@@ -484,7 +337,7 @@
 
                         updateProposal({ variables: { proposal: proposal } });
 
-                        fetchOffers();
+                        getAllProposals();
                       }
                     }}
                     id="candidates"

@@ -8,8 +8,7 @@
   export let certification = "";
   export let editing = false;
   export let facets: Facet[] | undefined;
-  export let selectedFacets: any;
-  // import facets from '$lib/data/facets.json'
+  export let selectedFacets: string[];
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte'
   import { gql } from 'graphql-tag'
@@ -19,7 +18,7 @@
   import { mutation, query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
-  // import { AppAgentWebsocket, type AppAgentClient } from '@holochain/client';
+  import { addAgent, updateAgent, associateAgentWithValue } from '../utils'
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -31,56 +30,8 @@
   onMount(() => {
     window.addEventListener("keydown", checkKey);
   });
-  // let selectedFacets: any = {};
 
   const dispatch = createEventDispatcher();
-
-  const ADD_AGENT = gql`
-    ${AGENT_CORE_FIELDS},
-    mutation($agent: OrganizationCreateParams!){
-      createOrganization(organization: $agent) {
-        agent {
-          ...AgentCoreFields
-        }
-      }
-    }
-  `
-
-  const ASSOCIATE_AGENT_AND_FACET_VALUE = gql`
-    mutation($identifier: String, $facetValueId: ID!){
-      associateFacetValue(identifier: $identifier, facetValueId: $facetValueId)
-    }
-  `
-
-  const UPDATE_AGENT = gql`
-    ${AGENT_CORE_FIELDS},
-    mutation($agent: OrganizationUpdateParams!){
-      updateOrganization(organization: $agent) {
-        agent {
-          ...AgentCoreFields
-        }
-      }
-    }
-  `
-
-  const GET_ORGANIZATION = gql`
-    ${AGENT_CORE_FIELDS},
-    query GetOrganization {
-      organization(id: $id) {
-        ...OrganizationCoreFields
-      }
-  }
-  `
-
-  // interface FacetGroupResponse {
-  //   facetGroups: FacetGroup[]
-  // }
-  // let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
-
-
-  interface QueryResponse {
-    agent: AgentConnection & RelayConn<Agent>
-  }
 
   let roles = [
     "Farmer",
@@ -103,34 +54,18 @@
     "Network": "knitting.svg",
   }
 
-  // let addAgent: Mutate<QueryResponse> = mutation(ADD_AGENT)
-  let addAgent: any= mutation(ADD_AGENT)
-  export let associateAgentWithValue: any = mutation(ASSOCIATE_AGENT_AND_FACET_VALUE)
-
-  let getAgent: ReadableQuery<QueryResponse> = query(GET_ORGANIZATION)
-
-  // let updateAgent: Mutate<QueryResponse> = mutation(UPDATE_AGENT)
-  let updateAgent: any = mutation(UPDATE_AGENT)
-
-  export async function createAgent(agent: OrganizationCreateParams, facetsToAssociate: Facet[]) {
+  export async function createAgent(agent: OrganizationCreateParams, facetsToAssociate: string[]) {
     try {
-      const res = await addAgent({ variables: { agent } })
-      console.log("res", res)
-      // const groups = (await queryFacetGroups.result())
-      // console.log(groups)
-      // const value_id = ((groups?.data?.facetGroups[0].facets || [{values: []}])[0].values || [{}])[0].id
-      // console.log(value_id)
+      const res = await addAgent(agent)
       const identifier = res.data.createOrganization.agent.id
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in facetsToAssociate) {
         if (facetsToAssociate[facet] == null) {
           continue
         }
-        const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: facetsToAssociate[facet] }})
+        const res2 = await associateAgentWithValue(identifier, facetsToAssociate[facet])
         console.log("associate", res2)
       }
-      // const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: value_id }})
-      // console.log("associate", res2)
       dispatch("submit");
       open = false;
       console.log(res)
@@ -152,15 +87,6 @@
     await createAgent(agent, selectedFacets)
   }
 
-  async function findAgent(id: String) {
-    try {
-      getAgent.setVariables({ id })
-      getAgent.result().then((r) => {console.log(r)})
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
   async function handleUpdate() {
     let agent: OrganizationUpdateParams = {
         name: currentAgent.name,
@@ -168,13 +94,12 @@
         note: currentAgent.note,
         classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role],
         revisionId: currentAgent.revisionId
-
-        // $: name, latitude, longitude, note, logo, type, role, certification;
     }
     try {
-      const res = await updateAgent({ variables: { agent } })
+      const res = await updateAgent(agent)
 
       const identifier = res.data.updateOrganization.agent.id
+      // const identifier = currentAgent.id
       console.log(identifier)
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in selectedFacets) {
@@ -183,10 +108,9 @@
         if (selectedFacets[facet] == null) {
           continue
         }
-        const res2 = await associateAgentWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
+        const res2 = await associateAgentWithValue(identifier, selectedFacets[facet])
         console.log("associate", res2)
       }
-
 
       dispatch("submit");
       open = false;
@@ -196,22 +120,11 @@
     }
   }
 
-  // let client: AppAgentClient;
-
   $: name, type, role, certification, editing, currentAgent; //, client;
 
   $: isAgentValid = true && currentAgent.lat && currentAgent.long && currentAgent.name && currentAgent.imageUrl && currentAgent.role;
-
-  // onMount(async () => {
-    // console.log("mounted")
-    // findAgent();
-  //   // We pass '' as url because it will dynamically be replaced in launcher environments
-  //   client = await AppAgentWebsocket.connect('', 'acfn');
-  // });
 </script>
-<!-- <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" on:click={() => testFacetsCall()}>
-  test`
-</button> -->
+
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.

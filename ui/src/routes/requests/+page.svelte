@@ -14,6 +14,8 @@
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
+  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../utils'
+  import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../store'
   import { loop_guard } from 'svelte/internal'
   import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
   import Header from '$lib/Header.svelte'
@@ -37,7 +39,11 @@
   let exportOpen = false;
   let importing = false;
   let createRequest: any;
-
+  let hashChanges: any = {}
+  allHashChanges.subscribe((res) => {
+    hashChanges = res
+  })
+  
   // Valueflows data state
   let currentProposal: any = {};
   let currentIntent: IntentUpdateParams = makeEmptyIntent()
@@ -53,75 +59,52 @@
   }
   let currentProposedIntent: any = {};
 
-  // GraphQL bindings
-
-  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    query {
-      resourceSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ResourceSpecificationCoreFields
-            defaultUnitOfResource {
-              ...UnitCoreFields
-            }
+  allProposals.subscribe((res) => {
+    offersList = res.map((p) => {
+      return {
+        ...p,
+        publishes: p.publishes.map((i) => {
+          return {
+            ...i,
+            action: i.action,
+            atLocation: i.atLocation,
+            availableQuantity: i.availableQuantity,
+            effortQuantity: i.effortQuantity,
+            resourceQuantity: i.resourceQuantity,
+            inScopeOf: i.inScopeOf,
+            inputOf: i.inputOf,
+            outputOf: i.outputOf,
+            provider: i.provider,
+            receiver: i.receiver,
+            resourceConformsTo: i.resourceConformsTo,
+            resourceInventoriedAs: i.resourceInventoriedAs,
           }
-        }
+        })
       }
-    }
-  `
+    })
+  })
 
-  const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
+  allResourceSpecifications.subscribe((res) => {
+    resourceSpecifications = res
+  })
+
+  allUnits.subscribe((res) => {
+    units = res
+  })
+
+  allAgents.subscribe((res) => {
+    agents = res.map((a) => {
+        return {
+          ...a,
+          "name": a.name,
+          "imageUrl": a.image,
+          "iconUrl": a.image,
+          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+          "role": a.classifiedAs[2],
+          "address": a.note,
         }
-      }
-    }
-  `
-
-  const GET_All_PROPOSALS = gql`
-    ${PROPOSAL_RETURN_FIELDS}
-    query {
-      proposals(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProposalReturnFields
-          }
-        }
-      }
-    }
-  `
-
-  interface ProposalsQueryResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  }
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-
-  interface QueryResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  interface OffersQueryResponse {
-    proposals: ProposalConnection & RelayConn<any>
-  }
-
-  let getOffers: ReadableQuery<OffersQueryResponse> = query(GET_All_PROPOSALS)
-
-  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+      })
+  })
 
   function makeEmptyIntent(): IntentUpdateParams {
     return {
@@ -144,102 +127,102 @@
   //   }
   // }
 
-  async function fetchResourceSpecifications() {
-    resourceSpecificationsQuery.getCurrentResult()
+  // async function fetchResourceSpecifications() {
+  //   resourceSpecificationsQuery.getCurrentResult()
 
-    resourceSpecificationsQuery.refetch().then((r) => {
-      resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications)
-      resourceSpecifications.forEach((a) => {
-        // assign USD `Unit` identifiers when loaded
-        if (a.name === "USD") {
-          usdRSpecId = a.id
+  //   resourceSpecificationsQuery.refetch().then((r) => {
+  //     resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications)
+  //     resourceSpecifications.forEach((a) => {
+  //       // assign USD `Unit` identifiers when loaded
+  //       if (a.name === "USD") {
+  //         usdRSpecId = a.id
 
-          // override / set USD reference in Intent data payloads
-          // assignUSDId(_defaultReciprocalIntent)
-          // assignUSDId(currentReciprocalIntent)
-          _defaultReciprocalIntent.resourceConformsTo = usdRSpecId;
-          currentReciprocalIntent.resourceConformsTo = usdRSpecId;
-        }
-      })
-    })
-  }
+  //         // override / set USD reference in Intent data payloads
+  //         // assignUSDId(_defaultReciprocalIntent)
+  //         // assignUSDId(currentReciprocalIntent)
+  //         _defaultReciprocalIntent.resourceConformsTo = usdRSpecId;
+  //         currentReciprocalIntent.resourceConformsTo = usdRSpecId;
+  //       }
+  //     })
+  //   })
+  // }
 
-  const GET_ALL_AGENTS = gql`
-    ${AGENT_CORE_FIELDS}
-    ${PERSON_CORE_FIELDS}
-    ${ORGANIZATION_CORE_FIELDS}
-    query {
-      agents(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...AgentCoreFields
-            ...PersonCoreFields
-            ...OrganizationCoreFields
-          }
-        }
-      }
-    }
-  `
+  // const GET_ALL_AGENTS = gql`
+  //   ${AGENT_CORE_FIELDS}
+  //   ${PERSON_CORE_FIELDS}
+  //   ${ORGANIZATION_CORE_FIELDS}
+  //   query {
+  //     agents(last: 100000) {
+  //       edges {
+  //         cursor
+  //         node {
+  //           ...AgentCoreFields
+  //           ...PersonCoreFields
+  //           ...OrganizationCoreFields
+  //         }
+  //       }
+  //     }
+  //   }
+  // `
 
-  const UPDATE_PROPOSAL = gql`
-    ${PROPOSAL_CORE_FIELDS},
-    mutation($proposal: ProposalUpdateParams!){
-      updateProposal(proposal: $proposal) {
-        proposal {
-          ...ProposalCoreFields
-        }
-      }
-    }
-  `
-  let updateProposal: any = mutation(UPDATE_PROPOSAL)
+  // const UPDATE_PROPOSAL = gql`
+  //   ${PROPOSAL_CORE_FIELDS},
+  //   mutation($proposal: ProposalUpdateParams!){
+  //     updateProposal(proposal: $proposal) {
+  //       proposal {
+  //         ...ProposalCoreFields
+  //       }
+  //     }
+  //   }
+  // `
+  // let updateProposal: any = mutation(UPDATE_PROPOSAL)
 
-  interface QueryResponse {
-    agents: AgentConnection & RelayConn<any>
-  }
+  // interface QueryResponse {
+  //   agents: AgentConnection & RelayConn<any>
+  // }
 
   // map component state
-  let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
+  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
 
-  async function fetchAgents() {
-    agentsQuery.refetch().then((r) => {
-      agents = flattenRelayConnection(r.data?.agents).map((a) => {
-        return {
-          ...a,
-          "name": a.name,
-          "imageUrl": a.image,
-          "iconUrl": a.image,
-          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-          "role": a.classifiedAs[2],
-          "address": a.note,
-        }
-      })
-      // console.log(agents)
-    })
-  }
+  // async function fetchAgents() {
+  //   agentsQuery.refetch().then((r) => {
+  //     agents = flattenRelayConnection(r.data?.agents).map((a) => {
+  //       return {
+  //         ...a,
+  //         "name": a.name,
+  //         "imageUrl": a.image,
+  //         "iconUrl": a.image,
+  //         "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+  //         "role": a.classifiedAs[2],
+  //         "address": a.note,
+  //       }
+  //     })
+  //     // console.log(agents)
+  //   })
+  // }
 
-  async function fetchUnits() {
-    getUnits.getCurrentResult()
-    getUnits.refetch().then((r) => {
-      if (r.data?.units.edges.length > 0) {
-        units = flattenRelayConnection(r.data?.units)
-      }
-    })
-  }
+  // async function fetchUnits() {
+  //   getUnits.getCurrentResult()
+  //   getUnits.refetch().then((r) => {
+  //     if (r.data?.units.edges.length > 0) {
+  //       units = flattenRelayConnection(r.data?.units)
+  //     }
+  //   })
+  // }
 
-  async function fetchOffers() {
-    try {
-      getOffers.getCurrentResult()
-      await getOffers.refetch().then((r) => {
-        if (r.data?.proposals.edges.length > 0) {
-          offersList = flattenRelayConnection(r.data?.proposals)
-          console.log(offersList)
-        }
-      })
-    } catch (e) {
-      error = e
-    }
-  }
+  // async function fetchOffers() {
+  //   try {
+  //     // getOffers.getCurrentResult()
+  //     await getOffers.refetch().then((r) => {
+  //       if (r.data?.proposals.edges.length > 0) {
+  //         offersList = flattenRelayConnection(r.data?.proposals)
+  //         console.log(offersList)
+  //       }
+  //     })
+  //   } catch (e) {
+  //     error = e
+  //   }
+  // }
 
   // DELETE PROPOSAL  
   const DELETE_PROPOSAL = gql`mutation($revisionId: ID!){
@@ -252,7 +235,7 @@
     if (areYouSure == true) {
       const res = await deleteProposal({ variables: { revisionId } })
       console.log(res)
-      await fetchOffers()
+      await getAllProposals()
     }
   }
   // DELETE RESOURCE SPECIFICATION ENDS
@@ -319,14 +302,14 @@
             resourceConformsTo: reciprocalIntentRaw.resourceConformsTo?.id,
             resourceInventoriedAs: reciprocalIntentRaw.resourceInventoriedAs?.id,
           }
-          console.log(proposal)
+          var d = new Date(Date.now());
           let res = await createRequest(proposal, intent, reciprocalIntent)
           console.log(res)
         } catch (e) {
           console.log(e)
         }
       }
-      await fetchOffers()
+      // await fetchOffers()
       importing = false;
       exportOpen = false;
     } catch (e) {
@@ -338,12 +321,16 @@
   }  
   // EXPORT ENDS
 
-  onMount(() => {
+  onMount(async () => {
     if (browser) {
-      fetchResourceSpecifications()
-      fetchAgents()
-      fetchUnits()
-      fetchOffers()
+      await getAllResourceSpecifications()
+      await getAllAgents()
+      await getAllUnits()
+      await getAllProposals()
+      // fetchResourceSpecifications()
+      // fetchAgents()
+      // fetchUnits()
+      // fetchOffers()
       // setInterval(function(){
       //   if (!units) {
       //     fetchUnits()
@@ -365,7 +352,7 @@
   
 <Error {error} />
 
-<RequestModal bind:createRequest on:submit={fetchOffers} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<RequestModal bind:createRequest on:submit={getAllProposals} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -395,8 +382,57 @@
       data={offersList} 
       bind:open={exportOpen}
       bind:importing
-      on:import={(event) => {
-        importData(event.detail)
+      on:import={async (event) => {
+        // importData(event.detail)
+        console.log("importing data", event.detail)
+        for (let i = 0; i < event.detail.length; i++) {
+          console.log(event.detail[i])
+          let currentIntent = event.detail[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
+          if (currentIntent.receiver) {
+            let currentReciprocalIntent = event.detail[i].publishes.find(({ reciprocal }) => reciprocal).publishes
+            console.log(currentIntent, currentReciprocalIntent)
+            currentReciprocalIntent.action = currentReciprocalIntent.action.id
+            console.log(currentIntent.resourceConformsTo)
+            currentReciprocalIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
+            console.log("********************************", currentReciprocalIntent)
+            if (!currentReciprocalIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
+            console.log("receiver", currentIntent.receiver, hashChanges)
+            currentReciprocalIntent.receiver = hashChanges[currentReciprocalIntent.receiver.id]
+            if (!currentReciprocalIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
+            console.log(currentReciprocalIntent)
+            currentReciprocalIntent.resourceQuantity = {
+              hasNumericalValue: currentReciprocalIntent.resourceQuantity.hasNumericalValue,
+              hasUnit: currentIntent.resourceQuantity.hasUnit?.id
+            }
+            currentIntent.resourceQuantity = {
+              hasNumericalValue: currentIntent.resourceQuantity.hasNumericalValue,
+              hasUnit: currentIntent.resourceQuantity.hasUnit.id
+            }
+            currentIntent.action = currentIntent.action.id
+            currentIntent.receiver = hashChanges[currentIntent.receiver.id]
+            if (!currentIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
+            currentIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
+            if (!currentIntent.resourceConformsTo) { importing = false; error = "Stopped import due to dependency data"; return }
+            currentReciprocalIntent.action = currentReciprocalIntent.action.id
+            currentIntent.availableQuantity = {
+              hasNumericalValue: currentIntent.availableQuantity.hasNumericalValue,
+              hasUnit: currentIntent.availableQuantity.hasUnit.id
+            }
+            currentIntent.resourceQuantity = {
+              hasNumericalValue: currentIntent.resourceQuantity.hasNumericalValue,
+              hasUnit: currentIntent.resourceQuantity.hasUnit.id
+            }
+            var d = new Date(Date.now());
+            let newProposal = {
+              hasBeginning: event.detail[i].hasBeginning,
+              unitBased: event.detail[i].unitBased,
+              note: event.detail[i].note
+            }
+            console.log(currentIntent, currentReciprocalIntent)
+            let res = await createRequest(newProposal, currentIntent, currentReciprocalIntent)
+          }
+        }
+        importing = false
       }}
       />
     {:else}
@@ -436,7 +472,6 @@
           </thead>
           <tbody class="bg-white">
             <!-- {#each offers as { proposed_intents }, index} -->
-            {#if offersList}
             {#each offersList as p, index}
               {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
               {#if mainIntent && mainIntent.publishes.receiver?.name}
@@ -450,20 +485,17 @@
               }}
               {#if mainIntent && availableQuantity && resourceQuantity}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
-                <td
-                  class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                  >{mainIntent.publishes.receiver?.name}</td
-                >
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >{mainIntent.publishes.resourceConformsTo?.name}</td
-                >
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                  >
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                  {mainIntent.publishes.receiver?.name}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  {mainIntent.publishes.resourceConformsTo?.name}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
                   {availableQuantity.hasUnit?.label}
                   <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
-                  </td
-                >
+                </td>
 
                 <td
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
@@ -545,7 +577,6 @@
               {/if}
               {/if}
             {/each}
-            {/if}
           </tbody>
         </table>
       </div>

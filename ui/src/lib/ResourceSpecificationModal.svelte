@@ -60,7 +60,7 @@
   let updateResourceSpecification: any = mutation(UPDATE_RESOURCE_SPECIFICATION)
   // let retrieveUnits: any = query(GET_UNITS_OF_EFFORT_AND_RESOURCE)
 
-  async function handleSubmit() {
+  export async function handleSubmit(currentResourceSpecification: ResourceSpecificationCreateParams) {
     // let unitOfResource = units.find(unit => unit.id === currentResourceSpecification.defaultUnitOfResource).id
     // let unitId = {
     //   UnitId: currentResourceSpecification.defaultUnitOfResource
@@ -92,6 +92,7 @@
       dispatch("submit");
       open = false;
       console.log(res)
+      return res
     } catch (error) {
       console.error(error)
     }
@@ -425,7 +426,7 @@
               if (editing) {
                 handleUpdate()
               } else {
-                handleSubmit()
+                handleSubmit(currentResourceSpecification)
               }
             }}
             class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"

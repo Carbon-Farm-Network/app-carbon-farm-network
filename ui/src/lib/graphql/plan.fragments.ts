@@ -335,6 +335,38 @@ export const PLAN_RETURN_FIELDS = gql`
           name
           defaultUnitOfResourceId
         }
+        finished
+        fulfilledBy {
+          pageInfo
+          edges {
+            cursor
+            node {
+              id
+            }
+          }
+        }
+        clauseOf {
+          id
+          revisionId
+          commitments {
+            id
+            revisionId
+            providerId
+            action {
+              id
+              label
+            }
+            resourceConformsTo {
+              id
+              name
+              defaultUnitOfResourceId
+            }
+            resourceQuantity {
+              hasNumericalValue
+              hasUnitId
+            }
+          }
+        }
       }
       committedOutputs {
         id
@@ -366,6 +398,38 @@ export const PLAN_RETURN_FIELDS = gql`
         resourceConformsTo {
           id
           name
+        }
+        finished
+        fulfilledBy {
+          pageInfo
+          edges {
+            cursor
+            node {
+              id
+            }
+          }
+        }
+        clauseOf {
+          id
+          revisionId
+          commitments {
+            id
+            revisionId
+            providerId
+            action {
+              id
+              label
+            }
+            resourceConformsTo {
+              id
+              name
+              defaultUnitOfResourceId
+            }
+            resourceQuantity {
+              hasNumericalValue
+              hasUnitId
+            }
+          }
         }
       }
     }

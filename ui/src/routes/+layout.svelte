@@ -2,6 +2,8 @@
 import { browser } from '$app/environment'
 import { setClient } from 'svelte-apollo'
 import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { getAllHashChanges, addHashChange } from '../utils';
+import { allHashChanges } from '../store';
 
 import "../global.css"
 import { page } from '$app/stores'
@@ -14,6 +16,7 @@ export let data: any;
 if (browser) {
   if (isWeContext()) {
     setClient(data.client)
+    getAllHashChanges()
   }
   else {
     setClient(data.client)

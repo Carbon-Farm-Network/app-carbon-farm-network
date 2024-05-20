@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from './utils'
+  import { clickOutside } from '../utils'
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   // import agents from '$lib/data/agents.json'
@@ -106,6 +106,7 @@
     if (selectedCommitmentId !== previousSelectedCommitmentId) {
       previousSelectedCommitmentId = selectedCommitmentId;
       if (process && selectedCommitmentId && commitmentModalColumn > -1) {
+        console.log("process commitment", process)
         selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
         console.log(commitments)
@@ -172,7 +173,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Provider</label
                 >
-                <!-- {JSON.stringify(selectedCommitment.provider)} -->
+
                 {#if selectedCommitment?.id && selectedCommitment?.provider && agents}
                   <select
                     id="provider"
@@ -181,8 +182,8 @@
                     value={selectedCommitment.provider.id}
                     on:change={(e) => {
                       let id = e.target.value
-                      console.log(id)
                       selectedCommitment.providerId = id
+                      selectedCommitment.provider.id = id
                       // let selectedAgent = agents.find((rs) => rs.id === id)
                       // console.log(selectedAgent.name)
                       // if (selectedCommitment.provider) {
@@ -283,20 +284,24 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Resource specification</label
                 >
+                <!-- {JSON.stringify(selectedCommitment)} -->
                 {#if selectedCommitment?.id && selectedCommitment?.resourceConformsTo}
                   <p>{selectedCommitment?.resourceConformsTo.name}</p>
                 {:else if resourceSpecifications}
                   <!-- {JSON.stringify(newCommitmentTemplate)} -->
+                  <!-- {selectedCommitment?.resourceConformsTo?.name} -->
                   <select
                     id="defaultUnitOfResource"
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={newCommitment.resourceConformsTo.name}
+                    value={newCommitment.resourceConformsTo.id}
                       on:change={(e) => {
                         console.log(e.target.value)
                         const rspec = resourceSpecifications.find((rs) => rs.id === e.target.value)
-                        // newCommitment.resourceConformsTo.defaultUnitOfResource = rspec.defaultUnitOfResource
+                        newCommitment.defaultUnitOfResourceId = rspec.defaultUnitOfResource.id
                         newCommitment.resourceConformsTo = rspec
+                        selectedCommitment.resourceConformsTo = rspec
+                        selectedCommitment.defaultUnitOfResourceId = rspec.defaultUnitOfResource.id
                         console.log(newCommitment)
                       }}
                     >
@@ -323,7 +328,12 @@
                     id="action"
                     name="action"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.action.label}
+                    bind:value={newCommitment.action.id}
+                    on:change={(e) => {
+                      const action = actions.find((a) => a.id === e.target.value)
+                      console.log(action)
+                      newCommitment.action = action
+                    }}
                   >
                   {#if filteredActions}
                     {#each filteredActions as action}
@@ -479,6 +489,16 @@
             // let allColumnsCopy = [...allColumns]
             
             // plan_created = true;
+
+            if (selectedCommitment.clauseOf) {
+              selectedCommitment.clauseOf.commitments = selectedCommitment.clauseOf.commitments.map((c) => {
+                return {
+                  ...c,
+                  provider: selectedCommitment.provider,
+                }
+              })
+            }
+
             let updatedCommitment = {...selectedCommitment}
             if (!selectedCommitment.providerId) {
               updatedCommitment.providerId = newCommitment.providerId
@@ -494,6 +514,7 @@
             }
             if (!selectedCommitment.resourceConformsTo) {
               updatedCommitment.resourceConformsTo = newCommitment.resourceConformsTo
+              updatedCommitment.defaultUnitOfResourceId = newCommitment.resourceConformsTo.defaultUnitOfResource.id
             }
             if (!selectedCommitment.resourceQuantity) {
               updatedCommitment.resourceQuantity = newCommitment.resourceQuantity
@@ -517,8 +538,8 @@
             //   )
             //   allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][commitmentIndex] = {...updatedCommitment}
             //   selectedCommitment = Object.assign({}, newCommitmentTemplate)
-
             }
+          console.log("---------------------------------------------precommit", updatedCommitment, selectedCommitment)
             dispatch('submit', {
               column: commitmentModalColumn,
               process: commitmentModalProcess,

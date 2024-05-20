@@ -5,13 +5,14 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { gql } from 'graphql-tag'
   import type { ReadableQuery } from 'svelte-apollo'
-  import { clickOutside } from './utils'
+  import { clickOutside } from '../utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
   import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
+  import { addHashChange } from '../utils'
   import ResourceSpecificationModal from './ResourceSpecificationModal.svelte'
 
   // public CustomElement attributes
@@ -26,6 +27,8 @@
   export let currentReciprocalIntent: IntentUpdateParams;
   export let currentProposedIntent: any;
   export let editing: boolean;
+
+  let currency: string;
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -111,12 +114,11 @@
     return val
   }
 
-  async function handleSubmit() {
+  export async function handleSubmit(currentIntent: IntentUpdateParams, currentReciprocalIntent: IntentUpdateParams, hashMap = false) {
     submitting = true;
-    console.log(currentProposal)
-    console.log(currentIntent)
-    console.log(currentReciprocalIntent)
-    console.log(currentProposedIntent)
+    if (currency) {
+      currentReciprocalIntent.resourceConformsTo = currency
+    }
     try {
       // create proposal
       var d = new Date(Date.now());
@@ -151,6 +153,10 @@
       const res2ID = res2.data.createIntent.intent.id
       console.log(res2);
 
+      if (hashMap) {
+        addHashChange(currentIntent.id, res2ID)
+      }
+
       // create reciprocal intent
       const recipIntent = {
         receiver: currentIntent.provider,
@@ -160,9 +166,12 @@
       }
       console.info(recipIntent)
       const res3 = await addIntent({ variables: { intent: recipIntent } })
-      const res3ID: String = String(res3.data.createIntent.intent.id)
+      const res3ID: string = String(res3.data.createIntent.intent.id)
       console.log(res3);
 
+      if (hashMap) {
+        addHashChange(recipIntent.id, res3ID)
+      }
 
       let reciprocal: Boolean = false
       let publishedIn = res1ID
@@ -192,6 +201,7 @@
 
   async function handleUpdate() {
     submitting = true;
+    currentReciprocalIntent.resourceConformsTo = currency
     // console.log(currentProposal)
     let proposal = currentProposal
     updateProposal({ variables: { proposal: proposal } })
@@ -243,7 +253,7 @@
     // handleSubmit()
   })
 
-  $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting
+  $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting, currency
   $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo; // && currentIntent.note;
 </script>
 
@@ -467,16 +477,25 @@
                 >
                 <!-- USD -->
                 {#if currentReciprocalIntent}
+                <!-- {JSON.stringify(resourceSpecifications)} -->
+                <!-- <select>
+                  {#each resourceSpecifications as r}
+                  {#if r.name == "USD"}
+                  {r.name}
+                  <option selected value={r.id}>USD</option>
+                  {/if}
+                  {/each}
+                </select> -->
                 <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  bind:value={currentReciprocalIntent.resourceConformsTo}
+                  bind:value={currency}
                   >
 
                   {#if resourceSpecifications}
                   {#each resourceSpecifications as r}
-                    {#if r.name === "USD"}
+                    {#if r.name == "USD"}
                       <option selected value={r.id}>USD</option>
                     {/if}
                   {/each}
@@ -602,7 +621,7 @@
               if (editing) {
                 handleUpdate()
               } else {
-                handleSubmit()
+                handleSubmit(currentIntent, currentReciprocalIntent)
               }
             }}            >
             {#if editing}

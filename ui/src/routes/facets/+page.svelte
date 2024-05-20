@@ -8,6 +8,7 @@
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
   import { onMount } from 'svelte'
+  import { addHashChange } from "../../utils"
   import { goto } from '$app/navigation';
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
@@ -61,7 +62,6 @@
   // let addFacet: any = mutation(CREATE_FACET)
 
   async function fetchFacets() {
-    await queryFacetGroups.getCurrentResult()
     let y = await queryFacetGroups.refetch()
     let selectedGroupId: String;
     if (currentFacetGroup) {
@@ -112,6 +112,7 @@
         }
         let f = await addFacet(facet, {id: facetGroupId})
         console.log(f)
+        addHashChange(facets[j].id, f.data.putFacet.facet.id)
 
         // add facet values
         let facetValues = facets[j].values
@@ -123,6 +124,8 @@
           }
 
           let fv = await addValue({ variables: { facetValue } })
+          console.log(fv)
+          addHashChange(facetValues[k].id, fv.data.putFacetValue.facetValue.id)
 
           console.log(fv)
         }

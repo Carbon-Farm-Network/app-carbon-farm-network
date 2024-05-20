@@ -15,6 +15,7 @@
   import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
+  import { addHashChange } from "../../utils"
 
   let modalOpen = false;
   let editing = false;
@@ -24,6 +25,8 @@
   let units: any[];
   let facets: Facet[] | undefined;
   let selectedFacets: any = {};
+  let handleSubmit: any;
+  let importing: boolean = false;
 
   const GET_FACET_GROUPS = gql`
     ${FACET_GROUP_CORE_FIELDS}
@@ -153,16 +156,16 @@ const GET_UNITS = gql`
   // reactive data bindings
   let resourceSpecifications: any[]
 
-  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units;
+  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units, handleSubmit
 </script>
 
 <!-- <div style="height: 8vh"> -->
   <Header title="Resource Specifications" description="The types of resources your network creates, uses, trades; types of work; currencies, tokens." />
 <!-- </div> -->
 <!-- <Units /> -->
-{#if units}
-<ResourceSpecificationModal bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={fetchResourceSpecifications} />
-{/if}
+<!-- {#if units} -->
+<ResourceSpecificationModal bind:handleSubmit bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={fetchResourceSpecifications} />
+<!-- {/if} -->
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -179,7 +182,16 @@ const GET_UNITS = gql`
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a resource specification</button>
     </div>
-    <Export dataName="list of Resource Specifications" fileName="cfn-resource-specifications" data={resourceSpecifications} />
+    <Export bind:importing dataName="list of Resource Specifications" fileName="cfn-resource-specifications" data={resourceSpecifications}
+      on:import={async (event) => {
+        for (let i = 0; i < event.detail.length; i++) {
+          let newRS = await handleSubmit(event.detail[i])
+          await addHashChange(event.detail[i].id, newRS.data.createResourceSpecification.resourceSpecification.id)
+        }
+        importing = false
+        return
+      }}
+    />
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

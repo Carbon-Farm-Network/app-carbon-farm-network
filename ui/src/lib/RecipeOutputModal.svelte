@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from './utils'
+  import { clickOutside } from '../utils'
 
   // public CustomElement attributes
   export let open = false
