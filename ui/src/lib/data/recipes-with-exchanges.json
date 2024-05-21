@@ -190,7 +190,7 @@
             "name": ""
           },
           "instructions": "SumOutputs",
-          "provider_role": "Spinning",
+          "provider_role": "Spinning Mill",
           "receiver_role": "Network"
         }
       ],
@@ -280,7 +280,7 @@
             "name": ""
           },
           "instructions": "SumOutputs",
-          "provider_role": "Spinning",
+          "provider_role": "Spinning Mill",
           "receiver_role": "Network"
         }
       ],
@@ -370,7 +370,7 @@
             "name": ""
           },
           "instructions": "SumOutputs",
-          "provider_role": "Spinning",
+          "provider_role": "Spinning Mill",
           "receiver_role": "Network"
         }
       ],
