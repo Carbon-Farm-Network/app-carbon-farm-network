@@ -104,21 +104,43 @@
 
   allProposals.subscribe((res) => {
     if (!res.length || res.length == 0) return
-    console.log("proposals change", res)
-    requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
-    offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
+    console.log("proposals change ?", res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider))
+    console.log("proposals change ?", res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver))
+    requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
+    offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
     proposalsList = res
-    console.log("offers here", offers)
+    console.log("offers here ?", offers)
+    console.log("requests here ?", requests)
   })
+
+  const GET_All_ACTIONS = gql`
+    query {
+      actions(last: 100000) {
+        id
+        label
+        inputOutput
+      }
+    }
+  `
+  let getActions: ReadableQuery<QueryResponse> = query(GET_All_ACTIONS)
+
+  async function fetchActions() {
+    await getActions.getCurrentResult()
+    let r = await getActions.refetch()
+    console.log("*******actions*******")
+    console.log(r)
+    actions = r.data?.actions
+  }
 
   onMount(async () => {
     if (browser) {
+      await fetchActions()
+      await getAllProposals()
       await getAllHashChanges()
       await getAllAgents()
       await getAllUnits()
       await getAllResourceSpecifications()
       await getAllProcessSpecifications()
-      await getAllProposals()
     }
   })
 
@@ -168,9 +190,6 @@
                 )
               }
             })
-            console.log("1")
-            console.log("acc", acc)
-            console.log("input", input)
           // if there is no recipe we just continue
           if (!recipe) {
             return acc
@@ -707,6 +726,7 @@ editing={false}/>
         // check if provider changed, and if so, update the cost
         let updatedCommitment = {
           ...event.detail.commitment,
+          receiver: event.detail.commitment.receiverId ? agents.find(it => it.id == event.detail.commitment.receiverId) : undefined
         }
         
         // let providerChanged = false;
@@ -737,6 +757,7 @@ editing={false}/>
         let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name)
         let agreement = makeAgreement(event.detail.commitment, exchange, offers)
         event.detail.commitment.agreement = agreement
+        event.detail.commitment.receiver = agents.find(it => it.id == event.detail.commitment.receiverId)
         allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
       }
     }
@@ -1099,7 +1120,10 @@ editing={false}/>
             {#each commitments as c}
               {@const resourceConformsTo = c.resourceConformsTo}
               {@const resourceQuantity = c.resourceQuantity}
-              {@const receiver = c.receiver}
+              {@const receiver = c.receiverId ? agents.find(it => it.id == c.receiverId) : c.receiver}
+              {@const provider = c.providerId ? agents.find(it => it.id == c.providerId) : c.provider}
+              <!-- {@const receiver = c.receiverId ? agents.find(it => it.id == c.receiverId) : c.provider}
+              {@const provider = c.providerId ? agents.find(it => it.id == c.providerId) : c.receiver} -->
               {@const id = c.id}
               {@const action = c.action}
               <div

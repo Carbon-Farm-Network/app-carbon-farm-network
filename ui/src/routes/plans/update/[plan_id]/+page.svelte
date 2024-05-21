@@ -489,82 +489,87 @@
     }
   }
 
-  async function setColumns(plan: any) {
+  export async function fetchThePlan() {
     let lastSeenProcessSpecification: any = undefined;
+    let lastLastSeenProcessSpecification: any = undefined;
     let lastColumn: any = []
     allColumns = []
 
-    plan.processes.forEach(async (process: any) => {
-      const newProcess = {
-        ...process,
-        basedOn: {
-          image: processImages[process.basedOn.name],
-          name: process.basedOn.name,
-          id: process.basedOn.id,
-        },
-        // sort committedInputs by last modified
-        committedInputs: [...process.committedInputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
-        // committedInputs: [...process.committedInputs].reverse(),
-        committedOutputs: [...process.committedOutputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
-        
-      }
-
-      for (const commitment of process.committedOutputs) {
-        await includeCommitment(commitment)
-      }
-
-      for (const commitment of process.committedInputs) {
-        await includeCommitment(commitment)
-      }
-
-      console.log("PROCESS TYPE", process.basedOn.name, newProcess)
-      
-      // if this is a new process
-      if (process.basedOn.id !== lastSeenProcessSpecification) {
-        console.log("NEW PROCESS", process.basedOn.name)
-        // add last column to allColumns and reset
-        if (lastColumn.length > 0) {
-          console.log("LAST COLUMN FULL", lastColumn)
-          // allColumns.unshift(lastColumn)
-          lastColumn = [newProcess]
-        } else {
-          console.log("LAST COLUMN NOT FULL", lastColumn)
-          lastColumn.unshift(newProcess)
-        }
-        lastSeenProcessSpecification = process.basedOn.id
-      } else {
-        console.log("SAME PROCESS", process.basedOn.name)
-        lastColumn.unshift(newProcess)
-      }
-
-      allColumns.unshift(lastColumn)
-      loadingPlan = false;
-      console.log("allColumns", allColumns)
-      allColumns = [...allColumns]
-    })
-  }
-
-  export async function fetchThePlan() {
-
     try {
-        getPlan.setVariables({
-          id: planId
-        });
-        const res = await getPlan.refetch()
-        console.log(res)
-        plan = {...res.data.plan}
-        commitments = [...plan.independentDemands]
-        console.log("plan", plan)
-        console.log("commitments", commitments)
+      getPlan.setVariables({
+        id: planId
+      });
+      const res = await getPlan.refetch()
+      plan = {...res.data.plan}
+      commitments = [...plan.independentDemands]
+      console.log("plan is here", plan)
+      console.log("commitments", commitments)
+
+      // order plan.processes by meta.retrievedRevision.time
+      let sortedProcesses = [...plan.processes].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime())
+      for (const process of sortedProcesses) {
+        const newProcess = {
+          ...process,
+          basedOn: {
+            image: processImages[process.basedOn.name],
+            name: process.basedOn.name,
+            id: process.basedOn.id,
+          },
+          // sort committedInputs by last modified
+          committedInputs: [...process.committedInputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
+          // committedInputs: [...process.committedInputs].reverse(),
+          committedOutputs: [...process.committedOutputs].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime()),
+        }
+
+        for (const commitment of process.committedOutputs) {
+          await includeCommitment(commitment)
+        }
+
+        for (const commitment of process.committedInputs) {
+          await includeCommitment(commitment)
+        }
+
+        console.log("hell 2", process.basedOn.name)
+        console.log("PROCESS TYPE", process.basedOn.name, newProcess)
         
-        await setColumns(plan)
+        // if this is a new process
+        if (process.basedOn.id !== lastSeenProcessSpecification) {
+          console.log("NEW PROCESS", process.basedOn.name)
+          // add last column to allColumns and reset
+          if (lastColumn.length > 0) {
+            console.log("LAST COLUMN FULL", lastColumn)
+            // allColumns.push(lastColumn)
+            console.log("added a column 1")
+            lastColumn = [newProcess]
+          } else {
+            console.log("LAST COLUMN NOT FULL", lastColumn)
+            lastColumn.push(newProcess)
+          }
+          lastSeenProcessSpecification = process.basedOn.id
+        } else {
+          console.log("SAME PROCESS 1", process.basedOn.name)
+          lastColumn.push(newProcess)
+        }
+
+        if (process.basedOn.id !== lastLastSeenProcessSpecification) {
+          allColumns.push(lastColumn)
+        } else {
+          console.log("SAME PROCESS 2", process.basedOn.name, lastSeenProcessSpecification)
+        }
+        lastLastSeenProcessSpecification = process.basedOn.id
+        console.log("added a column 2")
+        loadingPlan = false;
+        console.log("allColumns", allColumns)
+        allColumns = [...allColumns]
+      }
+
         await fetchActions()
         await getAllUnits()
         await getAllAgents()
         await getAllProposals()
         await getAllResourceSpecifications()
         await getAllProcessSpecifications()
-        console.log(allColumns)
+        console.log("these are all the columns", allColumns)
       } catch (e) {
         console.log("error", e)
         error = e

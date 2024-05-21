@@ -361,6 +361,7 @@
       for (const process of column) {
         process.plannedWithin = p.data.res.plan.id
         // save process
+        // wait
         const processId = await saveOrUpdateProcess(process)
         console.log("compare ids", p, processId)
         // save everything else

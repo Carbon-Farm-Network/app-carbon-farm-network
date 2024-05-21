@@ -42,8 +42,7 @@
   const INITIALIZE_GLOBAL_RECORDS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
     ${UNIT_CORE_FIELDS}
-    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!, $agent: OrganizationCreateParams) {
-
+    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!) {
       g1: putFacetGroup(facetGroup: $g1) {
         facetGroup {
           id
@@ -58,23 +57,44 @@
           name
         }
       }
-
-      rs: createResourceSpecification(resourceSpecification: $resource) {
-        resourceSpecification {
-          ...ResourceSpecificationCoreFields
-          defaultUnitOfResource {
-            ...UnitCoreFields
-          }
-        }
-      }
-
-      a: createOrganization(organization: $agent) {
-        organization {
-          id
-        }
-      }
     }
   `
+  // const INITIALIZE_GLOBAL_RECORDS = gql`
+  //   ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+  //   ${UNIT_CORE_FIELDS}
+  //   mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!, $agent: OrganizationCreateParams) {
+
+  //     g1: putFacetGroup(facetGroup: $g1) {
+  //       facetGroup {
+  //         id
+  //         revisionId
+  //         name
+  //       }
+  //     }
+  //     g2: putFacetGroup(facetGroup: $g2) {
+  //       facetGroup {
+  //         id
+  //         revisionId
+  //         name
+  //       }
+  //     }
+
+  //     rs: createResourceSpecification(resourceSpecification: $resource) {
+  //       resourceSpecification {
+  //         ...ResourceSpecificationCoreFields
+  //         defaultUnitOfResource {
+  //           ...UnitCoreFields
+  //         }
+  //       }
+  //     }
+
+  //     a: createOrganization(organization: $agent) {
+  //       organization {
+  //         id
+  //       }
+  //     }
+  //   }
+  // `
 
   const CREATE_RESOURCE_SPECIFICATION = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -166,7 +186,7 @@
       //   }
       // }})
 
-      // // let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
+      // let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
       // let rSpecs: any[] = []
       // let pSpecs: any[] = []
 
