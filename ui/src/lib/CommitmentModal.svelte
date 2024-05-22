@@ -53,6 +53,9 @@
     }
   }
 
+  $: provider = selectedCommitment.providerId ? agents.find(a => a.id == selectedCommitment.providerId) : selectedCommitment.provider
+  $: receiver = selectedCommitment.receiverId ? agents.find(a => a.id == selectedCommitment.receiverId) : selectedCommitment.receiver
+
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
       e.preventDefault()
@@ -165,7 +168,6 @@
                 Add commitment
               {/if}
             </h3>
-
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -174,16 +176,16 @@
                   >Provider</label
                 >
 
-                {#if selectedCommitment?.id && selectedCommitment?.provider && agents}
+                {#if selectedCommitment?.id && provider}
                   <select
                     id="provider"
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={selectedCommitment.provider.id}
+                    value={provider?.id}
                     on:change={(e) => {
                       let id = e.target.value
                       selectedCommitment.providerId = id
-                      selectedCommitment.provider.id = id
+                      // selectedCommitment.provider.id = id
                       // let selectedAgent = agents.find((rs) => rs.id === id)
                       // console.log(selectedAgent.name)
                       // if (selectedCommitment.provider) {
@@ -233,19 +235,12 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Receiver</label
                 >
-                {#if selectedCommitment?.id && selectedCommitment.receiverId}
-                  <!-- <p>{selectedCommitment.receiver.name}</p> -->
-                  {#each agents as agent}
-                    {#if agent.id == selectedCommitment.receiverId}
-                      {agent.name}
-                    {/if}
-                  {/each}
-                {:else if selectedCommitment?.id && agents}
+                {#if selectedCommitment?.id && receiver}
                   <select
                     id="receiver"
                     name="receiver"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={""}
+                    value={receiver?.id}
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)
@@ -539,7 +534,6 @@
             //   allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][commitmentIndex] = {...updatedCommitment}
             //   selectedCommitment = Object.assign({}, newCommitmentTemplate)
             }
-          console.log("---------------------------------------------precommit", updatedCommitment, selectedCommitment)
             dispatch('submit', {
               column: commitmentModalColumn,
               process: commitmentModalProcess,

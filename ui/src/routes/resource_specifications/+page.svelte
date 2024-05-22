@@ -19,6 +19,7 @@
 
   let modalOpen = false;
   let editing = false;
+  let exportOpen = false;
   let name = "";
   let id = "";
   let currentResourceSpecification: any;
@@ -182,13 +183,14 @@ const GET_UNITS = gql`
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a resource specification</button>
     </div>
-    <Export bind:importing dataName="list of Resource Specifications" fileName="cfn-resource-specifications" data={resourceSpecifications}
+    <Export bind:importing bind:open={exportOpen} dataName="list of Resource Specifications" fileName="cfn-resource-specifications" data={resourceSpecifications}
       on:import={async (event) => {
         for (let i = 0; i < event.detail.length; i++) {
           let newRS = await handleSubmit(event.detail[i])
           await addHashChange(event.detail[i].id, newRS.data.createResourceSpecification.resourceSpecification.id)
         }
         importing = false
+        exportOpen = false
         return
       }}
     />

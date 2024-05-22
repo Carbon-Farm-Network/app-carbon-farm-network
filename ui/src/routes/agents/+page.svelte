@@ -124,8 +124,9 @@
     <Export dataName="list of agents" fileName="cfn-agents" data={agents} 
     bind:open={exportOpen}
     bind:importing
-    on:import={(event) => {
-      importData(event.detail)
+    on:import={async (event) => {
+      await importData(event.detail)
+      exportOpen = false;
       // console.log("importing data", event.detail)
       // console.log("hi")
       // importData({ variables: { proposals: event.detail } })

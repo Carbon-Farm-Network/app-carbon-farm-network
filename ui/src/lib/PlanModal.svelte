@@ -490,7 +490,6 @@
                 }
               }
             }
-            console.log("HERE IS THE C", c)
             // c.resourceQuantity.hasUnit.id = units.find((u) => u.label === c.resourceQuantity.hasUnit.label).id
           }
           // UNIT ID FIND ENDS

@@ -16,14 +16,15 @@
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
 
-  let modalOpen = false;
-  let editing = false;
+  let modalOpen: boolean = false;
+  let exportOpen: boolean = false;
+  let editing: boolean = false;
   let name = "";
   let id = "";
   let currentProcessSpecification: any;
   let units: any[];
   let handleSubmit: any;
-  let importing: boolean = false;
+  let open: boolean = false;
 
   const GET_ALL_PROCESS_SPECIFICATIONS = gql`
     ${PROCESS_SPECIFICATION_CORE_FIELDS}
@@ -87,7 +88,7 @@
   // reactive data bindings
   let processSpecifications: any[]
 
-  $: processSpecifications, modalOpen, editing, id, currentProcessSpecification, units;
+  $: processSpecifications, modalOpen, editing, id, currentProcessSpecification, units, exportOpen;
 </script>
 
 <!-- <div style="height: 8vh"> -->
@@ -111,14 +112,14 @@
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a process specification</button>
     </div>
-    <Export bind:importing dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications}
+    <Export bind:open={exportOpen} dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications}
     on:import={async (event) => {
       for (let i = 0; i < event.detail.length; i++) {
         let newPS = await handleSubmit(event.detail[i])
         await addHashChange(event.detail[i].id, newPS.data.createProcessSpecification.processSpecification.id)
       }
       console.log("++++++++++++FINSIHED++++++++++++")
-      importing = false
+      exportOpen = false
     }}
     />
   </div>

@@ -73,14 +73,7 @@
   })
 
   allUnits.subscribe((res) => {
-    console.log("units change", res)
-    units = res.map((a) => {
-      return {
-        ...a,
-        "label": a.label,
-        "symbol": a.symbol,
-      }
-    })
+    units = res
   })
 
   allResourceSpecifications.subscribe((res) => {
@@ -425,7 +418,7 @@
       ...process,
       committedOutputs: process.committedOutputs.map(output => {
         const output_exchange = findExchange(output, process.based_on.name)
-        console.log("output_exchange", output_exchange)
+        console.log("output_exchange", output_exchange, "process", process.based_on)
         if (output_exchange) {
           console.log("maybe making agreement 1", output_exchange)
           const output_agreement = makeAgreement(output, output_exchange, offers)
@@ -443,6 +436,7 @@
       committedInputs: process.committedInputs.map(input => {
         // if there is no input, we don't need to make an agreement
         const input_exchange = findExchange(input, process.based_on.name)
+        console.log("input_exchange", input_exchange, "process", process.based_on)
         if (input_exchange) {
           console.log("maybe making agreement 2", input_exchange)
           const input_agreement = makeAgreement(input, input_exchange, offers)
@@ -577,8 +571,7 @@
         if (based_on_name) {
           return a_recipe?.has_recipe_clause?.some(
             clause =>
-              clause.resourceConformsTo.name ==
-                commitment?.resourceConformsTo?.name &&
+              clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
               clause.stage?.name == based_on_name
           )
         }
@@ -595,7 +588,25 @@
     recipe: undefined | any,
     offers: any[]
   ): undefined | any {
+    console.log("commitment? ", commitment)
     const reciprocal_clause = recipe?.has_recipe_reciprocal_clause?.[0]
+    console.log("has a recip clause", commitment, recipe)
+    if (reciprocal_clause) {
+      return {
+        name: recipe?.name,
+        note: recipe?.note,
+        commitment: {
+          action:  reciprocal_clause.action?.label,
+          provider: agents.find((a) => a.role == reciprocal_clause.provider_role),
+          stage: reciprocal_clause?.stage,
+          resourceConformsTo: reciprocal_clause.resourceConformsTo,
+          resourceQuantity: {
+            ...reciprocal_clause.resourceQuantity,
+            hasNumericalValue: reciprocal_clause.resourceQuantity.hasNumericalValue * commitment.resourceQuantity?.hasNumericalValue
+          }
+        }
+      }
+    }
     // if (!reciprocal_clause) return
     // let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
     // let hasUnit = reciprocal_clause.resourceQuantity.hasUnit
@@ -681,7 +692,7 @@
           // console.log("cost", inputsAndOutputs[k])
           // console.log("cost", inputsAndOutputs[k].agreement)
           if (inputsAndOutputs[k].agreement) {
-            totalCost = totalCost.add(inputsAndOutputs[k].agreement.commitment.resourceQuantity.hasNumericalValue)
+            totalCost = totalCost.add(inputsAndOutputs[k].agreement.commitment.resourceQuantity.hasNumericalValue *  inputsAndOutputs[k].resourceQuantity?.hasNumericalValue)
           }
         }
       }
@@ -926,8 +937,6 @@ editing={false}/>
                     </p>
                     {#if agreement}
                       {@const commitment = agreement.commitment}
-                      <!-- {JSON.stringify(agreement)} -->
-
                       <p>
                         cost {new Decimal(
                           commitment.resourceQuantity.hasNumericalValue
@@ -1134,7 +1143,11 @@ editing={false}/>
                   <p>
                     {action.label}
                     {resourceQuantity?.hasNumericalValue}
-                    {resourceQuantity?.hasUnit?.label}
+                    {#each units as unit}
+                      {#if unit.id == resourceConformsTo?.defaultUnitOfResource.id}
+                        {unit.label}
+                      {/if}
+                    {/each}
                   </p>
                   <p>to {receiver?.name}</p>
                 </div>

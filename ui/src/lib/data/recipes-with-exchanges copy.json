@@ -1245,6 +1245,144 @@
       ]
     },
     {
+      "id": "recipe_exchange_yarn_brown",
+      "type": "recipe_exchange",
+      "name": "CFN to Designer Brown Yarn",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "brown_50_50_yarn_exchange_yarn",
+          "resourceQuantity": {
+            "hasNumericalValue": "1",
+            "hasUnit": {
+              "label": "pound"
+            }
+          },
+          "action": {"label": "transfer"},
+          "resourceConformsTo": {
+            "name": "Brown 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Ship"
+          },
+          "provider_role": "Network",
+          "receiver_role": "Designer"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_yarn",
+          "resourceQuantity": {
+            "hasNumericalValue": "19",
+            "hasUnit": {
+              "label": "one"
+            }
+          },
+          "action": {"label": "transfer"},
+          "resourceConformsTo": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Designer",
+          "receiver_role": "Network"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_yarn_gray",
+      "type": "recipe_exchange",
+      "name": "CFN to Designer Gray Yarn",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "gray_50_50_yarn_exchange_yarn",
+          "resourceQuantity": {
+            "hasNumericalValue": "1",
+            "hasUnit": {
+              "label": "pound"
+            }
+          },
+          "action": {"label": "transfer"},
+          "resourceConformsTo": {
+            "name": "Gray 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Ship"
+          },
+          "provider_role": "Network",
+          "receiver_role": "Designer"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_yarn",
+          "resourceQuantity": {
+            "hasNumericalValue": "19",
+            "hasUnit": {
+              "label": "one"
+            }
+          },
+          "action": {"label": "transfer"},
+          "resourceConformsTo": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Designer",
+          "receiver_role": "Network"
+        }
+      ]
+    },
+    {
+      "id": "recipe_exchange_yarn_ivory",
+      "type": "recipe_exchange",
+      "name": "CFN to Designer Ivory Yarn",
+      "note": "",
+      "has_recipe_clause": [
+        {
+          "id": "ivory_50_50_yarn_exchange_yarn",
+          "resourceQuantity": {
+            "hasNumericalValue": "1",
+            "hasUnit": {
+              "label": "pound"
+            }
+          },
+          "action": {"label": "transfer"},
+          "resourceConformsTo": {
+            "name": "Ivory 50/50 Yarn"
+          },
+          "stage": {
+            "name": "Ship"
+          },
+          "provider_role": "Network",
+          "receiver_role": "Designer"
+        }
+      ],
+      "has_recipe_reciprocal_clause": [
+        {
+          "id": "usd_exchange_yarn",
+          "resourceQuantity": {
+            "hasNumericalValue": "19",
+            "hasUnit": {
+              "label": "one"
+            }
+          },
+          "action": {"label": "transfer"},
+          "resourceConformsTo": {
+            "name": "USD"
+          },
+          "stage": {
+            "name": ""
+          },
+          "provider_role": "Designer",
+          "receiver_role": "Network"
+        }
+      ]
+    },
+    {
       "id": "recipe_exchange_farm_alpaca_brown",
       "type": "recipe_exchange",
       "name": "Brown Alpaca from the Farm",

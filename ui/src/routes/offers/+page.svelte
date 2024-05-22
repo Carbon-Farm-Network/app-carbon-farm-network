@@ -191,7 +191,7 @@
         >Add an offer</button
       >
     </div>
-    <Export bind:importing dataName="list of offers" fileName="cfn-offers"
+    <Export bind:importing bind:open={exportOpen} dataName="list of offers" fileName="cfn-offers"
     data={offersList}
     on:import={async (event) => {
       console.log("importing data", event.detail)
@@ -224,6 +224,7 @@
         }
       }
       importing = false
+      exportOpen = false
     }}
     />
     {:else}

@@ -325,6 +325,7 @@ export const PLAN_RETURN_FIELDS = gql`
         receiverId
         resourceQuantity {
           hasNumericalValue
+          hasUnitId
           hasUnit {
             id
             label
@@ -337,13 +338,27 @@ export const PLAN_RETURN_FIELDS = gql`
         }
         finished
         fulfilledBy {
-          pageInfo
-          edges {
-            cursor
-            node {
-              id
-            }
+          id
+          action {
+            id
+            label
           }
+          providerId
+          provider {
+            id
+            name
+          }
+          receiverId
+          resourceConformsTo {
+            id
+            name
+            defaultUnitOfResourceId
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnitId
+          }
+          hasBeginning
         }
         clauseOf {
           id
@@ -390,6 +405,7 @@ export const PLAN_RETURN_FIELDS = gql`
         receiverId
         resourceQuantity {
           hasNumericalValue
+          hasUnitId
           hasUnit {
             id
             label
@@ -401,13 +417,27 @@ export const PLAN_RETURN_FIELDS = gql`
         }
         finished
         fulfilledBy {
-          pageInfo
-          edges {
-            cursor
-            node {
-              id
-            }
+          id
+          action {
+            id
+            label
           }
+          providerId
+          provider {
+            id
+            name
+          }
+          receiverId
+          resourceConformsTo {
+            id
+            name
+            defaultUnitOfResourceId
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnitId
+          }
+          hasBeginning
         }
         clauseOf {
           id

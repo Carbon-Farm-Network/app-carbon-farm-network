@@ -608,7 +608,7 @@
         for (let k = 0; k < inputsAndOutputs.length; k++) {
           if (inputsAndOutputs[k].clauseOf) {
             const addedValue = new Decimal(inputsAndOutputs[k].clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue)
-            totalCost = totalCost.add(addedValue)
+            totalCost = totalCost.add(addedValue * inputsAndOutputs[k].resourceQuantity?.hasNumericalValue)
           }
         }
       }
@@ -630,8 +630,10 @@
   {resourceSpecifications}
   {processSpecifications}
 editing={true}
-on:saved={(event) => {
-  fetchThePlan()
+on:saved={async (event) => {
+  loadingPlan = true
+  await fetchThePlan()
+  loadingPlan = false
 }}
 />
 {/if}
@@ -658,12 +660,12 @@ bind:open={economicEventModalOpen}
       yellow = yellow.filter(it => it != event.detail.commitment.id)
     } else {
       yellow.push(event.detail.commitment.id)
-      if (yellowAmounts[event.detail.commitment.id]) {
-        yellowAmounts[event.detail.commitment.id] = yellowAmounts[event.detail.commitment.id] + event.detail.commitment.resourceQuantity.hasNumericalValue
-      } else {
-        yellowAmounts[event.detail.commitment.id] = event.detail.commitment.resourceQuantity.hasNumericalValue
-      }
       // add all economic event amounts to yellowAmounts
+    }
+    if (yellowAmounts[event.detail.commitment.id]) {
+      yellowAmounts[event.detail.commitment.id] = yellowAmounts[event.detail.commitment.id] + event.detail.commitment.resourceQuantity.hasNumericalValue
+    } else {
+      yellowAmounts[event.detail.commitment.id] = event.detail.commitment.resourceQuantity.hasNumericalValue
     }
     console.log("finished", event.detail.commitment.finished)
     allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = event.detail.commitment
@@ -925,16 +927,16 @@ bind:open={economicEventModalOpen}
                       <p>
                         {action.label}
                         <!-- sum of all fulfilledby numericalvalues -->
-                        {#if fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
+                        {#if false && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
                           {@const yellowAmount = yellowAmounts[id] || 0}
                           {@const amount = fulfilledBy.map(it => it.fulfilledBy.resourceQuantity.hasNumericalValue).reduce((acc, it) => new Decimal(acc).add(it), new Decimal(0)).toString()}
                           {new Decimal(amount).add(yellowAmount).toString()}
-                          {fulfilledBy[0].fulfilledBy.resourceQuantity.hasUnit.label}
+                          {fulfilledBy[0].fulfilledBy?.resourceQuantity?.hasUnit?.label}
                         {:else if yellowAmounts[id]}
                           {yellowAmounts[id]}
                           <!-- {resourceQuantity?.hasUnit?.label} -->
                           {#each units as unit}
-                            {#if unit.id == resourceQuantity.hasUnitId}
+                            {#if unit.id?.split(":")[0] == resourceQuantity.hasUnit?.id?.split(":")[0]}
                               {unit.label}
                             {/if}
                           {/each}
@@ -942,12 +944,13 @@ bind:open={economicEventModalOpen}
                           {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
                           <!-- {resourceQuantity?.hasUnit?.label} -->
                           {#each units as unit}
-                            {#if unit.id == resourceQuantity.hasUnitId}
+                            {#if unit.id?.split(":")[0] == resourceQuantity.hasUnit?.id?.split(":")[0]}
                               {unit.label}
                             {/if}
                           {/each}
                         {/if}
                       </p>
+
                       <!--
                       <p>
                         {demand_driven_quantity?.hasNumericalValue}
@@ -978,9 +981,10 @@ bind:open={economicEventModalOpen}
                       {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
                       {#if clause}
                         <p>
-                          cost {new Decimal(
-                            clause.resourceQuantity.hasNumericalValue
-                          )
+                          cost {
+                            new Decimal(
+                              clause.resourceQuantity.hasNumericalValue
+                            )
                             .toFixed(2, Decimal.ROUND_HALF_UP)
                             .toString()}
                           {clause.resourceConformsTo.name}
@@ -1116,16 +1120,16 @@ bind:open={economicEventModalOpen}
                         <p>
                           {action.label}
 
-                          {#if fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
+                          {#if false && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
                             {@const yellowAmount = yellowAmounts[id] || 0}
                             {@const amount = fulfilledBy.map(it => it.fulfilledBy.resourceQuantity.hasNumericalValue).reduce((acc, it) => new Decimal(acc).add(it), new Decimal(0)).toString()}
                             {new Decimal(amount).add(yellowAmount).toString()}
-                            {fulfilledBy[0].fulfilledBy.resourceQuantity.hasUnit.label}
+                            {fulfilledBy[0]?.fulfilledBy?.resourceQuantity?.hasUnit?.label}
                           {:else if yellowAmounts[id]}
                             {yellowAmounts[id]}
                             <!-- {resourceQuantity?.hasUnit?.label} -->
                             {#each units as unit}
-                              {#if unit.id == resourceQuantity.hasUnitId}
+                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnit.id?.split(":")[0]}
                                 {unit.label}
                               {/if}
                             {/each}
@@ -1133,7 +1137,7 @@ bind:open={economicEventModalOpen}
                             {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
                             <!-- {resourceQuantity?.hasUnit?.label} -->
                             {#each units as unit}
-                              {#if unit.id == resourceQuantity.hasUnitId}
+                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnit.id?.split(":")[0]}
                                 {unit.label}
                               {/if}
                             {/each}
@@ -1219,7 +1223,6 @@ bind:open={economicEventModalOpen}
                     </button>
                     <button
                     on:click={() => {
-                      console.log("DEEEEEEElete")
                       if (revisionId != undefined) {
                         commitmentsToDelete.push(revisionId)
                       }
@@ -1304,10 +1307,8 @@ bind:open={economicEventModalOpen}
                   <p>
                     {action.label}
                     {resourceQuantity?.hasNumericalValue}
-                    <!-- {resourceConformsTo?.defaultUnitOfResource?.label} -->
-                    <!-- {JSON.stringify(resourceConformsTo)} -->
                     {#each units as unit}
-                      {#if unit.id == resourceConformsTo?.defaultUnitOfResourceId}
+                      {#if unit.id?.split(":")[0] == resourceConformsTo?.defaultUnitOfResourceId?.split(":")[0]}
                         {unit.label}
                       {/if}
                     {/each}
@@ -1323,6 +1324,11 @@ bind:open={economicEventModalOpen}
                 <div class="w-full flex justify-center">
                   <button
                     on:click={() => {
+                      commitmentModalProcess = undefined
+                      commitmentModalColumn = undefined
+                      selectedCommitmentId = undefined
+                      commitmentModalSide = ""
+                      commitmentModalOpen = true
                       currentProcess = undefined
                       selectedCommitmentId = id
                       commitmentModalOpen = true
@@ -1363,7 +1369,7 @@ bind:open={economicEventModalOpen}
                   <p>
                     {primary?.publishes?.action?.label}
                     {primary?.publishes?.resourceQuantity?.hasNumericalValue}
-                    {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
+                    {primary?.publishes?.availableQuantity?.hasUnit?.label}<br>
                     <!-- {#each units as unit}
                       {#if unit.id == primary?.publishes?.resourceQuantity?.hasUnitId}
                         {unit.label}

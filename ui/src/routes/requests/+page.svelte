@@ -120,110 +120,6 @@
     }
   }
 
-  // // helper to assign `Unit` identifiers to `Intent` data after binding to pre-created `Unit` records from GraphQL
-  // function assignUSDId(intent: IntentUpdateParams) {
-  //   if (intent.resourceConformsTo === "USD") {
-  //     intent.resourceConformsTo = usdRSpecId
-  //   }
-  // }
-
-  // async function fetchResourceSpecifications() {
-  //   resourceSpecificationsQuery.getCurrentResult()
-
-  //   resourceSpecificationsQuery.refetch().then((r) => {
-  //     resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications)
-  //     resourceSpecifications.forEach((a) => {
-  //       // assign USD `Unit` identifiers when loaded
-  //       if (a.name === "USD") {
-  //         usdRSpecId = a.id
-
-  //         // override / set USD reference in Intent data payloads
-  //         // assignUSDId(_defaultReciprocalIntent)
-  //         // assignUSDId(currentReciprocalIntent)
-  //         _defaultReciprocalIntent.resourceConformsTo = usdRSpecId;
-  //         currentReciprocalIntent.resourceConformsTo = usdRSpecId;
-  //       }
-  //     })
-  //   })
-  // }
-
-  // const GET_ALL_AGENTS = gql`
-  //   ${AGENT_CORE_FIELDS}
-  //   ${PERSON_CORE_FIELDS}
-  //   ${ORGANIZATION_CORE_FIELDS}
-  //   query {
-  //     agents(last: 100000) {
-  //       edges {
-  //         cursor
-  //         node {
-  //           ...AgentCoreFields
-  //           ...PersonCoreFields
-  //           ...OrganizationCoreFields
-  //         }
-  //       }
-  //     }
-  //   }
-  // `
-
-  // const UPDATE_PROPOSAL = gql`
-  //   ${PROPOSAL_CORE_FIELDS},
-  //   mutation($proposal: ProposalUpdateParams!){
-  //     updateProposal(proposal: $proposal) {
-  //       proposal {
-  //         ...ProposalCoreFields
-  //       }
-  //     }
-  //   }
-  // `
-  // let updateProposal: any = mutation(UPDATE_PROPOSAL)
-
-  // interface QueryResponse {
-  //   agents: AgentConnection & RelayConn<any>
-  // }
-
-  // map component state
-  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
-
-  // async function fetchAgents() {
-  //   agentsQuery.refetch().then((r) => {
-  //     agents = flattenRelayConnection(r.data?.agents).map((a) => {
-  //       return {
-  //         ...a,
-  //         "name": a.name,
-  //         "imageUrl": a.image,
-  //         "iconUrl": a.image,
-  //         "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-  //         "role": a.classifiedAs[2],
-  //         "address": a.note,
-  //       }
-  //     })
-  //     // console.log(agents)
-  //   })
-  // }
-
-  // async function fetchUnits() {
-  //   getUnits.getCurrentResult()
-  //   getUnits.refetch().then((r) => {
-  //     if (r.data?.units.edges.length > 0) {
-  //       units = flattenRelayConnection(r.data?.units)
-  //     }
-  //   })
-  // }
-
-  // async function fetchOffers() {
-  //   try {
-  //     // getOffers.getCurrentResult()
-  //     await getOffers.refetch().then((r) => {
-  //       if (r.data?.proposals.edges.length > 0) {
-  //         offersList = flattenRelayConnection(r.data?.proposals)
-  //         console.log(offersList)
-  //       }
-  //     })
-  //   } catch (e) {
-  //     error = e
-  //   }
-  // }
-
   // DELETE PROPOSAL  
   const DELETE_PROPOSAL = gql`mutation($revisionId: ID!){
     deleteProposal(revisionId: $revisionId)
@@ -238,88 +134,7 @@
       await getAllProposals()
     }
   }
-  // DELETE RESOURCE SPECIFICATION ENDS
-
-  // EXPORT
-  async function importData(data: any) {
-    try {
-      console.log("importing data", data)
-      for (let i = 0; i < data.length; i++) {
-        try {
-          console.log(data[i])
-          let proposal: ProposalCreateParams = {
-            unitBased: data[i].unitBased,
-            note: data[i].note,
-            hasBeginning: data[i].hasBeginning,
-          }
-          let intentRaw: IntentCreateParams = data[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
-          let intent: IntentCreateParams = {
-            ...intentRaw,
-            action: intentRaw.action?.id,
-            atLocation: intentRaw.atLocation?.id,
-            availableQuantity: intentRaw.availableQuantity ? {
-              hasNumericalValue: intentRaw.availableQuantity.hasNumericalValue,
-              hasUnit: intentRaw.availableQuantity.hasUnit?.id,
-            } : undefined,
-            effortQuantity: intentRaw.effortQuantity ? {
-              hasNumericalValue: intentRaw.effortQuantity.hasNumericalValue,
-              hasUnit: intentRaw.effortQuantity.hasUnit?.id,
-            } : undefined,
-            resourceQuantity: intentRaw.resourceQuantity ? {
-              hasNumericalValue: intentRaw.resourceQuantity.hasNumericalValue,
-              hasUnit: intentRaw.resourceQuantity.hasUnit?.id,
-            } : undefined,
-            inScopeOf: (intentRaw.inScopeOf || []).map(s => s.id),
-            inputOf: intentRaw.inputOf?.id,
-            outputOf: intentRaw.outputOf?.id,
-            provider: intentRaw.provider?.id,
-            receiver: intentRaw.receiver?.id,
-            resourceConformsTo: intentRaw.resourceConformsTo?.id,
-            resourceInventoriedAs: intentRaw.resourceInventoriedAs?.id,
-          }
-          let reciprocalIntentRaw: IntentCreateParams = data[i].publishes.find(({ reciprocal }) => reciprocal).publishes
-          let reciprocalIntent: IntentCreateParams = {
-            ...reciprocalIntentRaw,
-            action: reciprocalIntentRaw.action?.id,
-            atLocation: reciprocalIntentRaw.atLocation?.id,
-            availableQuantity: reciprocalIntentRaw.availableQuantity ? {
-              hasNumericalValue: reciprocalIntentRaw.availableQuantity.hasNumericalValue,
-              hasUnit: reciprocalIntentRaw.availableQuantity.hasUnit?.id,
-            } : undefined,
-            effortQuantity: reciprocalIntentRaw.effortQuantity ? {
-              hasNumericalValue: reciprocalIntentRaw.effortQuantity.hasNumericalValue,
-              hasUnit: reciprocalIntentRaw.effortQuantity.hasUnit?.id,
-            } : undefined,
-            resourceQuantity: reciprocalIntentRaw.resourceQuantity ? {
-              hasNumericalValue: reciprocalIntentRaw.resourceQuantity.hasNumericalValue,
-              hasUnit: reciprocalIntentRaw.resourceQuantity.hasUnit?.id,
-            } : undefined,
-            inScopeOf: (reciprocalIntentRaw.inScopeOf || []).map(s => s.id),
-            inputOf: reciprocalIntentRaw.inputOf?.id,
-            outputOf: reciprocalIntentRaw.outputOf?.id,
-            provider: reciprocalIntentRaw.provider?.id,
-            receiver: reciprocalIntentRaw.receiver?.id,
-            resourceConformsTo: reciprocalIntentRaw.resourceConformsTo?.id,
-            resourceInventoriedAs: reciprocalIntentRaw.resourceInventoriedAs?.id,
-          }
-          var d = new Date(Date.now());
-          let res = await createRequest(proposal, intent, reciprocalIntent)
-          console.log(res)
-        } catch (e) {
-          console.log(e)
-        }
-      }
-      // await fetchOffers()
-      importing = false;
-      exportOpen = false;
-    } catch (e) {
-      error = e
-      console.log(e)
-      importing = false;
-      exportOpen = false;
-    }
-  }  
-  // EXPORT ENDS
+  // DELETE PROPOSAL ENDS
 
   onMount(async () => {
     if (browser) {
@@ -327,18 +142,6 @@
       await getAllAgents()
       await getAllUnits()
       await getAllProposals()
-      // fetchResourceSpecifications()
-      // fetchAgents()
-      // fetchUnits()
-      // fetchOffers()
-      // setInterval(function(){
-      //   if (!units) {
-      //     fetchUnits()
-      //   } else {
-
-      //   }
-      // }, 10000)
-      // console.log(offers)
     }
   })
 
@@ -432,7 +235,9 @@
             let res = await createRequest(newProposal, currentIntent, currentReciprocalIntent)
           }
         }
+        await getAllProposals()
         importing = false
+        exportOpen = false
       }}
       />
     {:else}
