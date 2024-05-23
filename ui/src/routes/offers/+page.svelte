@@ -75,7 +75,6 @@
 
   allProposals.subscribe((res) => {
     offersList = res.map((p) => {
-      console.log("p", p)
       return {
         ...p,
         publishes: p.publishes.map((i) => {
@@ -143,7 +142,6 @@
     let areYouSure = await confirm("Are you sure you want to delete this offer?")
     if (areYouSure == true) {
       const res = await deleteProposal({ variables: { revisionId } })
-      console.log(res)
       await getAllProposals()
     }
   }
@@ -194,19 +192,14 @@
     <Export bind:importing bind:open={exportOpen} dataName="list of offers" fileName="cfn-offers"
     data={offersList}
     on:import={async (event) => {
-      console.log("importing data", event.detail)
       for (let i = 0; i < event.detail.length; i++) {
-        console.log(event.detail[i])
         let currentIntent = event.detail[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
         if (currentIntent.provider) {
           let currentReciprocalIntent = event.detail[i].publishes.find(({ reciprocal }) => reciprocal).publishes
-          console.log(currentIntent, currentReciprocalIntent)
           currentIntent.action = currentIntent.action.id
           currentIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
           if (!currentIntent.resourceConformsTo) { importing = false; error = "Stopped import due to dependency data"; return }
-          console.log(currentIntent.provider)        
           currentIntent.provider = hashChanges[currentIntent.provider.id]
-          console.log(currentIntent.provider)
           if (!currentIntent.provider) { importing = false; error = "Stopped import due to dependency data"; return }
           currentIntent.resourceQuantity = {
             hasUnit: currentIntent.resourceQuantity.hasUnit.id,
@@ -216,6 +209,7 @@
             hasUnit: currentIntent.availableQuantity.hasUnit.id,
             hasNumericalValue: currentIntent.availableQuantity.hasNumericalValue
           }
+          currentReciprocalIntent.resourceConformsTo = hashChanges[currentReciprocalIntent.resourceConformsTo.id]
           currentReciprocalIntent.resourceQuantity = {
             hasNumericalValue: currentReciprocalIntent.resourceQuantity.hasNumericalValue,
             hasUnit: currentReciprocalIntent.resourceQuantity.hasUnit
@@ -311,7 +305,6 @@
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <input
                     on:change={(e) => {
-                      console.log(e.target.checked)
                       if (e.target.checked) {
 
                         let proposal = {
@@ -320,21 +313,16 @@
                           hasEnd: null,
                         };
 
-                        console.log(proposal)
 
                         updateProposal({ variables: { proposal: proposal } });
 
                         getAllProposals();
                       } else {
-                        console.log(p)
-
                         let proposal = {
                           revisionId: p.revisionId,
                           hasBeginning: p.hasBeginning,
                           hasEnd: new Date(),
                         };
-
-                        console.log(proposal)
 
                         updateProposal({ variables: { proposal: proposal } });
 
@@ -383,7 +371,6 @@
                     resourceConformsTo: mi.resourceConformsTo?.id,
                     resourceInventoriedAs: mi.resourceInventoriedAs?.id,
                   }
-                  console.log('SET TO', currentIntent)
                   if (proposedReciprocalIntent) {
                     const pi = proposedReciprocalIntent.publishes
                     currentReciprocalIntent = {

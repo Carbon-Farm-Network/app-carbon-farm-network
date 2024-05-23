@@ -72,7 +72,6 @@
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.image,
     }
-    console.log(resource)
     try {
       const res = await addResourceSpecification({ variables: { resource } })
 
@@ -86,7 +85,6 @@
           continue
         }
         const res2 = await associateResourceSpecificationWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
-        console.log("associate", res2)
       }
 
       dispatch("submit");

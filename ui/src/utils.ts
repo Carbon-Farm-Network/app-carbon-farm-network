@@ -37,7 +37,6 @@ export async function getAllHashChanges() {
         let decoded = decode((res[i].entry as any).Present.entry) as HashChange
           hashMap[decoded.original] = decoded.current
       }
-      console.log("hashMap", hashMap)
       setHashChanges(hashMap)
   }
 }
@@ -409,7 +408,6 @@ export const getAllProposals = async () => {
     query: GET_All_PROPOSALS,
     fetchPolicy: 'no-cache'
   })
-  console.log("queried all proposals: ", res.data.proposals.edges.map((edge: any) => edge.node))
   setProposals(res.data.proposals.edges.map((edge: any) => edge.node))
   return res
 }

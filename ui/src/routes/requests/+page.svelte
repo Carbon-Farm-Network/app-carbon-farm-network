@@ -130,7 +130,6 @@
     let areYouSure = await confirm("Are you sure you want to delete this request?")
     if (areYouSure == true) {
       const res = await deleteProposal({ variables: { revisionId } })
-      console.log(res)
       await getAllProposals()
     }
   }
@@ -187,22 +186,15 @@
       bind:importing
       on:import={async (event) => {
         // importData(event.detail)
-        console.log("importing data", event.detail)
         for (let i = 0; i < event.detail.length; i++) {
-          console.log(event.detail[i])
           let currentIntent = event.detail[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
           if (currentIntent.receiver) {
             let currentReciprocalIntent = event.detail[i].publishes.find(({ reciprocal }) => reciprocal).publishes
-            console.log(currentIntent, currentReciprocalIntent)
             currentReciprocalIntent.action = currentReciprocalIntent.action.id
-            console.log(currentIntent.resourceConformsTo)
             currentReciprocalIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
-            console.log("********************************", currentReciprocalIntent)
             if (!currentReciprocalIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
-            console.log("receiver", currentIntent.receiver, hashChanges)
             currentReciprocalIntent.receiver = hashChanges[currentReciprocalIntent.receiver.id]
             if (!currentReciprocalIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
-            console.log(currentReciprocalIntent)
             currentReciprocalIntent.resourceQuantity = {
               hasNumericalValue: currentReciprocalIntent.resourceQuantity.hasNumericalValue,
               hasUnit: currentIntent.resourceQuantity.hasUnit?.id
@@ -231,7 +223,6 @@
               unitBased: event.detail[i].unitBased,
               note: event.detail[i].note
             }
-            console.log(currentIntent, currentReciprocalIntent)
             let res = await createRequest(newProposal, currentIntent, currentReciprocalIntent)
           }
         }
@@ -336,7 +327,6 @@
                     resourceConformsTo: mi.resourceConformsTo?.id,
                     resourceInventoriedAs: mi.resourceInventoriedAs?.id,
                   }
-                  console.log('SET TO', currentIntent)
                   if (proposedReciprocalIntent) {
                     const pi = proposedReciprocalIntent.publishes
                     currentReciprocalIntent = {

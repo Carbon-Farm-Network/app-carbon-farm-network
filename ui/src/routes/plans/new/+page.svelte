@@ -692,7 +692,7 @@
           // console.log("cost", inputsAndOutputs[k])
           // console.log("cost", inputsAndOutputs[k].agreement)
           if (inputsAndOutputs[k].agreement) {
-            totalCost = totalCost.add(inputsAndOutputs[k].agreement.commitment.resourceQuantity.hasNumericalValue *  inputsAndOutputs[k].resourceQuantity?.hasNumericalValue)
+            totalCost = totalCost.add(inputsAndOutputs[k].agreement.commitment.resourceQuantity.hasNumericalValue)
           }
         }
       }
@@ -1144,7 +1144,7 @@ editing={false}/>
                     {action.label}
                     {resourceQuantity?.hasNumericalValue}
                     {#each units as unit}
-                      {#if unit.id == resourceConformsTo?.defaultUnitOfResource.id}
+                      {#if unit.id == resourceConformsTo?.defaultUnitOfResource?.id || unit.id == resourceConformsTo?.defaultUnitOfResourceId}
                         {unit.label}
                       {/if}
                     {/each}

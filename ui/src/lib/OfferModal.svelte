@@ -148,7 +148,6 @@
       if (intent.resourceQuantity) {
         intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
       }
-      console.info(intent)
       const res2 = await addIntent({ variables: { intent } });
       const res2ID = res2.data.createIntent.intent.id
       console.log(res2);
@@ -164,10 +163,8 @@
         resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
         resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
       }
-      console.info(recipIntent)
       const res3 = await addIntent({ variables: { intent: recipIntent } })
       const res3ID: string = String(res3.data.createIntent.intent.id)
-      console.log(res3);
 
       if (hashMap) {
         addHashChange(recipIntent.id, res3ID)
@@ -178,22 +175,16 @@
       let publishes = res2ID
 
       const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
-      console.log(res4)
 
       reciprocal = true
       publishes = res3ID
 
       const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
-      console.log(res5)
 
 
       dispatch("submit");
       submitting = false;
       open = false;
-      // console.log(res1)
-      // console.log(res2)
-      // console.log(res3)
-      // console.log(res4)
     } catch (error) {
       console.error(error)
     }

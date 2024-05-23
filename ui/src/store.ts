@@ -16,7 +16,6 @@ export function setHashChanges(newHashChanges: any) {
 
 export function setClient(client: any) {
     clientStored.update(v => client);
-    console.log("set client", clientStored)
 }
 
 export function setAgents(newAgents: any) {
@@ -34,7 +33,6 @@ export function updateAnAgent(agent: any) {
         });
         return newAgents;
     });
-    console.log("updated agent", agent)
 }
 
 export function setFacets(newFacets: any) {

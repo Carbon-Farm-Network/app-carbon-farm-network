@@ -29,15 +29,6 @@
   let handleSubmit: any;
   let importing: boolean = false;
 
-  const GET_FACET_GROUPS = gql`
-    ${FACET_GROUP_CORE_FIELDS}
-    query GetFacets {
-      facetGroups {
-        ...FacetGroupCoreFields
-      }
-    }
-  `
-
   const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
     ${FACET_VALUE_CORE_FIELDS}
@@ -60,26 +51,6 @@
     }
   `
 
-const GET_UNITS = gql`
-    query GetUnits {
-      units {
-        edges {
-          cursor
-          node {
-            id
-            label
-            symbol
-          }
-        }
-      }
-    }
-  `
-
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  }
-  let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-
   interface QueryResponse {
     resourceSpecifications: AgentConnection & RelayConn<any>
   }
@@ -94,7 +65,6 @@ const GET_UNITS = gql`
     let areYouSure = await confirm("Are you sure you want to delete this resource specification?")
     if (areYouSure == true) {
       const res = await deleteResourceSpecification({ variables: { revisionId } })
-      console.log(res)
       await fetchResourceSpecifications()
     }
   }
@@ -106,7 +76,6 @@ const GET_UNITS = gql`
   async function fetchResourceSpecifications() {
     await resourceSpecificationsQuery.getCurrentResult()
     let x = await resourceSpecificationsQuery.refetch()
-    console.log(x)
     // setTimeout(function(){
     await resourceSpecificationsQuery.refetch().then((r) => {
         resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
@@ -115,42 +84,13 @@ const GET_UNITS = gql`
             defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
           }
         })
-        console.log(resourceSpecifications)
       })
     // }, 1000)
-  }
-
-  interface FacetGroupResponse {
-    facetGroups: FacetGroup[]
-  }
-  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
-
-  async function fetchFacets() {
-    await queryFacetGroups.getCurrentResult()
-    let y = await queryFacetGroups.refetch()
-    let facetGroups = y.data.facetGroups
-    facets = facetGroups.find((g) => {return g.name == "Resource Specification"})?.facets
-    console.log(facets)
-  }
-
-  async function fetchUnits() {
-    await getUnits.getCurrentResult()
-      getUnits.refetch().then((r) => {
-        if (r.data?.units.edges.length > 0) {
-          units = flattenRelayConnection(r.data?.units).map((a) => {
-            return {
-              ...a,
-            }
-          })
-        }
-      })
   }
 
   onMount(async () => {
     if (browser) {
       await fetchResourceSpecifications()
-      // await fetchFacets()
-      // await fetchUnits()
     }
   })
 

@@ -58,7 +58,6 @@
   let allColumns: any = []
 
   allAgents.subscribe((res) => {
-    console.log("agents change", res)
     agents = res.map((a) => {
       return {
         ...a,
@@ -75,7 +74,6 @@
   })
 
   allUnits.subscribe((res) => {
-    console.log("units change", res)
     units = res.map((a) => {
       return {
         ...a,
@@ -86,7 +84,6 @@
   })
 
   allResourceSpecifications.subscribe((res) => {
-    console.log("resourceSpecifications change", res)
     resourceSpecifications = res.map((a) => {
       return {
         ...a,
@@ -96,7 +93,6 @@
   })
 
   allProcessSpecifications.subscribe((res) => {
-    console.log("processSpecifications change", res)
     processSpecifications = res.map((a) => {
       return {
         ...a,
@@ -106,11 +102,9 @@
 
   allProposals.subscribe((res) => {
     if (!res.length || res.length == 0) return
-    console.log("proposals change", res)
     requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
     offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
     proposalsList = res
-    console.log("offers here", offers)
   })
 
   let processImages = {
@@ -260,14 +254,11 @@
   async function fetchActions() {
     await getActions.getCurrentResult()
     let r = await getActions.refetch()
-    console.log("*******actions*******")
-    console.log(r)
     actions = r.data?.actions
   }
 
   async function saveCommitment(commitment: any) {
     try {
-      console.log("commitment!", commitment)
       let x = await updateCommitment({
         variables: {
           commitment: {
@@ -276,7 +267,6 @@
           },
         }
       })
-      console.log(x)
     } catch (e) {
       console.log(e)
     }
@@ -299,7 +289,6 @@
         if (commitment.action.label == "pickup") {
           requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
         }
-        console.log("requests per offer ... ", requestsPerOffer)
       }
     } catch (e) {
       console.log("include commitment error", e)
@@ -353,7 +342,6 @@
           fulfillment: fulfillment,
         }
       })
-      console.log("y", y)
 
       await saveCommitment(commitment)
     } catch (e) {
@@ -366,9 +354,7 @@
       return offer?.publishes?.find(
         intent => {
           const offerName = intent.publishes?.resourceConformsTo?.name
-          console.log(offerName, " ==?", commitment.resourceConformsTo.name)
           const correctProvider = commitment.providerId ? (intent.publishes?.provider?.id == commitment.providerId) : true
-          console.log(intent.publishes.provider?.id, " ==?", commitment.providerId, correctProvider, intent.publishes?.provider?.name)
           return offerName == commitment.resourceConformsTo.name && correctProvider
         }
       )
@@ -385,7 +371,6 @@
     // let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
     // let hasUnit = reciprocal_clause.resourceQuantity.hasUnit
     let specific_provider = commitment.provider
-    console.log("specific provider", specific_provider)
     let numerical_value;
     let hasUnit;
     let reciprocal_intent;
@@ -401,15 +386,8 @@
       primary_intent = matching_offer.publishes.find(
         intent => !intent.reciprocal
       )
-      console.log("TEMP", reciprocal_intent?.publishes?.resourceQuantity?.hasNumericalValue, primary_intent?.publishes?.resourceQuantity?.hasNumericalValue)
       numerical_value = reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue / primary_intent.publishes?.resourceQuantity.hasNumericalValue
-      console.log("numerical value", numerical_value)
-      console.log(new Decimal(numerical_value)
-            .mul(commitment.resourceQuantity.hasNumericalValue)
-            .toDecimalPlaces(0, Decimal.ROUND_UP)
-            .toString()
-            )
-      console.log("has unit?", primary_intent)
+      
       // hasUnit = reciprocal_intent.publishes?.resourceQuantity
       hasUnit = primary_intent.publishes?.resourceQuantity?.hasUnit
       // units.forEach((unit) => {
@@ -423,14 +401,12 @@
       return
     }
 
-    console.log("numerical value", numerical_value, hasUnit)
     if (!numerical_value || !hasUnit) return
 
     if (!requestsPerOffer[primary_intent.id]) {
       requestsPerOffer[primary_intent.id] = {}
     }
     if (commitment.action.label == "pickup") {
-      console.log("*****pickup*****", commitment.resourceQuantity.hasNumericalValue)
       requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
     }
 
@@ -608,7 +584,7 @@
         for (let k = 0; k < inputsAndOutputs.length; k++) {
           if (inputsAndOutputs[k].clauseOf) {
             const addedValue = new Decimal(inputsAndOutputs[k].clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue)
-            totalCost = totalCost.add(addedValue * inputsAndOutputs[k].resourceQuantity?.hasNumericalValue)
+            totalCost = totalCost.add(addedValue)
           }
         }
       }
@@ -997,9 +973,9 @@ bind:open={economicEventModalOpen}
                         finished: {finished}
                       </p>
                     {/if}
-                    <div class="w-full flex" style="margin-right: 10px">
-
-                    <div style="margin-right: 20px; margin-top: 4px;">
+                    <div class="w-full flex justify-center">
+                    <!-- <div style="margin-right: 20px; margin-top: 4px;"> -->
+                    <div style="margin-right: 30px; margin-top: 4px;">
                       <!-- button to move commitment up in arra -->
                       <button on:click={() => {
                         let index = allColumns[columnIndex][processIndex].committedInputs.findIndex(it => it.id == id)
@@ -1052,7 +1028,6 @@ bind:open={economicEventModalOpen}
                         // remove cost agreement if present
                         let costAgreement = clauseOf
                         if (costAgreement) {
-                          console.log("DEE", costAgreement)
                           // resetColumns()
                           agreementsToDelete.push(costAgreement.revisionId)
                           commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
@@ -1064,7 +1039,7 @@ bind:open={economicEventModalOpen}
                     </button>
                     </div>
 
-                    {#if revisionId}
+                    {#if false && revisionId}
                       <button
                         style="margin-top: -3px;"
                         on:click={() => {
@@ -1185,7 +1160,8 @@ bind:open={economicEventModalOpen}
                     </div>
                     <!-- {#if editable} -->
                     <div class="w-full flex justify-center">
-                      <div style="margin-right: 20px; margin-top: 4px;">
+                      <!-- <div style="margin-right: 20px; margin-top: 4px;"> -->
+                      <div style="margin-right: 30px; margin-top: 4px;">
                         <button on:click={() => {
                           let index = allColumns[columnIndex][processIndex].committedOutputs.findIndex(it => it.id == id)
                           if (index > 0) {
@@ -1242,7 +1218,7 @@ bind:open={economicEventModalOpen}
                     </button>
                     </div>
 
-                    {#if revisionId}
+                    {#if false && revisionId}
                       <button
                         style="margin-top: -3px;"
                         on:click={() => {

@@ -73,14 +73,10 @@ export async function load() {
         adminConductorUri: undefined,
       }
 
-      console.log("autoConnectInput", autoConnectInput)
-      console.log("autoConnectInput 2", autoConnectInput.weaveAppAgentClient)
-
       const output = await autoConnect(autoConnectInput)
       // autoconnect ends
 
       await setClient(output)
-      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", output)
 
       return {
         client: output
