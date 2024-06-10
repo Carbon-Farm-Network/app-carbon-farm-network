@@ -974,8 +974,8 @@ bind:open={economicEventModalOpen}
                       </p>
                     {/if}
                     <div class="w-full flex justify-center">
-                    <!-- <div style="margin-right: 20px; margin-top: 4px;"> -->
-                    <div style="margin-right: 30px; margin-top: 4px;">
+                    <div style="margin-right: 20px; margin-top: 4px;">
+                    <!-- <div style="margin-right: 30px; margin-top: 4px;"> -->
                       <!-- button to move commitment up in arra -->
                       <button on:click={() => {
                         let index = allColumns[columnIndex][processIndex].committedInputs.findIndex(it => it.id == id)
@@ -1160,8 +1160,8 @@ bind:open={economicEventModalOpen}
                     </div>
                     <!-- {#if editable} -->
                     <div class="w-full flex justify-center">
-                      <!-- <div style="margin-right: 20px; margin-top: 4px;"> -->
-                      <div style="margin-right: 30px; margin-top: 4px;">
+                      <div style="margin-right: 20px; margin-top: 4px;">
+                      <!-- <div style="margin-right: 30px; margin-top: 4px;"> -->
                         <button on:click={() => {
                           let index = allColumns[columnIndex][processIndex].committedOutputs.findIndex(it => it.id == id)
                           if (index > 0) {
