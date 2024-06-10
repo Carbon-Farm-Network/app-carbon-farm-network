@@ -64,7 +64,7 @@ importers:
         version: 0.4.5(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.16.2
-        version: 0.16.2
+        version: 0.16.2(bufferutil@4.0.8)
       '@msgpack/msgpack':
         specifier: ^2.7.2
         version: 2.8.0
@@ -106,8 +106,8 @@ importers:
         version: 8.16.0(bufferutil@4.0.8)
     devDependencies:
       '@lightningrodlabs/we-dev-cli':
-        specifier: ^0.11.0
-        version: 0.11.4(@types/node@20.12.5)(electron@29.2.0)(typescript@5.4.4)
+        specifier: ^0.11.11-dev.3
+        version: 0.11.15(@types/node@20.12.5)(typescript@5.4.4)
       '@rollup/plugin-replace':
         specifier: ^4.0.0
         version: 4.0.0(rollup@2.79.1)
@@ -638,6 +638,14 @@ packages:
       enabled: 2.0.0
       kuler: 2.0.0
 
+  /@electron-toolkit/preload@2.0.0(electron@25.9.8):
+    resolution: {integrity: sha512-zpZDzbqJTZQC5d4LRs2EKruKWnqah+T75s+niBYFemYLtiW5TTZcWi3Q8UxHqnwTudDMuWJb233aaS2yjx3Xiw==}
+    peerDependencies:
+      electron: '>=13.0.0'
+    dependencies:
+      electron: 25.9.8
+    dev: true
+
   /@electron-toolkit/preload@2.0.0(electron@29.2.0):
     resolution: {integrity: sha512-zpZDzbqJTZQC5d4LRs2EKruKWnqah+T75s+niBYFemYLtiW5TTZcWi3Q8UxHqnwTudDMuWJb233aaS2yjx3Xiw==}
     peerDependencies:
@@ -652,6 +660,14 @@ packages:
       electron: '>=13.0.0'
     dependencies:
       electron: 28.2.10
+    dev: true
+
+  /@electron-toolkit/utils@2.0.1(electron@25.9.8):
+    resolution: {integrity: sha512-3nnjd3D1NIjxdzNrvR5fkJ3kbJNbRkpHppv0/pSbMX6I0DaBzpPXeSfDYuJJKzZrAc3CmGcJa0MU4+AjEOlT4g==}
+    peerDependencies:
+      electron: '>=13.0.0'
+    dependencies:
+      electron: 25.9.8
     dev: true
 
   /@electron-toolkit/utils@2.0.1(electron@29.2.0):
@@ -956,7 +972,7 @@ packages:
   /@holochain-open-dev/utils@0.300.0-dev.0(bufferutil@4.0.8):
     resolution: {integrity: sha512-sqpnfK3xh5ufMD98HHOhVH2iUnJ+xbe87BWLnJ9g3iQ/Dkp7yeM22HanBV8GKw5lr8CPgOKKlJ1EQ+q8eGGXag==}
     dependencies:
-      '@holochain/client': 0.17.0-dev.8(bufferutil@4.0.8)
+      '@holochain/client': 0.17.0-dev.9(bufferutil@4.0.8)
       '@msgpack/msgpack': 2.8.0
       blakejs: 1.2.1
       emittery: 1.0.3
@@ -1025,7 +1041,7 @@ packages:
       - bufferutil
       - utf-8-validate
 
-  /@holochain/client@0.17.0-dev.9:
+  /@holochain/client@0.17.0-dev.9(bufferutil@4.0.8):
     resolution: {integrity: sha512-/s4TiMAliB5XUEgs/lWVfx1xAXsjtkKDSd7cveWuHKUf2BiZ+eqk1Mt1UMXrkILAwpSpdFLknDHM7rNhXlk2nQ==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
     dependencies:
@@ -1042,7 +1058,6 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    dev: false
 
   /@holochain/hc-spin-rust-utils-darwin-arm64@0.200.3:
     resolution: {integrity: sha512-2MuCVRiZdekyr0scvcieUhzYsp+TGwtxMOLqHqrPKLoMagB39M8PygA/mf8XGjQWMNuyWUVDenYezFIYMNxiig==}
@@ -1200,7 +1215,7 @@ packages:
     dependencies:
       '@apollo/client': 3.9.10(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(graphql@15.8.0)
-      '@holochain/client': 0.17.0-dev.9
+      '@holochain/client': 0.17.0-dev.9(bufferutil@4.0.8)
       '@leosprograms/vf-graphql-holochain': 0.4.5(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
@@ -1221,7 +1236,7 @@ packages:
     dependencies:
       '@graphql-tools/schema': 9.0.19(graphql@15.8.0)
       '@graphql-tools/utils': 9.2.1(graphql@15.8.0)
-      '@holochain/client': 0.17.0-dev.9
+      '@holochain/client': 0.17.0-dev.9(bufferutil@4.0.8)
       '@valueflows/vf-graphql': 0.9.0-alpha.9(graphql@15.8.0)
       base64-js: 1.5.1
       big.js: 6.2.1
@@ -1250,7 +1265,7 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@lightningrodlabs/we-applet@0.16.2:
+  /@lightningrodlabs/we-applet@0.16.2(bufferutil@4.0.8):
     resolution: {integrity: sha512-pQYzq02E+x6LOe+AWaebHTE1nPDgACgwlrYwfXe5k6KEsi8ii3CuxgQnjLkk3OInbEOm3tDx/LIK6J7CPbD1sQ==}
     dependencies:
       '@holochain/client': 0.17.0-dev.8(bufferutil@4.0.8)
@@ -1259,7 +1274,36 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    dev: false
+
+  /@lightningrodlabs/we-dev-cli@0.11.15(@types/node@20.12.5)(typescript@5.4.4):
+    resolution: {integrity: sha512-N2eRDjwKIucd+vizRyJNN+/kQZKUdhipJau6DpuOO9ztRAEQ1FpvWrLsN6vAHCZxpV0WZOup34WnDZbwn3TU/w==}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@electron-toolkit/preload': 2.0.0(electron@25.9.8)
+      '@electron-toolkit/utils': 2.0.1(electron@25.9.8)
+      '@holochain-open-dev/utils': 0.300.0-dev.0(bufferutil@4.0.8)
+      '@holochain/client': 0.17.0-dev.9(bufferutil@4.0.8)
+      '@lightningrodlabs/we-applet': 0.16.2(bufferutil@4.0.8)
+      '@lightningrodlabs/we-rust-utils': 0.300.1-dev.2
+      bufferutil: 4.0.8
+      commander: 11.1.0
+      electron: 25.9.8
+      electron-context-menu: 3.6.1
+      electron-updater: 6.1.8
+      mime: 4.0.0
+      nanoid: 5.0.4
+      split: 1.0.1
+      ts-node: 10.9.2(@types/node@20.12.5)(typescript@5.4.4)
+      winston: 3.11.0
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - supports-color
+      - typescript
+      - utf-8-validate
+    dev: true
 
   /@lightningrodlabs/we-dev-cli@0.11.4(@types/node@20.12.5)(electron@29.2.0)(typescript@5.4.4):
     resolution: {integrity: sha512-jZgyGHVILXJHnkB8SBjwNBoMLCTzI9pCJ9a9P6aQ42/4NeLLv29ocqVCkXSbgYGVTXZCJjKJeGeyLjExB+sIBQ==}
@@ -2407,6 +2451,16 @@ packages:
     dependencies:
       node-gyp-build: 4.8.0
 
+  /builder-util-runtime@9.2.3:
+    resolution: {integrity: sha512-FGhkqXdFFZ5dNC4C+yuQB9ak311rpGAw+/ASz8ZdxwODCv1GGMWgLDeofRkdi0F3VCHQEWy/aXcJQozx2nOPiw==}
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      debug: 4.3.4
+      sax: 1.4.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
   /cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
@@ -2996,6 +3050,34 @@ packages:
     resolution: {integrity: sha512-bx7+5Saea/qu14kmPTDHQxkp2UnziG3iajUQu3BxFvCOnpAJdDbMV4rSl+EqFDkkpNNVUFlR1kDfpL59xfy1HA==}
     dev: true
 
+  /electron-updater@6.1.8:
+    resolution: {integrity: sha512-hhOTfaFAd6wRHAfUaBhnAOYc+ymSGCWJLtFkw4xJqOvtpHmIdNHnXDV9m1MHC+A6q08Abx4Ykgyz/R5DGKNAMQ==}
+    dependencies:
+      builder-util-runtime: 9.2.3
+      fs-extra: 10.1.0
+      js-yaml: 4.1.0
+      lazy-val: 1.0.5
+      lodash.escaperegexp: 4.1.2
+      lodash.isequal: 4.5.0
+      semver: 7.6.0
+      tiny-typed-emitter: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /electron@25.9.8:
+    resolution: {integrity: sha512-PGgp6PH46QVENHuAHc2NT1Su8Q1qov7qIl2jI5tsDpTibwV2zD8539AeWBQySeBU4dhbj9onIl7+1bXQ0wefBg==}
+    engines: {node: '>= 12.20.55'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@electron/get': 2.0.3
+      '@types/node': 18.19.30
+      extract-zip: 2.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
   /electron@28.2.10:
     resolution: {integrity: sha512-0rGBJNogcl2FIRxGRUv9zuMaBP78nSBJW+Bd1U7OGeg8IEkSIbHOhfn71XoGxgbOUSCEXjjyftq4mtAAVbUsZQ==}
     engines: {node: '>= 12.20.55'}
@@ -3379,6 +3461,15 @@ packages:
 
   /fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
+    dev: true
+
+  /fs-extra@10.1.0:
+    resolution: {integrity: sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      graceful-fs: 4.2.11
+      jsonfile: 6.1.0
+      universalify: 2.0.1
     dev: true
 
   /fs-extra@8.1.0:
@@ -3804,6 +3895,14 @@ packages:
       graceful-fs: 4.2.11
     dev: true
 
+  /jsonfile@6.1.0:
+    resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
+    dependencies:
+      universalify: 2.0.1
+    optionalDependencies:
+      graceful-fs: 4.2.11
+    dev: true
+
   /keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
     dependencies:
@@ -3817,6 +3916,10 @@ packages:
 
   /kuler@2.0.0:
     resolution: {integrity: sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A==}
+
+  /lazy-val@1.0.5:
+    resolution: {integrity: sha512-0/BnGCCfyUMkBpeDgWihanIAF9JmZhHBgUhEqzvf+adhNGLoP6TaiI5oF8oyb3I45P+PcnrqihSf01M0l0G5+Q==}
+    dev: true
 
   /lazystream@1.0.1:
     resolution: {integrity: sha512-b94GiNHQNy6JNTrt5w6zNyffMrNkXZb3KTkCZJb2V1xaEGCk093vkZ2jk3tpaeP33/OiXC+WvK9AxUebnf5nbw==}
@@ -3937,8 +4040,16 @@ packages:
     resolution: {integrity: sha512-dS2j+W26TQ7taQBGN8Lbbq04ssV3emRw4NY58WErlTO29pIqS0HmoT5aJ9+TUQ1N3G+JOZSji4eugsWwGp9yPA==}
     dev: true
 
+  /lodash.escaperegexp@4.1.2:
+    resolution: {integrity: sha512-TM9YBvyC84ZxE3rgfefxUWiQKLilstD6k7PTGt6wfbtXF8ixIJLOL3VYyV/z+ZiPLsVxAsKAFVwWlWeb2Y8Yyw==}
+    dev: true
+
   /lodash.flatten@4.4.0:
     resolution: {integrity: sha512-C5N2Z3DgnnKr0LOpv/hKCgKdb7ZZwafIrsesve6lmzvZIRZRGaZ/l6Q8+2W7NaT+ZwO3fFlSCzCzrDCFdJfZ4g==}
+    dev: true
+
+  /lodash.isequal@4.5.0:
+    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
     dev: true
 
   /lodash.isplainobject@4.0.6:
@@ -5361,6 +5472,10 @@ packages:
       rimraf: 2.7.1
     dev: true
 
+  /sax@1.4.1:
+    resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
+    dev: true
+
   /semver-compare@1.0.0:
     resolution: {integrity: sha512-YM3/ITh2MJ5MtzaM429anh+x2jiLVjqILF4m4oyQB18W7Ggea7BfqdH/wGMK7dDiMghv/6WG7znWMwUDzJiXow==}
     requiresBuild: true
@@ -5840,6 +5955,10 @@ packages:
       globrex: 0.1.2
     dev: true
 
+  /tiny-typed-emitter@2.1.0:
+    resolution: {integrity: sha512-qVtvMxeXbVej0cQWKqVSSAHmKZEHAvxdF8HEUBFWts8h+xEo5m/lEiPakuyZ3BnCBjOD8i24kzNOiOLLgsSxhA==}
+    dev: true
+
   /tinybench@2.6.0:
     resolution: {integrity: sha512-N8hW3PG/3aOoZAN5V/NSAEDz0ZixDSSt5b/a05iqtpgfLWMSVuCo7w0k2vVvEjdrIoeGqZzweX2WlyioNIHchA==}
 
@@ -5987,6 +6106,11 @@ packages:
   /universalify@0.1.2:
     resolution: {integrity: sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==}
     engines: {node: '>= 4.0.0'}
+    dev: true
+
+  /universalify@2.0.1:
+    resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
+    engines: {node: '>= 10.0.0'}
     dev: true
 
   /unused-filename@2.1.0:
