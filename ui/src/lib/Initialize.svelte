@@ -39,31 +39,10 @@
     }
   `
 
-  const INITIALIZE_GLOBAL_RECORDS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!) {
-      g1: putFacetGroup(facetGroup: $g1) {
-        facetGroup {
-          id
-          revisionId
-          name
-        }
-      }
-      g2: putFacetGroup(facetGroup: $g2) {
-        facetGroup {
-          id
-          revisionId
-          name
-        }
-      }
-    }
-  `
   // const INITIALIZE_GLOBAL_RECORDS = gql`
   //   ${RESOURCE_SPECIFICATION_CORE_FIELDS}
   //   ${UNIT_CORE_FIELDS}
-  //   mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!, $agent: OrganizationCreateParams) {
-
+  //   mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!) {
   //     g1: putFacetGroup(facetGroup: $g1) {
   //       facetGroup {
   //         id
@@ -78,23 +57,44 @@
   //         name
   //       }
   //     }
-
-  //     rs: createResourceSpecification(resourceSpecification: $resource) {
-  //       resourceSpecification {
-  //         ...ResourceSpecificationCoreFields
-  //         defaultUnitOfResource {
-  //           ...UnitCoreFields
-  //         }
-  //       }
-  //     }
-
-  //     a: createOrganization(organization: $agent) {
-  //       organization {
-  //         id
-  //       }
-  //     }
   //   }
   // `
+  const INITIALIZE_GLOBAL_RECORDS = gql`
+    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
+    ${UNIT_CORE_FIELDS}
+    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!, $agent: OrganizationCreateParams) {
+
+      g1: putFacetGroup(facetGroup: $g1) {
+        facetGroup {
+          id
+          revisionId
+          name
+        }
+      }
+      g2: putFacetGroup(facetGroup: $g2) {
+        facetGroup {
+          id
+          revisionId
+          name
+        }
+      }
+
+      rs: createResourceSpecification(resourceSpecification: $resource) {
+        resourceSpecification {
+          ...ResourceSpecificationCoreFields
+          defaultUnitOfResource {
+            ...UnitCoreFields
+          }
+        }
+      }
+
+      a: createOrganization(organization: $agent) {
+        organization {
+          id
+        }
+      }
+    }
+  `
 
   const CREATE_RESOURCE_SPECIFICATION = gql`
     ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -155,17 +155,6 @@
       const created = await initUnits({})
       units = [created.data?.unitEa.unit as Unit, created.data?.unitLb.unit as Unit]
 
-      await initData({ variables: {
-        g1: {
-          name: "Agent",
-          note: "All facet classifications relevant to Agent records.",
-        },
-        g2: {
-          name: "Resource Specification",
-          note: "All facet classifications relevant to types of resources.",
-        }
-      }})
-
       // await initData({ variables: {
       //   g1: {
       //     name: "Agent",
@@ -174,55 +163,66 @@
       //   g2: {
       //     name: "Resource Specification",
       //     note: "All facet classifications relevant to types of resources.",
-      //   },
-      //   resource: {
-      //     name: "USD",
-      //     defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
-      //   },
-      //   agent: {
-      //     name: "Carbon Farm Network",
-      //     classifiedAs: ["40.689247", "-74.044502", "Network"],
-      //     image: "knitting.svg"
       //   }
       // }})
 
-      // let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
-      // let rSpecs: any[] = []
-      // let pSpecs: any[] = []
+      await initData({ variables: {
+        g1: {
+          name: "Agent",
+          note: "All facet classifications relevant to Agent records.",
+        },
+        g2: {
+          name: "Resource Specification",
+          note: "All facet classifications relevant to types of resources.",
+        },
+        resource: {
+          name: "USD",
+          defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
+        },
+        agent: {
+          name: "Carbon Farm Network",
+          classifiedAs: ["40.689247", "-74.044502", "Network"],
+          image: "knitting.svg"
+        }
+      }})
 
-      // for (let r of recipes) {
-      //   if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
-      //     console.log(r.process_conforms_to)
-      //     pSpecs.push(r.process_conforms_to.name)
-      //   }
-      //   let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
-      //   let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
-      //   let combined = input.concat(output)
-      //   for (let s of combined) {
-      //     if (!rSpecs.includes(s.resourceConformsTo.name)) {
-      //       rSpecs.push(s.resourceConformsTo.name)
-      //     }
-      //   }
-      // }
-      // for (let r of rSpecs) {
-      //   let x = await addResourceSpecification({ variables: {
-      //     resource: {
-      //       name: r,
-      //       defaultUnitOfResource: units.find(u => u.symbol === 'lb')?.id,
-      //     },
-      //   }})
-      // }
+      let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
+      let rSpecs: any[] = []
+      let pSpecs: any[] = []
 
-      // console.log(pSpecs)
-      // for (let p of pSpecs) {
-      //   console.log(p)
-      //   let x = await addProcessSpecification({ variables: {
-      //     process: {
-      //       name: p
-      //     },
-      //   }})
-      //   console.log(x)
-      // }
+      for (let r of recipes) {
+        if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
+          console.log(r.process_conforms_to)
+          pSpecs.push(r.process_conforms_to.name)
+        }
+        let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
+        let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
+        let combined = input.concat(output)
+        for (let s of combined) {
+          if (!rSpecs.includes(s.resourceConformsTo.name)) {
+            rSpecs.push(s.resourceConformsTo.name)
+          }
+        }
+      }
+      for (let r of rSpecs) {
+        let x = await addResourceSpecification({ variables: {
+          resource: {
+            name: r,
+            defaultUnitOfResource: units.find(u => u.symbol === 'lb')?.id,
+          },
+        }})
+      }
+
+      console.log(pSpecs)
+      for (let p of pSpecs) {
+        console.log(p)
+        let x = await addProcessSpecification({ variables: {
+          process: {
+            name: p
+          },
+        }})
+        console.log(x)
+      }
 
       
     } catch(e) {

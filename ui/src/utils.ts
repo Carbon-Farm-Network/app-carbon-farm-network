@@ -4,9 +4,11 @@ import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from 
 import { FACET_GROUP_CORE_FIELDS, FACET_VALUE_CORE_FIELDS } from "$lib/graphql/facet.fragments"
 import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
 import { COMMITMENT_RETURN_FIELDS, PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
+import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragments'
+import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources.fragments'
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-import { clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges } from './store'
+import { clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
 // import { mutation, query } from 'svelte-apollo'
 import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { decodeHashFromBase64, encodeHashToBase64, type AnyLinkableHash } from '@holochain/client';
@@ -254,6 +256,42 @@ query GetProcess($id: ID!) {
 }
 `
 
+const GET_ECONOMIC_EVENTS = gql`
+${ECONOMIC_EVENT_RETURN_FIELDS}
+query {
+  economicEvents(last: 100000) {
+    pageInfo {
+      startCursor
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        ...EconomicEventReturnFields
+      }
+    }
+  }
+}
+`
+
+const GET_ECONOMIC_RESOURCES = gql`
+${ECONOMIC_RESOURCE_RETURN_FIELDS}
+query {
+  economicResources(last: 100000) {
+    pageInfo {
+      startCursor
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        ...EconomicResourceReturnFields
+      }
+    }
+  }
+}
+`
+
 // const GET_COMMITMENT = gql`
 //   ${COMMITMENT_RETURN_FIELDS}
 //   query getCommitment($id: ID!) {
@@ -417,6 +455,26 @@ export const getAllActions = async () => {
     query: GET_All_ACTIONS,
     fetchPolicy: 'no-cache'
   })
+}
+
+export const getAllEconomicEvents = async () => {
+  const res = await client.query({
+    query: GET_ECONOMIC_EVENTS,
+    fetchPolicy: 'no-cache'
+  })
+  console.log(res)
+  setEconomicEvents(res.data.economicEvents.edges.map((edge: any) => edge.node))
+  return res
+}
+
+export const getAllEconomicResources = async () => {
+  const res = await client.query({
+    query: GET_ECONOMIC_RESOURCES,
+    fetchPolicy: 'no-cache'
+  })
+  console.log(res)
+  setEconomicResources(res.data.economicResources.edges.map((edge: any) => edge.node))
+  return res
 }
 
 export const getPlan = async (id: string) => {

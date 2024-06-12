@@ -9,6 +9,8 @@ export const allUnits = writable([]);
 export const allResourceSpecifications = writable([]);
 export const allProcessSpecifications = writable([]);
 export const allProposals = writable([]);
+export const allEconomicEvents = writable([]);
+export const allEconomicResources = writable([]);
 
 export function setHashChanges(newHashChanges: any) {
     allHashChanges.update(v => newHashChanges);
@@ -20,6 +22,14 @@ export function setClient(client: any) {
 
 export function setAgents(newAgents: any) {
     allAgents.update(v => newAgents);
+}
+
+export function setEconomicEvents(newEconomicEvents: any) {
+    allEconomicEvents.update(v => newEconomicEvents);
+}
+
+export function setEconomicResources(newEconomicResources: any) {
+    allEconomicResources.update(v => newEconomicResources);
 }
 
 export function updateAnAgent(agent: any) {

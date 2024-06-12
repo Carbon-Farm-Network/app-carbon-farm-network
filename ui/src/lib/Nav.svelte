@@ -232,6 +232,22 @@
             <button
               type="button"
               class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/economic_events')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Economic events</button
+            >
+            <button
+              type="button"
+              class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/economic_resources')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Economic resources</button
+            >
+            <button
+              type="button"
+              class="block px-4 py-2 text-sm text-gray-700"
               on:click={() => navigate('/facets')}
               role="menuitem"
               tabindex="-1"

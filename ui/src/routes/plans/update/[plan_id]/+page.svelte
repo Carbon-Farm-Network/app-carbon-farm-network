@@ -1039,7 +1039,7 @@ bind:open={economicEventModalOpen}
                     </button>
                     </div>
 
-                    {#if false && revisionId}
+                    {#if true && revisionId}
                       <button
                         style="margin-top: -3px;"
                         on:click={() => {
