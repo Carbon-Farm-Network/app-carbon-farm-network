@@ -24,11 +24,11 @@
   import { browser } from '$app/environment'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Action, Proposal, Plan, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Action, Proposal, Plan, ProposalCreateParams, EconomicResource, EconomicResourceCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
   import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
-  import { getAllAgents, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits } from '../../../../utils'
-  import { allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../../store'
+  import { getAllAgents, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits, getAllEconomicResources } from '../../../../utils'
+  import { allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals, allEconomicResources } from '../../../../store'
   import Loading from '$lib/Loading.svelte'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -56,6 +56,11 @@
   let plan: any;
   let loadingPlan: boolean = true;
   let allColumns: any = []
+  let economicResources: EconomicResource[] = [];
+
+  allEconomicResources.subscribe(value => {
+    economicResources = value;
+  });
 
   allAgents.subscribe((res) => {
     agents = res.map((a) => {
@@ -167,12 +172,25 @@
   //   }
   // `
 
+
+  const CREATE_ECONOMIC_EVENT_WITH_RESOURCE = gql`
+    mutation($event: EconomicEventCreateParams!, $newInventoriedResource: EconomicResourceCreateParams!) {
+      createEconomicEvent(event: $event, newInventoriedResource: $newInventoriedResource) {
+        economicEvent {
+          id
+        }
+        economicResource {
+          id
+        }
+      }
+    }
+  `
+
   const CREATE_ECONOMIC_EVENT = gql`
     mutation($event: EconomicEventCreateParams!) {
       createEconomicEvent(event: $event) {
         economicEvent {
           id
-          revisionId
         }
       }
     }
@@ -203,6 +221,7 @@
     }
   `
 
+  let addEconomicEventWithResource: any = mutation(CREATE_ECONOMIC_EVENT_WITH_RESOURCE)
   let addEconomicEvent: any = mutation(CREATE_ECONOMIC_EVENT)
   let addFulfillment: any = mutation(CREATE_FULFILLMENT)
   let updateCommitment: any = mutation(UPDATE_COMMITMENT)
@@ -298,23 +317,35 @@
   async function saveEconomicEvent(commitment: any, process: any, side: string) {
     try {
       console.log("commitment: ", commitment)
+      // const economicEvent: EconomicEventCreateParams = {
+      //   // note: commitment.note,
+      //   // action: commitment.action.id,
+      //   action: 'raise',
+      //   provider: commitment.providerId,
+      //   receiver: commitment.receiverId,
+      //   // hasPointInTime: new Date(),
+      //   resourceClassifiedAs: ["commitment.resourceConformsTo.id"],
+      //   resourceConformsTo: commitment.resourceConformsTo.id,
+      //   // resourceClassifiedAs: commitment.resourceConformsTo.classifiedAs,
+      //   hasPointInTime: new Date(),
+      //   resourceQuantity: {
+      //     hasNumericalValue: commitment.resourceQuantity.hasNumericalValue,
+      //     hasUnit: commitment.resourceQuantity.hasUnitId,
+      //   },
+      //   hasBeginning: new Date(),
+      //   // inScopeOf: ['some-accounting-scope'],
+      // }
+
       const economicEvent: EconomicEventCreateParams = {
-        // note: commitment.note,
         action: commitment.action.id,
         provider: commitment.providerId,
         receiver: commitment.receiverId,
-        // hasPointInTime: new Date(),
-        // resourceClassifiedAs: ["commitment.resourceConformsTo.id"],
+        resourceQuantity: { hasNumericalValue: commitment.resourceQuantity.hasNumericalValue, hasUnit: commitment.resourceQuantity.hasUnitId },
         resourceConformsTo: commitment.resourceConformsTo.id,
-        resourceQuantity: {
-          hasNumericalValue: commitment.resourceQuantity.hasNumericalValue,
-          hasUnit: commitment.resourceQuantity.hasUnitId,
-        },
+        // resourceInventoriedAs: "uhCEket5MRW6KEmYreaFDNhxfhh0wtNBx7jj1OaDmclCddSh0/r62:uhC0kzHuFPEhnHQfubYZdmLykpuDOeCAF7OStlYxGzMSe01cG2KyZ",
+        hasPointInTime: new Date(),
         hasBeginning: new Date(),
-        // inScopeOf: ['some-accounting-scope'],
       }
-
-      console.log("economic event", economicEvent)
 
       if (side == "committedInputs") {
         economicEvent.inputOf = process
@@ -322,17 +353,44 @@
         economicEvent.outputOf = process
       }
 
-      console.log("economic event", economicEvent)
-      
-      let x = await addEconomicEvent({
-        variables: {
-          event: economicEvent,
+      let matchingResource = economicResources.find(it => it.conformsTo.id == commitment.resourceConformsTo.id)
+      console.log("economic resources", economicResources, commitment.resourceConformsTo.id)
+      console.log("matching resource", JSON.stringify(matchingResource))
+      if (matchingResource) {
+        economicEvent.resourceInventoriedAs = matchingResource.id
+      }
+
+      console.log("economic event", process, economicEvent)
+
+      let res;
+      if (commitment.action.label == "pickup" && commitment.providerId != commitment.receiverId) {
+        let resourceSpecification = resourceSpecifications.find(it => it.id == commitment.resourceConformsTo.id)
+        let newInventoriedResource: EconomicResourceCreateParams = {
+          name: resourceSpecification?.name,
+          note: commitment.note,
+          image: resourceSpecification?.image,
+          conformsTo: resourceSpecification?.id
         }
-      })
-      console.log(x)
+
+        console.log("newInventoriedResource", newInventoriedResource)
+        
+        res = await addEconomicEventWithResource({
+          variables: {
+            event: economicEvent,
+            newInventoriedResource: newInventoriedResource
+          }
+        })
+        console.log(res, newInventoriedResource)
+      } else {
+        res = await addEconomicEvent({
+          variables: {
+            event: economicEvent
+          }
+        })
+      }
 
       const fulfillment: FulfillmentCreateParams = {
-        fulfilledBy: x.data.createEconomicEvent.economicEvent.id,
+        fulfilledBy: res.data.createEconomicEvent.economicEvent.id,
         fulfills: commitment.id,
       }
 
@@ -343,7 +401,9 @@
         }
       })
 
-      await saveCommitment(commitment)
+      getAllEconomicResources();
+
+      // await saveCommitment(commitment)
     } catch (e) {
       console.log(e)
     }
@@ -545,6 +605,7 @@
         await getAllProposals()
         await getAllResourceSpecifications()
         await getAllProcessSpecifications()
+        await getAllEconomicResources()
         console.log("these are all the columns", allColumns)
       } catch (e) {
         console.log("error", e)
@@ -763,6 +824,7 @@ bind:open={economicEventModalOpen}
 <!-- plan name -->
 <!-- plan name -->
 <h1 class="text-center text-xl font-semibold">{plan.name}</h1>
+{JSON.stringify(economicResources)}
 {@const exportData = {
   plan: plan,
   allColumns: allColumns,
@@ -1218,7 +1280,7 @@ bind:open={economicEventModalOpen}
                     </button>
                     </div>
 
-                    {#if false && revisionId}
+                    {#if revisionId}
                       <button
                         style="margin-top: -3px;"
                         on:click={() => {

@@ -35,7 +35,8 @@
     "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do echo \"  Remove $DIR\"; rm -Rf \"$DIR\"; done",
     "clean:build-cache": "rimraf .cargo; rimraf ui/.svelte-kit",
     "clean:build": "rimraf target; rm dnas/acfn/workdir/acfn.dna; rm workdir/acfn.happ",
-    "clean": "pnpm run clean:build; pnpm run clean:build-cache; pnpm run clean:hrea-modules; pnpm run clean:modules"
+    "clean": "pnpm run clean:build; pnpm run clean:build-cache; pnpm run clean:hrea-modules; pnpm run clean:modules",
+    "import:hrea:local": "cp ../hREA/bundles/dna/hrea_combined/hrea_combined.dna ./workdir/hrea_combined.dna"
   },
   "devDependencies": {
     "@lightningrodlabs/we-dev-cli": "^0.11.0",

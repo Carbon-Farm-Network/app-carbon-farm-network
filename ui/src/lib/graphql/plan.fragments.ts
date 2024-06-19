@@ -335,6 +335,7 @@ export const PLAN_RETURN_FIELDS = gql`
           id
           name
           defaultUnitOfResourceId
+          resourceClassifiedAs
         }
         finished
         fulfilledBy {
@@ -353,6 +354,7 @@ export const PLAN_RETURN_FIELDS = gql`
             id
             name
             defaultUnitOfResourceId
+            resourceClassifiedAs
           }
           resourceQuantity {
             hasNumericalValue
@@ -375,6 +377,7 @@ export const PLAN_RETURN_FIELDS = gql`
               id
               name
               defaultUnitOfResourceId
+              resourceClassifiedAs
             }
             resourceQuantity {
               hasNumericalValue
@@ -414,6 +417,7 @@ export const PLAN_RETURN_FIELDS = gql`
         resourceConformsTo {
           id
           name
+          resourceClassifiedAs
         }
         finished
         fulfilledBy {
@@ -432,6 +436,7 @@ export const PLAN_RETURN_FIELDS = gql`
             id
             name
             defaultUnitOfResourceId
+            resourceClassifiedAs
           }
           resourceQuantity {
             hasNumericalValue

@@ -13,15 +13,15 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
         name
     }
     receiverId
-    resourceConformsTo {
-        id
-        name
-        defaultUnitOfResourceId
-    }
     resourceQuantity {
         hasNumericalValue
         hasUnitId
     }
     hasBeginning
+    resourceConformsTo {
+        id
+        name
+        defaultUnitOfResourceId
+    }
   }
 `

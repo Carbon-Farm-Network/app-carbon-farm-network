@@ -2,7 +2,7 @@
     import type { EconomicEvent, Agent }  from '@valueflows/vf-graphql'
     import Header from "$lib/Header.svelte";
     import { onMount } from "svelte";
-    import { getAllEconomicEvents } from "../../utils";
+    import { getAllEconomicEvents, getAllUnits } from "../../utils";
     import { allEconomicEvents, allAgents, allUnits, allResourceSpecifications } from "../../store";
 
     let economicEvents: EconomicEvent[] = [];
@@ -15,7 +15,7 @@
         agents = value;
     });
     
-    let units = [];
+    let units: any[] = [];
     allUnits.subscribe(value => {
         units = value;
     });
@@ -27,6 +27,7 @@
 
     onMount(async () => {
         await getAllEconomicEvents();
+        await getAllUnits();
     });
 </script>
 
@@ -41,7 +42,7 @@
               <th
                 scope="col"
                 class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
-                >Receiver</th
+                >Provider</th
               >
               <th
                 scope="col"
@@ -51,7 +52,12 @@
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Quantity</th
+                >Action</th
+              >
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >Resources</th
               >
               <th
                 scope="col"
@@ -67,14 +73,17 @@
             {#each economicEvents as economicEvent}
               <tr>
                 <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {agents.find(agent => agent.id === economicEvent.receiverId)?.name}
+                  {agents.find(agent => agent.id === economicEvent.providerId)?.name}
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {agents.find(agent => agent.id === economicEvent.providerId)?.name}
+                  {agents.find(agent => agent.id === economicEvent.receiverId)?.name}
+                </td>
+                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {economicEvent.action?.label}
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                     {economicEvent.resourceQuantity?.hasNumericalValue} 
-                    <!-- {units.find(unit => unit.id === economicEvent.resourceQuantity?.hasUnitId)?.label} -->
+                    {units.find(unit => unit.id === economicEvent.resourceQuantity?.hasUnitId)?.label}
                     {economicEvent?.resourceConformsTo?.name}
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">

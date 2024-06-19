@@ -306,7 +306,9 @@ mutation($event: EconomicEventCreateParams!) {
   createEconomicEvent(event: $event) {
     economicEvent {
       id
-      revisionId
+    }
+    economicResource {
+      id
     }
   }
 }
@@ -420,6 +422,7 @@ export const getAllUnits = async () => {
     fetchPolicy: 'no-cache'
   })
   setUnits(res.data.units.edges.map((edge: any) => edge.node))
+  console.log(res.data.units.edges.map((edge: any) => edge.node))
   return res
 }
 
@@ -507,11 +510,12 @@ export const getProcess = async (id: string) => {
   })
 }
 
-export const createEconomicEvent = async (event: any) => {
+export const createEconomicEvent = async (event: any, new_inventoried_resource: any) => {
   return await client.mutate({
     mutation: CREATE_ECONOMIC_EVENT,
     variables: {
-      event
+      event,
+      new_inventoried_resource
     }
   })
 }
