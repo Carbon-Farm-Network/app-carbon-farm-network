@@ -1,21 +1,16 @@
 <script lang="ts">
   import ResourceSpecificationModal from "$lib/ResourceSpecificationModal.svelte"
-  // import resourceSpecifications from '$lib/data/resource_specifications.json'
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
-  import type { ComponentType } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
-  import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import { FACET_VALUE_CORE_FIELDS, FACET_GROUP_CORE_FIELDS } from '$lib/graphql/facet.fragments'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
-  import { addHashChange } from "../../utils"
+  import { addHashChange } from "../../crud/commit"
+  import { getAllResourceSpecifications } from "../../crud/fetch"
+  import { deleteResourceSpecification } from "../../crud/commit"
+  import { allResourceSpecifications } from "../../crud/store"
 
   let modalOpen = false;
   let editing = false;
@@ -28,85 +23,42 @@
   let selectedFacets: any = {};
   let handleSubmit: any;
   let importing: boolean = false;
+  let resourceSpecifications: any[]
 
-  const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${FACET_VALUE_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    query {
-      resourceSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ResourceSpecificationCoreFields
-            defaultUnitOfResource {
-              ...UnitCoreFields
-            }
-            facets {
-              ...FacetValueCoreFields
-            }
-          }
-        }
+  allResourceSpecifications.subscribe((value) => {
+    resourceSpecifications = value.map((rs) => {
+      return {
+        ...rs,
+        defaultUnitOfResourceId: rs.defaultUnitOfResource?.id
       }
-    }
-  `
-
-  interface QueryResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
+    })
+  })
 
   // DELETE RESOURCE SPECIFICATION
-  const DELETE_RESOURCE_SPECIFICATION = gql`mutation($revisionId: ID!){
-    deleteResourceSpecification(revisionId: $revisionId)
-  }`
-  let deleteResourceSpecification: any = mutation(DELETE_RESOURCE_SPECIFICATION)
+  // const DELETE_RESOURCE_SPECIFICATION = gql`mutation($revisionId: ID!){
+  //   deleteResourceSpecification(revisionId: $revisionId)
+  // }`
+  // let deleteResourceSpecification: any = mutation(DELETE_RESOURCE_SPECIFICATION)
 
   async function deleteAResourceSpec(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this resource specification?")
     if (areYouSure == true) {
-      const res = await deleteResourceSpecification({ variables: { revisionId } })
-      await fetchResourceSpecifications()
+      const res = await deleteResourceSpecification(revisionId)
+      getAllResourceSpecifications()
     }
-  }
-  // DELETE RESOURCE SPECIFICATION ENDS
-
-  // map component state
-  let resourceSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-
-  async function fetchResourceSpecifications() {
-    await resourceSpecificationsQuery.getCurrentResult()
-    let x = await resourceSpecificationsQuery.refetch()
-    // setTimeout(function(){
-    await resourceSpecificationsQuery.refetch().then((r) => {
-        resourceSpecifications = flattenRelayConnection(r.data?.resourceSpecifications).map((a) => {
-          return {
-            ...a,
-            defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
-          }
-        })
-      })
-    // }, 1000)
   }
 
   onMount(async () => {
     if (browser) {
-      await fetchResourceSpecifications()
+      await getAllResourceSpecifications()
     }
   })
-
-  // reactive data bindings
-  let resourceSpecifications: any[]
 
   $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units, handleSubmit
 </script>
 
-<!-- <div style="height: 8vh"> -->
-  <Header title="Resource Specifications" description="The types of resources your network creates, uses, trades; types of work; currencies, tokens." />
-<!-- </div> -->
-<!-- <Units /> -->
-<!-- {#if units} -->
-<ResourceSpecificationModal bind:handleSubmit bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={fetchResourceSpecifications} />
-<!-- {/if} -->
+<Header title="Resource Specifications" description="The types of resources your network creates, uses, trades; types of work; currencies, tokens." />
+<ResourceSpecificationModal bind:handleSubmit bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={getAllResourceSpecifications} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -182,7 +134,7 @@
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >
-                {resourceSpecification.defaultUnitOfResource.label || ''}</td
+                {resourceSpecification.defaultUnitOfResource?.label || ''}</td
               >
               <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{resourceSpecification.defaultUnitOfEffort || ''}</td
@@ -205,11 +157,11 @@
               >
                 <button type="button" on:click={() => {
                   name = resourceSpecification.name; 
-                  currentResourceSpecification = resourceSpecification; 
+                  currentResourceSpecification = resourceSpecification;
                   editing=true; modalOpen = true
 
                   selectedFacets = {};
-                  currentResourceSpecification.facets.map((f) => {
+                  currentResourceSpecification.facets?.map((f) => {
                     selectedFacets[f.facet.id] = f.id
                   })
                  

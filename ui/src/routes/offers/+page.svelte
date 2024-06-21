@@ -15,8 +15,8 @@
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
   import { loop_guard } from 'svelte/internal'
-  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../utils'
-  import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../store'
+  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../crud/fetch'
+  import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../crud/store'
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"

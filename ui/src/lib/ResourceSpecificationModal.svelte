@@ -6,6 +6,9 @@
   import { mutation, query } from 'svelte-apollo'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { onMount } from 'svelte'
+  import { allUnits } from '../crud/store';
+  import { getAllUnits } from '../crud/fetch';
+  import { addResourceSpecification, associateResourceSpecificationAndFacetValue, updateResourceSpecification } from '../crud/commit';
   const dispatch = createEventDispatcher();
   
   export let open = false;
@@ -16,6 +19,8 @@
   export let facets: Facet[] | undefined;
   export let selectedFacets: any;
 
+  allUnits.subscribe(value => {units = value})
+
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
       e.preventDefault();
@@ -23,42 +28,11 @@
     }
   }
 
-  onMount(() => {
+  onMount(async() => {
+    await getAllUnits()
+    console.log(currentResourceSpecification)
     window.addEventListener("keydown", checkKey);
   });
-
-  const ADD_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS},
-    mutation($resource: ResourceSpecificationCreateParams!){
-      createResourceSpecification(resourceSpecification: $resource) {
-        resourceSpecification {
-          ...ResourceSpecificationCoreFields
-        }
-      }
-    }
-  `
-
-  const ASSOCIATE_RESOURCE_SPECIFICATION_AND_FACET_VALUE = gql`
-    mutation($identifier: String, $facetValueId: ID!){
-      associateFacetValue(identifier: $identifier, facetValueId: $facetValueId)
-    }
-  `
-
-  const UPDATE_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS},
-    mutation($resource: ResourceSpecificationUpdateParams!){
-      updateResourceSpecification(resourceSpecification: $resource) {
-        resourceSpecification {
-          ...ResourceSpecificationCoreFields
-        }
-      }
-    }
-  `
-
-  let addResourceSpecification: any = mutation(ADD_RESOURCE_SPECIFICATION)
-  let associateResourceSpecificationWithValue: any = mutation(ASSOCIATE_RESOURCE_SPECIFICATION_AND_FACET_VALUE)
-  let updateResourceSpecification: any = mutation(UPDATE_RESOURCE_SPECIFICATION)
-  // let retrieveUnits: any = query(GET_UNITS_OF_EFFORT_AND_RESOURCE)
 
   export async function handleSubmit(currentResourceSpecification: ResourceSpecificationCreateParams) {
     // let unitOfResource = units.find(unit => unit.id === currentResourceSpecification.defaultUnitOfResource).id
@@ -73,7 +47,7 @@
       image: currentResourceSpecification.image,
     }
     try {
-      const res = await addResourceSpecification({ variables: { resource } })
+      const res = await addResourceSpecification(resource)
 
       const identifier = res.data.createResourceSpecification.resourceSpecification.id
       // for each facet in selectedFacets, associate the agent with the selected value
@@ -84,7 +58,7 @@
         if (selectedFacets[facet] == null) {
           continue
         }
-        const res2 = await associateResourceSpecificationWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
+        const res2 = await associateResourceSpecificationAndFacetValue(identifier, selectedFacets[facet])
       }
 
       dispatch("submit");
@@ -98,7 +72,6 @@
 
   async function handleUpdate() {
     // getAgent();
-    console.log(currentResourceSpecification)
 
     let resource: ResourceSpecificationUpdateParams = {
       name: currentResourceSpecification.name,
@@ -109,7 +82,7 @@
       revisionId: currentResourceSpecification.revisionId
     }
     try {
-      const res = await updateResourceSpecification({ variables: { resource } })
+      const res = await updateResourceSpecification(resource)
 
       const identifier = res.data.updateResourceSpecification.resourceSpecification.id
       // for each facet in selectedFacets, associate the agent with the selected value
@@ -120,13 +93,12 @@
         if (selectedFacets[facet] == null) {
           continue
         }
-        const res2 = await associateResourceSpecificationWithValue({ variables: {identifier: identifier, facetValueId: selectedFacets[facet] }})
+        const res2 = await associateResourceSpecificationAndFacetValue(identifier, selectedFacets[facet])
         console.log("associate", res2)
       }
 
       dispatch("submit");
       open = false;
-      console.log(res)
     } catch (error) {
       console.error(error)
     }
@@ -429,11 +401,11 @@
             }}
             class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             >
-            {#if editing}
-            Update
-            {:else}
-            Create
-            {/if}
+              {#if editing}
+                Update
+              {:else}
+                Create
+              {/if}
             </button
           >
           <button

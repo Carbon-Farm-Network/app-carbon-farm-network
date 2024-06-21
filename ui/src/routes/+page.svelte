@@ -15,8 +15,8 @@
   import { PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
   import { FACET_VALUE_CORE_FIELDS } from '$lib/graphql/facet.fragments'
   import type { AgentExtended } from '$lib/graphql/extension-schemas'
-  import { getAllAgents, getAllProposals } from '../utils'
-  import { allAgents, allProposals } from '../store'
+  import { getAllAgents, getAllProposals } from '../crud/fetch'
+  import { allAgents, allProposals } from '../crud/store'
   import Loading from '$lib/Loading.svelte'
   // import { AdminWebsocket } from '@holochain/client';
   const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''

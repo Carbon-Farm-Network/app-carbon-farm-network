@@ -11,6 +11,8 @@ export const allProcessSpecifications = writable([]);
 export const allProposals = writable([]);
 export const allEconomicEvents = writable([]);
 export const allEconomicResources = writable([]);
+export const allActions = writable([]);
+export const fullPlans = writable({});
 
 export function setHashChanges(newHashChanges: any) {
     allHashChanges.update(v => newHashChanges);
@@ -18,6 +20,10 @@ export function setHashChanges(newHashChanges: any) {
 
 export function setClient(client: any) {
     clientStored.update(v => client);
+}
+
+export function setActions(newActions: any) {
+    allActions.update(v => newActions);
 }
 
 export function setAgents(newAgents: any) {
@@ -67,4 +73,10 @@ export function setProcessSpecifications(newProcessSpecifications: any) {
 
 export function setProposals(newProposals: any) {
     allProposals.update(v => newProposals);
+}
+
+export function addToFullPlans(newPlan: any) {
+    fullPlans.update(v => {
+        return { ...v, [newPlan.id]: newPlan };
+    });
 }

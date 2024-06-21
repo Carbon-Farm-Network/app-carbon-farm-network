@@ -2,8 +2,8 @@
     import type { EconomicEvent, Agent }  from '@valueflows/vf-graphql'
     import Header from "$lib/Header.svelte";
     import { onMount } from "svelte";
-    import { getAllEconomicEvents, getAllUnits } from "../../utils";
-    import { allEconomicEvents, allAgents, allUnits, allResourceSpecifications } from "../../store";
+    import { getAllEconomicEvents, getAllUnits } from "../../crud/fetch";
+    import { allEconomicEvents, allAgents, allUnits, allResourceSpecifications } from "../../crud/store";
 
     let economicEvents: EconomicEvent[] = [];
     allEconomicEvents.subscribe(value => {

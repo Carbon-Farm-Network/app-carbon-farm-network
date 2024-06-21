@@ -12,7 +12,7 @@ import { appletServices } from '../../we';
 import { onMount } from 'svelte';
 import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { ApolloClient } from "@apollo/client/core";
-import { setClient } from "../store"
+import { setClient } from "../crud/store"
 
 const appId = 'acfn'
 const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''

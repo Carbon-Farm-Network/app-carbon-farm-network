@@ -8,7 +8,7 @@
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
   import { onMount } from 'svelte'
-  import { addHashChange } from "../../utils"
+  import { addHashChange } from "../../crud/commit"
   import { goto } from '$app/navigation';
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"

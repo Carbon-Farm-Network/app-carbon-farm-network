@@ -3,9 +3,10 @@
   import { onMount } from 'svelte'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
-  import { getAllFacetGroups, getAllAgents, deleteAgent, addHashChange } from '../../utils'
-  import { allHashChanges } from "../../store"
-  import { allAgents } from '../../store'
+  import { deleteAgent, addHashChange } from '../../crud/commit'
+  import { getAllFacetGroups, getAllAgents } from '../../crud/fetch'
+  import { allHashChanges } from "../../crud/store"
+  import { allAgents } from '../../crud/store'
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"

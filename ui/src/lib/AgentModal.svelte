@@ -18,7 +18,7 @@
   import { mutation, query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
-  import { addAgent, updateAgent, associateAgentWithValue } from '../utils'
+  import { addAgent, updateAgent, associateAgentWithValue } from '../crud/commit'
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {

@@ -8,14 +8,15 @@ import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragm
 import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources.fragments'
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './crud/store'
-// import { mutation, query } from 'svelte-apollo'
-import { ApolloClient, InMemoryCache } from '@apollo/client/core';
-import { decodeHashFromBase64, encodeHashToBase64, type AnyLinkableHash } from '@holochain/client';
+import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
 import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
-import { appletServices } from '../we';
+import { appletServices } from '../../we';
 import { decode } from '@msgpack/msgpack';
-import { get } from 'svelte/store'
+
+let client: any;
+clientStored.subscribe(value => {
+  client = value;
+});
 
 // define type
 type HashChange = {
@@ -42,65 +43,6 @@ export async function getAllHashChanges() {
       setHashChanges(hashMap)
   }
 }
-
-export async function addHashChange(original: string, newHash: string) {
-  if (isWeContext()) {
-      let weClient = await WeClient.connect(appletServices);
-      await weClient.renderInfo.appletClient.callZome({
-          cap_secret: null,
-          role_name: 'migration',
-          zome_name: 'migrate',
-          fn_name: 'create_hash_change',
-          payload: {
-              original: String(original),
-              current: String(newHash),
-          },
-      })
-      getAllHashChanges()
-  }
-}
-
-let client: any;
-clientStored.subscribe(value => {
-  client = value;
-});
-
-export function clickOutside(node: HTMLElement): { destroy: () => void } {
-  const handleClick = (event: MouseEvent): void => {
-    if (!node.contains(event.target as Node)) {
-      node.dispatchEvent(new CustomEvent('outclick'));
-    }
-  };
-
-  document.addEventListener('click', handleClick, true);
-
-  return {
-    destroy() {
-      document.removeEventListener('click', handleClick, true);
-    }
-  };
-}
-
-const ADD_AGENT = gql`
-${AGENT_CORE_FIELDS},
-mutation($agent: OrganizationCreateParams!){
-  createOrganization(organization: $agent) {
-    agent {
-      ...AgentCoreFields
-    }
-  }
-}
-`
-const UPDATE_AGENT = gql`
-${AGENT_CORE_FIELDS},
-mutation($agent: OrganizationUpdateParams!){
-  updateOrganization(organization: $agent) {
-    agent {
-      ...AgentCoreFields
-    }
-  }
-}
-`
 
 const GET_ALL_AGENTS = gql`
 ${AGENT_CORE_FIELDS}
@@ -156,21 +98,6 @@ query GetUnits {
   }
 }
 `
-
-// const GET_ALL_AGENTS = gql`
-//   query {
-//     agents(last: 100000) {
-//       edges {
-//         cursor
-//         node {
-//           id
-//           name
-//           classifiedAs
-//         }
-//       }
-//     }
-//   }
-// `
 
 const GET_ALL_RESOURCE_SPECIFICATIONS = gql`
 ${RESOURCE_SPECIFICATION_CORE_FIELDS}
@@ -291,91 +218,6 @@ query {
 }
 `
 
-// const GET_COMMITMENT = gql`
-//   ${COMMITMENT_RETURN_FIELDS}
-//   query getCommitment($id: ID!) {
-//     commitment(id: $id) {
-//       ...CommitmentReturnFields
-//     }
-//   }
-// `
-
-const CREATE_ECONOMIC_EVENT = gql`
-mutation($event: EconomicEventCreateParams!) {
-  createEconomicEvent(event: $event) {
-    economicEvent {
-      id
-    }
-    economicResource {
-      id
-    }
-  }
-}
-`
-
-const CREATE_FULFILLMENT = gql`
-mutation($fulfillment: FulfillmentCreateParams!) {
-  createFulfillment(fulfillment: $fulfillment) {
-    fulfillment {
-      id
-      revisionId
-    }
-  }
-}
-`
-
-const UPDATE_COMMITMENT = gql`
-mutation($commitment: CommitmentUpdateParams!) {
-  updateCommitment(commitment: $commitment) {
-    commitment {
-      id
-      revisionId
-      plannedWithin {
-        id
-      }
-    }
-  }
-}
-`
-
-const ASSOCIATE_AGENT_AND_FACET_VALUE = gql`
-mutation($identifier: String, $facetValueId: ID!){
-  associateFacetValue(identifier: $identifier, facetValueId: $facetValueId)
-}
-`
-
-export const addAgent = async (agent: OrganizationCreateParams) => {
-  const res = await client.mutate({
-    mutation: ADD_AGENT,
-    variables: {
-      agent
-    }
-  });
-  await getAgent(res.data.createOrganization.agent.id)
-  return res
-};
-
-export const updateAgent = async (agent: OrganizationUpdateParams) => {
-  const res = await client.mutate({
-    mutation: UPDATE_AGENT,
-    variables: {
-      agent
-    }
-  })
-  await getAgent(res.data.updateOrganization.agent.id)
-  return res
-}
-
-export const associateAgentWithValue = async (identifier: string, facetValueId: string) => {
-  return await client.mutate({
-    mutation: ASSOCIATE_AGENT_AND_FACET_VALUE,
-    variables: {
-      identifier,
-      facetValueId,
-    }
-  })
-}
-
 export const getAllAgents = async () => {
   const res = await client.query({
     query: GET_ALL_AGENTS,
@@ -383,16 +225,6 @@ export const getAllAgents = async () => {
   })
   setAgents(res.data.agents.edges.map((edge: any) => edge.node))
   return res
-}
-
-export const deleteAgent = async (revisionId: string) => {
-  return await client.mutate({
-    mutation: gql`
-      mutation {
-        deleteOrganization(revisionId: "${revisionId}")
-      }
-    `
-  })
 }
 
 export const getAgent = async (id: string) => {
@@ -479,13 +311,15 @@ export const getAllEconomicResources = async () => {
 }
 
 export const getPlan = async (id: string) => {
-  return await client.query({
+  let res = await client.query({
     query: GET_PLAN,
     variables: {
       id
     },
     fetchPolicy: 'no-cache'
   })
+  addToFullPlans(res.data.plan)
+  return res.data.plan
 }
 
 export const getSimplifiedPlan = async (id: string) => {
@@ -505,33 +339,5 @@ export const getProcess = async (id: string) => {
       id
     },
     fetchPolicy: 'no-cache'
-  })
-}
-
-export const createEconomicEvent = async (event: any, new_inventoried_resource: any) => {
-  return await client.mutate({
-    mutation: CREATE_ECONOMIC_EVENT,
-    variables: {
-      event,
-      new_inventoried_resource
-    }
-  })
-}
-
-export const createFulfillment = async (fulfillment: any) => {
-  return await client.mutate({
-    mutation: CREATE_FULFILLMENT,
-    variables: {
-      fulfillment
-    }
-  })
-}
-
-export const updateCommitment = async (commitment: any) => {
-  return await client.mutate({
-    mutation: UPDATE_COMMITMENT,
-    variables: {
-      commitment
-    }
   })
 }

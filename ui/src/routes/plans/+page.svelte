@@ -67,21 +67,16 @@
   async function fetchPlans() {
     const res = await plansQuery.refetch()
     plans = res.data.plans.edges
-    console.log('plans', plans)
-    // plans = res2.data.plans
   }
 
   async function fetchProcesses() {
     const res = await processesQuery.refetch()
-    console.log('processes', res.data.processes.edges)
   }
 
   async function removePlan(revisionId: any) {
     let areYouSure = await confirm("Are you sure you want to delete this plan?")
     if (areYouSure == true) {
-      console.log('deletePlan', revisionId)
       const res = await deletePlan({ variables: { revisionId } })
-      console.log('deletePlan res', res)
       await fetchPlans()
     }
   }

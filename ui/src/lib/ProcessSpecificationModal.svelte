@@ -6,6 +6,7 @@
   import { mutation, query } from 'svelte-apollo'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { onMount } from 'svelte'
+  import { addProcessSpecification, updateProcessSpecification } from '../crud/commit';
   const dispatch = createEventDispatcher();
   
   export let open = false;
@@ -23,31 +24,6 @@
   onMount(() => {
     window.addEventListener("keydown", checkKey);
   });
-  
-  const ADD_PROCESS_SPECIFICATION = gql`
-    ${PROCESS_SPECIFICATION_CORE_FIELDS},
-    mutation($process: ProcessSpecificationCreateParams!){
-      createProcessSpecification(processSpecification: $process) {
-        processSpecification {
-          ...ProcessSpecificationCoreFields
-        }
-      }
-    }
-  `
-
-  const UPDATE_PROCESS_SPECIFICATION = gql`
-    ${PROCESS_SPECIFICATION_CORE_FIELDS},
-    mutation($process: ProcessSpecificationUpdateParams!){
-      updateProcessSpecification(processSpecification: $process) {
-        processSpecification {
-          ...ProcessSpecificationCoreFields
-        }
-      }
-    }
-  `
-
-  let addProcessSpecification: any = mutation(ADD_PROCESS_SPECIFICATION)
-  let updateProcessSpecification: any = mutation(UPDATE_PROCESS_SPECIFICATION)
 
   export async function handleSubmit(currentProcessSpecification: ProcessSpecificationCreateParams) {
     let process: ProcessSpecificationCreateParams = {
@@ -57,7 +33,7 @@
     }
     console.log(process)
     try {
-      const res = await addProcessSpecification({ variables: { process } })
+      const res = await addProcessSpecification(process)
       dispatch("submit");
       open = false;
       console.log(res)
@@ -68,9 +44,6 @@
   }
 
   async function handleUpdate() {
-    // getAgent();
-    console.log(currentProcessSpecification)
-
     let process: ProcessSpecificationUpdateParams = {
       name: currentProcessSpecification.name,
       note: currentProcessSpecification.note,
@@ -78,7 +51,7 @@
       revisionId: currentProcessSpecification.revisionId
     }
     try {
-      const res = await updateProcessSpecification({ variables: { process } })
+      const res = await updateProcessSpecification(process)
       dispatch("submit");
       open = false;
       console.log(res)
@@ -150,7 +123,6 @@
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
                         currentProcessSpecification.name = input.value;
-                        // console.log(name)
                       }
                     }}
                     required

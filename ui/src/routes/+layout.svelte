@@ -2,8 +2,8 @@
 import { browser } from '$app/environment'
 import { setClient } from 'svelte-apollo'
 import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
-import { getAllHashChanges, addHashChange } from '../utils';
-import { allHashChanges } from '../store';
+import { getAllHashChanges } from '../crud/fetch';
+import { allHashChanges } from '../crud/store';
 
 import "../global.css"
 import { page } from '$app/stores'

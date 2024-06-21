@@ -1,20 +1,13 @@
 <script lang="ts">
   import ProcessSpecificationModal from "$lib/ProcessSpecificationModal.svelte"
-  // import resourceSpecifications from '$lib/data/resource_specifications.json'
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
-  import type { ComponentType } from 'svelte'
-  import { mutation, query } from 'svelte-apollo'
-  import type { ReadableQuery } from 'svelte-apollo'
-  import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
-  import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
-  import { addHashChange } from "../../utils"
+  import { addHashChange } from "../../crud/commit"
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
+  import { getAllProcessSpecifications } from "../../crud/fetch"
+  import { deleteProcessSpecification } from "../../crud/commit"
+  import { allProcessSpecifications } from "../../crud/store"
 
   let modalOpen: boolean = false;
   let exportOpen: boolean = false;
@@ -24,69 +17,27 @@
   let currentProcessSpecification: any;
   let units: any[];
   let handleSubmit: any;
-  let open: boolean = false;
-
-  const GET_ALL_PROCESS_SPECIFICATIONS = gql`
-    ${PROCESS_SPECIFICATION_CORE_FIELDS}
-    query {
-      processSpecifications(last: 100000) {
-        edges {
-          cursor
-          node {
-            ...ProcessSpecificationCoreFields
-          }
-        }
-      }
-    }
-  `
-
-  interface QueryResponse {
-    processSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  // DELETE PROCESS SPECIFICATION
-  const DELETE_PROCESS_SPECIFICATION = gql`mutation($revisionId: ID!){
-    deleteProcessSpecification(revisionId: $revisionId)
-  }`
-  let deleteProcessSpecification: any = mutation(DELETE_PROCESS_SPECIFICATION)
-
+  
   async function deleteAProcessSpec(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this process specification?")
     if (areYouSure == true) {
-      const res = await deleteProcessSpecification({ variables: { revisionId } })
-      console.log(res)
-      await fetchProcessSpecifications()
+      const res = await deleteProcessSpecification(revisionId)
+      await getAllProcessSpecifications()
     }
   }
+  
   // DELETE PROCESS SPECIFICATION ENDS
-
-  // map component state
-  let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
-
-  async function fetchProcessSpecifications() {
-    await processSpecificationsQuery.getCurrentResult()
-    let x = await processSpecificationsQuery.refetch()
-    console.log(x)
-    // setTimeout(function(){
-    await processSpecificationsQuery.refetch().then((r) => {
-        processSpecifications = flattenRelayConnection(r.data?.processSpecifications).map((a) => {
-          return {
-            ...a,
-          }
-        })
-        console.log(processSpecifications)
-      })
-    // }, 1000)
-  }
-
   onMount(async () => {
     if (browser) {
-      await fetchProcessSpecifications()
+      await getAllProcessSpecifications()
     }
   })
 
   // reactive data bindings
   let processSpecifications: any[]
+  allProcessSpecifications.subscribe((value) => {
+    processSpecifications = value
+  })
 
   $: processSpecifications, modalOpen, editing, id, currentProcessSpecification, units, exportOpen;
 </script>
@@ -95,7 +46,7 @@
   <Header title="Process Specifications" description="The types of processes your network creates, uses, trades; types of work; currencies, tokens." />
 <!-- </div> -->
 <!-- <Units /> -->
-<ProcessSpecificationModal bind:handleSubmit bind:open={modalOpen} {name} {editing} {currentProcessSpecification} on:submit={fetchProcessSpecifications} />
+<ProcessSpecificationModal bind:handleSubmit bind:open={modalOpen} {name} {editing} {currentProcessSpecification} on:submit={getAllProcessSpecifications} />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -177,8 +128,6 @@
             </tr>
             {/each}
             {/if}
-
-            <!-- More people... -->
           </tbody>
         </table>
       </div>

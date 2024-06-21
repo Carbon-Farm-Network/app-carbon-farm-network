@@ -12,7 +12,7 @@
   import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@valueflows/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
-  import { addHashChange } from '../utils'
+  import { addHashChange } from '../crud/commit'
   import ResourceSpecificationModal from './ResourceSpecificationModal.svelte'
 
   // public CustomElement attributes
@@ -195,7 +195,7 @@
     currentReciprocalIntent.resourceConformsTo = currency
     // console.log(currentProposal)
     let proposal = currentProposal
-    updateProposal({ variables: { proposal: proposal } })
+    await updateProposal({ variables: { proposal: proposal } })
     // let intent = currentIntent
     let intent = {
       revisionId: currentIntent.revisionId,

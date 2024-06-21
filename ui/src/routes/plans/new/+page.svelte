@@ -1,39 +1,20 @@
 <script lang="ts">
   import recipes from '$lib/data/recipes-with-exchanges.json'
-  // import requests from '$lib/data/requests.json'
-  // import offers from '$lib/data/offers.json'
-  // import agents from '$lib/data/agents.json'
-  import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
-  
-
-  // import plan from '$lib/data/plan.json'
-  import Header from '$lib/Header.svelte'
-  import { goto } from '$app/navigation'
-  import { gql } from 'graphql-tag'
-  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
-  import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Action, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, ProcessConnection, CommitmentConnection } from '@valueflows/vf-graphql'
-  import { allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../store'
-  import { getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits } from '../../../utils'
+  import type { Unit, Action, Agent, Proposal, ResourceSpecification, PlanCreateParams } from '@valueflows/vf-graphql'
+  import { allActions, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../crud/store'
+  import { getAllActions, getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits } from '../../../crud/fetch'
   import { dragscroll } from '@svelte-put/dragscroll';
-  import { allHashChanges } from '../../../store'
+  import { allHashChanges } from '../../../crud/store'
   import Export from '$lib/Export.svelte'
+  import { createCommitments, makeAgreement, findExchange, assignProviderReceiver, createAgreements, aggregateCommitments, type Process, type Commitment, type Demand } from '../=helper'
 
   let hashChanges: any = {}
-  allHashChanges.subscribe((res) => {
-    hashChanges = res
-  })
   let agents: Agent[] = []
   let units: Unit[] = []
   let actions: Action[] = []
@@ -42,7 +23,6 @@
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
   let commitmentModalSide: string | undefined;
-  // let selectedCommitment: any;
   let requests: Proposal[] = [];
   let offers: Proposal[] = [];
   let proposalsList: Proposal[] = []
@@ -54,9 +34,7 @@
 
   $: currentProcess, actions;
 
-
   allAgents.subscribe((res) => {
-    console.log("agents change", res)
     agents = res.map((a) => {
       return {
         ...a,
@@ -72,62 +50,22 @@
     })
   })
 
-  allUnits.subscribe((res) => {
-    units = res
-  })
-
-  allResourceSpecifications.subscribe((res) => {
-    console.log("resourceSpecifications change", res)
-    resourceSpecifications = res.map((a) => {
-      return {
-        ...a,
-        // defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
-      }
-    })
-  })
-
-  allProcessSpecifications.subscribe((res) => {
-    console.log("processSpecifications change", res)
-    processSpecifications = res.map((a) => {
-      return {
-        ...a,
-      }
-    })
-  })
+  allHashChanges.subscribe((res) => {hashChanges = res})
+  allActions.subscribe((res) => {actions = res})
+  allUnits.subscribe((res) => {units = res})
+  allResourceSpecifications.subscribe((res) => {resourceSpecifications = res})
+  allProcessSpecifications.subscribe((res) => {processSpecifications = res})
 
   allProposals.subscribe((res) => {
     if (!res.length || res.length == 0) return
-    console.log("proposals change ?", res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider))
-    console.log("proposals change ?", res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver))
     requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
     offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
     proposalsList = res
-    console.log("offers here ?", offers)
-    console.log("requests here ?", requests)
   })
-
-  const GET_All_ACTIONS = gql`
-    query {
-      actions(last: 100000) {
-        id
-        label
-        inputOutput
-      }
-    }
-  `
-  let getActions: ReadableQuery<QueryResponse> = query(GET_All_ACTIONS)
-
-  async function fetchActions() {
-    await getActions.getCurrentResult()
-    let r = await getActions.refetch()
-    console.log("*******actions*******")
-    console.log(r)
-    actions = r.data?.actions
-  }
 
   onMount(async () => {
     if (browser) {
-      await fetchActions()
+      await getAllActions()
       await getAllProposals()
       await getAllHashChanges()
       await getAllAgents()
@@ -139,29 +77,7 @@
 
 
   // ===========================================
-
-  function assignProviderReceiver(commitment, agents) {
-    console.log("******assing provider receiver", commitment, agents)
-    const receivers = agents.filter(it => it.role == commitment?.receiver_role)
-    const providers = agents.filter(it => it.role == commitment?.provider_role)
-    return Object.assign(
-      {},
-      commitment,
-      receivers.length == 1
-        ? {
-            receiver: receivers[0]
-          }
-        : {},
-      providers.length == 1
-        ? {
-            provider: providers[0]
-          }
-        : {}
-    )
-  }
-
   const previousColumn = column => {
-    console.log("column", column)
     return column
       .reduce((acc, input) => {
         if (input.resourceQuantity.hasNumericalValue > 0) {
@@ -176,7 +92,6 @@
                     a_recipe.process_conforms_to.name == input.stage.name
                 )
               } else {
-                console.log("else")
                 return a_recipe.has_recipe_output.some(
                   output =>
                     output.resourceConformsTo.name == input.resourceConformsTo.name
@@ -187,7 +102,6 @@
           if (!recipe) {
             return acc
           }
-          console.log("2")
           // find the output that matches the demand
           let matching_output = recipe?.has_recipe_output?.find(
             output => output.resourceConformsTo.name == input.resourceConformsTo.name
@@ -340,17 +254,6 @@
               )
           }
 
-          // console.log([
-          //   ...acc,
-          //   {
-          //     id: recipe.id,
-          //     name: recipe.name,
-          //     based_on: recipe.process_conforms_to,
-          //     committedOutputs,
-          //     committedInputs
-          //   }
-          // ])
-
           return [
             ...acc,
             {
@@ -364,18 +267,9 @@
         }
       }, [])
       .map(process => runInstructions(process))
-      .map((process: Process) => createAgreements(process))
+      .map((process: Process) => createAgreements(process, recipes, offers, agents))
   }
 
-  type Process = {
-    id: string
-    name: string
-    based_on: {
-      name: string
-    }
-    committedOutputs: any[]
-    committedInputs: any[]
-  }
   function runInstructions(process: Process): Process {
     return {
       ...process,
@@ -413,113 +307,15 @@
     }
   }
 
-  function createAgreements(process: Process): Process {
-    return {
-      ...process,
-      committedOutputs: process.committedOutputs.map(output => {
-        const output_exchange = findExchange(output, process.based_on.name)
-        console.log("output_exchange", output_exchange, "process", process.based_on)
-        if (output_exchange) {
-          console.log("maybe making agreement 1", output_exchange)
-          const output_agreement = makeAgreement(output, output_exchange, offers)
-          console.log('output_agreement', output_agreement)
-          if (output_agreement) {
-            console.log("actually making agreement 1", output, output_agreement)
-            return {
-              ...output,
-              agreement: output_agreement
-            }
-          }
-        }
-        return output
-      }),
-      committedInputs: process.committedInputs.map(input => {
-        // if there is no input, we don't need to make an agreement
-        const input_exchange = findExchange(input, process.based_on.name)
-        console.log("input_exchange", input_exchange, "process", process.based_on)
-        if (input_exchange) {
-          console.log("maybe making agreement 2", input_exchange)
-          const input_agreement = makeAgreement(input, input_exchange, offers)
-          if (input_agreement) {
-            console.log("actually making agreement 2", input, input_agreement)
-            return {
-              ...input,
-              provider: input_agreement.commitment.provider,
-              agreement: input_agreement
-            }
-          }
-        }
-        return input
-      })
-    }
-  }
-
-  type Commitment = {
-    resourceConformsTo: { name: string }
-    resourceQuantity: { hasNumericalValue: string; hasUnit: { label: string } }
-    receiver: { name: string }
-    action: {
-      label: string
-    }
-    id: string
-  }
   let commitments: Commitment[] = []
   let plan_created = false
   let allColumns: any;
   $: aggregatedCommitments = aggregateCommitments(commitments)
   $: if (!plan_created) {
-    allColumns = generateColumns(aggregatedCommitments);
-    console.log("all columns", allColumns)
+    allColumns = generateColumns(aggregatedCommitments, recipes, agents);
   }
-  function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
-    console.log(requests[0].publishes.filter(it => !it.reciprocal))
-    return requests.flatMap(request =>
-      request.publishes.filter(it => !it.reciprocal).map(proposed_intent => ({
-        ...proposed_intent.publishes,
-        action: {
-          label: 'transfer',
-        },
-        satisfies: proposed_intent.id,
-        id: crypto.randomUUID(),
-        revisionId: undefined,
-      }))
-    )
-  }
-  type Demand = {
-    resourceConformsTo: { name: string }
-    resourceQuantity: { hasNumericalValue: string; hasUnit: { label: string } }
-  }
-  function aggregateCommitments(commitments: Commitment[]): Demand[] {
-    return Object.values(
-      commitments.reduce((acc, commitment) => {
-        console.log(commitment)
-        if (acc[commitment.resourceConformsTo.name]) {
-          let existing = acc[commitment.resourceConformsTo.name]
-          console.log(existing)
-          console.log(commitment)
-          acc[commitment.resourceConformsTo.name] = {
-            ...existing,
-            resourceQuantity: {
-              ...existing.resourceQuantity,
-              hasNumericalValue:
-                existing.resourceQuantity.hasNumericalValue +
-                commitment.resourceQuantity.hasNumericalValue
-            }
-          }
-        } else {
-          acc[commitment.resourceConformsTo.name] = {
-            resourceQuantity: commitment.resourceQuantity,
-            resourceConformsTo: commitment.resourceConformsTo,
-            stage: { name: 'Ship' }
-          }
-        }
-        console.log(acc)
-        return acc
-      }, {})
-    )
-  }
+
   function generateColumns(aggregatedCommitments: any[]): any[] {
-    console.log(aggregatedCommitments)
     let previousProcesses = previousColumn(aggregatedCommitments)
     let allColumnsLocal: any[] = []
     while (previousProcesses.length != 0) {
@@ -535,173 +331,25 @@
     return allColumnsLocal
   }
 
-  function findExchange(
-    commitment: any,
-    based_on_name: string | undefined
-  ): undefined | { name: string; note: string } {
-    // let test = recipes
-    //   .filter(it => it.type == 'recipe_exchange')
-    //   .find(a_recipe => {
-    //     if (based_on_name) {
-    //       return a_recipe?.has_recipe_clause?.some(
-    //         clause => {
-    //           console.log("stage", clause.stage?.name, based_on_name)
-    //           return clause.resourceConformsTo.name ==
-    //             commitment?.resourceConformsTo?.name &&
-    //           clause.stage?.name == based_on_name
-    //         }
-    //       )
-    //     } else {
-    //       return a_recipe?.has_recipe_clause?.some(
-    //         clause => {
-    //           return clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
-    //           clause.stage?.name == commitment.stage?.name
-    //         }
-    //       )
-    //     }
-    //   })
-
-    // console.log(commitment, based_on_name, recipes, test)
-
-
-    // console.log("exchange test", test)
-    return recipes
-      .filter(it => it.type == 'recipe_exchange')
-      .find(a_recipe => {
-        if (based_on_name) {
-          return a_recipe?.has_recipe_clause?.some(
-            clause =>
-              clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
-              clause.stage?.name == based_on_name
-          )
-        }
-        return a_recipe?.has_recipe_clause?.some(
-          clause =>
-            clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
-            clause.stage?.name == commitment.stage?.name
-        )
-      })
-  }
-
-  function makeAgreement(
-    commitment: any,
-    recipe: undefined | any,
-    offers: any[]
-  ): undefined | any {
-    console.log("commitment? ", commitment)
-    const reciprocal_clause = recipe?.has_recipe_reciprocal_clause?.[0]
-    console.log("has a recip clause", commitment, recipe)
-    if (reciprocal_clause) {
-      return {
-        name: recipe?.name,
-        note: recipe?.note,
-        commitment: {
-          action:  reciprocal_clause.action?.label,
-          provider: agents.find((a) => a.role == reciprocal_clause.provider_role),
-          stage: reciprocal_clause?.stage,
-          resourceConformsTo: reciprocal_clause.resourceConformsTo,
-          resourceQuantity: {
-            ...reciprocal_clause.resourceQuantity,
-            hasNumericalValue: reciprocal_clause.resourceQuantity.hasNumericalValue * commitment.resourceQuantity?.hasNumericalValue
-          }
-        }
-      }
-    }
-    // if (!reciprocal_clause) return
-    // let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
-    // let hasUnit = reciprocal_clause.resourceQuantity.hasUnit
-    let specific_provider = agents.find(it => it.id == commitment.providerId)
-    console.log("specific provider", specific_provider)
-    let numerical_value;
-    let hasUnit;
-    let reciprocal_intent;
-    let primary_intent;
-    // TODO get data to test the matching offer logic
-    const matching_offer = offers.find(offer => {
-      return offer.publishes.find(
-        intent => {
-          const offerName = intent.publishes?.resourceConformsTo?.name
-          // console.log(offerName, " ==?", commitment.resourceConformsTo.name)
-          const correctProvider = specific_provider? (intent.publishes?.provider?.id == specific_provider?.id) : true
-          return offerName == commitment.resourceConformsTo.name && correctProvider
-        }
-      )
-    })
-    // console.log("matching offer 0", matching_offer)
-    if (matching_offer) {
-      // console.log("matching offer", matching_offer)
-      reciprocal_intent = matching_offer.publishes.find(
-        intent => intent.reciprocal
-      )
-      primary_intent = matching_offer.publishes.find(
-        intent => !intent.reciprocal
-      )
-      // console.log("TEMP", reciprocal_intent)
-      numerical_value = reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue / primary_intent.publishes?.resourceQuantity.hasNumericalValue
-      hasUnit = primary_intent.publishes?.resourceQuantity.hasUnit
-      console.log(numerical_value, hasUnit)
-      // console.log("made agreement", reciprocal_intent.publishes?.resourceConformsTo?.name, numerical_value, hasUnit)
-    } else {
-      return
-    }
-
-    if (!numerical_value || !hasUnit) return
-
-    if (!requestsPerOffer[primary_intent.id]) {
-      requestsPerOffer[primary_intent.id] = {}
-    }
-    if (commitment.action.label == "pickup") {
-      requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue)
-    }
-
-    return {
-      name: recipe?.name,
-      note: recipe?.note,
-      commitment: {
-        action:  reciprocal_intent?.publishes?.action?.label,
-        provider: reciprocal_intent?.publishes?.receiver,
-        // stage: reciprocal_clause?.stage,
-        resourceConformsTo: reciprocal_intent?.publishes?.resourceConformsTo,
-        resourceQuantity: {
-          hasNumericalValue: new Decimal(numerical_value)
-            .mul(commitment.resourceQuantity.hasNumericalValue)
-            .toDecimalPlaces(0, Decimal.ROUND_UP)
-            .toString(),
-          hasUnit: hasUnit
-        }
-      }
-    }
-  }
-
   let planModalOpen = false
   let commitmentModalOpen = false
   let selectedCommitmentId: string | undefined = undefined
-  let requestsPerOffer: { [key: string]: any } = {}
 
   let totalCost: Decimal = new Decimal(0);
   $: if (allColumns) {
-    // console.log("--totalcost--")
     totalCost = new Decimal(0)
     for (let i = 0; i < allColumns.length; i++) {
-      // console.log("column", i)
-      console.log(allColumns[i])
       for (let j = 0; j < allColumns[i].length; j++) {
-        // console.log("process", j)
         let inputsAndOutputs = allColumns[i][j].committedInputs.concat(allColumns[i][j].committedOutputs)
         for (let k = 0; k < inputsAndOutputs.length; k++) {
-          // console.log("cost", inputsAndOutputs[k])
-          // console.log("cost", inputsAndOutputs[k].agreement)
           if (inputsAndOutputs[k].agreement) {
             totalCost = totalCost.add(inputsAndOutputs[k].agreement.commitment.resourceQuantity.hasNumericalValue)
           }
         }
       }
     }
-    console.log("total cost", totalCost.toString())
   }
 </script>
-
-<!-- {JSON.stringify(allColumns)} -->
 
 <PlanModal bind:open={planModalOpen} planObject = 
   {createPlan} 
@@ -711,7 +359,9 @@
   {resourceSpecifications}
   {units}
   {processSpecifications}
-editing={false}/>
+  editing={false}
+/>
+
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}
@@ -725,10 +375,6 @@ editing={false}/>
   {actions}
   process = {currentProcess}
   on:submit={(event) => {
-    console.log(event.detail)
-    // plan_created = true;
-    // console.log(event.detail.commitment)
-    // console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
     if (event.detail.useAs == "update") {
       if (event.detail.column == undefined) {
         commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
@@ -740,19 +386,9 @@ editing={false}/>
           receiver: event.detail.commitment.receiverId ? agents.find(it => it.id == event.detail.commitment.receiverId) : undefined
         }
         
-        // let providerChanged = false;
-        // try {
-        //   providerChanged = event.detail.commitment.provider?.id != allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].find(it => it.id == event.detail.commitment.id)?.provider?.id
-        // } catch (e) {
-        //   console.log(e)
-        // }
-        // console.log("provider changed? ", providerChanged, event.detail.commitment.provider)
-        // if (providerChanged) {
-          // plan_created = true
-          let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name)
-          let agreement = makeAgreement(event.detail.commitment, exchange, offers)
-          updatedCommitment.agreement = agreement
-        // }
+        let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name, recipes)
+        let agreement = makeAgreement(event.detail.commitment, exchange, offers, agents)
+        updatedCommitment.agreement = agreement
 
         console.log("done...", updatedCommitment)
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
@@ -765,15 +401,13 @@ editing={false}/>
         commitments = [...commitments]
       } else {
         plan_created = true
-        let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name)
-        let agreement = makeAgreement(event.detail.commitment, exchange, offers)
+        let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].based_on.name, recipes)
+        let agreement = makeAgreement(event.detail.commitment, exchange, offers, agents)
         event.detail.commitment.agreement = agreement
         event.detail.commitment.receiver = agents.find(it => it.id == event.detail.commitment.receiverId)
         allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
       }
     }
-    // console.log(event.detail.column, event.detail.process, event.detail.side, commitmentIndex)
-    // allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex].provider = {...event.detail.commitment.provider}
 
     // reset form
     selectedCommitmentId = undefined
@@ -794,18 +428,13 @@ editing={false}/>
 </div>
 
 <div class="flex justify-center items-center">
-  <!-- <div class="outer-div justify-center items-center">
-  <div class="scroll-div justify-center items-center">
-  <div class="content-div flex space-x-8 mx-4"> -->
   <div class="flex space-x-8 mx-4 overflow-x-scroll overflow-y-scroll" style="height: calc(100vh - 172px)" use:dragscroll={{ axis: 'both' }}>
-  <!-- <div class="flex space-x-8 mx-4 h-64"> -->
     <div class="min-w-[200px]">
       <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
         <button
           type="button"
           on:click={() => {0
             planModalOpen = true
-            // plan_created = true
           }}
           class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save plan</button
@@ -819,9 +448,6 @@ editing={false}/>
             {#each proposalsList as { publishes }}
               {@const reciprocal = publishes?.find(it => it.reciprocal)}
               {@const primary = publishes?.find(it => !it.reciprocal)}
-              <!-- {@const requestsTotalAll = requestsPerOffer[primary?.id]} -->
-              <!-- {@const requestsTotal = requestsTotalAll ? Object.values(requestsTotalAll).map(it => new Decimal(it)).reduce((acc, it) => acc.add(it), new Decimal(0)) : new Decimal(0)} -->
-              <!-- {@const requestsTotal = requestsPerOffer[primary?.id]} -->
               {#if primary?.publishes?.provider}
               <div
               class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
@@ -833,10 +459,6 @@ editing={false}/>
                         {primary?.publishes?.availableQuantity?.hasNumericalValue}
                         {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
                       {/if}
-                      <!-- <span style="color: {(requestsTotal > primary?.publishes?.availableQuantity?.hasNumericalValue) ? 'red' : ''
-                      }">
-                      {requestsTotal} of {primary?.publishes?.availableQuantity?.hasNumericalValue} requested<br>
-                      </span> -->
                       {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
                       {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                     </p>
@@ -855,29 +477,6 @@ editing={false}/>
       </div>
     </div>
 
-    <!--
-    <div>
-      <h2 class="text-center">Offers</h2>
-      <div class="bg-blue-300 border border-gray-400 p-2">
-        <div
-          class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-        >
-          <p>Brown Alpaca Dirty</p>
-          <div class="flex justify-between">
-            <p>20 lbs</p>
-            <p>20 lbs</p>
-          </div>
-          <p>WoodLand Meadow</p>
-        </div>
-      </div>
-    </div>
-    -->
-    <!-- Main Columns -->
-    <!-- {JSON.stringify(allColumns[0])} -->
-    <!-- {#each allColumns as processes}
-      {@const { image, name } = processes[0].based_on}
-      {JSON.stringify(name)}
-    {/each} -->
     {#each allColumns as processes, columnIndex}
       {@const { image, name } = processes[0].based_on}
       <div class="min-w-[420px]">
@@ -885,22 +484,8 @@ editing={false}/>
         <h2 class="text-center text-xl font-semibold">{name}</h2>
         {#each processes as { committedInputs, committedOutputs }, processIndex}
           <div class="border-gray-400 p-2" style="background-color: #BFBFBF;">
-          <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
-            <!-- Sub-columns -->
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <!-- <button
-                  class="flex justify-center items-center w-full mb-2"
-                  on:click={() => {
-                    commitmentModalProcess = processIndex
-                    commitmentModalColumn = columnIndex
-                    commitmentModalSide = "committedInputs"
-                    commitmentModalOpen = true
-                    selectedCommitmentId = undefined
-                  }}
-                >
-                  <PlusCircle />
-                </button> -->
 
                 {#each committedInputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                 {@const networkReceiver = agents.find((a) => a.classifiedAs[2] === "Network")}
@@ -946,44 +531,10 @@ editing={false}/>
                         {commitment.resourceConformsTo.name}
                       </p>
                     {/if}
-                    <!-- <div class="w-full flex justify-center">
-                      <button
-                        on:click={() => {
-                          commitmentModalProcess = processIndex
-                          commitmentModalColumn = columnIndex
-                          commitmentModalSide = "committedInputs"
-                          selectedCommitmentId = id
-                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                          commitmentModalOpen = true
-                        }}
-                      >
-                        <Pencil/>
-                      </button>
-                      <button
-                        on:click={() => {
-                          plan_created = true
-                          allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
-                        }}
-                      >
-                        <Trash />
-                      </button>
-                    </div> -->
                   </div>
                 {/each}
               </div>
               <div>
-                <!-- <button
-                  class="flex justify-center items-center w-full mb-2"
-                  on:click={() => {
-                    commitmentModalProcess = processIndex
-                    commitmentModalColumn = columnIndex
-                    commitmentModalSide = "committedOutputs"
-                    commitmentModalOpen = true
-                    selectedCommitmentId = undefined
-                  }}
-                >
-                  <PlusCircle />
-                </button> -->
 
                 {#each committedOutputs as { resourceConformsTo, receiver, provider, resourceQuantity, action, editable, id, agreement }}
                   <div
@@ -1026,30 +577,6 @@ editing={false}/>
                         </p>
                       {/if}
                     </div>
-                    <!-- {#if editable} -->
-                    <!-- <div class="w-full flex justify-center">
-                      <button
-                        on:click={() => {
-                          commitmentModalProcess = processIndex
-                          commitmentModalColumn = columnIndex
-                          commitmentModalSide = "committedOutputs"
-                          selectedCommitmentId = id
-                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                          commitmentModalOpen = true
-                        }}
-                      >
-                        <Pencil/>
-                      </button>
-                      <button
-                        on:click={() => {
-                          plan_created = true
-                          allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
-                        }}
-                      >
-                        <Trash />
-                      </button>
-                    </div> -->
-                    <!-- {/if} -->
                   </div>
                 {/each}
               </div>
@@ -1064,9 +591,6 @@ editing={false}/>
         totalCost
         
       }</h2>
-      <!-- // new Decimal(
-        //   allColumns.flat().flat().flat().filter(it => it.clauseOf).map(it => it.clauseOf.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue).reduce((a, b) => new Decimal(a).add(b), 0)
-        // ).toFixed(2, Decimal.ROUND_HALF_UP).toString() -->
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
       <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #EEEEEE;">
         <!-- Sub-columns -->
@@ -1131,8 +655,6 @@ editing={false}/>
               {@const resourceQuantity = c.resourceQuantity}
               {@const receiver = c.receiverId ? agents.find(it => it.id == c.receiverId) : c.receiver}
               {@const provider = c.providerId ? agents.find(it => it.id == c.providerId) : c.provider}
-              <!-- {@const receiver = c.receiverId ? agents.find(it => it.id == c.receiverId) : c.provider}
-              {@const provider = c.providerId ? agents.find(it => it.id == c.providerId) : c.receiver} -->
               {@const id = c.id}
               {@const action = c.action}
               <div
@@ -1201,8 +723,6 @@ editing={false}/>
       </div>
     </div>
   </div>
-  <!-- </div>
-  </div> -->
 </div>
 <style>
   /* Custom CSS */

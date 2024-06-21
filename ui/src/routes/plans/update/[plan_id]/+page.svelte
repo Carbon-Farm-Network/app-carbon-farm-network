@@ -1,35 +1,24 @@
 <script lang="ts">
-  import recipes from '$lib/data/recipes-with-exchanges.json'
-  // import requests from '$lib/data/requests.json'
-  // import offers from '$lib/data/offers.json'
-  // import agents from '$lib/data/agents.json'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
   import EconomicEventModal from '$lib/EconomicEventModal.svelte'
   import { Trash, Pencil, PlusCircle, EconomicEvent } from '$lib/icons'
   import { page } from '$app/stores';
-
-  // import plan from '$lib/data/plan.json'
-  import Header from '$lib/Header.svelte'
-  import { goto } from '$app/navigation'
   import { gql } from 'graphql-tag'
-  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { COMMITMENT_RETURN_FIELDS, PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, AgentConnection, Agent, Action, Proposal, Plan, ProposalCreateParams, EconomicResource, EconomicResourceCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProcessSpecification, ProposalConnection, CommitmentConnection, ProposalUpdateParams, Intent, PlanCreateParams, PlanConnection, EconomicEventCreateParams, ProcessConnection, FulfillmentCreateParams } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Action, Proposal, EconomicResource, EconomicResourceCreateParams, ResourceSpecification, ProcessSpecification, PlanConnection, EconomicEventCreateParams, FulfillmentCreateParams } from '@valueflows/vf-graphql'
   import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
-  import { getAllAgents, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits, getAllEconomicResources } from '../../../../utils'
-  import { allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals, allEconomicResources } from '../../../../store'
+  import { getAllActions, getAllAgents, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits, getAllEconomicResources } from '../../../../crud/fetch'
+  import { allActions, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals, allEconomicResources } from '../../../../crud/store'
   import Loading from '$lib/Loading.svelte'
+  import { matchingOffer, makeAgreement } from '../../=helper'
+  import { getPlan } from '../../../../crud/fetch'
+  import { fullPlans } from '../../../../crud/store'
+  import { get } from 'svelte/store'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -58,9 +47,24 @@
   let allColumns: any = []
   let economicResources: EconomicResource[] = [];
 
-  allEconomicResources.subscribe(value => {
-    economicResources = value;
-  });
+  let processImages = {
+    "Pick Up": "/pickup.svg",
+    "Ship": "/truck.svg",
+    "Spin Yarn": "/socks.svg",
+    "Scour Fiber": "/washing-machine.svg"
+  }
+
+  let planId = ''
+  $: if ($page.params.plan_id) {
+    planId = $page.params.plan_id;
+  }
+
+  allEconomicResources.subscribe(value => {economicResources = value;})
+  allProcessSpecifications.subscribe((res) => {processSpecifications = res})
+  allResourceSpecifications.subscribe((res) => {resourceSpecifications = res})
+  allUnits.subscribe((res) => {units = res})
+  allActions.subscribe((res) => {actions = res})
+  fullPlans.subscribe((res) => {plan = res[$page.params.plan_id]})
 
   allAgents.subscribe((res) => {
     agents = res.map((a) => {
@@ -78,33 +82,6 @@
     })
   })
 
-  allUnits.subscribe((res) => {
-    units = res.map((a) => {
-      return {
-        ...a,
-        "label": a.label,
-        "symbol": a.symbol,
-      }
-    })
-  })
-
-  allResourceSpecifications.subscribe((res) => {
-    resourceSpecifications = res.map((a) => {
-      return {
-        ...a,
-        // defaultUnitOfResourceId: a.defaultUnitOfResource?.id,
-      }
-    })
-  })
-
-  allProcessSpecifications.subscribe((res) => {
-    processSpecifications = res.map((a) => {
-      return {
-        ...a,
-      }
-    })
-  })
-
   allProposals.subscribe((res) => {
     if (!res.length || res.length == 0) return
     requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
@@ -112,66 +89,7 @@
     proposalsList = res
   })
 
-  let processImages = {
-    "Pick Up": "/pickup.svg",
-    "Ship": "/truck.svg",
-    "Spin Yarn": "/socks.svg",
-    "Scour Fiber": "/washing-machine.svg"
-  }
-
-  let planId = ''
-  $: if ($page.params.plan_id) {
-    planId = $page.params.plan_id;
-  }
-
   $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen, economicEventModalOpen, loadingPlan, currentProcess
-
-  const GET_All_ACTIONS = gql`
-    query {
-      actions(last: 100000) {
-        id
-        label
-        inputOutput
-      }
-    }
-  `
-
-  const GET_PLAN = gql`
-    ${PLAN_RETURN_FIELDS}
-    query GetPlan($id: ID!) {
-      plan(id: $id) {
-        ...PlanReturnFields
-      }
-    }
-  `
-
-  const GET_SIMPLIFIED_PLAN = gql`
-    ${SIMPLIFIED_PLAN_RETURN_FIELDS}
-    query GetPlan($id: ID!) {
-      plan(id: $id) {
-        ...SimplifiedPlanReturnFields
-      }
-    }
-  `
-
-  const GET_PROCESS = gql`
-    ${PROCESS_RETURN_FIELDS}
-    query GetProcess($id: ID!) {
-      process(id: $id) {
-        ...ProcessReturnFields
-      }
-    }
-  `
-
-  // const GET_COMMITMENT = gql`
-  //   ${COMMITMENT_RETURN_FIELDS}
-  //   query getCommitment($id: ID!) {
-  //     commitment(id: $id) {
-  //       ...CommitmentReturnFields
-  //     }
-  //   }
-  // `
-
 
   const CREATE_ECONOMIC_EVENT_WITH_RESOURCE = gql`
     mutation($event: EconomicEventCreateParams!, $newInventoriedResource: EconomicResourceCreateParams!) {
@@ -207,95 +125,15 @@
     }
   `
 
-  const UPDATE_COMMITMENT = gql`
-    mutation($commitment: CommitmentUpdateParams!) {
-      updateCommitment(commitment: $commitment) {
-        commitment {
-          id
-          revisionId
-          plannedWithin {
-            id
-          }
-        }
-      }
-    }
-  `
-
   let addEconomicEventWithResource: any = mutation(CREATE_ECONOMIC_EVENT_WITH_RESOURCE)
   let addEconomicEvent: any = mutation(CREATE_ECONOMIC_EVENT)
   let addFulfillment: any = mutation(CREATE_FULFILLMENT)
-  let updateCommitment: any = mutation(UPDATE_COMMITMENT)
-
-  interface ProcessQueryResponse {
-    processSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  interface ProposalsQueryResponse {
-    proposals: ProposalConnection & RelayConn<any>
-  }
-
-  interface PlanQueryResponse {
-    plan: PlanConnection & RelayConn<any>
-  }
-
-  interface ProcessQueryResponse {
-    process: ProcessConnection & RelayConn<any>
-  }
-
-  // interface CommitmentQueryResponse {
-  //   commitment: CommitmentConnection & RelayConn<any>
-  // }
-
-  interface QueryResponse {
-    agents: AgentConnection & RelayConn<any>
-  }
-
-  interface RspecResponse {
-    resourceSpecifications: AgentConnection & RelayConn<any>
-  }
-
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<any> //& RelayConn<unknown> | null | undefined
-  }
-
-  // map component state
-  // let getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-  // let agentsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_AGENTS)
-  // let resourceSpecificationsQuery: ReadableQuery<RspecResponse> = query(GET_ALL_RESOURCE_SPECIFICATIONS)
-  // let processSpecificationsQuery: ReadableQuery<QueryResponse> = query(GET_ALL_PROCESS_SPECIFICATIONS)
-  // let getProposals: ReadableQuery<ProposalsQueryResponse> = query(GET_All_PROPOSALS)
-  let getActions: ReadableQuery<QueryResponse> = query(GET_All_ACTIONS)
-  let getPlan: ReadableQuery<PlanQueryResponse> = query(GET_PLAN);
-  let getSimplifiedPlan: ReadableQuery<PlanQueryResponse> = query(GET_SIMPLIFIED_PLAN);
-  let getProcess: ReadableQuery<ProcessQueryResponse> = query(GET_PROCESS);
-  // let getCommitment: ReadableQuery<CommitmentQueryResponse> = query(GET_COMMITMENT);
-
-  async function fetchActions() {
-    await getActions.getCurrentResult()
-    let r = await getActions.refetch()
-    actions = r.data?.actions
-  }
-
-  async function saveCommitment(commitment: any) {
-    try {
-      let x = await updateCommitment({
-        variables: {
-          commitment: {
-            revisionId: commitment.revisionId,
-            finished: commitment.finished,
-          },
-        }
-      })
-    } catch (e) {
-      console.log(e)
-    }
-  }
 
   async function includeCommitment(commitment: Commitment) {
     try {
       // if primary intent, add to requestsPerOffer
       if (commitment.clauseOf) {
-        const matching_offer = matchingOffer(commitment)
+        const matching_offer = matchingOffer(commitment, offers)
 
         const primary_intent = matching_offer?.publishes.find(
           intent => !intent.reciprocal
@@ -316,33 +154,12 @@
 
   async function saveEconomicEvent(commitment: any, process: any, side: string) {
     try {
-      console.log("commitment: ", commitment)
-      // const economicEvent: EconomicEventCreateParams = {
-      //   // note: commitment.note,
-      //   // action: commitment.action.id,
-      //   action: 'raise',
-      //   provider: commitment.providerId,
-      //   receiver: commitment.receiverId,
-      //   // hasPointInTime: new Date(),
-      //   resourceClassifiedAs: ["commitment.resourceConformsTo.id"],
-      //   resourceConformsTo: commitment.resourceConformsTo.id,
-      //   // resourceClassifiedAs: commitment.resourceConformsTo.classifiedAs,
-      //   hasPointInTime: new Date(),
-      //   resourceQuantity: {
-      //     hasNumericalValue: commitment.resourceQuantity.hasNumericalValue,
-      //     hasUnit: commitment.resourceQuantity.hasUnitId,
-      //   },
-      //   hasBeginning: new Date(),
-      //   // inScopeOf: ['some-accounting-scope'],
-      // }
-
       const economicEvent: EconomicEventCreateParams = {
         action: commitment.action.id,
         provider: commitment.providerId,
         receiver: commitment.receiverId,
         resourceQuantity: { hasNumericalValue: commitment.resourceQuantity.hasNumericalValue, hasUnit: commitment.resourceQuantity.hasUnitId },
         resourceConformsTo: commitment.resourceConformsTo.id,
-        // resourceInventoriedAs: "uhCEket5MRW6KEmYreaFDNhxfhh0wtNBx7jj1OaDmclCddSh0/r62:uhC0kzHuFPEhnHQfubYZdmLykpuDOeCAF7OStlYxGzMSe01cG2KyZ",
         hasPointInTime: new Date(),
         hasBeginning: new Date(),
       }
@@ -353,17 +170,20 @@
         economicEvent.outputOf = process
       }
 
-      let matchingResource = economicResources.find(it => it.conformsTo.id == commitment.resourceConformsTo.id)
-      console.log("economic resources", economicResources, commitment.resourceConformsTo.id)
-      console.log("matching resource", JSON.stringify(matchingResource))
-      if (matchingResource) {
-        economicEvent.resourceInventoriedAs = matchingResource.id
+      let pickupFromOtherAgent = commitment.action.label == "pickup" && commitment.providerId != commitment.receiverId
+      let produce = commitment.action.label == "produce"
+      let consume = commitment.action.label == "consume"
+
+      if (pickupFromOtherAgent || produce || consume) {
+        let matchingResource = economicResources.find(it => it.conformsTo.id == commitment.resourceConformsTo.id)
+        if (matchingResource) {
+          economicEvent.resourceInventoriedAs = matchingResource.id
+        }
       }
 
-      console.log("economic event", process, economicEvent)
-
       let res;
-      if (commitment.action.label == "pickup" && commitment.providerId != commitment.receiverId) {
+      if (!economicEvent?.resourceInventoriedAs && ( (commitment.action.label == "pickup" && commitment.providerId != commitment.receiverId) || commitment.action.label == "produce") ) {
+        console.log("add new economic event and resource", !economicEvent?.resourceInventoriedAs, commitment)
         let resourceSpecification = resourceSpecifications.find(it => it.id == commitment.resourceConformsTo.id)
         let newInventoriedResource: EconomicResourceCreateParams = {
           name: resourceSpecification?.name,
@@ -371,8 +191,6 @@
           image: resourceSpecification?.image,
           conformsTo: resourceSpecification?.id
         }
-
-        console.log("newInventoriedResource", newInventoriedResource)
         
         res = await addEconomicEventWithResource({
           variables: {
@@ -380,8 +198,8 @@
             newInventoriedResource: newInventoriedResource
           }
         })
-        console.log(res, newInventoriedResource)
       } else {
+        console.log("add economic event")
         res = await addEconomicEvent({
           variables: {
             event: economicEvent
@@ -394,8 +212,7 @@
         fulfills: commitment.id,
       }
 
-      console.log("fulfillment", fulfillment)
-      let y = await addFulfillment({
+      await addFulfillment({
         variables: {
           fulfillment: fulfillment,
         }
@@ -406,105 +223,6 @@
       // await saveCommitment(commitment)
     } catch (e) {
       console.log(e)
-    }
-  }
-
-  function matchingOffer(commitment: any) {
-    return offers.find(offer => {
-      return offer?.publishes?.find(
-        intent => {
-          const offerName = intent.publishes?.resourceConformsTo?.name
-          const correctProvider = commitment.providerId ? (intent.publishes?.provider?.id == commitment.providerId) : true
-          return offerName == commitment.resourceConformsTo.name && correctProvider
-        }
-      )
-    })
-  }
-
-  function makeAgreement(
-    commitment: any,
-    agreement: undefined | any,
-    offers: any[]
-  ): undefined | any {
-    // const reciprocal_clause = recipe?.has_recipe_reciprocal_clause?.[0]
-    // if (!reciprocal_clause) return
-    // let numerical_value = reciprocal_clause.resourceQuantity.hasNumericalValue
-    // let hasUnit = reciprocal_clause.resourceQuantity.hasUnit
-    let specific_provider = commitment.provider
-    let numerical_value;
-    let hasUnit;
-    let reciprocal_intent;
-    let primary_intent;
-    // TODO get data to test the matching offer logic
-    const matching_offer = matchingOffer(commitment)
-    // console.log("matching offer 0", matching_offer)
-    if (matching_offer) {
-      // console.log("matching offer", matching_offer)
-      reciprocal_intent = matching_offer.publishes.find(
-        intent => intent.reciprocal
-      )
-      primary_intent = matching_offer.publishes.find(
-        intent => !intent.reciprocal
-      )
-      numerical_value = reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue / primary_intent.publishes?.resourceQuantity.hasNumericalValue
-      
-      // hasUnit = reciprocal_intent.publishes?.resourceQuantity
-      hasUnit = primary_intent.publishes?.resourceQuantity?.hasUnit
-      // units.forEach((unit) => {
-      //   if (unit.id == primary_intent.publishes?.resourceQuantity?.hasUnitId) {
-      //     hasUnit = unit
-      //   }
-      // })
-      // console.log(numerical_value, hasUnit)
-      // console.log("made agreement", reciprocal_intent.publishes?.resourceConformsTo?.name, numerical_value, hasUnit)
-    } else {
-      return
-    }
-
-    if (!numerical_value || !hasUnit) return
-
-    if (!requestsPerOffer[primary_intent.id]) {
-      requestsPerOffer[primary_intent.id] = {}
-    }
-    if (commitment.action.label == "pickup") {
-      requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
-    }
-
-    // return {
-    //   name: agreement?.name,
-    //   note: agreement?.note,
-    //   commitment: {
-    //     action:  reciprocal_intent?.publishes?.action?.label,
-    //     provider: reciprocal_intent?.publishes?.receiver,
-    //     // stage: reciprocal_clause?.stage,
-    //     resourceConformsTo: reciprocal_intent?.publishes?.resourceConformsTo,
-    //     resourceQuantity: {
-    //       hasNumericalValue: new Decimal(numerical_value)
-    //         .mul(commitment.resourceQuantity.hasNumericalValue)
-    //         .toDecimalPlaces(0, Decimal.ROUND_UP)
-    //         .toString(),
-    //       hasUnit: hasUnit
-    //     }
-    //   }
-    // }
-
-    return {
-      commitments: [
-      {
-        action: {
-          label: reciprocal_intent?.publishes?.action?.label
-        },
-        provider: reciprocal_intent?.publishes?.receiverId,
-        // stage: reciprocal_clause?.stage,
-        resourceConformsTo: reciprocal_intent?.publishes?.resourceConformsTo,
-        resourceQuantity: {
-          hasNumericalValue: new Decimal(numerical_value)
-            .mul(commitment.resourceQuantity.hasNumericalValue)
-            .toDecimalPlaces(0, Decimal.ROUND_UP)
-            .toString(),
-          hasUnit: hasUnit
-        }
-      }]
     }
   }
 
@@ -525,18 +243,24 @@
     }
   }
 
-  export async function fetchThePlan() {
+  export async function getPlanLater() {
+    await getPlan(planId)
+    await buildPlan()
+  }
+
+  export async function buildPlan() {
     let lastSeenProcessSpecification: any = undefined;
     let lastLastSeenProcessSpecification: any = undefined;
     let lastColumn: any = []
     allColumns = []
 
     try {
-      getPlan.setVariables({
-        id: planId
-      });
-      const res = await getPlan.refetch()
-      plan = {...res.data.plan}
+      // getPlan.setVariables({
+      //   id: planId
+      // });
+      // const res = await getPlan.refetch()
+      // plan = {...res.data.plan}
+      console.log(plan)
       commitments = [...plan.independentDemands]
       console.log("plan is here", plan)
       console.log("commitments", commitments)
@@ -564,48 +288,37 @@
         for (const commitment of process.committedInputs) {
           await includeCommitment(commitment)
         }
-
-        console.log("hell 2", process.basedOn.name)
-        console.log("PROCESS TYPE", process.basedOn.name, newProcess)
         
         // if this is a new process
         if (process.basedOn.id !== lastSeenProcessSpecification) {
-          console.log("NEW PROCESS", process.basedOn.name)
           // add last column to allColumns and reset
           if (lastColumn.length > 0) {
-            console.log("LAST COLUMN FULL", lastColumn)
-            // allColumns.push(lastColumn)
-            console.log("added a column 1")
             lastColumn = [newProcess]
           } else {
-            console.log("LAST COLUMN NOT FULL", lastColumn)
             lastColumn.push(newProcess)
           }
           lastSeenProcessSpecification = process.basedOn.id
         } else {
-          console.log("SAME PROCESS 1", process.basedOn.name)
           lastColumn.push(newProcess)
         }
 
         if (process.basedOn.id !== lastLastSeenProcessSpecification) {
           allColumns.push(lastColumn)
         } else {
-          console.log("SAME PROCESS 2", process.basedOn.name, lastSeenProcessSpecification)
+          console.log("SAME PROCESS", process.basedOn.name, lastSeenProcessSpecification)
         }
         lastLastSeenProcessSpecification = process.basedOn.id
-        console.log("added a column 2")
         loadingPlan = false;
-        console.log("allColumns", allColumns)
         allColumns = [...allColumns]
       }
 
-        await fetchActions()
-        await getAllUnits()
-        await getAllAgents()
-        await getAllProposals()
-        await getAllResourceSpecifications()
-        await getAllProcessSpecifications()
-        await getAllEconomicResources()
+        // await getAllActions()
+        // await getAllUnits()
+        // await getAllAgents()
+        // // await getAllProposals()
+        // await getAllResourceSpecifications()
+        // await getAllProcessSpecifications()
+        // await getAllEconomicResources()
         console.log("these are all the columns", allColumns)
       } catch (e) {
         console.log("error", e)
@@ -615,7 +328,30 @@
 
   onMount(async () => {
     if (browser) {
-      await fetchThePlan()
+      if (!plan) {
+        console.log(JSON.stringify(plan))
+        await getPlan(planId)
+        await buildPlan()
+      } else {
+        console.log("plan already exists")
+        await buildPlan()
+        getPlanLater()
+      }
+      let functions = [
+        { array: actions, func: getAllActions },
+        { array: units, func: getAllUnits },
+        { array: agents, func: getAllAgents },
+        // { array: proposals, func: getAllProposals },
+        { array: resourceSpecifications, func: getAllResourceSpecifications },
+        { array: processSpecifications, func: getAllProcessSpecifications },
+        { array: economicResources, func: getAllEconomicResources },
+      ];
+
+      for (let item of functions) {
+        if (item.array.length === 0) {
+          await item.func();
+        }
+      }
     }
   })
 
@@ -650,15 +386,13 @@
         }
       }
     }
-    console.log("total cost", totalCost.toString())
   }
 </script>
 
-<!-- {JSON.stringify(aggregatedCommitments)} -->
-
 {#if plan}
-<PlanModal bind:open={planModalOpen} planObject = 
-  {plan} 
+<PlanModal
+  bind:open={planModalOpen} 
+  planObject = {plan} 
   {allColumns} 
   {commitments} 
   {commitmentsToDelete}
@@ -666,12 +400,13 @@
   {agents}
   {resourceSpecifications}
   {processSpecifications}
-editing={true}
-on:saved={async (event) => {
-  loadingPlan = true
-  await fetchThePlan()
-  loadingPlan = false
-}}
+  editing={true}
+  on:saved={async (event) => {
+    loadingPlan = true
+    await getPlan(planId)
+    await buildPlan()
+    loadingPlan = false
+  }}
 />
 {/if}
 
@@ -747,10 +482,24 @@ bind:open={economicEventModalOpen}
             commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
             // resetColumns()
           }
-          costAgreement = makeAgreement(event.detail.commitment, costAgreement, offers)
+          costAgreement = makeAgreement(event.detail.commitment, costAgreement, offers, agents)
+          console.log("cost agreement", costAgreement)
+
+          let primaryIntent = costAgreement.primaryIntent
+
+          console.log("primary intent", primaryIntent)
+          console.log("cost agreement", costAgreement)
+
+          if (!requestsPerOffer[primaryIntent.id]) {
+            requestsPerOffer[primaryIntent.id] = {}
+          }
+          if (event.detail.commitment.action.label == "pickup") {
+            requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
+          }
+
           console.log("cost agreement", costAgreement)
           if (costAgreement) {
-            event.detail.commitment.clauseOf = costAgreement
+            event.detail.commitment.clauseOf = {commitments: [costAgreement.commitment]}
           }          
         }
         // possible cost update ends
@@ -761,7 +510,7 @@ bind:open={economicEventModalOpen}
 
         console.log("cost agreement 2", costAgreement)
         if (costAgreement) {
-          updatedCommitment.clauseOf = costAgreement
+          updatedCommitment.clauseOf = {commitments: [costAgreement.commitment]}
         }
 
         console.log("updated commitment", updatedCommitment)
@@ -777,10 +526,19 @@ bind:open={economicEventModalOpen}
       } else {
         console.log("adding commitment", event.detail.commitment)
         if (event.detail.saveCost) {
-          let costAgreement = makeAgreement(event.detail.commitment, undefined, offers)
+          let costAgreement = makeAgreement(event.detail.commitment, undefined, offers, agents)
+
+          let primaryIntent = costAgreement.primaryIntent
+          if (!requestsPerOffer[primaryIntent.id]) {
+            requestsPerOffer[primaryIntent.id] = {}
+          }
+          if (event.detail.commitment.action.label == "pickup") {
+            requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
+          }
+
           console.log("cost agreement", costAgreement)
           if (costAgreement) {
-            event.detail.commitment.clauseOf = costAgreement
+            event.detail.commitment.clauseOf = {commitments: [costAgreement.commitment]}
           }
         }
         allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
@@ -824,7 +582,6 @@ bind:open={economicEventModalOpen}
 <!-- plan name -->
 <!-- plan name -->
 <h1 class="text-center text-xl font-semibold">{plan.name}</h1>
-{JSON.stringify(economicResources)}
 {@const exportData = {
   plan: plan,
   allColumns: allColumns,

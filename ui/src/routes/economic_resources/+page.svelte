@@ -2,8 +2,8 @@
     import type { EconomicResource, Agent }  from '@valueflows/vf-graphql'
     import Header from "$lib/Header.svelte";
     import { onMount } from "svelte";
-    import { getAllEconomicResources, getAllUnits } from "../../utils";
-    import { allEconomicResources, allAgents, allUnits, allResourceSpecifications } from "../../store";
+    import { getAllEconomicResources, getAllUnits } from "../../crud/fetch";
+    import { allEconomicResources, allAgents, allUnits, allResourceSpecifications } from "../../crud/store";
     import { get } from 'svelte/store'
 
     let economicResources: EconomicResource[] = [];
