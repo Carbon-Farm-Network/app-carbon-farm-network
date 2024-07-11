@@ -112,6 +112,7 @@ export async function load() {
       const { dnaConfig } = await sniffHolochainAppCells(conn, appId)
       console.log("dna config", dnaConfig)
       let boundResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, url)
+      console.log("bound resolvers", boundResolvers)
       let oc = await openConnection(url)
       console.log("oc", oc)
       const autoConnectInput = {
@@ -122,6 +123,7 @@ export async function load() {
         conductorUri: url,
         adminConductorUri: undefined,
       }
+      console.log("autoconnect input", autoConnectInput)
       const output = await autoConnect(autoConnectInput)
       await setClient(output)
       return {

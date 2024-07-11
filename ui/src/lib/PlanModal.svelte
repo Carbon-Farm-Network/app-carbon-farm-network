@@ -376,7 +376,7 @@
             }
           }
           if (c.agreement !== undefined) {
-            console.log("agreement exists!!", c.agreement)
+            console.log("agreement exists", c.agreement)
             console.log("commitment for agreement: ", c)
             // save agreement
             let ag = c.agreement
@@ -714,9 +714,7 @@
               // } else {
                 handleSubmit()
               // }
-            }}>{
-              editing ? "Update" : "Save"
-            }</button
+            }}>Save</button
           >
           <button
             type="button"

@@ -148,7 +148,7 @@
                   on:click={() => {
                     goto(`/plans/update/${encodeURIComponent(plan.node.id)}`)
                   }}
-                  >Edit<span class="sr-only">, {name}</span></button
+                  >Open<span class="sr-only">, {name}</span></button
                   >
                   &nbsp;
                   <button type="button" class="text-indigo-600 hover:text-indigo-900"

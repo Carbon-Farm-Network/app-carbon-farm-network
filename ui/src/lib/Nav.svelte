@@ -4,6 +4,7 @@
 
   function navigate(location: string) {
     dropdownMenuOpen = false
+    mobileMenuOpen = false
     goto(location)
   }
 
@@ -270,27 +271,37 @@
   <!-- Mobile menu, show/hide based on menu state. -->
   <div class="{mobileMenuOpen ? '' : 'hidden'} sm:hidden" id="mobile-menu" style="z-index: 99999999; position: relative; background: white;">
     <div class="px-2 pt-2 pb-3 space-y-1">
-      <a href="/" class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Map</a
+      <button
+        style="cursor: pointer;"
+        on:click={() => navigate('/')}
+        class="{path === '/' ? 'nav-active' : 'nav-inactive'} nav-default block"
       >
+        Map
+      </button>
 
-      <a
-        href="/offers"
+      <button
+        style="cursor: pointer;"
+        on:click={() => navigate('/offers')}
         class="{path === '/offers' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Offers</a
       >
+        Offers
+      </button>
 
-      <a
-        href="/requests"
+      <button
+        style="cursor: pointer;"
+        on:click={() => navigate('/requests')}
         class="{path === '/requests' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Requests</a
       >
+        Requests
+      </button>
 
-      <a
-        href="/plans"
+      <button
+        style="cursor: pointer;"
+        on:click={() => navigate('/plans')}
         class="{path === '/plans' ? 'nav-active' : 'nav-inactive'} nav-default block"
-        >Plans</a
       >
+        Plans
+      </button>
     </div>
   </div>
 </nav>

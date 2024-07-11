@@ -1,5 +1,6 @@
 import { gql } from 'graphql-tag'
 import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@valueflows/vf-graphql'
+import { FULFILLMENT_CORE_FIELDS } from '$lib/graphql/fulfillment_fragments'
 import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
 import { FACET_GROUP_CORE_FIELDS, FACET_VALUE_CORE_FIELDS } from "$lib/graphql/facet.fragments"
 import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
@@ -8,10 +9,11 @@ import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragm
 import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources.fragments'
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
+import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments } from './store'
 import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
 import { decode } from '@msgpack/msgpack';
+import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client'
 
 let client: any;
 clientStored.subscribe(value => {
@@ -218,6 +220,24 @@ query {
 }
 `
 
+const GET_FULFILLMENTS = gql`
+${FULFILLMENT_CORE_FIELDS}
+query {
+  fulfillments(last: 100000) {
+    pageInfo {
+      startCursor
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        ...FulfillmentCoreFields
+      }
+    }
+  }
+}
+`
+
 export const getAllAgents = async () => {
   const res = await client.query({
     query: GET_ALL_AGENTS,
@@ -292,11 +312,47 @@ export const getAllActions = async () => {
   return res.data.actions
 }
 
+const getFulfillments = async () => {
+  // const res = await client.query({
+  //   query: GET_FULFILLMENTS,
+  //   fetchPolicy: 'no-cache'
+  // })
+  // const formattedResults = res.data.fulfillments.edges.map((edge: any) => edge.node)
+  // setFulfillments(formattedResults)
+  // return formattedResults
+
+  function translateId(id: string) {
+    return id.replace(/-/g, "+").replace(/_/g, "/");
+  }
+
+  if (isWeContext()) {
+    let weClient = await WeClient.connect(appletServices);
+    let res = await weClient.renderInfo.appletClient.callZome({
+        cap_secret: null,
+        role_name: 'hrea_combined_0',
+        zome_name: 'indexing',
+        fn_name: 'read_all_fulfillments',
+        payload: {},
+    })
+    console.log("get all ful", res)
+    let formattedResults = res.edges.map((edge: any) => {return {
+      id: translateId(`${encodeHashToBase64(edge.node.id[1])}:${encodeHashToBase64(edge.node.id[0])}`),
+      fulfilledBy: translateId(`${encodeHashToBase64(edge.node.fulfilledBy[1])}:${encodeHashToBase64(edge.node.fulfilledBy[0])}`),
+      fulfills: translateId(`${encodeHashToBase64(edge.node.fulfills[1])}:${encodeHashToBase64(edge.node.fulfills[0])}`),
+    }})
+    console.log("formatted", formattedResults)
+    setFulfillments(formattedResults)
+    return formattedResults
+  }
+}
+
 export const getAllEconomicEvents = async () => {
   const res = await client.query({
     query: GET_ECONOMIC_EVENTS,
     fetchPolicy: 'no-cache'
   })
+  console.log("get all ec", res)
+  await getFulfillments()
   setEconomicEvents(res.data.economicEvents.edges.map((edge: any) => edge.node))
   return res
 }
@@ -333,11 +389,12 @@ export const getSimplifiedPlan = async (id: string) => {
 }
 
 export const getProcess = async (id: string) => {
-  return await client.query({
+  const process = await client.query({
     query: GET_PROCESS,
     variables: {
       id
     },
     fetchPolicy: 'no-cache'
   })
+  updateProcessInPlan(process.data.process)
 }

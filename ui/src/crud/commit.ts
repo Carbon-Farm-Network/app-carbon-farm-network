@@ -62,9 +62,6 @@ mutation($event: EconomicEventCreateParams!) {
     economicEvent {
       id
     }
-    economicResource {
-      id
-    }
   }
 }
 `
@@ -83,6 +80,23 @@ mutation($fulfillment: FulfillmentCreateParams!) {
 const UPDATE_COMMITMENT = gql`
 mutation($commitment: CommitmentUpdateParams!) {
   updateCommitment(commitment: $commitment) {
+    commitment {
+      id
+      revisionId
+      clauseOf {
+        id
+      }
+      plannedWithin {
+        id
+      }
+    }
+  }
+}
+`
+
+const CREATE_COMMITMENT = gql`
+mutation($commitment: CommitmentCreateParams!) {
+  createCommitment(commitment: $commitment) {
     commitment {
       id
       revisionId
@@ -157,6 +171,37 @@ mutation($resource: ResourceSpecificationUpdateParams!){
 const DELETE_RESOURCE_SPECIFICATION = gql`mutation($revisionId: ID!){
   deleteResourceSpecification(revisionId: $revisionId)
 }`
+
+
+const CREATE_ECONOMIC_EVENT_WITH_RESOURCE = gql`
+  mutation($event: EconomicEventCreateParams!, $newInventoriedResource: EconomicResourceCreateParams!) {
+    createEconomicEvent(event: $event, newInventoriedResource: $newInventoriedResource) {
+      economicEvent {
+        id
+      }
+      economicResource {
+        id
+      }
+    }
+  }
+`
+
+const CREATE_AGREEMENT = gql`
+  mutation($ag: AgreementCreateParams!) {
+    createAgreement(agreement: $ag) {
+      agreement {
+        id
+        revisionId
+      }
+    }
+  }
+`
+
+const DELETE_COMMITMENT = gql`
+mutation($revisionId: ID!){
+  deleteCommitment(revisionId: $revisionId)
+}
+`
 
 export const addProcessSpecification = async (process: any) => {
   const res = await client.mutate({
@@ -266,12 +311,21 @@ export const deleteAgent = async (revisionId: string) => {
   })
 }
 
-export const createEconomicEvent = async (event: any, new_inventoried_resource: any) => {
+export const createEconomicEvent = async (event: any) => {
   return await client.mutate({
     mutation: CREATE_ECONOMIC_EVENT,
     variables: {
       event,
-      new_inventoried_resource
+    }
+  })
+}
+
+export const createEconomicEventWithResource = async (event: any, newInventoriedResource: any) => {
+  return await client.mutate({
+    mutation: CREATE_ECONOMIC_EVENT_WITH_RESOURCE,
+    variables: {
+      event,
+      newInventoriedResource
     }
   })
 }
@@ -291,5 +345,43 @@ export const updateCommitment = async (commitment: any) => {
     variables: {
       commitment
     }
+  })
+}
+
+export const createCommitment = async (commitment: any) => {
+  return await client.mutate({
+    mutation: CREATE_COMMITMENT,
+    variables: {
+      commitment
+    }
+  })
+}
+
+export const createAgreement = async (ag: any) => {
+  let res = await client.mutate({
+    mutation: CREATE_AGREEMENT,
+    variables: {
+      ag
+    }
+  })
+  return res.data.createAgreement.agreement
+}
+
+export const deleteCommitment = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_COMMITMENT,
+    variables: {
+      revisionId
+    }
+  })
+}
+
+export const deleteAgreement = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: gql`
+      mutation {
+        deleteAgreement(revisionId: "${revisionId}")
+      }
+    `
   })
 }

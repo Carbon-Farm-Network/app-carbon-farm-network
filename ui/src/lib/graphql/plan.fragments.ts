@@ -133,6 +133,9 @@ export const PROCESS_RETURN_FIELDS = gql`
     id
     revisionId
     name
+    plannedWithin {
+      id 
+    }
     meta {
       retrievedRevision {
         id
@@ -173,13 +176,7 @@ export const PROCESS_RETURN_FIELDS = gql`
         defaultUnitOfResourceId
       }
       fulfilledBy {
-        pageInfo
-        edges {
-          cursor
-          node {
-            id
-          }
-        }
+        id
       }
       clauseOf {
         id
@@ -232,6 +229,9 @@ export const PROCESS_RETURN_FIELDS = gql`
         id
         name
         defaultUnitOfResourceId
+      }
+      fulfilledBy {
+        id
       }
       clauseOf {
         id
@@ -326,10 +326,6 @@ export const PLAN_RETURN_FIELDS = gql`
         resourceQuantity {
           hasNumericalValue
           hasUnitId
-          hasUnit {
-            id
-            label
-          }
         }
         resourceConformsTo {
           id
@@ -340,27 +336,6 @@ export const PLAN_RETURN_FIELDS = gql`
         finished
         fulfilledBy {
           id
-          action {
-            id
-            label
-          }
-          providerId
-          provider {
-            id
-            name
-          }
-          receiverId
-          resourceConformsTo {
-            id
-            name
-            defaultUnitOfResourceId
-            resourceClassifiedAs
-          }
-          resourceQuantity {
-            hasNumericalValue
-            hasUnitId
-          }
-          hasBeginning
         }
         clauseOf {
           id
@@ -409,10 +384,6 @@ export const PLAN_RETURN_FIELDS = gql`
         resourceQuantity {
           hasNumericalValue
           hasUnitId
-          hasUnit {
-            id
-            label
-          }
         }
         resourceConformsTo {
           id
@@ -422,27 +393,6 @@ export const PLAN_RETURN_FIELDS = gql`
         finished
         fulfilledBy {
           id
-          action {
-            id
-            label
-          }
-          providerId
-          provider {
-            id
-            name
-          }
-          receiverId
-          resourceConformsTo {
-            id
-            name
-            defaultUnitOfResourceId
-            resourceClassifiedAs
-          }
-          resourceQuantity {
-            hasNumericalValue
-            hasUnitId
-          }
-          hasBeginning
         }
         clauseOf {
           id

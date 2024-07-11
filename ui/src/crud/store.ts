@@ -13,6 +13,7 @@ export const allEconomicEvents = writable([]);
 export const allEconomicResources = writable([]);
 export const allActions = writable([]);
 export const fullPlans = writable({});
+export const allFulfillments = writable([]);
 
 export function setHashChanges(newHashChanges: any) {
     allHashChanges.update(v => newHashChanges);
@@ -75,8 +76,32 @@ export function setProposals(newProposals: any) {
     allProposals.update(v => newProposals);
 }
 
+export function setFulfillments(newFulfillments: any) {
+    allFulfillments.update(v => newFulfillments);
+}
+
 export function addToFullPlans(newPlan: any) {
     fullPlans.update(v => {
+        return { ...v, [newPlan.id]: newPlan };
+    });
+}
+
+export function updateProcessInPlan(process: any) {
+    console.log('updateProcessInPlan', process);
+    const planId = process.plannedWithin.id;
+    fullPlans.update(v => {
+        // find the plan with the correct id
+        // then replace the relevant process with the new one
+        let newPlan = v[planId]
+        console.log(newPlan)
+        newPlan.processes = newPlan.processes.map((p: any) => {
+            if (p.id == process.id) {
+                return process
+            } else {
+                return p
+            }
+        })
+        console.log("NEW PLAN", newPlan)
         return { ...v, [newPlan.id]: newPlan };
     });
 }
