@@ -203,6 +203,28 @@ mutation($revisionId: ID!){
 }
 `
 
+const CREATE_PLAN = gql`
+${SIMPLIFIED_PLAN_RETURN_FIELDS},
+mutation($plan: PlanCreateParams!){
+  createPlan(plan: $plan) {
+    plan {
+      ...SimplifiedPlanReturnFields
+    }
+  }
+}
+`
+
+const CREATE_PROCESS = gql`
+${PROCESS_RETURN_FIELDS},
+mutation($process: ProcessCreateParams!){
+  createProcess(process: $process) {
+    process {
+      ...ProcessReturnFields
+    }
+  }
+}
+`
+
 export const addProcessSpecification = async (process: any) => {
   const res = await client.mutate({
     mutation: ADD_PROCESS_SPECIFICATION,
@@ -383,5 +405,23 @@ export const deleteAgreement = async (revisionId: string) => {
         deleteAgreement(revisionId: "${revisionId}")
       }
     `
+  })
+}
+
+export const createPlan = async (plan: any) => {
+  return await client.mutate({
+    mutation: CREATE_PLAN,
+    variables: {
+      plan
+    }
+  })
+}
+
+export const createProcess = async (process: any) => {
+  return await client.mutate({
+    mutation: CREATE_PROCESS,
+    variables: {
+      process
+    }
   })
 }

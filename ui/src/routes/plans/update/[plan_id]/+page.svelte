@@ -7,7 +7,7 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
-  import type { Fulfillment, Unit, AgentConnection, Agent, Action, Proposal, EconomicResource, EconomicResourceCreateParams, ResourceSpecification, ProcessSpecification, PlanConnection, EconomicEventCreateParams, FulfillmentCreateParams, CommitmentUpdateParams, Agreement } from '@valueflows/vf-graphql'
+  import type { Fulfillment, Unit, AgentConnection, Agent, Action, Proposal, CommitmentCreateParams, EconomicResource, EconomicResourceCreateParams, ResourceSpecification, ProcessSpecification, PlanConnection, EconomicEventCreateParams, FulfillmentCreateParams, CommitmentUpdateParams, Agreement } from '@valueflows/vf-graphql'
   import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
   import { getAllActions, getAllAgents, getAllProcessSpecifications, getAllEconomicEvents, getAllProposals, getAllResourceSpecifications, getAllUnits, getAllEconomicResources, getProcess } from '../../../../crud/fetch'
@@ -47,6 +47,7 @@
   let economicResources: EconomicResource[] = [];
   let economicEvents: EconomicEvent[] = [];
   let fulfillments: Fulfillment[] = []
+  let selectedStage: string | undefined = undefined;
 
   let processImages = {
     "Pick Up": "/pickup.svg",
@@ -509,6 +510,7 @@ bind:open={economicEventModalOpen}
   {actions}
   {agents}
   {resourceSpecifications}
+  {selectedStage}
   process = {currentProcess}
   bind:commitments
   on:submit={async (event) => {
@@ -519,6 +521,23 @@ bind:open={economicEventModalOpen}
       // =============================ON UPDATE INDEPENDENT=============================
         commitments = commitments.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
         commitments = [...commitments]
+        // actually save commitment
+        let commitmentData = event.detail.commitment
+        let updatedCommitment = {
+          revisionId: commitmentData.revisionId,
+          note: commitmentData.note,
+          finished: commitmentData.finished,
+          provider: commitmentData.providerId,
+          receiver: commitmentData.receiverId,
+          resourceClassifiedAs: commitmentData.resourceClassifiedAs,
+          resourceConformsTo: commitmentData.resourceConformsTo?.id,
+          resourceQuantity: {
+            hasNumericalValue: commitmentData.resourceQuantity?.hasNumericalValue,
+            hasUnit: commitmentData.resourceQuantity?.hasUnitId
+          }
+        }
+        const c = await updateCommitment(updatedCommitment)
+        await getPlan(planId)
       } else {
       // =============================ON UPDATE REGULAR=============================
         let previousCostAgreement = event.detail.commitment.clauseOf //preexisting cost
@@ -599,12 +618,42 @@ bind:open={economicEventModalOpen}
       // =============================ON NEW INDEPENDENT=============================
         commitments.push(event.detail.commitment)
         commitments = [...commitments]
+        // actually save commitment
+        let commitmentData = event.detail.commitment
+        let newCommitment = {
+          action: commitmentData.action.id,
+          agreedIn: commitmentData.agreedIn,
+          clauseOf: commitmentData.clauseOfId,
+          due: commitmentData.due,
+          effortQuantity: commitmentData.effortQuantity,
+          finished: commitmentData.finished,
+          hasBeginning: new Date(),
+          hasEnd: commitmentData.hasEnd,
+          hasPointInTime: commitmentData.hasPointInTime,
+          inScopeOf: commitmentData.inScopeOf,
+          independentDemandOf: planId,
+          note: commitmentData.note,
+          plannedWithin: planId,
+          provider: commitmentData.providerId,
+          receiver: commitmentData.receiverId,
+          resourceClassifiedAs: commitmentData.resourceClassifiedAs,
+          resourceConformsTo: commitmentData.resourceConformsTo?.id,
+          resourceInventoriedAs: commitmentData.resourceInventoriedAs,
+          resourceQuantity: {
+            hasNumericalValue: commitmentData.resourceQuantity?.hasNumericalValue,
+            hasUnit: commitmentData.resourceQuantity?.hasUnitId
+          }
+        }
+        const c = await createCommitment(newCommitment)
+        await getPlan(planId)
       } else {
       // =============================ON NEW REGULAR=============================
         console.log("adding commitment", event.detail.commitment)
 
         // add to ui
-        allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+        if (event.detail.side && event.detail.process) {
+          allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+        }
 
         if (event.detail.saveCost) {
           let costAgreement = makeAgreement(event.detail.commitment, undefined, offers, agents)
@@ -665,7 +714,7 @@ bind:open={economicEventModalOpen}
         }
 
         // temprarily add visually
-        // allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
+        allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
 
         // actually save commitment
         let commitmentData = event.detail.commitment
@@ -685,6 +734,7 @@ bind:open={economicEventModalOpen}
           plannedWithin: planId,
           provider: commitmentData.providerId,
           receiver: commitmentData.receiverId,
+          // stage: commitmentData.stage,
           resourceClassifiedAs: commitmentData.resourceClassifiedAs,
           resourceConformsTo: commitmentData.resourceConformsTo?.id,
           resourceInventoriedAs: commitmentData.resourceInventoriedAs,
@@ -716,6 +766,7 @@ bind:open={economicEventModalOpen}
     commitmentModalProcess = undefined
     commitmentModalColumn = undefined
     commitmentModalSide = undefined
+    selectedStage = undefined
   }}
 />
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
@@ -785,12 +836,15 @@ bind:open={economicEventModalOpen}
                 <div
                   class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                 >
-                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
+                  <strong>{primary?.publishes?.resourceConformsTo?.name}</strong>
                   {#if primary?.publishes?.availableQuantity}
                   <p>
                     {#if primary?.publishes?.availableQuantity?.hasNumericalValue && primary?.publishes?.availableQuantity?.hasNumericalValue > 0}
-                      {primary?.publishes?.availableQuantity?.hasNumericalValue}
-                      {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
+                      <strong>
+                        {primary?.publishes?.availableQuantity?.hasNumericalValue}
+                        {primary?.publishes?.availableQuantity?.hasUnit?.label} 
+                      </strong>
+                      available<br>
                       <!-- {#each units as unit}
                         {#if unit.id == primary?.publishes?.availableQuantity?.hasUnitId}
                           {unit.label}
@@ -870,7 +924,7 @@ bind:open={economicEventModalOpen}
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                     style="background-color: {color};"
                     >
-                    <p>{resourceConformsTo?.name}</p>
+                    <strong>{resourceConformsTo?.name}</strong>
                     <div class="flex justify-between">
                       <!--
                       <p>
@@ -881,29 +935,31 @@ bind:open={economicEventModalOpen}
                       <p>
                         {action.label}
                         <!-- sum of all fulfilledby numericalvalues -->
-                        {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-                          {sumEconomicEvents(fulfilledBy.map(it => it.id))}
-                          {#each units as unit}
-                            {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                              {unit.label}
-                            {/if}
-                          {/each}
-                        <!-- {:else if yellowAmounts[id]}
-                          {yellowAmounts[id]}
-                          {#each units as unit}
-                            {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                              {unit.label}
-                            {/if}
-                          {/each} -->
-                        {:else}
-                          {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                          <!-- {resourceQuantity?.hasUnit?.label} -->
-                          {#each units as unit}
-                            {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                              {unit.label}
-                            {/if}
-                          {/each}
-                        {/if}
+                        <strong>
+                          {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
+                            {sumEconomicEvents(fulfilledBy.map(it => it.id))}
+                            {#each units as unit}
+                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
+                                {unit.label}
+                              {/if}
+                            {/each}
+                          <!-- {:else if yellowAmounts[id]}
+                            {yellowAmounts[id]}
+                            {#each units as unit}
+                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
+                                {unit.label}
+                              {/if}
+                            {/each} -->
+                          {:else}
+                            {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                            <!-- {resourceQuantity?.hasUnit?.label} -->
+                            {#each units as unit}
+                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
+                                {unit.label}
+                              {/if}
+                            {/each}
+                          {/if}
+                        </strong>
                       </p>
 
                       <!--
@@ -1074,7 +1130,7 @@ bind:open={economicEventModalOpen}
                     style="background-color: {color};"
                     >
                     <div>
-                      <p>{resourceConformsTo?.name}</p>
+                      <strong>{resourceConformsTo?.name}</strong>
                       <div class="flex justify-between">
                         <!--
                       <p>
@@ -1085,30 +1141,32 @@ bind:open={economicEventModalOpen}
                         <p>
                           {action.label}
 
-                          {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-                            {sumEconomicEvents(fulfilledBy.map(it => it.id))}
-                            {#each units as unit}
-                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                {unit.label}
-                              {/if}
-                            {/each}
-                          {:else if yellowAmounts[id]}
-                            {yellowAmounts[id]}
-                            <!-- {resourceQuantity?.hasUnit?.label} -->
-                            {#each units as unit}
-                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                {unit.label}
-                              {/if}
-                            {/each}
-                          {:else}
-                            {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                            <!-- {resourceQuantity?.hasUnit?.label} -->
-                            {#each units as unit}
-                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                {unit.label}
-                              {/if}
-                            {/each}
-                          {/if}
+                          <strong>
+                            {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
+                              {sumEconomicEvents(fulfilledBy.map(it => it.id))}
+                              {#each units as unit}
+                                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
+                                  {unit.label}
+                                {/if}
+                              {/each}
+                            {:else if yellowAmounts[id]}
+                              {yellowAmounts[id]}
+                              <!-- {resourceQuantity?.hasUnit?.label} -->
+                              {#each units as unit}
+                                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
+                                  {unit.label}
+                                {/if}
+                              {/each}
+                            {:else}
+                              {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                              <!-- {resourceQuantity?.hasUnit?.label} -->
+                              {#each units as unit}
+                                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
+                                  {unit.label}
+                                {/if}
+                              {/each}
+                            {/if}
+                          </strong>
                         </p>
                         <!--
                       <p>
@@ -1238,13 +1296,41 @@ bind:open={economicEventModalOpen}
               </div>
             </div>
           </div>
+          
+
+
           {/each}
+
+
+          {#if columnIndex > 0}
+          <div
+          class="flex justify-start items-center w-full mt-2 mb-2"
+          >
+            <button
+              class="flex justify-center items-center w-full mb-2"
+              on:click={() => {
+                commitmentModalProcess = undefined
+                commitmentModalColumn = columnIndex
+                commitmentModalSide = undefined
+                commitmentModalOpen = true
+                selectedCommitmentId = undefined
+                // stage is id of previous process
+                selectedStage = allColumns[columnIndex - 1][allColumns[columnIndex - 1].length - 1].id;
+              }}
+            >
+              <PlusCircle />
+            </button>
+            <div
+            class="flex justify-center items-center w-full mb-2"
+            ></div>
+          </div>
+        {/if}
       </div>
     {/each}
 
     <div class="min-w-[250px]">
       <!-- <strong>Total cost: $189</strong> -->
-      <h2 class="text-center" style="margin-top: 42px; margin-bottom: 11px;">Total cost: ${totalCost}</h2>
+      <h2 class="text-center" style="margin-top: 42px; margin-bottom: 11px;">Total cost: ${Math.round(totalCost * 100)/100}</h2>
       <!-- <h2 class="text-center text-xl font-semibold">{name}</h2> -->
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>
       <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #EEEEEE;">
@@ -1275,15 +1361,17 @@ bind:open={economicEventModalOpen}
                 class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
               >
                 <div>
-                  <p>{resourceConformsTo?.name}</p>
+                  <strong>{resourceConformsTo?.name}</strong>
                   <p>
                     {action.label}
-                    {resourceQuantity?.hasNumericalValue}
-                    {#each units as unit}
-                      {#if unit.id?.split(":")[0] == resourceConformsTo?.defaultUnitOfResourceId?.split(":")[0]}
-                        {unit.label}
-                      {/if}
-                    {/each}
+                    <strong>
+                      {resourceQuantity?.hasNumericalValue}
+                      {#each units as unit}
+                        {#if unit.id?.split(":")[0] == resourceConformsTo?.defaultUnitOfResourceId?.split(":")[0]}
+                          {unit.label}
+                        {/if}
+                      {/each}
+                    </strong>
                   </p>
                   <p>to 
                     {#each agents as agent}
@@ -1309,9 +1397,10 @@ bind:open={economicEventModalOpen}
                     <Pencil />
                   </button>
                   <button
-                    on:click={() => {
+                    on:click={async() => {
                       (commitments = commitments.filter(it => it.id != id));
                       commitmentsToDelete.push(revisionId);
+                      await deleteCommitment(revisionId);
                     }}
                   >
                     <Trash />
@@ -1337,11 +1426,13 @@ bind:open={economicEventModalOpen}
                 <div
                   class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                 >
-                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
+                  <strong>{primary?.publishes?.resourceConformsTo?.name}</strong>
                   <p>
                     {primary?.publishes?.action?.label}
-                    {primary?.publishes?.resourceQuantity?.hasNumericalValue}
-                    {primary?.publishes?.availableQuantity?.hasUnit?.label}<br>
+                    <strong>
+                      {primary?.publishes?.resourceQuantity?.hasNumericalValue}
+                      {primary?.publishes?.availableQuantity?.hasUnit?.label}<br>
+                    </strong>
                     <!-- {#each units as unit}
                       {#if unit.id == primary?.publishes?.resourceQuantity?.hasUnitId}
                         {unit.label}

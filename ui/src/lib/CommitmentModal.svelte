@@ -26,6 +26,7 @@
   export let resourceSpecifications: any[];
   export let units: any[];
   export let actions: Action[];
+  export let selectedStage: string | undefined;
 
   let filteredActions: Action[] = []
 
@@ -452,6 +453,7 @@
                 {/if}
 
                 <!-- save cost? checkbox -->
+                {#if commitmentModalColumn}
                 <div class="mt-4 flex items-center">
                   <input
                     id="save_cost"
@@ -465,6 +467,7 @@
                   />
                   <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
                 </div>
+                {/if}
 
                 <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
@@ -519,6 +522,10 @@
             }
             if (!selectedCommitment.note) {
               updatedCommitment.note = newCommitment.note
+            }
+
+            if (selectedStage) {
+              updatedCommitment.stage = selectedStage
             }
 
             if (commitmentModalColumn == undefined) {

@@ -57,11 +57,11 @@ importers:
         specifier: ^0.17.0-dev.7
         version: 0.17.0-dev.8(bufferutil@4.0.8)
       '@leosprograms/graphql-client-holochain':
-        specifier: ^0.4.5
-        version: 0.4.5(@apollo/client@3.9.10)(graphql@15.8.0)
+        specifier: ^0.4.7
+        version: 0.4.7(@apollo/client@3.9.10)(graphql@15.8.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: ^0.4.5
-        version: 0.4.5(graphql@15.8.0)
+        specifier: ^0.4.7
+        version: 0.4.7(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.16.2
         version: 0.16.2(bufferutil@4.0.8)
@@ -1207,8 +1207,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@leosprograms/graphql-client-holochain@0.4.5(@apollo/client@3.9.10)(graphql@15.8.0):
-    resolution: {integrity: sha512-oRxoYnUdft8SVTM79O/lkuH2hz0uboerBoCupzbm22dZvxLuRXwJcJTG91v/DR6Q/hXGagF7oQuhdUv6BO35QQ==}
+  /@leosprograms/graphql-client-holochain@0.4.7(@apollo/client@3.9.10)(graphql@15.8.0):
+    resolution: {integrity: sha512-XJx/XFfk8bLXUXQIs730xGLK1vMG2GwMKN2+ZHbY7twAOsqBbKbzQ+H1tu7P37kKboQJo6QO4SFoIMtp6WPA8Q==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '14'
@@ -1216,7 +1216,7 @@ packages:
       '@apollo/client': 3.9.10(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(graphql@15.8.0)
       '@holochain/client': 0.17.0-dev.9(bufferutil@4.0.8)
-      '@leosprograms/vf-graphql-holochain': 0.4.5(graphql@15.8.0)
+      '@leosprograms/vf-graphql-holochain': 0.4.7(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -1229,8 +1229,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql-holochain@0.4.5(graphql@15.8.0):
-    resolution: {integrity: sha512-TigB0YyCE5QILfkIEKN8BvrgUB1n7EihXlhMsKDMmEXePzV0iEjMbr9bXKnNZCVbrz+CC1HH5LP9Fl1dbUWSvw==}
+  /@leosprograms/vf-graphql-holochain@0.4.7(graphql@15.8.0):
+    resolution: {integrity: sha512-m0SYRfoUtVIOkapU393zZ7z2Y8xBisqZTAkRir7d1Jfp9ZK92SJq59ELijALpm+b9HHN7BFDV+Wfnwplp4qtBQ==}
     peerDependencies:
       graphql: '14'
     dependencies:

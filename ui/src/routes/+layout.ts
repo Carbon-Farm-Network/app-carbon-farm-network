@@ -62,7 +62,7 @@ export async function load() {
 
       const extensionResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, weAppWebsocketUrl)
 
-      console.log("Hi-3")
+      console.log("Hi-3", weClient.renderInfo.appletClient)
 
       const autoConnectInput = {
         weaveAppAgentClient: weClient.renderInfo.appletClient,

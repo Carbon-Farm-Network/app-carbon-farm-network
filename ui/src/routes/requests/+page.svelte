@@ -190,11 +190,11 @@
           let currentIntent = event.detail[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
           if (currentIntent.receiver) {
             let currentReciprocalIntent = event.detail[i].publishes.find(({ reciprocal }) => reciprocal).publishes
+            console.log(currentReciprocalIntent)
             currentReciprocalIntent.action = currentReciprocalIntent.action.id
             currentReciprocalIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
-            if (!currentReciprocalIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
-            currentReciprocalIntent.receiver = hashChanges[currentReciprocalIntent.receiver.id]
-            if (!currentReciprocalIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
+            currentReciprocalIntent.receiver = hashChanges[currentReciprocalIntent.receiver?.id]
+            currentReciprocalIntent.provider = hashChanges[currentReciprocalIntent.provider?.id]            
             currentReciprocalIntent.resourceQuantity = {
               hasNumericalValue: currentReciprocalIntent.resourceQuantity.hasNumericalValue,
               hasUnit: currentIntent.resourceQuantity.hasUnit?.id
@@ -205,9 +205,9 @@
             }
             currentIntent.action = currentIntent.action.id
             currentIntent.receiver = hashChanges[currentIntent.receiver.id]
-            if (!currentIntent.receiver) { importing = false; error = "Stopped import due to dependency data"; return }
+            if (!currentIntent.receiver) { importing = false; error = "Stopped import due to dependency data 3"; return }
             currentIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
-            if (!currentIntent.resourceConformsTo) { importing = false; error = "Stopped import due to dependency data"; return }
+            if (!currentIntent.resourceConformsTo) { importing = false; error = "Stopped import due to dependency data 4"; return }
             currentReciprocalIntent.action = currentReciprocalIntent.action.id
             currentIntent.availableQuantity = {
               hasNumericalValue: currentIntent.availableQuantity.hasNumericalValue,

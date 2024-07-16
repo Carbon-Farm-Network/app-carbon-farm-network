@@ -106,6 +106,8 @@ export const COMMITMENT_RETURN_FIELDS = gql`
     finished
     clauseOf {
       id
+      name
+      note
       revisionId
       commitments {
         id
@@ -180,10 +182,15 @@ export const PROCESS_RETURN_FIELDS = gql`
       }
       clauseOf {
         id
+        name
+        note
         revisionId
         commitments {
           id
           revisionId
+          providerId
+          receiverId
+          hasBeginning
           action {
             id
             label
@@ -235,10 +242,15 @@ export const PROCESS_RETURN_FIELDS = gql`
       }
       clauseOf {
         id
+        name
+        note
         revisionId
         commitments {
           id
           revisionId
+          providerId
+          receiverId
+          hasBeginning
           action {
             id
             label
@@ -339,11 +351,15 @@ export const PLAN_RETURN_FIELDS = gql`
         }
         clauseOf {
           id
+          name
+          note
           revisionId
           commitments {
             id
             revisionId
             providerId
+            receiverId
+            hasBeginning
             action {
               id
               label
@@ -396,11 +412,15 @@ export const PLAN_RETURN_FIELDS = gql`
         }
         clauseOf {
           id
+          name
+          note
           revisionId
           commitments {
             id
             revisionId
             providerId
+            receiverId
+            hasBeginning
             action {
               id
               label

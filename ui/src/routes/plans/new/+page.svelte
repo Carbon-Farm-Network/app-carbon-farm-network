@@ -13,6 +13,7 @@
   import { allHashChanges } from '../../../crud/store'
   import Export from '$lib/Export.svelte'
   import { createCommitments, makeAgreement, findExchange, assignProviderReceiver, createAgreements, aggregateCommitments, type Process, type Commitment, type Demand } from '../=helper'
+  import { importPlan } from '../../../crud/import'
 
   let hashChanges: any = {}
   let agents: Agent[] = []
@@ -439,6 +440,12 @@
           class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save plan</button
         >
+        <Export dataName="plan" fileName="cfn-plan" data={null} hideExport={true}
+          on:import={async event => {
+            console.log(event.detail)
+            await importPlan(event.detail)
+          }}
+        />
       </div>
       <h2 class="text-center text-xl font-semibold">Offers</h2>
       <div class="bg-blue-300 border border-gray-400 p-2" style="background-color: #8C8C8C;">
@@ -614,7 +621,7 @@
                   >Create from requests</button
                 >
               </div>
-              <div class="flex justify-center my-4">
+              <!-- <div class="flex justify-center my-4">
                 <Export dataName="plan" fileName="cfn-plan" data={null} hideExport={true}
                   on:import={event => {
                     commitments = event.detail.commitments
@@ -648,7 +655,7 @@
                     })
                   }}
                 />
-              </div>
+              </div> -->
             {/if}
             {#each commitments as c}
               {@const resourceConformsTo = c.resourceConformsTo}

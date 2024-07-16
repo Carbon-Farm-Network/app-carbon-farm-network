@@ -9,9 +9,13 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { PlanConnection } from '@valueflows/vf-graphql'
+  import Export from '$lib/Export.svelte'
 
 
   export let plans: any[];
+
+  let exportOpen = false
+  let importing = false
 
   const GET_PLANS = gql`
     query fetchPlans {
@@ -109,6 +113,12 @@
         >Add a plan</button
       >
     </div>
+    <!-- <Export bind:importing bind:open={exportOpen} dataName="list of plans" fileName="cfn-plans"
+    data={plans}
+      on:import={async (event) => {
+        console.log('importing', event.detail)
+      }}
+    /> -->
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
