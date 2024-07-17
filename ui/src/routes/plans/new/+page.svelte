@@ -14,6 +14,7 @@
   import Export from '$lib/Export.svelte'
   import { createCommitments, makeAgreement, findExchange, assignProviderReceiver, createAgreements, aggregateCommitments, type Process, type Commitment, type Demand } from '../=helper'
   import { importPlan } from '../../../crud/import'
+  import { goto } from '$app/navigation'
 
   let hashChanges: any = {}
   let agents: Agent[] = []
@@ -28,6 +29,8 @@
   let offers: Proposal[] = [];
   let proposalsList: Proposal[] = []
   let currentProcess: any[];
+  let exportOpen: boolean = false;
+  let importing: boolean = false;
   let createPlan: PlanCreateParams = {
     name: '',
     note: '',
@@ -440,10 +443,44 @@
           class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Save plan</button
         >
-        <Export dataName="plan" fileName="cfn-plan" data={null} hideExport={true}
+        <Export dataName="plan" fileName="cfn-plan" data={null} hideExport={true} bind:open={exportOpen} bind:importing
           on:import={async event => {
             console.log(event.detail)
-            await importPlan(event.detail)
+            const planId = await importPlan(event.detail)
+            goto(`/plans/update/${encodeURIComponent(planId)}`)
+          }}
+          on:scaffold={event => {
+            commitments = event.detail.commitments
+            .map(it => {
+              return {
+                ...it,
+                receiverId: agents.find(agent => agent.id == hashChanges[it.receiverId]),
+                // resourceConformsTo: resourceSpecifications.find(spec => spec.id == hashChanges[it.resourceConformsTo.id]),
+              }
+            })
+            allColumns = event.detail.allColumns
+            // change the providerId to the new hash in each column
+            allColumns = allColumns.map(column => {
+              return column.map(process => {
+                return {
+                  ...process,
+                  committedInputs: process.committedInputs.map(it => {
+                    return {
+                      ...it,
+                      providerId: hashChanges[it.providerId]
+                    }
+                  }),
+                  committedOutputs: process.committedOutputs.map(it => {
+                    return {
+                      ...it,
+                      providerId: hashChanges[it.providerId]
+                    }
+                  })
+                }
+              })
+            })
+            importing = false
+            exportOpen = false
           }}
         />
       </div>

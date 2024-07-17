@@ -18,6 +18,15 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
         hasUnitId
     }
     hasBeginning
+    resourceInventoriedAs {
+      id
+      name
+      note
+      image
+      conformsTo {
+        id
+      }
+    }
     resourceConformsTo {
         id
         name

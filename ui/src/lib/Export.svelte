@@ -164,16 +164,35 @@
                 on:change={upload}
               />
               {#if dataUploaded}
-                <button type="button" class="mt-3 w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-                  on:click={() => {
-                    importing = true
-                    dispatch('import', dataToImport)
-                  }}
-                >
-                  Import
-                </button>
-                
+                {#if hideExport}
+                  <button type="button" class="mt-3 w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                    on:click={() => {
+                      importing = true
+                      dispatch('import', dataToImport)
+                    }}
+                  >
+                    Import and save
+                  </button>
+
+                  <button type="button" class="mt-3 w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                    on:click={() => {
+                      importing = true
+                      dispatch('scaffold', dataToImport)
+                    }}
+                  >
+                    Import without save
+                  </button>                  
+                {:else}
+                  <button type="button" class="mt-3 w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                    on:click={() => {
+                      importing = true
+                      dispatch('import', dataToImport)
+                    }}
+                  >
+                    Import
+                  </button>
                 {/if}
+              {/if}
                 <!-- <pre class="mt-3 text-sm text-gray-500">
                   {JSON.stringify(dataToImport, null, 2)}
                 </pre> -->

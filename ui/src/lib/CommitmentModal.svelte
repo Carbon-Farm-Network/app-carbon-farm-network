@@ -441,7 +441,7 @@
                         selectedCommitment.finished = e.target.checked
                         console.log(selectedCommitment.finished)
                       }}
-                      bind:checked={finished} 
+                      bind:checked={selectedCommitment.finished} 
                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       >
 
@@ -453,7 +453,7 @@
                 {/if}
 
                 <!-- save cost? checkbox -->
-                {#if commitmentModalColumn}
+                {#if commitmentModalColumn != undefined}
                 <div class="mt-4 flex items-center">
                   <input
                     id="save_cost"

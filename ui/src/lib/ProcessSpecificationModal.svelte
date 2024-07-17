@@ -102,7 +102,7 @@
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
-              Resource Specification
+              Process Specification
             </h3>
 
             <div class="mt-4">
@@ -184,20 +184,20 @@
                 <label
                   for="image"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                  >Logo url</label
+                  >Image url</label
                 >
                 <div class="mt-2">
                   <input
                     type="text"
-                    name="longitude"
-                    id="longitude"
+                    name="image"
+                    id="image"
                     autocomplete="longitude"
                     placeholder="https://www.example.com/logo.png"
-                    bind:value={currentResourceSpecification.image}
+                    bind:value={currentProcessSpecification.image}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentResourceSpecification.image = input.value;
+                        currentProcessSpecification.image = input.value;
                       }
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"

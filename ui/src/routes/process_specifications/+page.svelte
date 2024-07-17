@@ -59,7 +59,7 @@
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
         type="button"
-        on:click={() => {modalOpen = true; editing = false; currentProcessSpecification = {}; console.log('o')}}
+        on:click={() => {modalOpen = true; editing = false; currentProcessSpecification = {};}}
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a process specification</button>
     </div>
@@ -69,7 +69,6 @@
         let newPS = await handleSubmit(event.detail[i])
         await addHashChange(event.detail[i].id, newPS.data.createProcessSpecification.processSpecification.id)
       }
-      console.log("++++++++++++FINSIHED++++++++++++")
       exportOpen = false
     }}
     />

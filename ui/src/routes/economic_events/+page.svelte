@@ -1,13 +1,20 @@
 <script lang="ts">
-    import type { EconomicEvent, Agent }  from '@valueflows/vf-graphql'
+    import type { EconomicEvent, Agent, Fulfillment, EconomicResource }  from '@valueflows/vf-graphql'
     import Header from "$lib/Header.svelte";
     import { onMount } from "svelte";
-    import { getAllEconomicEvents, getAllUnits } from "../../crud/fetch";
-    import { allEconomicEvents, allAgents, allUnits, allResourceSpecifications } from "../../crud/store";
+    import { getAllEconomicEvents, getAllEconomicResources, getAllUnits } from "../../crud/fetch";
+    import { allEconomicEvents, allFulfillments, allAgents, allUnits, allResourceSpecifications } from "../../crud/store";
+    import { importEconomicEvents } from '../../crud/import';
+    import Export from '$lib/Export.svelte';
 
     let economicEvents: EconomicEvent[] = [];
     allEconomicEvents.subscribe(value => {
         economicEvents = value;
+    });
+
+    let fulfillments: Fulfillment[] = [];
+    allFulfillments.subscribe(value => {
+        fulfillments = value;
     });
 
     let agents: Agent[] = [];
@@ -25,8 +32,12 @@
         resourceSpecifications = value;
     });
 
+    let exportOpen = false;
+    let importing = false;
+
     onMount(async () => {
         await getAllEconomicEvents();
+        await getAllEconomicResources();
         await getAllUnits();
     });
 </script>
@@ -67,6 +78,15 @@
               <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
               </th>
+              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+                <Export dataName="Economic Events" fileName="cfn-economic-events" data={{"economicEvents": economicEvents, "fulfillments": fulfillments}} bind:importing bind:open={exportOpen}
+                  on:import={async data => {
+                    console.log("importing", data.detail);
+                    await importEconomicEvents(data.detail);
+                    importing = false;
+                    exportOpen = false;
+                  }} 
+                />
             </tr>
           </thead>
           <tbody class="bg-white">

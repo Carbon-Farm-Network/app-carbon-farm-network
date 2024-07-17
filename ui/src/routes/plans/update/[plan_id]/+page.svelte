@@ -159,7 +159,7 @@
     try {
       const economicEvent: EconomicEventCreateParams = {
         action: commitment.action.id,
-        provider: commitment.providerId,
+        provider: commitment.provider?.id ? commitment.provider.id : commitment.providerId,
         receiver: commitment.receiverId,
         resourceQuantity: { hasNumericalValue: commitment.resourceQuantity.hasNumericalValue, hasUnit: commitment.resourceQuantity.hasUnitId },
         resourceConformsTo: commitment.resourceConformsTo.id,
@@ -607,6 +607,8 @@ bind:open={economicEventModalOpen}
 
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
         allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = updatedCommitment
+
+        console.log("----==========updated commitment", updatedCommitment)
 
         await updateColumns(event.detail.column, event.detail.side)
         // await getProcess(allColumns[event.detail.column][event.detail.process].id)

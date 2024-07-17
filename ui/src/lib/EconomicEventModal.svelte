@@ -122,8 +122,10 @@
                       console.log(selectedAgent.name)
                       if (selectedCommitment.provider) {
                         selectedCommitment.provider = selectedAgent
-                      } else {
+                        selectedCommitment.providerId = selectedAgent.id
+                      } else if (selectedCommitment.providerId) {
                         console.log(selectedCommitment.provider)
+                        selectedCommitment.providerId = selectedAgent.id
                       }
                     }}
 
@@ -142,6 +144,7 @@
                       let id = e.target.value
                       console.log(id)
                       let selectedAgent = agents.find((rs) => rs.id === id)
+                      newCommitment.providerId = selectedAgent.id
                       if (newCommitment.provider) {
                         newCommitment.provider = selectedAgent
                       } else {
@@ -401,6 +404,9 @@
             let updatedCommitment = {...selectedCommitment}
             if (!selectedCommitment.provider) {
               updatedCommitment.provider = newCommitment.provider
+            }
+            if (!selectedCommitment.providerId) {
+              updatedCommitment.providerId = newCommitment.providerId
             }
             if (!selectedCommitment.receiver) {
               updatedCommitment.receiver = newCommitment.receiver

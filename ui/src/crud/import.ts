@@ -1,6 +1,7 @@
-import type { CommitmentCreateParams, PlanCreateParams, ProcessCreateParams,  Process, AgreementCreateParams } from "@valueflows/vf-graphql"
-import { addHashChange, createCommitment, createAgreement, createPlan, createProcess } from "./commit"
+import type { CommitmentCreateParams, PlanCreateParams, ProcessCreateParams,  Process, AgreementCreateParams, EconomicEventCreateParams, FulfillmentCreateParams, Fulfillment } from "@valueflows/vf-graphql"
+import { addHashChange, createCommitment, createAgreement, createPlan, createProcess, createEconomicEvent, createEconomicEventWithResource, createFulfillment } from "./commit"
 import { allHashChanges, allProcessSpecifications } from "./store"
+import { EconomicEvent } from "$lib/icons"
 
 let hashChanges: any = {}
 allHashChanges.subscribe(value => {
@@ -26,27 +27,15 @@ export async function importPlan(fullPlan: any) {
   // IMPORT INDEPENDENT DEMANDS
   for (const commitment of fullPlan.commitments) {
     const commitmentCreateParams: CommitmentCreateParams = {
-        independentDemandOf: savedPlan.id,
-        // action: commitment.action.id,
-        // note: commitment.note ? commitment.note : '',
-        // provider: hashChanges[commitment.providerId] ? hashChanges[commitment.providerId] : commitment.providerId,
-        // receiver: hashChanges[commitment.receiverId] ? hashChanges[commitment.receiverId] : commitment.receiverId,
-        // resourceConformsTo: hashChanges[commitment.resourceConformsTo?.id] ? hashChanges[commitment.resourceConformsTo?.id] : commitment.resourceConformsTo?.id,
-        // hasBeginning: commitment.hasBeginning ? commitment.hasBeginning : new Date().toISOString(),
-        // // finished: commitment.finished ? commitment.finished : false,
-        // resourceQuantity: {
-        //     hasNumericalValue: commitment.resourceQuantity?.hasNumericalValue,
-        //     hasUnit: commitment.resourceQuantity?.hasUnitId,
-        // },
-
         action: commitment.action.id,
         provider: hashChanges[commitment.providerId] ? hashChanges[commitment.providerId] : commitment.providerId,
         receiver: hashChanges[commitment.receiverId] ? hashChanges[commitment.receiverId] : commitment.receiverId,
         plannedWithin: savedPlan.id,
+        independentDemandOf: savedPlan.id,
         finished: commitment.finished,
         note: commitment.note,
         hasBeginning: commitment.hasBeginning ? commitment.hasBeginning : new Date().toISOString(),
-        resourceConformsTo: commitment.resourceConformsTo.id,
+        resourceConformsTo: hashChanges[commitment.resourceConformsTo.id] ? hashChanges[commitment.resourceConformsTo.id] : commitment.resourceConformsTo.id,
         resourceQuantity: {
           hasNumericalValue: commitment.resourceQuantity?.hasNumericalValue,
           hasUnit: commitment.resourceQuantity?.hasUnitId,
@@ -70,14 +59,8 @@ export async function importPlan(fullPlan: any) {
       const processCreateParams: ProcessCreateParams = {
         name: process.name,
         note: process.note,
-        // finished: process.finished,
-        // hasBeginning: process.hasBeginning,
-        // hasEnd: process.hasEnd,
-        // basedOn: process.basedOn?.id,
         basedOn: hashChanges[process.basedOn?.id] ? hashChanges[process.basedOn?.id] : process.basedOn?.id,
         plannedWithin: savedPlan.id,
-        // classifiedAs: process.classifiedAs,
-        // inScopeOf: process.inScopeOf,
       }
       console.log('importProcess', processCreateParams)
       console.log(processSpecifications)
@@ -88,20 +71,9 @@ export async function importPlan(fullPlan: any) {
       async function processComplexCommitment(commitment: any, side: string) {
         console.log('raw commitment', commitment)
         const commitmentCreateParams: CommitmentCreateParams = {
-            // independentDemandOf: savedPlan.id,
             action: commitment.action.id,
-            // note: commitment.note ? commitment.note : '',
             provider: hashChanges[commitment.providerId] ? hashChanges[commitment.providerId] : commitment.providerId,
             receiver: hashChanges[commitment.receiverId] ? hashChanges[commitment.receiverId] : commitment.receiverId,
-            // // due: commitment.due,
-            // inputOf: process.id,
-            // resourceConformsTo: hashChanges[commitment.resourceConformsTo.id] ? hashChanges[commitment.resourceConformsTo.id] : commitment.resourceConformsTo.id,
-            // hasBeginning: commitment.hasBeginning,
-            // finished: commitment.finished,
-            // resourceQuantity: {
-            //     hasNumericalValue: commitment.resourceQuantity?.hasNumericalValue,
-            //     hasUnit: hashChanges[commitment.resourceQuantity?.hasUnitId] ? hashChanges[commitment.resourceQuantity?.hasUnitId] : commitment.resourceQuantity?.hasUnitId,
-            // },
             plannedWithin: savedPlan.id,
             finished: commitment.finished,
             note: commitment.note,
@@ -120,8 +92,8 @@ export async function importPlan(fullPlan: any) {
         // IF COST COMMITMENT
         if (commitment.clauseOf) {
             const agreementCreateParams: AgreementCreateParams = {
-                name: commitment.clauseOf.name,
-                note: commitment.clauseOf.note
+              name: commitment.clauseOf.name,
+              note: commitment.clauseOf.note
             }
 
             console.log('importAgreement', agreementCreateParams)
@@ -151,11 +123,11 @@ export async function importPlan(fullPlan: any) {
             console.log('importCostCommitment', costCommitmentCreateParams)
             const savedPayment = await createCommitment(costCommitmentCreateParams)
             console.log('importedCostCommitment', savedPayment)
-            addHashChange(payment.id, savedPayment.id)
+            await addHashChange(payment.id, savedPayment.id)
         }
 
         const savedCommitment = await createCommitment(commitmentCreateParams)
-        addHashChange(commitment.id, savedCommitment.id)
+        await addHashChange(commitment.id, savedCommitment.id)
       }
 
       for (const commitment of process.committedInputs) {
@@ -167,4 +139,60 @@ export async function importPlan(fullPlan: any) {
       }
     }
   }
+  return savedPlan.id
+}
+
+export async function importEconomicEvents(data: any) {
+  console.log(data)
+  const events = [...data.economicEvents].reverse();
+  const fulfillments = data.fulfillments
+  let createdResources: any = []
+  events.forEach(async (event: any) => {
+    console.log('raw event', event)
+    let createdEventId: string;
+
+    // if (!event?.resourceInventoriedAs && ( (event.action.label == "pickup" && event.providerId != event.receiverId) || event.action.label == "produce") ) {
+
+    let eventCreateParams: EconomicEventCreateParams = {
+      action: event.action.id,
+      provider: hashChanges[event.providerId] ? hashChanges[event.providerId] : event.providerId,
+      receiver: hashChanges[event.receiverId] ? hashChanges[event.receiverId] : event.receiverId,
+      note: event.note,
+      hasBeginning: event.hasBeginning ? event.hasBeginning : new Date().toISOString(),
+      resourceConformsTo: hashChanges[event.resourceConformsTo.id] ? hashChanges[event.resourceConformsTo.id] : event.resourceConformsTo.id,
+      resourceQuantity: {
+        hasNumericalValue: event.resourceQuantity?.hasNumericalValue,
+        hasUnit: event.resourceQuantity?.hasUnitId,
+      },
+    }
+
+    if (event.resourceInventoriedAs && !createdResources.includes(event.resourceInventoriedAs.id)) {
+      let resourceCreateParams = {
+        name: event.resourceInventoriedAs.name,
+        note: event.resourceInventoriedAs.note,
+        image: event.resourceInventoriedAs.image,
+        conformsTo: hashChanges[event.resourceInventoriedAs.conformsTo.id] ? hashChanges[event.resourceInventoriedAs.conformsTo.id] : event.resourceInventoriedAs.conformsTo.id,
+      }
+
+      const res = await createEconomicEventWithResource(eventCreateParams, resourceCreateParams)
+      createdResources.push(event.resourceInventoriedAs.id)
+      createdEventId = res.data.createEconomicEvent.economicEvent.id
+      await addHashChange(event.id, createdEventId)
+    } else {
+      const res = await createEconomicEvent(eventCreateParams)
+      createdEventId = res.data.createEconomicEvent.economicEvent.id
+      await addHashChange(event.id, createdEventId)
+    }
+
+    // Add fulfillment
+    const fulfillment = fulfillments.find((f: any) => f.fulfilledBy == event.id)
+    if (fulfillment) {
+      const commitmentId = hashChanges[fulfillment.fulfills] ? hashChanges[fulfillment.fulfills] : fulfillment.fulfills
+      const fulfillmentCreateParams: FulfillmentCreateParams = {
+        fulfilledBy: createdEventId,
+        fulfills: commitmentId,
+      }
+      await createFulfillment(fulfillmentCreateParams)
+    }
+  })
 }
