@@ -1,5 +1,5 @@
 import { gql } from 'graphql-tag'
-import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@valueflows/vf-graphql'
+import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams, EconomicEvent } from '@valueflows/vf-graphql'
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
 import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
@@ -12,6 +12,7 @@ import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragm
 import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources.fragments'
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
+import type { ProcessCreateParams } from '@leosprograms/vf-graphql';
 
 let client: any;
 clientStored.subscribe(value => {
@@ -225,7 +226,8 @@ mutation($process: ProcessCreateParams!){
 }
 `
 
-export const addProcessSpecification = async (process: any) => {
+export const addProcessSpecification = async (process: ProcessCreateParams) => {
+  console.log('addProcessSpecification', process)
   const res = await client.mutate({
     mutation: ADD_PROCESS_SPECIFICATION,
     variables: {

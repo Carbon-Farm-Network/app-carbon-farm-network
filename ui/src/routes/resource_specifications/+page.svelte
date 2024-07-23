@@ -80,6 +80,7 @@
         for (let i = 0; i < event.detail.length; i++) {
           let newRS = await handleSubmit(event.detail[i])
           await addHashChange(event.detail[i].id, newRS.data.createResourceSpecification.resourceSpecification.id)
+          console.log("added hash change", event.detail[i].id, newRS.data.createResourceSpecification.resourceSpecification.id)
         }
         importing = false
         exportOpen = false

@@ -234,15 +234,8 @@
   }
 
 
-  onMount(() => {
-    // let x = cri1()
-    // console.log(x)
-    if (browser) {
-      console.log('hello')
-      console.log(currentIntent)
-    }
-    // handleSubmit()
-  })
+  // onMount(() => {
+  // })
 
   $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting, currency
   $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo; // && currentIntent.note;

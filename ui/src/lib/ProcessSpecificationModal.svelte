@@ -29,7 +29,7 @@
     let process: ProcessSpecificationCreateParams = {
       name: currentProcessSpecification.name,
       note: currentProcessSpecification.note,
-      // image: currentProcessSpecification.image,
+      image: currentProcessSpecification.image,
     }
     console.log(process)
     try {
@@ -47,7 +47,7 @@
     let process: ProcessSpecificationUpdateParams = {
       name: currentProcessSpecification.name,
       note: currentProcessSpecification.note,
-      // image: currentProcessSpecification.image,
+      image: currentProcessSpecification.image,
       revisionId: currentProcessSpecification.revisionId
     }
     try {
@@ -179,7 +179,7 @@
               </div>
             </div>
 
-            <!-- <div class="mt-4 text-left">
+            <div class="mt-4 text-left">
               <div class="col-span-full">
                 <label
                   for="image"
@@ -198,13 +198,14 @@
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
                         currentProcessSpecification.image = input.value;
+                        console.log(currentProcessSpecification.image)
                       }
                     }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
-            </div> -->
+            </div>
           </div>
         </div>
 

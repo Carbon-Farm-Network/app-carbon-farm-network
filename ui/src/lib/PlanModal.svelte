@@ -93,9 +93,6 @@
         commitment {
           id
           revisionId
-          plannedWithin {
-            id
-          }
         }
       }
     }
@@ -107,9 +104,6 @@
         commitment {
           id
           revisionId
-          plannedWithin {
-            id
-          }
         }
       }
     }
@@ -365,7 +359,7 @@
         const processId = await saveOrUpdateProcess(process)
         console.log("compare ids", p, processId)
         // save everything else
-        async function handleCommitment(c: any) {          
+        async function handleCommitment(c: any) {
           let agreementId: string;
           // save cost if applicable
           if (c.clauseOf) {

@@ -21,7 +21,8 @@
   export let commitmentModalSide: string | undefined;
   export let selectedCommitmentId: string | undefined
   export let process: any[] | undefined;
-  export let commitments: any[]
+  export let independentDemands: any[]
+  export let nonProcessCommitments: any[]
   export let agents: Agent[];
   export let resourceSpecifications: any[];
   export let units: any[];
@@ -110,11 +111,18 @@
     if (selectedCommitmentId !== previousSelectedCommitmentId) {
       previousSelectedCommitmentId = selectedCommitmentId;
       if (process && selectedCommitmentId && commitmentModalColumn > -1) {
-        console.log("process commitment", process)
         selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
-        console.log(commitments)
-        selectedCommitment = JSON.parse(JSON.stringify(commitments.find(it => it.id == selectedCommitmentId)));
+        console.log(independentDemands)
+        try {
+          selectedCommitment = JSON.parse(JSON.stringify(independentDemands.find(it => it.id == selectedCommitmentId)));
+        } catch (e) {
+          try {
+            selectedCommitment = JSON.parse(JSON.stringify(nonProcessCommitments.find(it => it.id == selectedCommitmentId)));
+          } catch (e) {
+            console.log(e)
+          }
+        } 
         console.log(selectedCommitment)
       } else {
         selectedCommitment = {};
@@ -186,7 +194,7 @@
                     on:change={(e) => {
                       let id = e.target.value
                       selectedCommitment.providerId = id
-                      // selectedCommitment.provider.id = id
+                      selectedCommitment.provider.id = id
                       // let selectedAgent = agents.find((rs) => rs.id === id)
                       // console.log(selectedAgent.name)
                       // if (selectedCommitment.provider) {
@@ -524,10 +532,6 @@
               updatedCommitment.note = newCommitment.note
             }
 
-            if (selectedStage) {
-              updatedCommitment.stage = selectedStage
-            }
-
             if (commitmentModalColumn == undefined) {
             //   let commitmentIndex = commitments.findIndex(
             //    it => it.id == selectedCommitmentId
@@ -569,6 +573,9 @@
                 //   newCommitment = Object.assign({}, newCommitmentTemplate)
                 // }
               // } else {
+                if (selectedStage) {
+                  newCommitment['stage'] = selectedStage
+                }
                 console.log(newCommitment)
                 dispatch('submit', {
                   column: commitmentModalColumn,

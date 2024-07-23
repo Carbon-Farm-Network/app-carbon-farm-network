@@ -85,6 +85,7 @@
                     await importEconomicEvents(data.detail);
                     importing = false;
                     exportOpen = false;
+                    await getAllEconomicEvents();
                   }} 
                 />
             </tr>

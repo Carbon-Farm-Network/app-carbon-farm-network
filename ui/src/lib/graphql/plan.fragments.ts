@@ -301,6 +301,29 @@ export const PLAN_RETURN_FIELDS = gql`
         defaultUnitOfResourceId
       }
     }
+    nonProcessCommitments {
+      id
+      revisionId
+      stageId
+      action {
+        id
+        label
+      }
+      fulfilledBy {
+        id
+      }
+      receiverId
+      providerId
+      resourceQuantity {
+        hasNumericalValue
+        hasUnitId
+      }
+      resourceConformsTo {
+        id
+        name
+        defaultUnitOfResourceId
+      }
+    }
     processes {
       id
       revisionId

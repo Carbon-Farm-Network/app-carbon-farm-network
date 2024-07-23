@@ -48,21 +48,13 @@ export async function load() {
   }
   try {
     if (isWeContext()) {
-      console.log('hi-0')
       weClient = await WeClient.connect(appletServices);
       const weAppId = weClient.renderInfo.appletClient.installedAppId
-      // console.log("applet info 1", weAppId)
       let weAppWebsocket = weClient.renderInfo.appletClient.appWebsocket
       const weAppWebsocketUrl = weAppWebsocket.client.url
-      // console.log("render info", weClient.renderInfo)
       const { dnaConfig } = await sniffHolochainAppCells(weAppWebsocket, weAppId)
-      // console.log("applet info", weClient.renderInfo)
-      // console.log("hi-2")
-      // console.log("dna config", dnaConfig)
 
       const extensionResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, weAppWebsocketUrl)
-
-      console.log("Hi-3", weClient.renderInfo.appletClient)
 
       const autoConnectInput = {
         weaveAppAgentClient: weClient.renderInfo.appletClient,

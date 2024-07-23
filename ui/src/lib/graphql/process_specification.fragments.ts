@@ -5,6 +5,7 @@ export const PROCESS_SPECIFICATION_CORE_FIELDS = gql`
     id
     revisionId
     name
+    image
     note
   }
 `

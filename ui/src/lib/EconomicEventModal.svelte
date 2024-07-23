@@ -18,7 +18,8 @@
   export let commitmentModalSide: string | undefined;
   export let selectedCommitmentId: string | undefined
   export let process: any[];
-  export let commitments: any[]
+  export let independentDemands: any[]
+  export let nonProcessCommitments: any[]
   export let agents: Agent[];
   export let resourceSpecifications: any[];
   export let units: any[];
@@ -61,6 +62,8 @@
   let newCommitment = Object.assign({}, newCommitmentTemplate)
   let selectedCommitment = Object.assign({}, newCommitmentTemplate)
   $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide, selectedCommitment, selectedCommitmentId
+  $: provider = selectedCommitment.providerId ? agents.find(a => a.id == selectedCommitment.providerId) : selectedCommitment.provider
+  $: receiver = selectedCommitment.receiverId ? agents.find(a => a.id == selectedCommitment.receiverId) : selectedCommitment.receiver
 
   let previousSelectedCommitmentId: string | undefined;
   $: {
@@ -69,9 +72,15 @@
       if (selectedCommitmentId && commitmentModalColumn > -1) {
         selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
-        console.log(commitments)
-        selectedCommitment = JSON.parse(JSON.stringify(commitments.find(it => it.id == selectedCommitmentId)));
-        console.log(selectedCommitment)
+        try {
+          selectedCommitment = JSON.parse(JSON.stringify(independentDemands.find(it => it.id == selectedCommitmentId)));
+        } catch (e) {
+          try {
+            selectedCommitment = JSON.parse(JSON.stringify(nonProcessCommitments.find(it => it.id == selectedCommitmentId)));
+          } catch (e) {
+            console.log(e)
+          }
+        } 
       } else {
         selectedCommitment = {};
       }
@@ -109,12 +118,12 @@
                   >Provider</label
                 >
                 <!-- {JSON.stringify(selectedCommitment.provider)} -->
-                {#if selectedCommitment?.id && selectedCommitment?.provider && agents}
+                {#if selectedCommitment?.id && provider}
                   <select
                     id="provider"
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={selectedCommitment.provider.id}
+                    value={selectedCommitment.providerId}
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)

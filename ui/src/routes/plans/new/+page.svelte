@@ -372,7 +372,7 @@
   {commitmentModalProcess}
   {commitmentModalColumn}
   {commitmentModalSide}
-  {commitments}
+  independentDemands={commitments}
   {agents}
   {resourceSpecifications}
   {units}

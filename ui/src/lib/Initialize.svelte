@@ -13,7 +13,7 @@
   import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
   import Logo from './Logo.svelte'
 
-  const devInit = true
+  const devInit = false
 
   const INITIALIZE_UNITS = gql`
     ${UNIT_CORE_FIELDS}

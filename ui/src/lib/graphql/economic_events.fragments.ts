@@ -7,11 +7,9 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
         id
         label
     }
+    inputOfId
+    outputOfId
     providerId
-    provider {
-        id
-        name
-    }
     receiverId
     resourceQuantity {
         hasNumericalValue
