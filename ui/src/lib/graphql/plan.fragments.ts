@@ -309,6 +309,7 @@ export const PLAN_RETURN_FIELDS = gql`
         id
         label
       }
+      finished
       fulfilledBy {
         id
       }

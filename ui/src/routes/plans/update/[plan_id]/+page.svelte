@@ -521,62 +521,66 @@ bind:open={economicEventModalOpen}
       // =============================ON UPDATE REGULAR=============================
         let previousCostAgreement = event.detail.commitment.clauseOf //preexisting cost
         if (event.detail.saveCost) {
-          if (previousCostAgreement) { // delete preexisting cost
-            // TODO: delete cost agreement immediately
-            agreementsToDelete.push(previousCostAgreement.revisionId)
-            commitmentsToDelete.push(previousCostAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
-          }
-          
-          let newCostAgreement = makeAgreement(event.detail.commitment, previousCostAgreement, offers, agents)
-
-          let primaryIntent = newCostAgreement.primaryIntent
-
-          // fill out requestsPerOffer to calculate overall cost
-          if (!requestsPerOffer[primaryIntent.id]) { requestsPerOffer[primaryIntent.id] = {} }
-          if (event.detail.commitment.action.label == "pickup") {
-            requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
-          }
-
-          // add cost to commitment visually
-          if (newCostAgreement) {
-            event.detail.commitment.clauseOf = {commitments: [newCostAgreement.commitment]}
-            // actually save cost agreement
-            const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
-            let agreement = {
-              name: "Cost agreement",
-              note: "Cost agreement",
+          try {
+            if (previousCostAgreement) { // delete preexisting cost
+              // TODO: delete cost agreement immediately
+              agreementsToDelete.push(previousCostAgreement.revisionId)
+              commitmentsToDelete.push(previousCostAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
             }
-            let savedAgreement = await createAgreement(agreement);
-            event.detail.commitment.clauseOfId = savedAgreement?.id
-            console.log("saved agreement", savedAgreement)
-            console.log("cost commitment", newCostAgreement)
-            // add agreement to commitment
-            let updateCommitmentInput = {
-              revisionId: event.detail.commitment.revisionId,
-              clauseOf: savedAgreement?.id
+            
+            let newCostAgreement = makeAgreement(event.detail.commitment, previousCostAgreement, offers, agents)
+
+            let primaryIntent = newCostAgreement.primaryIntent
+
+            // fill out requestsPerOffer to calculate overall cost
+            if (!requestsPerOffer[primaryIntent.id]) { requestsPerOffer[primaryIntent.id] = {} }
+            if (event.detail.commitment.action.label == "pickup") {
+              requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
             }
-            console.log("update commitment input", updateCommitmentInput)
-            // let x = await updateCommitment(updateCommitmentInput)
-            // console.log(x)
-            let c = event.detail.commitment;
-            console.log("commitment", c)
-            let paymentCommitment = {
-              clauseOf: savedAgreement?.id,
-              action: "transfer",
-              provider: c.receiverId,
-              receiver: c.providerId,
-              plannedWithin: planId,
-              resourceConformsTo: dollars?.id,
-              resourceQuantity: {
-                hasNumericalValue: Number(newCostAgreement.commitment?.resourceQuantity?.hasNumericalValue),
-                hasUnit: newCostAgreement.primaryIntent?.publishes?.resourceQuantity?.hasUnit?.id
-              },
-              finished: false,
-              note: "payment",
-              hasBeginning: new Date(Date.now()),
+
+            // add cost to commitment visually
+            if (newCostAgreement) {
+              event.detail.commitment.clauseOf = {commitments: [newCostAgreement.commitment]}
+              // actually save cost agreement
+              const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
+              let agreement = {
+                name: "Cost agreement",
+                note: "Cost agreement",
+              }
+              let savedAgreement = await createAgreement(agreement);
+              event.detail.commitment.clauseOfId = savedAgreement?.id
+              console.log("saved agreement", savedAgreement)
+              console.log("cost commitment", newCostAgreement)
+              // add agreement to commitment
+              let updateCommitmentInput = {
+                revisionId: event.detail.commitment.revisionId,
+                clauseOf: savedAgreement?.id
+              }
+              console.log("update commitment input", updateCommitmentInput)
+              // let x = await updateCommitment(updateCommitmentInput)
+              // console.log(x)
+              let c = event.detail.commitment;
+              console.log("commitment", c)
+              let paymentCommitment = {
+                clauseOf: savedAgreement?.id,
+                action: "transfer",
+                provider: c.receiverId,
+                receiver: c.providerId,
+                plannedWithin: planId,
+                resourceConformsTo: dollars?.id,
+                resourceQuantity: {
+                  hasNumericalValue: Number(newCostAgreement.commitment?.resourceQuantity?.hasNumericalValue),
+                  hasUnit: newCostAgreement.primaryIntent?.publishes?.resourceQuantity?.hasUnit?.id
+                },
+                finished: false,
+                note: "payment",
+                hasBeginning: new Date(Date.now()),
+              }
+              console.log("payment commitment", paymentCommitment)
+              let savedPaymentCommitment = await createCommitment(paymentCommitment)
             }
-            console.log("payment commitment", paymentCommitment)
-            let savedPaymentCommitment = await createCommitment(paymentCommitment)
+          } catch (e) {
+            console.log("Couldn't find cost", e)
           }
         }
 

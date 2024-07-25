@@ -461,7 +461,7 @@
                 {/if}
 
                 <!-- save cost? checkbox -->
-                {#if commitmentModalColumn != undefined}
+                {#if commitmentModalProcess != undefined}
                 <div class="mt-4 flex items-center">
                   <input
                     id="save_cost"
