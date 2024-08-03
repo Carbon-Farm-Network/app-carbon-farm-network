@@ -192,6 +192,7 @@
         let newInventoriedResource: EconomicResourceCreateParams = {
           name: resourceSpecification?.name,
           note: commitment.note,
+          stage: processId,
           image: resourceSpecification?.image,
           conformsTo: resourceSpecification?.id
         }

@@ -57,14 +57,14 @@ importers:
         specifier: ^0.17.0-dev.7
         version: 0.17.0-dev.8(bufferutil@4.0.8)
       '@leosprograms/graphql-client-holochain':
-        specifier: ^0.5.7
-        version: 0.5.7(@apollo/client@3.9.10)(graphql@15.8.0)
+        specifier: ^0.6.1
+        version: 0.6.1(@apollo/client@3.9.10)(graphql@15.8.0)
       '@leosprograms/vf-graphql':
         specifier: ^0.9.0-alpha.11
         version: 0.9.0-alpha.11(graphql@15.8.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: ^0.5.7
-        version: 0.5.7(graphql@15.8.0)
+        specifier: ^0.6.1
+        version: 0.6.1(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.16.2
         version: 0.16.2(bufferutil@4.0.8)
@@ -1207,8 +1207,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@leosprograms/graphql-client-holochain@0.5.7(@apollo/client@3.9.10)(graphql@15.8.0):
-    resolution: {integrity: sha512-15AkGsD35YabTauaQc0XZmFetGcpiHaz+pfekHggIoCrfrB2XGxkbFHu2J3+8iiW+6a2fYexpJ2+bnfQougidw==}
+  /@leosprograms/graphql-client-holochain@0.6.1(@apollo/client@3.9.10)(graphql@15.8.0):
+    resolution: {integrity: sha512-UJ+q5OmcFoEJ2V/JklcG31Itx6u9hhzPItXN5K7rUMp4C+iDytvXyKXxG2sF9+lRHo/AWB1TeYS9Q9SS89fjEA==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '14'
@@ -1216,7 +1216,7 @@ packages:
       '@apollo/client': 3.9.10(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(graphql@15.8.0)
       '@holochain/client': 0.17.0-dev.9(bufferutil@4.0.8)
-      '@leosprograms/vf-graphql-holochain': 0.5.7(graphql@15.8.0)
+      '@leosprograms/vf-graphql-holochain': 0.6.1(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -1229,8 +1229,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql-holochain@0.5.7(graphql@15.8.0):
-    resolution: {integrity: sha512-3R4I+vr80HuyR0ED99Bu/FSdZ6GPPduKc5zLRZ77/zyuW7gjLDWYkeEx1Ak8X5fJSPAc9uF+myHNL8RZzAyC6w==}
+  /@leosprograms/vf-graphql-holochain@0.6.1(graphql@15.8.0):
+    resolution: {integrity: sha512-w3xJl2uKohKOc2tyIOGUR/MwnDMzXOWPcbT/N8l3/vT4E+ggQztzo9l67I8IFHzAFv8NOzmQhsTHOknjatEJIg==}
     peerDependencies:
       graphql: '14'
     dependencies:

@@ -8,6 +8,7 @@ export const ECONOMIC_RESOURCE_RETURN_FIELDS = gql`
     conformsTo {
       id
     }
+    stageId
     accountingQuantity {
       hasNumericalValue
       hasUnit {

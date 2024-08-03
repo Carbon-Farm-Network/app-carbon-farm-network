@@ -45,11 +45,16 @@
                 class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
                 >Name</th
               >
-              <th
+              <!-- <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Note</th
-              >
+              > -->
+              <!-- <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >Stage</th
+              > -->
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -68,9 +73,12 @@
                   {economicResource?.name}
                   <!-- {economicResource.id} -->
                 </td>
-                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                <!-- <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                   {economicResource?.note}
-                </td>
+                </td> -->
+                <!-- <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {JSON.stringify(economicResource?.stageId)}
+                </td> -->
                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                   {economicResource?.accountingQuantity?.hasNumericalValue} 
                   {units.find(unit => unit.id === economicResource.accountingQuantity?.hasUnit?.id)?.label}

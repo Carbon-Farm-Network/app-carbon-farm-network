@@ -116,9 +116,7 @@
 
   export async function createRequest(proposal: any, localIntent: any, localReciprocalIntent: any) {
     
-    console.log("1")
     const res1 = await addProposal({ variables: { proposal } })
-    console.log("2")
     const res1ID: String = String(res1.data.createProposal.proposal.id)
 
     // create intent
