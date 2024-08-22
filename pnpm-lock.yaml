@@ -16,7 +16,7 @@ importers:
         version: 0.200.10
       '@lightningrodlabs/we-dev-cli':
         specifier: ^0.11.0
-        version: 0.11.4(@types/node@20.12.5)(electron@29.2.0)(typescript@5.4.4)
+        version: 0.11.4(@types/node@22.5.0)(electron@32.0.1)(typescript@5.5.4)
       '@types/svelte-leafletjs':
         specifier: ^0.8.3
         version: 0.8.7
@@ -26,6 +26,9 @@ importers:
       new-port-cli:
         specifier: ^1.0.0
         version: 1.0.0
+      npm-check-updates:
+        specifier: 17.1.0
+        version: 17.1.0
       rimraf:
         specifier: ^3.0.2
         version: 3.0.2
@@ -34,7 +37,7 @@ importers:
     dependencies:
       '@holochain/client':
         specifier: ^0.12.2
-        version: 0.12.8(ws@8.16.0)
+        version: 0.12.8(ws@8.18.0)
       '@holochain/tryorama':
         specifier: ^0.11.0
         version: 0.11.2
@@ -57,14 +60,14 @@ importers:
         specifier: ^0.17.0-dev.7
         version: 0.17.0-dev.8(bufferutil@4.0.8)
       '@leosprograms/graphql-client-holochain':
-        specifier: ^0.6.1
-        version: 0.6.1(@apollo/client@3.9.10)(graphql@15.8.0)
+        specifier: 0.6.6
+        version: 0.6.6(@apollo/client@3.9.10)(graphql@15.8.0)
       '@leosprograms/vf-graphql':
         specifier: ^0.9.0-alpha.11
         version: 0.9.0-alpha.11(graphql@15.8.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: ^0.6.1
-        version: 0.6.1(graphql@15.8.0)
+        specifier: 0.6.6
+        version: 0.6.6(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.16.2
         version: 0.16.2(bufferutil@4.0.8)
@@ -107,7 +110,7 @@ importers:
     devDependencies:
       '@lightningrodlabs/we-dev-cli':
         specifier: ^0.11.11-dev.3
-        version: 0.11.15(@types/node@20.12.5)(typescript@5.4.4)
+        version: 0.11.15(@types/node@22.5.0)(typescript@5.4.4)
       '@rollup/plugin-replace':
         specifier: ^4.0.0
         version: 4.0.0(rollup@2.79.1)
@@ -188,7 +191,7 @@ importers:
         version: 5.4.4
       vite:
         specifier: ^4.3.5
-        version: 4.5.3(@types/node@20.12.5)
+        version: 4.5.3(@types/node@22.5.0)
       vitest:
         specifier: ^0.25.3
         version: 0.25.8
@@ -646,12 +649,12 @@ packages:
       electron: 25.9.8
     dev: true
 
-  /@electron-toolkit/preload@2.0.0(electron@29.2.0):
+  /@electron-toolkit/preload@2.0.0(electron@32.0.1):
     resolution: {integrity: sha512-zpZDzbqJTZQC5d4LRs2EKruKWnqah+T75s+niBYFemYLtiW5TTZcWi3Q8UxHqnwTudDMuWJb233aaS2yjx3Xiw==}
     peerDependencies:
       electron: '>=13.0.0'
     dependencies:
-      electron: 29.2.0
+      electron: 32.0.1
     dev: true
 
   /@electron-toolkit/preload@3.0.1(electron@28.2.10):
@@ -670,12 +673,12 @@ packages:
       electron: 25.9.8
     dev: true
 
-  /@electron-toolkit/utils@2.0.1(electron@29.2.0):
+  /@electron-toolkit/utils@2.0.1(electron@32.0.1):
     resolution: {integrity: sha512-3nnjd3D1NIjxdzNrvR5fkJ3kbJNbRkpHppv0/pSbMX6I0DaBzpPXeSfDYuJJKzZrAc3CmGcJa0MU4+AjEOlT4g==}
     peerDependencies:
       electron: '>=13.0.0'
     dependencies:
-      electron: 29.2.0
+      electron: 32.0.1
     dev: true
 
   /@electron-toolkit/utils@3.0.0(electron@28.2.10):
@@ -1004,6 +1007,22 @@ packages:
       - ws
     dev: false
 
+  /@holochain/client@0.12.8(ws@8.18.0):
+    resolution: {integrity: sha512-fa6yC5fFRBWFnz8QNSIn0V+js5IN0fTR9Gwxc4F552AQ4KVEhynM+ROkDOswT77/mDVpKyr5FBI7X+FEKqcM0Q==}
+    engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
+    dependencies:
+      '@holochain/serialization': 0.1.0-beta-rc.3
+      '@msgpack/msgpack': 2.8.0
+      '@tauri-apps/api': 1.5.3
+      emittery: 1.0.3
+      isomorphic-ws: 5.0.0(ws@8.18.0)
+      js-base64: 3.7.7
+      lodash-es: 4.17.21
+      tweetnacl: 1.0.3
+    transitivePeerDependencies:
+      - ws
+    dev: false
+
   /@holochain/client@0.16.10:
     resolution: {integrity: sha512-Urgx6vXNux2XD/4+eOxou2FKwlUBu/g/BxUSZLX6wEaYWH9wDYXR5f3VToUrAhXGF5ssc08jb8jLiQZ23k62EQ==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
@@ -1207,8 +1226,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@leosprograms/graphql-client-holochain@0.6.1(@apollo/client@3.9.10)(graphql@15.8.0):
-    resolution: {integrity: sha512-UJ+q5OmcFoEJ2V/JklcG31Itx6u9hhzPItXN5K7rUMp4C+iDytvXyKXxG2sF9+lRHo/AWB1TeYS9Q9SS89fjEA==}
+  /@leosprograms/graphql-client-holochain@0.6.6(@apollo/client@3.9.10)(graphql@15.8.0):
+    resolution: {integrity: sha512-YwWUo9LNKjD1T7a+XzM7P50bjvJI+Bc6TRgdLvP0EzHkAuT5Pquy6M3PS7L6I0Msz7nwO/+6als39wV7uaVvlg==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '14'
@@ -1216,7 +1235,7 @@ packages:
       '@apollo/client': 3.9.10(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(graphql@15.8.0)
       '@holochain/client': 0.17.0-dev.9(bufferutil@4.0.8)
-      '@leosprograms/vf-graphql-holochain': 0.6.1(graphql@15.8.0)
+      '@leosprograms/vf-graphql-holochain': 0.6.6(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -1229,8 +1248,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql-holochain@0.6.1(graphql@15.8.0):
-    resolution: {integrity: sha512-w3xJl2uKohKOc2tyIOGUR/MwnDMzXOWPcbT/N8l3/vT4E+ggQztzo9l67I8IFHzAFv8NOzmQhsTHOknjatEJIg==}
+  /@leosprograms/vf-graphql-holochain@0.6.6(graphql@15.8.0):
+    resolution: {integrity: sha512-EfI6fDnmmxH6VWMwshr/OG9ryIehxaJWO3b596h1XVKm6xkwRbTb6CS+xeIAEVa7IsJ0bX8UC+Dh/E7qUkfatQ==}
     peerDependencies:
       graphql: '14'
     dependencies:
@@ -1284,7 +1303,7 @@ packages:
       - bufferutil
       - utf-8-validate
 
-  /@lightningrodlabs/we-dev-cli@0.11.15(@types/node@20.12.5)(typescript@5.4.4):
+  /@lightningrodlabs/we-dev-cli@0.11.15(@types/node@22.5.0)(typescript@5.4.4):
     resolution: {integrity: sha512-N2eRDjwKIucd+vizRyJNN+/kQZKUdhipJau6DpuOO9ztRAEQ1FpvWrLsN6vAHCZxpV0WZOup34WnDZbwn3TU/w==}
     hasBin: true
     requiresBuild: true
@@ -1303,7 +1322,7 @@ packages:
       mime: 4.0.0
       nanoid: 5.0.4
       split: 1.0.1
-      ts-node: 10.9.2(@types/node@20.12.5)(typescript@5.4.4)
+      ts-node: 10.9.2(@types/node@22.5.0)(typescript@5.4.4)
       winston: 3.11.0
     transitivePeerDependencies:
       - '@swc/core'
@@ -1314,13 +1333,13 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@lightningrodlabs/we-dev-cli@0.11.4(@types/node@20.12.5)(electron@29.2.0)(typescript@5.4.4):
+  /@lightningrodlabs/we-dev-cli@0.11.4(@types/node@22.5.0)(electron@32.0.1)(typescript@5.5.4):
     resolution: {integrity: sha512-jZgyGHVILXJHnkB8SBjwNBoMLCTzI9pCJ9a9P6aQ42/4NeLLv29ocqVCkXSbgYGVTXZCJjKJeGeyLjExB+sIBQ==}
     hasBin: true
     requiresBuild: true
     dependencies:
-      '@electron-toolkit/preload': 2.0.0(electron@29.2.0)
-      '@electron-toolkit/utils': 2.0.1(electron@29.2.0)
+      '@electron-toolkit/preload': 2.0.0(electron@32.0.1)
+      '@electron-toolkit/utils': 2.0.1(electron@32.0.1)
       '@holochain-open-dev/utils': 0.300.0-dev.0(bufferutil@4.0.8)
       '@holochain/client': 0.17.0-dev.8(bufferutil@4.0.8)
       '@lightningrodlabs/we-applet': 0.16.0(bufferutil@4.0.8)
@@ -1331,7 +1350,7 @@ packages:
       mime: 4.0.0
       nanoid: 5.0.4
       split: 1.0.1
-      ts-node: 10.9.2(@types/node@20.12.5)(typescript@5.4.4)
+      ts-node: 10.9.2(@types/node@22.5.0)(typescript@5.5.4)
       winston: 3.11.0
     transitivePeerDependencies:
       - '@swc/core'
@@ -1529,7 +1548,7 @@ packages:
       svelte: 3.59.2
       tiny-glob: 0.2.9
       undici: 5.28.4
-      vite: 4.5.3(@types/node@20.12.5)
+      vite: 4.5.3(@types/node@22.5.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1545,7 +1564,7 @@ packages:
       '@sveltejs/vite-plugin-svelte': 2.5.3(svelte@3.59.2)(vite@4.5.3)
       debug: 4.3.4
       svelte: 3.59.2
-      vite: 4.5.3(@types/node@20.12.5)
+      vite: 4.5.3(@types/node@22.5.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1564,7 +1583,7 @@ packages:
       magic-string: 0.30.9
       svelte: 3.59.2
       svelte-hmr: 0.15.3(svelte@3.59.2)
-      vite: 4.5.3(@types/node@20.12.5)
+      vite: 4.5.3(@types/node@22.5.0)
       vitefu: 0.2.5(vite@4.5.3)
     transitivePeerDependencies:
       - supports-color
@@ -1674,6 +1693,18 @@ packages:
     resolution: {integrity: sha512-BD+BjQ9LS/D8ST9p5uqBxghlN+S42iuNxjsUGjeZobe/ciXzk2qb1B6IXc6AnRLS+yFJRpN2IPEHMzwspfDJNw==}
     dependencies:
       undici-types: 5.26.5
+
+  /@types/node@20.16.1:
+    resolution: {integrity: sha512-zJDo7wEadFtSyNz5QITDfRcrhqDvQI1xQNQ0VoizPjM/dVAODqqIUWbJPkvsxmTI0MYRGRikcdjMPhOssnPejQ==}
+    dependencies:
+      undici-types: 6.19.8
+    dev: true
+
+  /@types/node@22.5.0:
+    resolution: {integrity: sha512-DkFrJOe+rfdHTqqMg0bSNlGlQ85hSoh2TPzZyhHsXnMtligRWpxUySiyw8FY14ITt24HVCiQPWxS3KO/QlGmWg==}
+    dependencies:
+      undici-types: 6.19.8
+    dev: true
 
   /@types/pug@2.0.10:
     resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
@@ -3092,14 +3123,14 @@ packages:
       - supports-color
     dev: true
 
-  /electron@29.2.0:
-    resolution: {integrity: sha512-ALKrCN52RG4g9prx4DriXSPnY5WoiyRUCNp7zEVQuoiNOpHTNqMMpRidQAHzntV4hajF1LMWHVoBkwqIs1jHhg==}
+  /electron@32.0.1:
+    resolution: {integrity: sha512-5Hd5Jaf9niYVR2hZxoRd3gOrcxPOxQV1XPV5WaoSfT9jLJHFadhlKtuSDIk3U6rQZke+aC7GqPPAv55nWFCMsA==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 20.12.5
+      '@types/node': 20.16.1
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -3843,6 +3874,14 @@ packages:
     dependencies:
       ws: 8.16.0(bufferutil@4.0.8)
 
+  /isomorphic-ws@5.0.0(ws@8.18.0):
+    resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
+    peerDependencies:
+      ws: '*'
+    dependencies:
+      ws: 8.18.0
+    dev: false
+
   /jackspeak@2.3.6:
     resolution: {integrity: sha512-N3yCS/NegsOBokc8GAdM8UcmfsKiSS8cipheD/nivzr700H+nsMOxJjQnvwOcRYVuFkdH0wGUvW2WbXGmrZGbQ==}
     engines: {node: '>=14'}
@@ -4346,6 +4385,12 @@ packages:
   /normalize-url@6.1.0:
     resolution: {integrity: sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==}
     engines: {node: '>=10'}
+    dev: true
+
+  /npm-check-updates@17.1.0:
+    resolution: {integrity: sha512-RcohCA/tdpxyPllBlYDkqGXFJQgTuEt0f2oPSL9s05pZ3hxYdleaUtvEcSxKl0XAg3ncBhVgLAxhXSjoryUU5Q==}
+    engines: {node: ^18.18.0 || >=20.0.0, npm: '>=8.12.1'}
+    hasBin: true
     dev: true
 
   /npm-run-path@5.3.0:
@@ -6006,7 +6051,7 @@ packages:
       tslib: 1.14.1
     dev: true
 
-  /ts-node@10.9.2(@types/node@20.12.5)(typescript@5.4.4):
+  /ts-node@10.9.2(@types/node@22.5.0)(typescript@5.4.4):
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
     hasBin: true
     peerDependencies:
@@ -6025,7 +6070,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 20.12.5
+      '@types/node': 22.5.0
       acorn: 8.11.3
       acorn-walk: 8.3.2
       arg: 4.1.3
@@ -6033,6 +6078,37 @@ packages:
       diff: 4.0.2
       make-error: 1.3.6
       typescript: 5.4.4
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: true
+
+  /ts-node@10.9.2(@types/node@22.5.0)(typescript@5.5.4):
+    resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.11
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 22.5.0
+      acorn: 8.11.3
+      acorn-walk: 8.3.2
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.5.4
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
@@ -6090,12 +6166,22 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  /typescript@5.5.4:
+    resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+    dev: true
+
   /ufo@1.5.3:
     resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}
     dev: false
 
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
+  /undici-types@6.19.8:
+    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+    dev: true
 
   /undici@5.28.4:
     resolution: {integrity: sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==}
@@ -6214,6 +6300,42 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
 
+  /vite@4.5.3(@types/node@22.5.0):
+    resolution: {integrity: sha512-kQL23kMeX92v3ph7IauVkXkikdDRsYMGTVl5KY2E9OY4ONLvkHf04MDTbnfo6NKxZiDLWzVpP5oTa8hQD8U3dg==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 22.5.0
+      esbuild: 0.18.20
+      postcss: 8.4.38
+      rollup: 3.29.4
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
   /vitefu@0.2.5(vite@4.5.3):
     resolution: {integrity: sha512-SgHtMLoqaeeGnd2evZ849ZbACbnwQCIwRH57t18FxcXoZop0uQu0uzlIhJBlF/eWVzuce0sHeqPcDo+evVcg8Q==}
     peerDependencies:
@@ -6222,7 +6344,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      vite: 4.5.3(@types/node@20.12.5)
+      vite: 4.5.3(@types/node@22.5.0)
     dev: true
 
   /vitest@0.25.8:
@@ -6418,6 +6540,19 @@ packages:
         optional: true
     dependencies:
       bufferutil: 4.0.8
+
+  /ws@8.18.0:
+    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+    dev: false
 
   /y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}

@@ -92,11 +92,14 @@ export async function load() {
         cellID = cellIds[0]
         console.log("CELL IDS",cellIds)
         await adminWebsocket.authorizeSigningCredentials(cellIds[0])
+        await adminWebsocket.authorizeSigningCredentials(cellIds[1])
+        await adminWebsocket.authorizeSigningCredentials(cellIds[2])
+        console.log("authorized three cells")
       } else {
         console.log("no admin port")
       }
  
-      console.log('hi', new URL(url))
+      console.log('new url', new URL(url))
       // pull DNA config separately in order to bind to CFN-specific extension Cells
       const conn = await AppWebsocket.connect({url: new URL(url)})
       // const conn = await AppWebsocket.connect(ENV_CONNECTION_URI)
