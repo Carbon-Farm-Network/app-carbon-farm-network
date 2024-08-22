@@ -634,7 +634,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Alpaca"
           },
           "stage": {
             "name": ""
@@ -706,7 +706,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Alpaca"
           },
           "stage": {
             "name": ""
@@ -778,7 +778,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Alpaca"
           },
           "stage": {
             "name": ""
@@ -850,7 +850,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Wool"
           },
           "stage": {
             "name": ""
@@ -1631,7 +1631,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Alpaca"
           },
           "stage": {
             "name": "Scour Fiber"
@@ -1678,7 +1678,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Alpaca"
           },
           "stage": {
             "name": "Scour Fiber"
@@ -1725,7 +1725,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Alpaca"
           },
           "stage": {
             "name": "Scour Fiber"
@@ -1772,7 +1772,7 @@
           },
           "action": {"label": "deliver_service"},
           "resourceConformsTo": {
-            "name": "Scouring Service"
+            "name": "Scouring Service Wool"
           },
           "stage": {
             "name": "Scour Fiber"
