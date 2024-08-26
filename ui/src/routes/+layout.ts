@@ -10,7 +10,7 @@ import type { ExtendedDnaConfig } from '$lib/graphql/extension-resolvers'
 import type { AppSignalCb, CellId } from '@holochain/client'
 import { appletServices } from '../../we';
 import { onMount } from 'svelte';
-import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { ApolloClient } from "@apollo/client/core";
 import { setClient } from "../crud/store"
 
@@ -19,7 +19,7 @@ const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
 const adminPort = import.meta.env.VITE_ADMIN_PORT
 const appPort = import.meta.env.VITE_APP_PORT
 const url = `ws://localhost:${appPort}`;
-let weClient: WeClient
+let weClient: WeaveClient
 let client: AppAgentWebsocket
 let createView
 let connected = false
@@ -48,10 +48,14 @@ export async function load() {
   }
   try {
     if (isWeContext()) {
-      weClient = await WeClient.connect(appletServices);
+      weClient = await WeaveClient.connect(appletServices);
       const weAppId = weClient.renderInfo.appletClient.installedAppId
-      let weAppWebsocket = weClient.renderInfo.appletClient.appWebsocket
-      const weAppWebsocketUrl = weAppWebsocket.client.url
+      console.log("weClient", weClient.renderInfo)
+      // let weAppWebsocket = weClient.renderInfo.appletClient.appWebsocket
+      // const weAppWebsocketUrl = weAppWebsocket.client.url
+      let weAppWebsocket = weClient.renderInfo.appletClient.client
+      const weAppWebsocketUrl = weAppWebsocket.socket.url
+      console.log("weAppWebsocketUrl", weAppWebsocketUrl)
       const { dnaConfig } = await sniffHolochainAppCells(weAppWebsocket, weAppId)
 
       const extensionResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, weAppWebsocketUrl)

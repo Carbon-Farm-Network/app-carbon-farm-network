@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag'
 import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams, EconomicEvent } from '@valueflows/vf-graphql'
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
-import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
 import { getAllHashChanges } from './fetch'
 import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
@@ -21,7 +21,7 @@ clientStored.subscribe(value => {
 
 export async function addHashChange(original: string, newHash: string) {
   if (isWeContext()) {
-      let weClient = await WeClient.connect(appletServices);
+      let weClient = await WeaveClient.connect(appletServices);
       await weClient.renderInfo.appletClient.callZome({
           cap_secret: null,
           role_name: 'migration',

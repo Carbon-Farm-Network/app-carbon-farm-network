@@ -10,7 +10,7 @@ import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
 import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments } from './store'
-import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
 import { decode } from '@msgpack/msgpack';
 import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client'
@@ -28,7 +28,7 @@ type HashChange = {
 
 export async function getAllHashChanges() {
   if (isWeContext()) {
-      let weClient = await WeClient.connect(appletServices);
+      let weClient = await WeaveClient.connect(appletServices);
       let res = await weClient.renderInfo.appletClient.callZome({
           cap_secret: null,
           role_name: 'migration',

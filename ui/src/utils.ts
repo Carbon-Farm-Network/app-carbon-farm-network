@@ -1,6 +1,6 @@
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './crud/store'
 // import { mutation, query } from 'svelte-apollo'
-import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../we';
 import { decode } from '@msgpack/msgpack';
 
@@ -12,7 +12,7 @@ type HashChange = {
 
 export async function getAllHashChanges() {
   if (isWeContext()) {
-      let weClient = await WeClient.connect(appletServices);
+      let weClient = await WeaveClient.connect(appletServices);
       let res = await weClient.renderInfo.appletClient.callZome({
           cap_secret: null,
           role_name: 'migration',

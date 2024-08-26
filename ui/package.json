@@ -15,7 +15,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.14",
     "@holochain/client": "^0.17.0-dev.7",
-    "@lightningrodlabs/we-applet": "^0.16.2",
+    "@lightningrodlabs/we-applet": "^0.17.1",
     "@msgpack/msgpack": "^2.7.2",
     "@tailwindcss/forms": "^0.5.3",
     "@vaadin/date-time-picker": "^23.3.13",
@@ -33,7 +33,6 @@
     "@svelte-put/dragscroll": "^3.0.0"
   },
   "devDependencies": {
-    "@lightningrodlabs/we-dev-cli": "^0.11.11-dev.3",
     "@rollup/plugin-replace": "^4.0.0",
     "@sveltejs/adapter-static": "^2.0.1",
     "@sveltejs/kit": "^1.16.3",

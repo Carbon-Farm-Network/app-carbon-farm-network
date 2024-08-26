@@ -1,7 +1,7 @@
 <script lang="ts">
 import { browser } from '$app/environment'
 import { setClient } from 'svelte-apollo'
-import { WeClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { getAllHashChanges } from '../crud/fetch';
 import { allHashChanges } from '../crud/store';
 
