@@ -326,7 +326,7 @@ const getFulfillments = async () => {
   }
 
   if (isWeContext()) {
-    let weClient = await WeClient.connect(appletServices);
+    let weClient = await WeaveClient.connect(appletServices);
     let res = await weClient.renderInfo.appletClient.callZome({
         cap_secret: null,
         role_name: 'hrea_combined_0',

@@ -55,50 +55,50 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         }
         FlatOp::RegisterUpdate(update_entry) => {
             match update_entry {
-                OpUpdate::Entry {
-                    original_action,
-                    original_app_entry,
-                    app_entry,
-                    action,
-                } => {
-                    match (app_entry, original_app_entry) {
-                        (
-                            EntryTypes::HashChange(hash_change),
-                            EntryTypes::HashChange(original_hash_change),
-                        ) => {
-                            validate_update_hash_change(
-                                action,
-                                hash_change,
-                                original_action,
-                                original_hash_change,
-                            )
-                        }
-                        _ => {
-                            Ok(
-                                ValidateCallbackResult::Invalid(
-                                    "Original and updated entry types must be the same"
-                                        .to_string(),
-                                ),
-                            )
-                        }
-                    }
-                }
+                // OpUpdate::Entry {
+                //     original_action,
+                //     original_app_entry,
+                //     app_entry,
+                //     action,
+                // } => {
+                //     match (app_entry, original_app_entry) {
+                //         (
+                //             EntryTypes::HashChange(hash_change),
+                //             EntryTypes::HashChange(original_hash_change),
+                //         ) => {
+                //             validate_update_hash_change(
+                //                 action,
+                //                 hash_change,
+                //                 original_action,
+                //                 original_hash_change,
+                //             )
+                //         }
+                //         _ => {
+                //             Ok(
+                //                 ValidateCallbackResult::Invalid(
+                //                     "Original and updated entry types must be the same"
+                //                         .to_string(),
+                //                 ),
+                //             )
+                //         }
+                //     }
+                // }
                 _ => Ok(ValidateCallbackResult::Valid),
             }
         }
         FlatOp::RegisterDelete(delete_entry) => {
             match delete_entry {
-                OpDelete::Entry { original_action, original_app_entry, action } => {
-                    match original_app_entry {
-                        EntryTypes::HashChange(hash_change) => {
-                            validate_delete_hash_change(
-                                action,
-                                original_action,
-                                hash_change,
-                            )
-                        }
-                    }
-                }
+                // OpDelete::Entry { original_action, original_app_entry, action } => {
+                //     match original_app_entry {
+                //         EntryTypes::HashChange(hash_change) => {
+                //             validate_delete_hash_change(
+                //                 action,
+                //                 original_action,
+                //                 hash_change,
+                //             )
+                //         }
+                //     }
+                // }
                 _ => Ok(ValidateCallbackResult::Valid),
             }
         }

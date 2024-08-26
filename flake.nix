@@ -1,8 +1,8 @@
 {
-  description = "Commodity chain management and accounting on Holochain";
+  description = "Template for Holochain app development";
 
   inputs = {
-    holochain-nix-versions.url  = "github:holochain/holochain/?dir=versions/weekly";
+    holochain-nix-versions.url  = "github:holochain/holochain/?dir=versions/0_3";
     holochain-flake = {
       url = "github:holochain/holochain";
       inputs.versions.follows = "holochain-nix-versions";
@@ -12,8 +12,8 @@
     flake-parts.follows = "holochain-flake/flake-parts";
   };
 
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake
+  outputs = inputs @ { flake-parts, holochain-flake, ... }:
+    flake-parts.lib.mkFlake
       {
         inherit inputs;
       }
@@ -29,10 +29,9 @@
             devShells.default = pkgs.mkShell {
               inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
               packages = with pkgs; [
-                nodejs-18_x
+                pkgs.nodejs-18_x
                 nodePackages.pnpm
               ];
-              GIO_MODULE_DIR="${pkgs.glib-networking}/lib/gio/modules/";
             };
           };
       };

@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit'
 // import autoConnect from '@vf-ui/graphql-client-mock' // enable to use in-memory mock API
 import autoConnect from '@leosprograms/graphql-client-holochain'
 import { openConnection, sniffHolochainAppCells } from '@leosprograms/vf-graphql-holochain'
-import { AppWebsocket, AdminWebsocket, AppAgentWebsocket } from '@holochain/client'
+import { AppWebsocket, AdminWebsocket } from '@holochain/client'
 import extensionSchemas from '$lib/graphql/extension-schemas'
 import bindResolvers from '$lib/graphql/extension-resolvers'
 import type { ExtendedDnaConfig } from '$lib/graphql/extension-resolvers'
@@ -20,7 +20,7 @@ const adminPort = import.meta.env.VITE_ADMIN_PORT
 const appPort = import.meta.env.VITE_APP_PORT
 const url = `ws://localhost:${appPort}`;
 let weClient: WeaveClient
-let client: AppAgentWebsocket
+let client: AppWebsocket
 let createView
 let connected = false
 
@@ -50,18 +50,26 @@ export async function load() {
     if (isWeContext()) {
       weClient = await WeaveClient.connect(appletServices);
       const weAppId = weClient.renderInfo.appletClient.installedAppId
-      console.log("weClient", weClient.renderInfo)
-      // let weAppWebsocket = weClient.renderInfo.appletClient.appWebsocket
-      // const weAppWebsocketUrl = weAppWebsocket.client.url
-      let weAppWebsocket = weClient.renderInfo.appletClient.client
-      const weAppWebsocketUrl = weAppWebsocket.socket.url
+      console.log("weClient", {...weClient.renderInfo.appletClient, callZome: weClient.renderInfo.appletClient.callZome})
+      const weAppWebsocketUrl = weClient.renderInfo.appletClient.client.url
       console.log("weAppWebsocketUrl", weAppWebsocketUrl)
-      const { dnaConfig } = await sniffHolochainAppCells(weAppWebsocket, weAppId)
+      const mockConn = {
+        ...weClient.renderInfo.appletClient.client,
+        appInfo: async ({ installed_app_id }) => {
+          return {
+            cell_info: weClient.renderInfo.appletClient.cachedAppInfo.cell_info
+          }
+        }
+      }
+      const { dnaConfig } = await sniffHolochainAppCells(mockConn, weAppId)
+      console.log("dna config", dnaConfig)
 
       const extensionResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, weAppWebsocketUrl)
 
       const autoConnectInput = {
-        weaveAppAgentClient: weClient.renderInfo.appletClient,
+        weaveAppAgentClient: {...weClient.renderInfo.appletClient, 
+          callZome: weClient.renderInfo.appletClient.callZome,
+          appWebsocket: mockConn},
         appID: weAppId,
         extensionSchemas,
         extensionResolvers,
@@ -69,9 +77,12 @@ export async function load() {
         adminConductorUri: undefined,
       }
 
+      console.log("autoconnect input", autoConnectInput)
+
       const output = await autoConnect(autoConnectInput)
       // autoconnect ends
 
+      console.log("output", output)
       await setClient(output)
 
       return {

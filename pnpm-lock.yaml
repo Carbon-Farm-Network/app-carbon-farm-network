@@ -57,17 +57,17 @@ importers:
         specifier: ^3.7.14
         version: 3.9.10(@types/react@18.3.4)(graphql@15.8.0)
       '@holochain/client':
-        specifier: ^0.17.0-dev.7
-        version: 0.17.0-dev.8
+        specifier: ^0.18.0-dev.0
+        version: 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@leosprograms/graphql-client-holochain':
-        specifier: 0.6.6
-        version: 0.6.6(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0)
+        specifier: 0.6.12
+        version: 0.6.12(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0)
       '@leosprograms/vf-graphql':
         specifier: ^0.9.0-alpha.11
         version: 0.9.0-alpha.11(graphql@15.8.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.6.6
-        version: 0.6.6(graphql@15.8.0)
+        specifier: 0.6.12
+        version: 0.6.12(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.17.1
         version: 0.17.1(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
@@ -1099,44 +1099,6 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@holochain/client@0.17.0-dev.8:
-    resolution: {integrity: sha512-npFoEoQd5Pai1a6B5sB0azbO9fEoZgGTY4k74cHCbtLS31Q0dSIwhrxTO6+XUVt2eyq64l6t4hJljCYIqGZVjQ==}
-    engines: {node: '>=18.0.0 || >=20.0.0'}
-    dependencies:
-      '@bitgo/blake2b': 3.2.4
-      '@holochain/serialization': 0.1.0-beta-rc.3
-      '@msgpack/msgpack': 2.8.0
-      '@tauri-apps/api': 1.5.3
-      emittery: 1.0.3
-      isomorphic-ws: 5.0.0(ws@8.16.0)
-      js-base64: 3.7.7
-      libsodium-wrappers: 0.7.13
-      lodash-es: 4.17.21
-      ws: 8.16.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-
-  /@holochain/client@0.17.0-dev.9:
-    resolution: {integrity: sha512-/s4TiMAliB5XUEgs/lWVfx1xAXsjtkKDSd7cveWuHKUf2BiZ+eqk1Mt1UMXrkILAwpSpdFLknDHM7rNhXlk2nQ==}
-    engines: {node: '>=18.0.0 || >=20.0.0'}
-    dependencies:
-      '@bitgo/blake2b': 3.2.4
-      '@holochain/serialization': 0.1.0-beta-rc.3
-      '@msgpack/msgpack': 2.8.0
-      '@tauri-apps/api': 1.5.3
-      emittery: 1.0.3
-      isomorphic-ws: 5.0.0(ws@8.16.0)
-      js-base64: 3.7.7
-      libsodium-wrappers: 0.7.13
-      lodash-es: 4.17.21
-      ws: 8.16.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-
   /@holochain/client@0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     resolution: {integrity: sha512-TlEJKKCoB/10VhZt7izHjOCts99zUv75flAaPr7Czs7fsiXQ5N2Yspjer5KosNsTIy2tSjzh9KRKQynFq58apA==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
@@ -1302,16 +1264,16 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@leosprograms/graphql-client-holochain@0.6.6(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0):
-    resolution: {integrity: sha512-YwWUo9LNKjD1T7a+XzM7P50bjvJI+Bc6TRgdLvP0EzHkAuT5Pquy6M3PS7L6I0Msz7nwO/+6als39wV7uaVvlg==}
+  /@leosprograms/graphql-client-holochain@0.6.12(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0):
+    resolution: {integrity: sha512-s0xiTxdfSNDFZRS5i0mYv0CnK/FBmEfd5CnSsGYVMzcI5M1tJLxgHl5qurcEahikfW1IdIziRUfP9zBcJ3k4DA==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '14'
     dependencies:
       '@apollo/client': 3.9.10(@types/react@18.3.4)(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(@types/react@18.3.4)(graphql@15.8.0)
-      '@holochain/client': 0.17.0-dev.9
-      '@leosprograms/vf-graphql-holochain': 0.6.6(graphql@15.8.0)
+      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@leosprograms/vf-graphql-holochain': 0.6.12(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -1324,14 +1286,14 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql-holochain@0.6.6(graphql@15.8.0):
-    resolution: {integrity: sha512-EfI6fDnmmxH6VWMwshr/OG9ryIehxaJWO3b596h1XVKm6xkwRbTb6CS+xeIAEVa7IsJ0bX8UC+Dh/E7qUkfatQ==}
+  /@leosprograms/vf-graphql-holochain@0.6.12(graphql@15.8.0):
+    resolution: {integrity: sha512-K+6Boe+guWdna9rBOxjb7t+vwycHpynFL04c7dII8PlvUR4d8spBP6x71ZFtj+pmj+XnviL3jvbREn+kfrzYcQ==}
     peerDependencies:
       graphql: '14'
     dependencies:
       '@graphql-tools/schema': 9.0.19(graphql@15.8.0)
       '@graphql-tools/utils': 9.2.1(graphql@15.8.0)
-      '@holochain/client': 0.17.0-dev.9
+      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@leosprograms/vf-graphql': 0.9.0-alpha.11(graphql@15.8.0)
       base64-js: 1.5.1
       big.js: 6.2.1
