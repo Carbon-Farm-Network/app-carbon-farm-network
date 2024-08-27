@@ -40,7 +40,7 @@
     "install-hrea-npm": "rm -rf node_modules && sh ./scripts/update-hrea-modules.sh"
   },
   "devDependencies": {
-    "@lightningrodlabs/we-dev-cli": "=0.13.0-beta.dev.0",
+    "@lightningrodlabs/we-dev-cli": "=0.13.0-beta.0",
     "@holochain-playground/cli": "^0.1.1",
     "@holochain/hc-spin": "^0.200.3",
     "@types/svelte-leafletjs": "^0.8.3",

@@ -15,8 +15,8 @@ importers:
         specifier: ^0.200.3
         version: 0.200.10
       '@lightningrodlabs/we-dev-cli':
-        specifier: '=0.13.0-beta.dev.0'
-        version: 0.13.0-beta.dev.0(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4)
+        specifier: '=0.13.0-beta.0'
+        version: 0.13.0-beta.0(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4)
       '@types/svelte-leafletjs':
         specifier: ^0.8.3
         version: 0.8.7
@@ -1332,8 +1332,8 @@ packages:
       - bufferutil
       - utf-8-validate
 
-  /@lightningrodlabs/we-dev-cli@0.13.0-beta.dev.0(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4):
-    resolution: {integrity: sha512-wTs+qU8UoqRACKKWcoWmx2s2bwkSmpmRerwdYweJCvjmrEMA9ug8Oka45kp/OGctYKqfk1GkAGpYMnWTQQmEnQ==}
+  /@lightningrodlabs/we-dev-cli@0.13.0-beta.0(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4):
+    resolution: {integrity: sha512-zYGHi5FcY0aFdx28bo/f8X9t4MuSpUEoee6FvBXr5dfyAAgJlNWvQMfNcbMnczAb4BrD0KFxpC/VTIu7zQoJGQ==}
     hasBin: true
     requiresBuild: true
     dependencies:
@@ -1342,7 +1342,7 @@ packages:
       '@holochain-open-dev/utils': 0.400.0-dev.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@lightningrodlabs/we-applet': 0.17.1(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@lightningrodlabs/we-rust-utils': 0.400.0-dev.7
+      '@lightningrodlabs/we-rust-utils': 0.400.0-dev.10
       '@matthme/electron-updater': 6.3.0-alpha.1
       '@msgpack/msgpack': 2.8.0
       adm-zip: 0.5.14
@@ -1366,8 +1366,8 @@ packages:
       - typescript
     dev: true
 
-  /@lightningrodlabs/we-rust-utils-darwin-arm64@0.400.0-dev.7:
-    resolution: {integrity: sha512-ikZ/wo+Q1PKdYj14Vlcl6Pv7giVRK+YtnN5/0awNpqgNUmG9PKLrTif6boIsoMrC1I3BMU+zDmwZBPHfi6QuFw==}
+  /@lightningrodlabs/we-rust-utils-darwin-arm64@0.400.0-dev.10:
+    resolution: {integrity: sha512-yM1S3OuV3qmJjZcPRDax1GcfL5GyPt7ceRQg4DvigQwkjW3QOHJ1Slt7QtX1Mf7FJW8KuqkcT8WgsWfUlQHAZQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -1375,8 +1375,8 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils-darwin-x64@0.400.0-dev.7:
-    resolution: {integrity: sha512-0x/SMNOpvLFq20antuah9pkdEOi5AmikWTK1IDU1Cj9IGdj5nyvxb63GtCxQgv8r4mHjjAYVlEtmW1+fD6RyjA==}
+  /@lightningrodlabs/we-rust-utils-darwin-x64@0.400.0-dev.10:
+    resolution: {integrity: sha512-OiypY/Q9JxQBAJDcMrplbQqo6IbjISPDGUigAKtmsETEYzktzVsCzQB5eRhc92i6mbbxv2jLcu0I4WsVpapJ2w==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -1384,8 +1384,8 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils-linux-x64-gnu@0.400.0-dev.7:
-    resolution: {integrity: sha512-vnRDnw/ZqUGpQIrD1RVrdbiP5mCiAgXwkDjyfr199bJpwHNxwQ2q+w49pftRrOtMANHRYe6hkNITF79W8yobPg==}
+  /@lightningrodlabs/we-rust-utils-linux-x64-gnu@0.400.0-dev.10:
+    resolution: {integrity: sha512-maOFyrp3xfPtcVWTqROYX17XHsMKYnQHpzj8ibShq8vINxNCUQUWIwYG4Tz4Mk+HZWbDJCOOvDxCk9t2r+iRmQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -1393,8 +1393,8 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils-win32-x64-msvc@0.400.0-dev.7:
-    resolution: {integrity: sha512-M7aIpmn5OYOONcYcCGr4fKkcj9qcLm8ufsV1RT1m7w6obr4c8wfv/Z3GsRiYpH4w9mr+HyuMjC8nb4b3w+4mMQ==}
+  /@lightningrodlabs/we-rust-utils-win32-x64-msvc@0.400.0-dev.10:
+    resolution: {integrity: sha512-MkkVQVGg39qEA6Sef80P5nuzER4s/pWwYfQvf8efif7KHFKri9YlF5o6l191p7ihJNuBgYzW4OlnZ/tauX30eQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -1402,14 +1402,14 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils@0.400.0-dev.7:
-    resolution: {integrity: sha512-qBxCu0wR8YtApvdxQXt7v+3OYLOM1jWW6eD43P0lAhFmL+xKw+VMeR6h0EBCTF2p9t/vfbyG5PjI5sz/JiALYQ==}
+  /@lightningrodlabs/we-rust-utils@0.400.0-dev.10:
+    resolution: {integrity: sha512-DWu8+Xk7fodFpBcGEP7XQeN6OvpQcpDqZkM80Z1/AvrQ2J30A+/fBKRbC0gZBt39civ1mMhPxMrpeJGiYyRY1g==}
     engines: {node: '>= 10'}
     optionalDependencies:
-      '@lightningrodlabs/we-rust-utils-darwin-arm64': 0.400.0-dev.7
-      '@lightningrodlabs/we-rust-utils-darwin-x64': 0.400.0-dev.7
-      '@lightningrodlabs/we-rust-utils-linux-x64-gnu': 0.400.0-dev.7
-      '@lightningrodlabs/we-rust-utils-win32-x64-msvc': 0.400.0-dev.7
+      '@lightningrodlabs/we-rust-utils-darwin-arm64': 0.400.0-dev.10
+      '@lightningrodlabs/we-rust-utils-darwin-x64': 0.400.0-dev.10
+      '@lightningrodlabs/we-rust-utils-linux-x64-gnu': 0.400.0-dev.10
+      '@lightningrodlabs/we-rust-utils-win32-x64-msvc': 0.400.0-dev.10
     dev: true
 
   /@lit-labs/ssr-dom-shim@1.2.0:
