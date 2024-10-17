@@ -105,3 +105,18 @@ export function updateProcessInPlan(process: any) {
         return { ...v, [newPlan.id]: newPlan };
     });
 }
+
+export function removeProcessCommitmentFromPlan(planId: string, processId: string, commitmentId: string) {
+    fullPlans.update(v => {
+        let newPlan = v[planId]
+        newPlan.processes = newPlan.processes.map((p: any) => {
+            if (p.id == processId) {
+                p.commitments = p.commitments.filter((c: any) => c.id != commitmentId)
+                return p
+            } else {
+                return p
+            }
+        })
+        return { ...v, [newPlan.id]: newPlan };
+    });
+}

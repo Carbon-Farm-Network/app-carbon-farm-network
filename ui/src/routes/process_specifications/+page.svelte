@@ -37,6 +37,7 @@
   let processSpecifications: any[]
   allProcessSpecifications.subscribe((value) => {
     processSpecifications = value
+    console.log("processSpecifications", processSpecifications)
   })
 
   $: processSpecifications, modalOpen, editing, id, currentProcessSpecification, units, exportOpen;

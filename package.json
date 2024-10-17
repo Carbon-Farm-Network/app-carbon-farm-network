@@ -36,7 +36,7 @@
     "clean:build-cache": "rimraf .cargo; rimraf ui/.svelte-kit",
     "clean:build": "rimraf target; rm dnas/acfn/workdir/acfn.dna; rm workdir/acfn.happ",
     "clean": "pnpm run clean:build; pnpm run clean:build-cache; pnpm run clean:hrea-modules; pnpm run clean:modules",
-    "import:hrea:local": "cp ../hREA/bundles/dna/hrea_combined/hrea_combined.dna ./workdir/hrea_combined.dna",
+    "import-hrea-local": "cp ../hREA/bundles/dna/hrea_combined/hrea_combined.dna ./workdir/hrea_combined.dna",
     "install-hrea-npm": "rm -rf node_modules && sh ./scripts/update-hrea-modules.sh"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import { gql } from 'graphql-tag'
-import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams, EconomicEvent } from '@valueflows/vf-graphql'
+import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, EconomicEvent } from '@valueflows/vf-graphql'
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
@@ -182,6 +182,18 @@ const CREATE_ECONOMIC_EVENT_WITH_RESOURCE = gql`
       }
       economicResource {
         id
+        stageId
+      }
+    }
+  }
+`
+
+const UPDATE_ECONOMIC_RESOURCE = gql`
+  mutation($resource: EconomicResourceUpdateParams!) {
+    updateEconomicResource(resource: $resource) {
+      economicResource {
+        id
+        stageId
       }
     }
   }
@@ -190,6 +202,17 @@ const CREATE_ECONOMIC_EVENT_WITH_RESOURCE = gql`
 const CREATE_AGREEMENT = gql`
   mutation($ag: AgreementCreateParams!) {
     createAgreement(agreement: $ag) {
+      agreement {
+        id
+        revisionId
+      }
+    }
+  }
+`
+
+const UPDATE_AGREEMENT = gql`
+  mutation($ag: AgreementUpdateParams!) {
+    updateAgreement(agreement: $ag) {
       agreement {
         id
         revisionId
@@ -344,12 +367,32 @@ export const createEconomicEvent = async (event: any) => {
   })
 }
 
+export const deleteEconomicEvent = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: gql`
+      mutation {
+        deleteEconomicEvent(revisionId: "${revisionId}")
+      }
+    `
+  })
+}
+
 export const createEconomicEventWithResource = async (event: any, newInventoriedResource: any) => {
   return await client.mutate({
     mutation: CREATE_ECONOMIC_EVENT_WITH_RESOURCE,
     variables: {
       event,
       newInventoriedResource
+    }
+  })
+}
+
+export const updateEconomicResource = async (resource: EconomicResourceUpdateParams) => {
+  console.log('updateEconomicResource', resource)
+  return await client.mutate({
+    mutation: UPDATE_ECONOMIC_RESOURCE,
+    variables: {
+      resource
     }
   })
 }
@@ -408,6 +451,16 @@ export const deleteAgreement = async (revisionId: string) => {
       }
     `
   })
+}
+
+export const updateAgreement = async (ag: any) => {
+  let res = await client.mutate({
+    mutation: UPDATE_AGREEMENT,
+    variables: {
+      ag
+    }
+  })
+  return res.data.updateAgreement.agreement
 }
 
 export const createPlan = async (plan: any) => {

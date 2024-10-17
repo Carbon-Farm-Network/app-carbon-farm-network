@@ -358,10 +358,36 @@ export const getAllEconomicEvents = async () => {
 }
 
 export const getAllEconomicResources = async () => {
+
+  // function translateId(id: string) {
+  //   return id.replace(/-/g, "+").replace(/_/g, "/");
+  // }
+
+  // if (isWeContext()) {
+  //   let weClient = await WeaveClient.connect(appletServices);
+  //   let res = await weClient.renderInfo.appletClient.callZome({
+  //       cap_secret: null,
+  //       role_name: 'hrea_combined_0',
+  //       zome_name: 'indexing',
+  //       fn_name: 'read_all_economic_resources',
+  //       payload: {},
+  //   })
+  //   console.log("get all resources", res)
+  //   // let formattedResults = res.edges.map((edge: any) => {return {
+  //   //   id: translateId(`${encodeHashToBase64(edge.node.id[1])}:${encodeHashToBase64(edge.node.id[0])}`),
+  //   //   fulfilledBy: translateId(`${encodeHashToBase64(edge.node.fulfilledBy[1])}:${encodeHashToBase64(edge.node.fulfilledBy[0])}`),
+  //   //   fulfills: translateId(`${encodeHashToBase64(edge.node.fulfills[1])}:${encodeHashToBase64(edge.node.fulfills[0])}`),
+  //   // }})
+  //   // console.log("formatted", formattedResults)
+  //   // setFulfillments(formattedResults)
+  //   // return formattedResults
+  // }
+
   const res = await client.query({
     query: GET_ECONOMIC_RESOURCES,
     fetchPolicy: 'no-cache'
   })
+  console.log("get all resources", res)
   setEconomicResources(res.data.economicResources.edges.map((edge: any) => edge.node))
   return res
 }

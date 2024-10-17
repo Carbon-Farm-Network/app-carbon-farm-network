@@ -111,7 +111,20 @@
     if (selectedCommitmentId !== previousSelectedCommitmentId) {
       previousSelectedCommitmentId = selectedCommitmentId;
       if (process && selectedCommitmentId && commitmentModalColumn > -1) {
-        selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
+        try {
+          selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
+        } catch (e) {
+          try {
+            // look in clauseOf of process commitments
+            console.log("looking in clauseOf of", process, selectedCommitmentId)
+            let clauseOf = process?.find(it => it?.clauseOf?.commitments?.find(it => it.action.label == "transfer")?.id == selectedCommitmentId);
+            selectedCommitment = clauseOf?.clauseOf?.commitments?.find(it => it.action.label == "transfer");
+            console.log("selected commitment", selectedCommitment)
+          } catch (e) {
+            console.log(e)
+          }
+        }
+
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
         console.log(independentDemands)
         try {
@@ -442,41 +455,42 @@
                   {/if}
                 </div>
 
-                {#if selectedCommitmentId}
+                {#if !(selectedCommitment?.resourceConformsTo?.name == 'USD')} <!-- only show finished and save cost checkbox if resource is not USD -->
+                  {#if selectedCommitmentId}
+                    <div class="mt-4 flex items-center">
+                      <input type="checkbox" id="finished" 
+                        on:change={(e) => {
+                          selectedCommitment.finished = e.target.checked
+                          console.log(selectedCommitment.finished)
+                        }}
+                        bind:checked={selectedCommitment.finished} 
+                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        >
+
+                        <label
+                        for="date"
+                        class="block text-sm font-medium leading-6 text-gray-900"
+                        >&nbsp;Commitment finished</label>
+                    </div>
+                  {/if}
+
+                  <!-- save cost? checkbox -->
+                  {#if commitmentModalProcess != undefined}
                   <div class="mt-4 flex items-center">
-                    <input type="checkbox" id="finished" 
+                    <input
+                      id="save_cost"
+                      name="save_cost"
+                      type="checkbox"
+                      checked={saveCost}
                       on:change={(e) => {
-                        selectedCommitment.finished = e.target.checked
-                        console.log(selectedCommitment.finished)
+                        saveCost = e.target.checked
                       }}
-                      bind:checked={selectedCommitment.finished} 
                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      >
-
-                      <label
-                      for="date"
-                      class="block text-sm font-medium leading-6 text-gray-900"
-                      >&nbsp;Commitment finished</label>
+                    />
+                    <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
                   </div>
+                  {/if}
                 {/if}
-
-                <!-- save cost? checkbox -->
-                {#if commitmentModalProcess != undefined}
-                <div class="mt-4 flex items-center">
-                  <input
-                    id="save_cost"
-                    name="save_cost"
-                    type="checkbox"
-                    checked={saveCost}
-                    on:change={(e) => {
-                      saveCost = e.target.checked
-                    }}
-                    class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
-                </div>
-                {/if}
-
                 <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
                 </p> -->

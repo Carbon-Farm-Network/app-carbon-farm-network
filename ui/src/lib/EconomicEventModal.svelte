@@ -70,7 +70,19 @@
     if (selectedCommitmentId !== previousSelectedCommitmentId) {
       previousSelectedCommitmentId = selectedCommitmentId;
       if (selectedCommitmentId && commitmentModalColumn > -1) {
-        selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
+        try {
+          selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
+        } catch (e) {
+          try {
+            // look in clauseOf of process commitments
+            console.log("looking in clauseOf of", process, selectedCommitmentId)
+            let clauseOf = process?.find(it => it?.clauseOf?.commitments?.find(it => it.action.label == "transfer")?.id == selectedCommitmentId);
+            selectedCommitment = clauseOf?.clauseOf?.commitments?.find(it => it.action.label == "transfer");
+            console.log("selected commitment", selectedCommitment)
+          } catch (e) {
+            console.log(e)
+          }
+        }
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
         try {
           selectedCommitment = JSON.parse(JSON.stringify(independentDemands.find(it => it.id == selectedCommitmentId)));
@@ -82,7 +94,7 @@
           }
         } 
       } else {
-        selectedCommitment = {};
+        selectedCommitment = Object.assign({}, newCommitmentTemplate)
       }
     }
   }
@@ -126,9 +138,7 @@
                     value={selectedCommitment.providerId}
                     on:change={(e) => {
                       let id = e.target.value
-                      console.log(id)
                       let selectedAgent = agents.find((rs) => rs.id === id)
-                      console.log(selectedAgent.name)
                       if (selectedCommitment.provider) {
                         selectedCommitment.provider = selectedAgent
                         selectedCommitment.providerId = selectedAgent.id
@@ -366,38 +376,40 @@
                     />
                   {/if}
 
-                  <div class="mt-4 text-left">
-                    <!-- <div class="mt-4 flex items-center">
-                      <input
-                        id="save_cost"
-                        name="save_cost"
-                        type="checkbox"
-                        checked={saveCost}
-                        on:change={(e) => {
-                          saveCost = e.target.checked
-                        }}
-                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
-                    </div> -->
-                    <div class="mt-4 flex items-center">
-                      <input type="checkbox" id="finished" 
-                        on:change={(e) => {
-                          let tempFinished = e.target.checked
-                          console.log(tempFinished)
-                          selectedCommitment.finished = tempFinished
-                          console.log(selectedCommitment.finished)
-                        }}
-                        bind:checked={selectedCommitment.finished} 
-                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        >
+                  {#if selectedCommitment.id}
+                    <div class="mt-4 text-left">
+                      <!-- <div class="mt-4 flex items-center">
+                        <input
+                          id="save_cost"
+                          name="save_cost"
+                          type="checkbox"
+                          checked={saveCost}
+                          on:change={(e) => {
+                            saveCost = e.target.checked
+                          }}
+                          class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
+                      </div> -->
+                      <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="finished" 
+                          on:change={(e) => {
+                            let tempFinished = e.target.checked
+                            console.log(tempFinished)
+                            selectedCommitment.finished = tempFinished
+                            console.log(selectedCommitment.finished)
+                          }}
+                          bind:checked={selectedCommitment.finished} 
+                          class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          >
 
-                        <label
-                        for="date"
-                        class="block text-sm font-medium leading-6 text-gray-900"
-                        >&nbsp;Commitment finished</label>
+                          <label
+                          for="date"
+                          class="block text-sm font-medium leading-6 text-gray-900"
+                          >&nbsp;Commitment finished</label>
+                      </div>
                     </div>
-                  </div>
+                  {/if}
                 </div>
               </div>
             </div>
@@ -440,23 +452,23 @@
               column: commitmentModalColumn,
               process: commitmentModalProcess,
               side: commitmentModalSide,
-              commitment: updatedCommitment,
+              event: updatedCommitment,
               useAs: 'update'
             });
             open = false;
           }}
           >Add Event</button>
-          <!-- {:else}
+          {:else}
           <button
             type="button"
-            class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+            class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             on:click={() => {
                 console.log(newCommitment)
                 dispatch('submit', {
                   column: commitmentModalColumn,
                   process: commitmentModalProcess,
                   side: commitmentModalSide,
-                  commitment: {
+                  event: {
                     ...newCommitment,
                     id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
                   },
@@ -466,7 +478,7 @@
             }}
           >
             Add
-          </button> -->
+          </button>
           {/if}
           <button
             type="button"
