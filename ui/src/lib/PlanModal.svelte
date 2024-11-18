@@ -345,7 +345,7 @@
       }
       console.log("trying to add independent", o)
       await saveOrUpdateCommitment(o)
-      commitmentsSavedCount = commitmentsSavedCount + 1
+      commitmentsSavedCount++
       // await new Promise(r => setTimeout(r, 1000));
 
       console.log('added independent', o)
@@ -442,7 +442,7 @@
               // })
               console.log("trying to save payment commitment", payment)
               let paymentCommitment = await saveOrUpdateCommitment(payment)
-              commitmentsSavedCount = commitmentsSavedCount + 1
+              // commitmentsSavedCount++
               // await new Promise(r => setTimeout(r, 1000));
               console.log("payment commitment 3", paymentCommitment)
             } catch (e) {
@@ -491,6 +491,8 @@
           await saveOrUpdateCommitment(c)
           // console.log("saving commitment",c)
           // await delay(30);
+
+          commitmentsSavedCount++
         }
 
         for (const input of process.committedInputs) {
@@ -738,15 +740,14 @@
                   class="text-lg leading-6 font-medium text-gray-900"
                   id="modal-headline"
                 >
-                  Saving plan ...
+                  Saving plan...
                 </h3>
                 <div class="mt-2">
                   <p class="text-sm text-gray-500">
-                    Please wait while the plan saves.
+                    {#if commitmentsSavedCount > -1}
+                      saved {commitmentsSavedCount} of {commitmentsToSaveCount} commitments
+                    {/if}
                   </p>
-                  <!-- {#if commitmentsSavedCount > -1}
-                    (saving {commitmentsSavedCount} of {commitmentsToSaveCount}) commitments
-                  {/if} -->
                 </div>
                 {#if error}
                   <div class="mt-2">

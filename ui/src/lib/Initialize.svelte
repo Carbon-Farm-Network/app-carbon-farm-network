@@ -160,6 +160,7 @@
     let units: Unit[] = []
     try {
       const created = await initUnits({})
+      console.log("created units", created)
       units = [created.data?.unitEa.unit as Unit, created.data?.unitLb.unit as Unit]
 
       if (devInit) {

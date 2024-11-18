@@ -49,6 +49,8 @@
   let economicEvents: EconomicEvent[] = [];
   let fulfillments: Fulfillment[] = []
   let selectedStage: string | undefined = undefined;
+  let zoomLevel: string = "1";
+  $: zoomLevel;
 
   let processImages = {
     "Pick Up": "/pickup.svg",
@@ -121,6 +123,7 @@
     try {
       // if primary intent, add to requestsPerOffer
       if (commitment.clauseOf) {
+        // console.log("&&& commitment", commitment)
         const matching_offer = matchingOffer(commitment, offers)
 
         const primary_intent = matching_offer?.publishes.find(
@@ -132,9 +135,9 @@
             requestsPerOffer[primary_intent.id] = {}
           }
           
-          if (commitment.action.label == "pickup") {
+          // if (commitment.action.label == "pickup") {
             requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
-          }
+          // }
         }
       }
     } catch (e) {
@@ -245,8 +248,9 @@
     try {
       console.log(plan)
       independentDemands = plan ? [...plan.independentDemands] : []
-      nonProcessCommitments = plan ? [...plan.nonProcessCommitments.filter(it => {return !(it.inputOf || it.outputOf)})] : []
+      nonProcessCommitments = plan ? [...plan.nonProcessCommitments.filter(it => {return !(it.inputOfId || it.outputOfId)})] : []
       console.log("plan: ", plan)
+      console.log("nonProcessCommitments: ", nonProcessCommitments)
 
       // order plan.processes by meta.retrievedRevision.time
       let sortedProcesses = [...plan.processes].sort((a, b) => new Date(a.meta.retrievedRevision.time).getTime() - new Date(b.meta.retrievedRevision.time).getTime())
@@ -271,7 +275,7 @@
         for (const commitment of process.committedInputs) {
           await includeCommitment(commitment)
         }
-        
+
         // if this is a new process
         if (process.basedOn.id !== lastSeenProcessSpecification) {
           // add last column to allColumns and reset
@@ -295,6 +299,10 @@
         allColumns = [...allColumns]
       }
 
+      // for (const commitment of plan.nonProcessCommitments) {
+      //   await includeCommitment(commitment)
+      // }
+
         console.log("these are all the columns", allColumns)
       } catch (e) {
         console.log("error", e)
@@ -302,9 +310,9 @@
       }
   }
 
-  async function updateColumns(columnIndex: number, side: string = "committedInputs") {
+  async function updateColumns(columnIndex: number, processIndex: number = 0, side: string = "committedInputs") {
     // update every commitment in a column
-    let updatedColumn = {...allColumns[columnIndex][0][side]}
+    let updatedColumn = {...allColumns[columnIndex][processIndex][side]}
 
     for (let i in updatedColumn) {
       console.log("original commitment", updatedColumn[i])
@@ -346,11 +354,26 @@
       updatedColumn[i] = updatedCommitment
     }
 
-    await getProcess(allColumns[columnIndex][0].id)
+    await getProcess(allColumns[columnIndex][processIndex].id)
   }
 
   onMount(async () => {
     if (browser) {
+      // Listen to scrollwheel movements and zoom in and out accordingly
+      window.addEventListener('wheel', (e) => {
+        if (e.ctrlKey) {
+          console.log("scrolling", zoomLevel);
+          // e.preventDefault();
+          let zoom = parseFloat(zoomLevel) || 1;
+          if (e.deltaY > 0) {
+            zoom = Math.max(0.1, zoom - 0.1);
+          } else {
+            zoom = Math.min(3, zoom + 0.1);
+          }
+          zoomLevel = zoom.toString();
+        }
+      });
+
       if (!plan) {
         console.log(JSON.stringify(plan))
         await getPlan(planId)
@@ -419,6 +442,18 @@
         }
       }
     }
+
+    for (let i = 0; i < nonProcessCommitments.length; i++) {
+      const commitment = nonProcessCommitments[i]
+      console.log("!@!@", commitment)
+      // add cost to totalCost
+      if (commitment.clauseOf) {
+        const cost = commitment.clauseOf.commitments.find(it => it.action.label == "transfer")
+        if (cost) {
+          totalCost = totalCost.add(cost.resourceQuantity.hasNumericalValue)
+        }
+      }
+    }
   }
 </script>
 
@@ -466,7 +501,7 @@ bind:open={economicEventModalOpen}
       // actually save commitment
       let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == extractedEvent.id)
       allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = extractedEvent
-      await updateColumns(event.detail.column, event.detail.side)
+      await updateColumns(event.detail.column, event.detail.process, event.detail.side)
     }
 
     // let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == event.detail.commitment.id)
@@ -504,9 +539,77 @@ bind:open={economicEventModalOpen}
   bind:nonProcessCommitments
   on:submit={async (event) => {
     console.log("START COMMIT", event.detail)
+
+    // =============================ON SAVE COST CHECKED=============================
+    let previousCostAgreement = event.detail.commitment.clauseOf //preexisting cost
+    if (event.detail.saveCost) {
+      try {
+        if (previousCostAgreement) { // delete preexisting cost
+          // TODO: delete cost agreement immediately
+          agreementsToDelete.push(previousCostAgreement.revisionId)
+          commitmentsToDelete.push(previousCostAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
+        }
+        
+        let newCostAgreement = makeAgreement(event.detail.commitment, previousCostAgreement, offers, agents)
+
+        let primaryIntent = newCostAgreement.primaryIntent
+
+        // fill out requestsPerOffer to calculate overall cost
+        if (!requestsPerOffer[primaryIntent.id]) { requestsPerOffer[primaryIntent.id] = {} }
+        if (event.detail.commitment.action.label == "pickup") {
+          requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
+        }
+
+        // add cost to commitment visually
+        if (newCostAgreement) {
+          event.detail.commitment.clauseOf = {commitments: [newCostAgreement.commitment]}
+          // actually save cost agreement
+          const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
+          let agreement = {
+            name: "Cost agreement",
+            note: "Cost agreement",
+          }
+          let savedAgreement = await createAgreement(agreement);
+          event.detail.commitment.clauseOfId = savedAgreement?.id
+          console.log("saved agreement", savedAgreement)
+          console.log("cost commitment", newCostAgreement)
+          // add agreement to commitment
+          let updateCommitmentInput = {
+            revisionId: event.detail.commitment.revisionId,
+            clauseOf: savedAgreement?.id
+          }
+          console.log("update commitment input", updateCommitmentInput)
+          // let x = await updateCommitment(updateCommitmentInput)
+          // console.log(x)
+          let c = event.detail.commitment;
+          console.log("commitment", c)
+          let paymentCommitment = {
+            clauseOf: savedAgreement?.id,
+            action: "transfer",
+            provider: c.receiverId,
+            receiver: c.providerId,
+            plannedWithin: planId,
+            resourceConformsTo: dollars?.id,
+            resourceQuantity: {
+              hasNumericalValue: Number(newCostAgreement.commitment?.resourceQuantity?.hasNumericalValue),
+              hasUnit: newCostAgreement.primaryIntent?.publishes?.resourceQuantity?.hasUnit?.id
+            },
+            finished: false,
+            note: "payment",
+            hasBeginning: new Date(Date.now()),
+          }
+          console.log("payment commitment", paymentCommitment)
+          let savedPaymentCommitment = await createCommitment(paymentCommitment)
+        }
+      } catch (e) {
+        console.log("Couldn't find cost", e)
+      }
+    }
+    // =============================ON SAVE COST CHECKED ENDS=============================
+
     if (event.detail.useAs == "update") {
       // =============================ON UPDATE=============================
-      if (event.detail.column == undefined) {
+      if (event.detail.process == undefined) {
       // =============================ON UPDATE INDEPENDENT=============================
         independentDemands = independentDemands.map(it => it.id == event.detail.commitment.id ? event.detail.commitment : it)
         independentDemands = [...independentDemands]
@@ -516,6 +619,7 @@ bind:open={economicEventModalOpen}
           revisionId: commitmentData.revisionId,
           note: commitmentData.note,
           finished: commitmentData.finished,
+          clauseOf: commitmentData.clauseOfId,
           provider: commitmentData.providerId,
           receiver: commitmentData.receiverId,
           resourceClassifiedAs: commitmentData.resourceClassifiedAs,
@@ -529,84 +633,73 @@ bind:open={economicEventModalOpen}
         await getPlan(planId)
       } else {
       // =============================ON UPDATE REGULAR=============================
-        let previousCostAgreement = event.detail.commitment.clauseOf //preexisting cost
-        if (event.detail.saveCost) {
-          try {
-            if (previousCostAgreement) { // delete preexisting cost
-              // TODO: delete cost agreement immediately
-              agreementsToDelete.push(previousCostAgreement.revisionId)
-              commitmentsToDelete.push(previousCostAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
-            }
-            
-            let newCostAgreement = makeAgreement(event.detail.commitment, previousCostAgreement, offers, agents)
-
-            let primaryIntent = newCostAgreement.primaryIntent
-
-            // fill out requestsPerOffer to calculate overall cost
-            if (!requestsPerOffer[primaryIntent.id]) { requestsPerOffer[primaryIntent.id] = {} }
-            if (event.detail.commitment.action.label == "pickup") {
-              requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
-            }
-
-            // add cost to commitment visually
-            if (newCostAgreement) {
-              event.detail.commitment.clauseOf = {commitments: [newCostAgreement.commitment]}
-              // actually save cost agreement
-              const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
-              let agreement = {
-                name: "Cost agreement",
-                note: "Cost agreement",
-              }
-              let savedAgreement = await createAgreement(agreement);
-              event.detail.commitment.clauseOfId = savedAgreement?.id
-              console.log("saved agreement", savedAgreement)
-              console.log("cost commitment", newCostAgreement)
-              // add agreement to commitment
-              let updateCommitmentInput = {
-                revisionId: event.detail.commitment.revisionId,
-                clauseOf: savedAgreement?.id
-              }
-              console.log("update commitment input", updateCommitmentInput)
-              // let x = await updateCommitment(updateCommitmentInput)
-              // console.log(x)
-              let c = event.detail.commitment;
-              console.log("commitment", c)
-              let paymentCommitment = {
-                clauseOf: savedAgreement?.id,
-                action: "transfer",
-                provider: c.receiverId,
-                receiver: c.providerId,
-                plannedWithin: planId,
-                resourceConformsTo: dollars?.id,
-                resourceQuantity: {
-                  hasNumericalValue: Number(newCostAgreement.commitment?.resourceQuantity?.hasNumericalValue),
-                  hasUnit: newCostAgreement.primaryIntent?.publishes?.resourceQuantity?.hasUnit?.id
-                },
-                finished: false,
-                note: "payment",
-                hasBeginning: new Date(Date.now()),
-              }
-              console.log("payment commitment", paymentCommitment)
-              let savedPaymentCommitment = await createCommitment(paymentCommitment)
-            }
-          } catch (e) {
-            console.log("Couldn't find cost", e)
-          }
-        }
-
         let updatedCommitment = {
           ...event.detail.commitment,
         }
 
+        // console.log("updated commitment for column --", updatedCommitment)
+
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
         allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = updatedCommitment
 
-        await updateColumns(event.detail.column, event.detail.side)
+        // console.log("** ", allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex], event.detail.process)
+
+        await updateColumns(event.detail.column, event.detail.process, event.detail.side)
         // await getProcess(allColumns[event.detail.column][event.detail.process].id)
       }
     } else {
       // =============================ON NEW COMMITMENT=============================
       console.log(event.detail)
+
+      // =============================ON NEW SAVE COST=============================
+
+      if (event.detail.saveCost) {
+        let costAgreement = makeAgreement(event.detail.commitment, undefined, offers, agents)
+
+        let primaryIntent = costAgreement.primaryIntent
+        if (!requestsPerOffer[primaryIntent.id]) {
+          requestsPerOffer[primaryIntent.id] = {}
+        }
+        if (event.detail.commitment.action.label == "pickup") {
+          requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
+        }
+
+        console.log("cost agreementt", costAgreement)
+        if (costAgreement) {
+          event.detail.commitment.clauseOf = {commitments: [costAgreement.commitment]}
+          // actually save cost agreement
+          const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
+          let agreement = {
+            name: "Cost agreement",
+            note: "Cost agreement",
+          }
+          let savedAgreement = await createAgreement(agreement);
+          
+          let c = event.detail.commitment;
+
+          event.detail.commitment.clauseOfId = savedAgreement?.id
+          // add agreement to commitment
+
+          let paymentCommitment = {
+            clauseOf: savedAgreement?.id,
+            action: "transfer",
+            provider: c.receiverId,
+            receiver: c.providerId,
+            plannedWithin: planId,
+            resourceConformsTo: dollars?.id,
+            resourceQuantity: {
+              hasNumericalValue: Number(costAgreement.commitment?.resourceQuantity?.hasNumericalValue),
+              hasUnit: dollars?.defaultUnitOfResource?.id,
+            },
+            finished: false,
+            hasBeginning: new Date(Date.now()),
+          }
+          // TODO: add to ui early
+          await createCommitment(paymentCommitment)
+        }
+      }
+      // =============================ON NEW SAVE COST ENDS=============================
+
       if (event.detail.column == undefined) {
       // =============================ON NEW INDEPENDENT=============================
         independentDemands.push(event.detail.commitment)
@@ -648,51 +741,51 @@ bind:open={economicEventModalOpen}
         //   allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
         // }
 
-        if (event.detail.saveCost) {
-          let costAgreement = makeAgreement(event.detail.commitment, undefined, offers, agents)
+        // if (event.detail.saveCost) {
+        //   let costAgreement = makeAgreement(event.detail.commitment, undefined, offers, agents)
 
-          let primaryIntent = costAgreement.primaryIntent
-          if (!requestsPerOffer[primaryIntent.id]) {
-            requestsPerOffer[primaryIntent.id] = {}
-          }
-          if (event.detail.commitment.action.label == "pickup") {
-            requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
-          }
+        //   let primaryIntent = costAgreement.primaryIntent
+        //   if (!requestsPerOffer[primaryIntent.id]) {
+        //     requestsPerOffer[primaryIntent.id] = {}
+        //   }
+        //   if (event.detail.commitment.action.label == "pickup") {
+        //     requestsPerOffer[primaryIntent.id][event.detail.commitment.id] = new Decimal(event.detail.commitment.resourceQuantity.hasNumericalValue)
+        //   }
 
-          console.log("cost agreementt", costAgreement)
-          if (costAgreement) {
-            event.detail.commitment.clauseOf = {commitments: [costAgreement.commitment]}
-            // actually save cost agreement
-            const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
-            let agreement = {
-              name: "Cost agreement",
-              note: "Cost agreement",
-            }
-            let savedAgreement = await createAgreement(agreement);
+        //   console.log("cost agreementt", costAgreement)
+        //   if (costAgreement) {
+        //     event.detail.commitment.clauseOf = {commitments: [costAgreement.commitment]}
+        //     // actually save cost agreement
+        //     const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
+        //     let agreement = {
+        //       name: "Cost agreement",
+        //       note: "Cost agreement",
+        //     }
+        //     let savedAgreement = await createAgreement(agreement);
             
-            let c = event.detail.commitment;
+        //     let c = event.detail.commitment;
 
-            event.detail.commitment.clauseOfId = savedAgreement?.id
-            // add agreement to commitment
+        //     event.detail.commitment.clauseOfId = savedAgreement?.id
+        //     // add agreement to commitment
 
-            let paymentCommitment = {
-              clauseOf: savedAgreement?.id,
-              action: "transfer",
-              provider: c.receiverId,
-              receiver: c.providerId,
-              plannedWithin: planId,
-              resourceConformsTo: dollars?.id,
-              resourceQuantity: {
-                hasNumericalValue: Number(costAgreement.commitment?.resourceQuantity?.hasNumericalValue),
-                hasUnit: dollars?.defaultUnitOfResource?.id,
-              },
-              finished: false,
-              hasBeginning: new Date(Date.now()),
-            }
-            // TODO: add to ui early
-            await createCommitment(paymentCommitment)
-          }
-        }
+        //     let paymentCommitment = {
+        //       clauseOf: savedAgreement?.id,
+        //       action: "transfer",
+        //       provider: c.receiverId,
+        //       receiver: c.providerId,
+        //       plannedWithin: planId,
+        //       resourceConformsTo: dollars?.id,
+        //       resourceQuantity: {
+        //         hasNumericalValue: Number(costAgreement.commitment?.resourceQuantity?.hasNumericalValue),
+        //         hasUnit: dollars?.defaultUnitOfResource?.id,
+        //       },
+        //       finished: false,
+        //       hasBeginning: new Date(Date.now()),
+        //     }
+        //     // TODO: add to ui early
+        //     await createCommitment(paymentCommitment)
+        //   }
+        // }
 
         // temprarily add visually
         if (event.detail.side && event.detail.process) {
@@ -801,7 +894,7 @@ bind:open={economicEventModalOpen}
   <div class="scroll-div justify-center items-center">
   <div class="content-div flex space-x-8 mx-4"> -->
   <!-- <div class="flex space-x-8 mx-4 overflow-x-scroll"> -->
-  <div class="flex space-x-8 mx-4 overflow-x-scroll overflow-y-scroll" style="height: calc(100vh - 172px)" use:dragscroll={{ axis: 'both' }}>
+  <div class="flex space-x-8 mx-4 overflow-x-scroll overflow-y-scroll" style="height: calc((100vh - 172px) / {zoomLevel}); zoom: {zoomLevel}" use:dragscroll={{ axis: 'both' }}>
 
     <div class="min-w-[250px]">
       <div class="flex justify-center" style="margin-top: 22px; margin-bottom: 22px">
@@ -1002,7 +1095,7 @@ bind:open={economicEventModalOpen}
                           allColumns[columnIndex][processIndex].committedInputs[index] = allColumns[columnIndex][processIndex].committedInputs[index - 1]
                           allColumns[columnIndex][processIndex].committedInputs[index - 1] = temp
                         }
-                        updateColumns(columnIndex, "committedInputs")
+                        updateColumns(columnIndex, processIndex, "committedInputs")
                       }}>
                         <img class="mx-auto" height="14px" width="14px" src="/arrow-up.svg" alt="" />
                       </button>
@@ -1014,7 +1107,7 @@ bind:open={economicEventModalOpen}
                           allColumns[columnIndex][processIndex].committedInputs[index] = allColumns[columnIndex][processIndex].committedInputs[index + 1]
                           allColumns[columnIndex][processIndex].committedInputs[index + 1] = temp
                         }
-                        updateColumns(columnIndex, "committedInputs")
+                        updateColumns(columnIndex, processIndex, "committedInputs")
                       }}>
                         <img class="mx-auto" height="14px" width="14px" src="/arrow-down.svg" alt="" />
                       </button>
@@ -1075,75 +1168,82 @@ bind:open={economicEventModalOpen}
                     {/if}
 
                     </div>
-
-
-                    {#if clauseOf}
-                    {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
-                      {#if clause}
-                        <hr class="my-2" />
-                        <!-- <div style="display:flex;">
-                          <img class="mx-auto" height="30px" width="30px" src="/caret-left.svg" alt="" /> -->
-                          <div>
-                            <p>
-                              <strong>
-                                transfer {new Decimal(
-                                  clause.resourceQuantity.hasNumericalValue
-                                )
-                                .toFixed(2, Decimal.ROUND_HALF_UP)
-                                .toString()}
-                                {clause.resourceConformsTo.name}
-                              </strong>
-                              <br>from {agents.find(it => it.id == clause.providerId)?.name} 
-                              <br>to {agents.find(it => it.id == clause.receiverId)?.name}
-                            </p>
-                            <div style="display:flex;">
-                              <button
-                                style="margin-left: 12px;"
-                                on:click={() => {
-                                  commitmentModalProcess = processIndex
-                                  commitmentModalColumn = columnIndex
-                                  commitmentModalSide = "committedInputs"
-                                  selectedCommitmentId = clause.id
-                                  selectedProcessId = processes[0].id
-                                  currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                                  commitmentModalOpen = true
-                                }}
-                              >
-                                <Pencil />
-                              </button>
-                              <button
-                                on:click={async () => {
-                                  // visually remove commitment
-                                  // allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
-                                  await updateCommitment({revisionId: revisionId, clauseOf: null})
-                                  await deleteCommitment(clause.revisionId)
-                                  await deleteAgreement(clauseOf.revisionId)
-                                  await getProcess(allColumns[columnIndex][processIndex].id)
-                                }}
-                              >
-                                <Trash />
-                              </button>
-                              <button
-                                style="margin-left: 20px;"
-                                on:click={() => {
-                                  commitmentModalProcess = processIndex
-                                  commitmentModalColumn = columnIndex
-                                  commitmentModalSide = "committedInputs"
-                                  selectedCommitmentId = clause.id
-                                  selectedProcessId = processes[0].id
-                                  currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                                  economicEventModalOpen = true
-                                }}
-                              >
-                                <EconomicEvent />
-                              </button>
-                            </div>
-
-                          </div>
-                        <!-- </div> -->
-                      {/if}
-                    {/if}
                   </div>
+
+                  {#if clauseOf}
+                  {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
+                    {#if clause}
+                    {@const costColor = clause.finished ? "#c4fbc4" : (((clause.fulfilledBy && clause.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
+                    <div
+                      class="bg-white rounded-r-full border border-gray-400 py-1 pl-8 pr-2 text-xs"
+                      style="background-color: {costColor};
+                            border-radius: 60px 0 0 60px;
+                      "
+                      >
+                          <p>
+                            <strong>
+                              transfer {new Decimal(
+                                clause.resourceQuantity.hasNumericalValue
+                              )
+                              .toFixed(2, Decimal.ROUND_HALF_UP)
+                              .toString()}
+                              {clause.resourceConformsTo.name}
+                            </strong>
+                            <br>from {agents.find(it => it.id == clause.providerId)?.name} 
+                            <br>to {agents.find(it => it.id == clause.receiverId)?.name}
+                            {#if clause.fulfilledBy?.length > 0}
+                            {@const dedupedFulfilledBy = clause.fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
+                              <br />
+                              Economic Events: {dedupedFulfilledBy?.length}
+                            {/if}
+                          </p>
+                          <div style="display:flex;">
+                            <button
+                              style="margin-left: 12px;"
+                              on:click={() => {
+                                commitmentModalProcess = processIndex
+                                commitmentModalColumn = columnIndex
+                                commitmentModalSide = "committedInputs"
+                                selectedCommitmentId = clause.id
+                                selectedProcessId = processes[0].id
+                                currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                                commitmentModalOpen = true
+                              }}
+                            >
+                              <Pencil />
+                            </button>
+                            <button
+                              on:click={async () => {
+                                // visually remove commitment
+                                // allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
+                                await updateCommitment({revisionId: revisionId, clauseOf: null})
+                                await deleteCommitment(clause.revisionId)
+                                await deleteAgreement(clauseOf.revisionId)
+                                await getProcess(allColumns[columnIndex][processIndex].id)
+                              }}
+                            >
+                              <Trash />
+                            </button>
+                            <button
+                              style="margin-left: 20px;"
+                              on:click={() => {
+                                commitmentModalProcess = processIndex
+                                commitmentModalColumn = columnIndex
+                                commitmentModalSide = "committedInputs"
+                                selectedCommitmentId = clause.id
+                                selectedProcessId = processes[0].id
+                                currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                                economicEventModalOpen = true
+                              }}
+                            >
+                              <EconomicEvent />
+                            </button>
+                          </div>
+
+                        </div>
+                      <!-- </div> -->
+                    {/if}
+                  {/if}
                 {/each}
               </div>
               <div>
@@ -1261,7 +1361,7 @@ bind:open={economicEventModalOpen}
                             allColumns[columnIndex][processIndex].committedOutputs[index] = allColumns[columnIndex][processIndex].committedOutputs[index - 1]
                             allColumns[columnIndex][processIndex].committedOutputs[index - 1] = temp
                           }
-                          updateColumns(columnIndex, "committedOutputs")
+                          updateColumns(columnIndex, processIndex, "committedOutputs")
                         }}>
                           <img class="mx-auto" height="14px" width="14px" src="/arrow-up.svg" alt="" />
                         </button>
@@ -1272,7 +1372,7 @@ bind:open={economicEventModalOpen}
                             allColumns[columnIndex][processIndex].committedOutputs[index] = allColumns[columnIndex][processIndex].committedOutputs[index + 1]
                             allColumns[columnIndex][processIndex].committedOutputs[index + 1] = temp
                           }
-                          updateColumns(columnIndex, "committedOutputs")
+                          updateColumns(columnIndex, processIndex, "committedOutputs")
                         }}>
                           <img class="mx-auto" height="14px" width="14px" src="/arrow-down.svg" alt="" />
                         </button>
@@ -1333,10 +1433,18 @@ bind:open={economicEventModalOpen}
 
                     </div>
 
-                    {#if clauseOf}
-                    {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
+                  </div>
+                  {#if clauseOf}
+                  {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
+                  {@const costColor = clause.finished ? "#c4fbc4" : (((clause.fulfilledBy && clause.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
+                  <div
+                    class="bg-white rounded-r-full border border-gray-400 py-1 pl-8 pr-2 text-xs"
+                    style="background-color: {costColor};
+                          border-radius: 60px 0 0 60px;
+                    "
+                    >
                       {#if clause}
-                        <hr class="my-2" />
+                        <!-- <hr class="my-2" /> -->
                         <!-- <div style="display:flex;">
                           <img class="mx-auto" height="30px" width="30px" src="/caret-left.svg" alt="" /> -->
                           <div>
@@ -1351,6 +1459,11 @@ bind:open={economicEventModalOpen}
                               </strong>
                               <br>from {agents.find(it => it.id == clause.providerId)?.name} 
                               <br>to {agents.find(it => it.id == clause.receiverId)?.name}
+                              {#if clause.fulfilledBy?.length > 0}
+                              {@const dedupedFulfilledBy = clause.fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
+                                <br />
+                                Economic Events: {dedupedFulfilledBy?.length}
+                              {/if}
                             </p>
                             <div style="display:flex;">
                               <button
@@ -1398,8 +1511,8 @@ bind:open={economicEventModalOpen}
                           </div>
                         <!-- </div> -->
                       {/if}
-                    {/if}
-                  </div>
+                    </div>
+                  {/if}
                 {/each}
               </div>
             </div>
@@ -1491,8 +1604,9 @@ bind:open={economicEventModalOpen}
                           {/if}
                         {/each}
                         {#if fulfilledBy?.length > 0}
+                        {@const dedupedFulfilledBy = fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
                           <br />
-                          Economic Events: {fulfilledBy?.length}
+                          Economic Events: {dedupedFulfilledBy?.length}
                         {/if}
                       </p>
                       {#if clauseOf}
@@ -1559,6 +1673,84 @@ bind:open={economicEventModalOpen}
                       {/if}
                     </div>
                   </div>
+                  
+                  <!-- COST/RECIPROCAL COMMITMENT -->
+                  <!-- {JSON.stringify(nonProcessCommitments.filter(it => {return it.stageId == prevColumnBasedOnId && resourceSpecificationIds.includes(it.resourceConformsTo.id)}))} -->
+                  <!-- {JSON.stringify(clauseOf)} -->
+                  {#if clauseOf}
+                  {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
+                  {@const costColor = clause.finished ? "#c4fbc4" : (((clause.fulfilledBy && clause.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
+                  <div
+                    class="bg-white rounded-r-full border border-gray-400 py-1 pl-8 pr-2 text-xs"
+                    style="background-color: {costColor};
+                          border-radius: 60px 0 0 60px;
+                    "
+                    >
+                      {#if clause}
+                        <!-- <hr class="my-2" /> -->
+                        <!-- <div style="display:flex;">
+                          <img class="mx-auto" height="30px" width="30px" src="/caret-left.svg" alt="" /> -->
+                          <div>
+                            <p>
+                              <strong>
+                                transfer {new Decimal(
+                                  clause.resourceQuantity.hasNumericalValue
+                                )
+                                .toFixed(2, Decimal.ROUND_HALF_UP)
+                                .toString()}
+                                {clause.resourceConformsTo.name}
+                              </strong>
+                              <br>from {agents.find(it => it.id == clause.providerId)?.name} 
+                              <br>to {agents.find(it => it.id == clause.receiverId)?.name}
+                              {#if clause.fulfilledBy?.length > 0}
+                              {@const dedupedFulfilledBy = clause.fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
+                                <br />
+                                Economic Events: {dedupedFulfilledBy?.length}
+                              {/if}
+                            </p>
+                            <div style="display:flex;">
+                              <button
+                                style="margin-left: 12px;"
+                                on:click={() => {
+                                  commitmentModalProcess = undefined
+                                  commitmentModalColumn = undefined
+                                  selectedCommitmentId = clause.id
+                                  commitmentModalSide = ""
+                                  commitmentModalOpen = true
+                                }}
+                              >
+                                <Pencil />
+                              </button>
+                              <button
+                                on:click={async () => {
+                                  // visually remove commitment
+                                  await updateCommitment({revisionId: revisionId, clauseOf: null})
+                                  await deleteCommitment(clause.revisionId)
+                                  await deleteAgreement(clauseOf.revisionId)
+                                  await getPlan(planId)
+                                }}
+                              >
+                                <Trash />
+                              </button>
+                              <button
+                                style="margin-left: 20px;"
+                                on:click={() => {
+                                  commitmentModalProcess = undefined
+                                  commitmentModalColumn = undefined
+                                  selectedCommitmentId = clause.id
+                                  economicEventModalOpen = true
+                                }}
+                              >
+                                <EconomicEvent />
+                              </button>
+                            </div>
+
+                          </div>
+                        <!-- </div> -->
+                      {/if}
+                    </div>
+                  {/if}
+
                   {/each}
                 </div>
               <!-- </div> -->

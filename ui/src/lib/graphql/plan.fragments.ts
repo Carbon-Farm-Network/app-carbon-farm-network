@@ -112,6 +112,10 @@ export const COMMITMENT_RETURN_FIELDS = gql`
       commitments {
         id
         revisionId
+        finished
+        fulfilledBy {
+          id
+        }
         action {
           id
           label
@@ -189,6 +193,10 @@ export const PROCESS_RETURN_FIELDS = gql`
           id
           revisionId
           providerId
+          finished
+          fulfilledBy {
+            id
+          }
           receiverId
           hasBeginning
           action {
@@ -246,6 +254,10 @@ export const PROCESS_RETURN_FIELDS = gql`
         note
         revisionId
         commitments {
+          finished
+          fulfilledBy {
+            id
+          }
           id
           revisionId
           providerId
@@ -324,6 +336,37 @@ export const PLAN_RETURN_FIELDS = gql`
         name
         defaultUnitOfResourceId
       }
+      clauseOf {
+        id
+        name
+        note
+        revisionId
+        commitments {
+          finished
+          fulfilledBy {
+            id
+          }
+          id
+          revisionId
+          providerId
+          receiverId
+          hasBeginning
+          action {
+            id
+            label
+          }
+          resourceConformsTo {
+            id
+            name
+            defaultUnitOfResourceId
+            resourceClassifiedAs
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnitId
+          }
+        }
+      }
     }
     processes {
       id
@@ -379,6 +422,10 @@ export const PLAN_RETURN_FIELDS = gql`
           note
           revisionId
           commitments {
+            finished
+            fulfilledBy {
+              id
+            }
             id
             revisionId
             providerId
@@ -445,6 +492,10 @@ export const PLAN_RETURN_FIELDS = gql`
             providerId
             receiverId
             hasBeginning
+            finished
+            fulfilledBy {
+              id
+            }
             action {
               id
               label

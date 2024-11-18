@@ -475,13 +475,13 @@
                   {/if}
 
                   <!-- save cost? checkbox -->
-                  {#if commitmentModalProcess != undefined}
+                  <!-- {#if commitmentModalProcess != undefined} -->
                   <div class="mt-4 flex items-center">
                     <input
                       id="save_cost"
                       name="save_cost"
                       type="checkbox"
-                      checked={saveCost}
+                      checked={false}
                       on:change={(e) => {
                         saveCost = e.target.checked
                       }}
@@ -489,7 +489,7 @@
                     />
                     <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
                   </div>
-                  {/if}
+                  <!-- {/if} -->
                 {/if}
                 <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
                   Description for the description field
