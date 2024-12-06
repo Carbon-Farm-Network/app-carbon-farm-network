@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { EconomicEventCreateParams, Agent, Fulfillment, EconomicResource, EconomicResourceCreateParams }  from '@valueflows/vf-graphql'
+    import type { EconomicEventCreateParams, Agent, Fulfillment, EconomicResource, EconomicResourceCreateParams }  from '@leosprograms/vf-graphql'
     import Header from "$lib/Header.svelte";
     import { onMount } from "svelte";
     import { getAllEconomicEvents, getAllEconomicResources, getAllResourceSpecifications, getAllUnits } from "../../crud/fetch";

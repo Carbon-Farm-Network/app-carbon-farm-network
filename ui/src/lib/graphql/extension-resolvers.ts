@@ -11,7 +11,7 @@ import { encodeHashToBase64, decodeHashFromBase64, type CellId, type EntryHash, 
 import { mapZomeFn } from '@leosprograms/vf-graphql-holochain'
 import type { DNAIdMappings } from '@leosprograms/vf-graphql-holochain'
 
-import type { Organization, ResourceSpecification } from '@valueflows/vf-graphql'
+import type { Organization, ResourceSpecification } from '@leosprograms/vf-graphql'
 import type {
   FacetGroupParams, FacetGroup, FacetGroupResponse,
   FacetParams, FacetParamsRaw, Facet, FacetResponse,

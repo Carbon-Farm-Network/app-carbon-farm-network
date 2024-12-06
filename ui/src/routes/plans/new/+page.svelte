@@ -6,7 +6,7 @@
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
-  import type { Unit, Action, Agent, Proposal, ResourceSpecification, PlanCreateParams } from '@valueflows/vf-graphql'
+  import type { Unit, Action, Agent, Proposal, ResourceSpecification, PlanCreateParams } from '@leosprograms/vf-graphql'
   import { allActions, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../crud/store'
   import { getAllActions, getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits } from '../../../crud/fetch'
   import { dragscroll } from '@svelte-put/dragscroll';

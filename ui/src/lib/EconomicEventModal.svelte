@@ -2,7 +2,7 @@
   import { clickOutside } from '../utils'
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
-  import type { AgentConnection, Agent, UnitConnection } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection } from '@leosprograms/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import { flattenRelayConnection } from '$lib/graphql/helpers'

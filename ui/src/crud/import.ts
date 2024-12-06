@@ -1,4 +1,4 @@
-import type { CommitmentCreateParams, PlanCreateParams, ProcessCreateParams,  Process, AgreementCreateParams, EconomicEventCreateParams, FulfillmentCreateParams, Fulfillment } from "@valueflows/vf-graphql"
+import type { CommitmentCreateParams, PlanCreateParams, ProcessCreateParams,  Process, AgreementCreateParams, EconomicEventCreateParams, FulfillmentCreateParams, Fulfillment } from "@leosprograms/vf-graphql"
 import { addHashChange, createCommitment, createAgreement, createPlan, createProcess, createEconomicEvent, createEconomicEventWithResource, createFulfillment } from "./commit"
 import { allHashChanges, allProcessSpecifications, allUnits } from "./store"
 import { EconomicEvent } from "$lib/icons"

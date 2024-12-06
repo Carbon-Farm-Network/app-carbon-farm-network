@@ -14,7 +14,7 @@
   import { gql } from 'graphql-tag'
   import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
   import type { RelayConn } from '$lib/graphql/helpers'
-  import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@leosprograms/vf-graphql'
   import { mutation, query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"

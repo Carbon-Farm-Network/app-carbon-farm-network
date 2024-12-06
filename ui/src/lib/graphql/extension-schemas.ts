@@ -2,7 +2,7 @@ import type {
   ActionHashB64, EntryHashB64,
   EntryHash, ActionHash,
 } from '@holochain/client';
-import type { Agent, Proposal } from '@valueflows/vf-graphql'
+import type { Agent, Proposal } from '@leosprograms/vf-graphql'
 
 // zome API creation payloads
 

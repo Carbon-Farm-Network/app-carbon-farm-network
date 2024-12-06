@@ -1,6 +1,6 @@
 <script lang="ts">
   import { gql } from 'graphql-tag'
-  import type { RecordMeta, ProcessSpecification, ProcessSpecificationCreateParams, ProcessSpecificationUpdateParams } from '@valueflows/vf-graphql'
+  import type { RecordMeta, ProcessSpecification, ProcessSpecificationCreateParams, ProcessSpecificationUpdateParams } from '@leosprograms/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import { PROCESS_SPECIFICATION_CORE_FIELDS } from './graphql/process_specification.fragments'
   import { mutation, query } from 'svelte-apollo'

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { gql } from 'graphql-tag'
-  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
+  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@leosprograms/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import { RESOURCE_SPECIFICATION_CORE_FIELDS } from './graphql/resource_specification.fragments'
   import { mutation, query } from 'svelte-apollo'

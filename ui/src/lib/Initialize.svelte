@@ -4,14 +4,13 @@
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, UnitConnection } from '@valueflows/vf-graphql'
+  import type { Unit, UnitConnection } from '@leosprograms/vf-graphql'
   import recipes from '$lib/data/recipes-with-exchanges.json'
 
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-  import Logo from './Logo.svelte'
 
   const devInit = false
 
@@ -22,6 +21,7 @@
         unit: {
           label: "pound"
           symbol: "lb"
+          omUnitIdentifier: "poundAvoirdupois"
         }
       ){
         unit {
@@ -32,6 +32,7 @@
         unit: {
           label: "one"
           symbol: "one"
+          omUnitIdentifier: "one"
         }
       ){
         unit {

@@ -55,7 +55,7 @@ export async function load() {
       console.log("weAppWebsocketUrl", weAppWebsocketUrl)
       const mockConn = {
         ...weClient.renderInfo.appletClient.client,
-        appInfo: async ({ installed_app_id }) => {
+        appInfo: async (installed_app_id) => {
           return {
             cell_info: weClient.renderInfo.appletClient.cachedAppInfo.cell_info
           }

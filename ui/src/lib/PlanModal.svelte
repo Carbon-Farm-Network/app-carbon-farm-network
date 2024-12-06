@@ -3,7 +3,7 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
-  import type { Unit, AgentConnection, UnitConnection, PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams, ProcessCreateParams, ProcessUpdateParams, Commitment } from '@valueflows/vf-graphql'
+  import type { Unit, AgentConnection, UnitConnection, PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams, ProcessCreateParams, ProcessUpdateParams, Commitment } from '@leosprograms/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
@@ -327,8 +327,9 @@
     commitmentsSavedCount = 0
     let p = await addOrUpdatePlan(editing)
     // SAVE INDEPENDENT DEMANDS (commitments with no input or output)
+    console.log("about to save independent demands")
     for (const c of commitments) {
-      console.log(c)
+      console.log("saving c", c)
       console.log("agents", agents)
       let o = {
         ...c,
@@ -350,6 +351,7 @@
 
       console.log('added independent', o)
     }
+    console.log("saved independent demands")
 
     for (const column of allColumns) {
       for (const process of column) {

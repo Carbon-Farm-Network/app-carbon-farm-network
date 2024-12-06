@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Proposal } from '@valueflows/vf-graphql'
+  import type { Proposal } from '@leosprograms/vf-graphql'
   import type { AgentExtended } from '$lib/graphql/extension-schemas'
 
   let dropdownOpen = false

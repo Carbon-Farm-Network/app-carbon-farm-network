@@ -515,3 +515,63 @@ export const PLAN_RETURN_FIELDS = gql`
     }
   }
 `
+
+export const NON_PROCESS_COMMITMENT_RETURN_FIELDS = gql`
+  fragment nonProcessCommitments on Plan {
+    nonProcessCommitments {
+      id
+      revisionId
+      stageId
+      action {
+        id
+        label
+      }
+      finished
+      fulfilledBy {
+        id
+      }
+      receiverId
+      providerId
+      resourceQuantity {
+        hasNumericalValue
+        hasUnitId
+      }
+      resourceConformsTo {
+        id
+        name
+        defaultUnitOfResourceId
+      }
+      clauseOf {
+        id
+        name
+        note
+        revisionId
+        commitments {
+          finished
+          fulfilledBy {
+            id
+          }
+          id
+          revisionId
+          providerId
+          receiverId
+          hasBeginning
+          action {
+            id
+            label
+          }
+          resourceConformsTo {
+            id
+            name
+            defaultUnitOfResourceId
+            resourceClassifiedAs
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnitId
+          }
+        }
+      }
+    }
+  }
+`

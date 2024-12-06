@@ -1,5 +1,5 @@
 import { gql } from 'graphql-tag'
-import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, EconomicEvent } from '@valueflows/vf-graphql'
+import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, EconomicEvent } from '@leosprograms/vf-graphql'
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
@@ -35,6 +35,28 @@ export async function addHashChange(original: string, newHash: string) {
       getAllHashChanges()
   }
 }
+
+const ADD_UNIT = gql`
+${UNIT_CORE_FIELDS},
+mutation($unit: UnitCreateParams!){
+  createUnit(unit: $unit) {
+    unit {
+      ...UnitCoreFields
+    }
+  }
+}
+`
+
+const UPDATE_UNIT = gql`
+${UNIT_CORE_FIELDS},
+mutation($unit: UnitUpdateParams!){
+  updateUnit(unit: $unit) {
+    unit {
+      ...UnitCoreFields
+    }
+  }
+}
+`
 
 const ADD_AGENT = gql`
 ${AGENT_CORE_FIELDS},
@@ -249,6 +271,26 @@ mutation($process: ProcessCreateParams!){
 }
 `
 
+export const addUnit = async (unit: any) => {
+  const res = await client.mutate({
+    mutation: ADD_UNIT,
+    variables: {
+      unit
+    }
+  });
+  return res
+}
+
+export const updateUnit = async (unit: any) => {
+  const res = await client.mutate({
+    mutation: UPDATE_UNIT,
+    variables: {
+      unit
+    }
+  });
+  return res
+}
+
 export const addProcessSpecification = async (process: ProcessCreateParams) => {
   console.log('addProcessSpecification', process)
   const res = await client.mutate({
@@ -407,12 +449,17 @@ export const createFulfillment = async (fulfillment: any) => {
 }
 
 export const updateCommitment = async (commitment: any) => {
+  console.log("Update commitment", JSON.stringify(commitment))
   return await client.mutate({
     mutation: UPDATE_COMMITMENT,
     variables: {
       commitment
     }
   })
+}
+
+export const createCommitmentResponsive = async (commitment: any) => {
+  
 }
 
 export const createCommitment = async (commitment: any) => {
@@ -431,10 +478,12 @@ export const createAgreement = async (ag: any) => {
       ag
     }
   })
+  console.log("create agreement", res)
   return res.data.createAgreement.agreement
 }
 
 export const deleteCommitment = async (revisionId: string) => {
+  console.log("DELETING COMMITMENT", revisionId)
   return await client.mutate({
     mutation: DELETE_COMMITMENT,
     variables: {
@@ -444,6 +493,7 @@ export const deleteCommitment = async (revisionId: string) => {
 }
 
 export const deleteAgreement = async (revisionId: string) => {
+  console.log("delete agreement", revisionId)
   return await client.mutate({
     mutation: gql`
       mutation {

@@ -14,9 +14,9 @@ importers:
       '@holochain/hc-spin':
         specifier: ^0.200.3
         version: 0.200.10
-      '@lightningrodlabs/we-dev-cli':
-        specifier: '=0.13.0-beta.0'
-        version: 0.13.0-beta.0(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4)
+      '@theweave/cli':
+        specifier: ^0.13.0-gamma.6
+        version: 0.13.0-gamma.6(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4)
       '@types/svelte-leafletjs':
         specifier: ^0.8.3
         version: 0.8.7
@@ -57,20 +57,20 @@ importers:
         specifier: ^3.7.14
         version: 3.9.10(@types/react@18.3.4)(graphql@15.8.0)
       '@holochain/client':
-        specifier: ^0.18.0-dev.0
-        version: 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+        specifier: ^0.18.0-dev.13
+        version: 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@leosprograms/graphql-client-holochain':
-        specifier: 0.6.12
-        version: 0.6.12(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0)
+        specifier: 0.6.19
+        version: 0.6.19(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0)
       '@leosprograms/vf-graphql':
-        specifier: ^0.9.0-alpha.11
-        version: 0.9.0-alpha.11(graphql@15.8.0)
+        specifier: ^0.9.0-alpha.12
+        version: 0.9.0-alpha.12(graphql@15.8.0)
       '@leosprograms/vf-graphql-holochain':
-        specifier: 0.6.12
-        version: 0.6.12(graphql@15.8.0)
+        specifier: 0.6.19
+        version: 0.6.19(graphql@15.8.0)
       '@lightningrodlabs/we-applet':
         specifier: ^0.17.1
-        version: 0.17.1(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+        version: 0.17.1(@types/react@18.3.4)
       '@msgpack/msgpack':
         specifier: ^2.7.2
         version: 2.8.0
@@ -98,6 +98,9 @@ importers:
       leaflet:
         specifier: ^1.9.3
         version: 1.9.4
+      papaparse:
+        specifier: ^5.4.1
+        version: 5.4.1
       svelte-apollo:
         specifier: ^0.5.0
         version: 0.5.0(@apollo/client@3.9.10)(graphql@15.8.0)(svelte@3.59.2)
@@ -979,11 +982,11 @@ packages:
   /@holo-host/identicon@0.1.0:
     resolution: {integrity: sha512-Dn5pTV/m3XaK1Zvq3liw/vQUt7goM7Y84x2zUyH8cb9CNMs4kPCNHs3kalbJZ/ymzFvwcdiLwwNW8AKk+WWN5A==}
 
-  /@holochain-open-dev/elements@0.400.0-dev.0(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+  /@holochain-open-dev/elements@0.400.0-dev.0(@types/react@18.3.4):
     resolution: {integrity: sha512-qyR15gK12mGJ3vzKiYEXSwcVPHWBbnLESfGA7BXeeVEhEAFJVdBxvu5rlSJGdi8pqMZ9SRkZ3nH1JBvBpuhpBA==}
     dependencies:
       '@holo-host/identicon': 0.1.0
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
       '@shoelace-style/shoelace': 2.16.0(@types/react@18.3.4)
@@ -996,14 +999,34 @@ packages:
       - '@types/react'
       - bufferutil
       - utf-8-validate
+    dev: false
 
-  /@holochain-open-dev/profiles@0.400.0-dev.1(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+  /@holochain-open-dev/elements@0.400.0-dev.3(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-dlGBnDxQKmhXElO32ipjkgxdD6nmfPR2edLYDHzGWdP4uetNWTrbqSjWfw+dqDMmGG1nQkmIkTeBAFBstVgWoQ==}
+    dependencies:
+      '@holo-host/identicon': 0.1.0
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@lit/localize': 0.12.2
+      '@mdi/js': 7.4.47
+      '@shoelace-style/shoelace': 2.16.0(@types/react@18.3.4)
+      lit: 3.2.0
+      prosemirror-commands: 1.6.0
+      prosemirror-keymap: 1.2.2
+      prosemirror-state: 1.4.3
+      prosemirror-view: 1.34.0
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+    dev: true
+
+  /@holochain-open-dev/profiles@0.400.0-dev.1(@types/react@18.3.4):
     resolution: {integrity: sha512-JMPmAilgHMBMn8R8gPc3eJZno+Hckeh/is1XzHQxZRsITvB5+ow3dQ+vOh3CTyU/fiBaumZVbBwMLkVRtdqSng==}
     dependencies:
-      '@holochain-open-dev/elements': 0.400.0-dev.0(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@holochain-open-dev/stores': 0.400.0-dev.0(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@holochain-open-dev/utils': 0.400.0-dev.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain-open-dev/elements': 0.400.0-dev.0(@types/react@18.3.4)
+      '@holochain-open-dev/stores': 0.400.0-dev.0(@types/react@18.3.4)
+      '@holochain-open-dev/utils': 0.400.0-dev.0
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@lit/context': 1.1.2
       '@lit/localize': 0.12.2
       '@mdi/js': 7.4.47
@@ -1013,13 +1036,32 @@ packages:
       - '@types/react'
       - bufferutil
       - utf-8-validate
+    dev: false
 
-  /@holochain-open-dev/stores@0.400.0-dev.0(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+  /@holochain-open-dev/profiles@0.400.0-dev.4(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-fwYpbPmdxbPv9DlnXXmhk/BGka6j/ovPGj4EkN5Uv3ao3BNHHIhBm39dRmlJVC8JXOJCPYeIkeEOM6/92A61aw==}
+    dependencies:
+      '@holochain-open-dev/elements': 0.400.0-dev.3(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain-open-dev/stores': 0.400.0-dev.3(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain-open-dev/utils': 0.400.0-dev.4(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@lit/context': 1.1.2
+      '@lit/localize': 0.12.2
+      '@mdi/js': 7.4.47
+      '@shoelace-style/shoelace': 2.16.0(@types/react@18.3.4)
+      lit: 3.2.0
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+    dev: true
+
+  /@holochain-open-dev/stores@0.400.0-dev.0(@types/react@18.3.4):
     resolution: {integrity: sha512-yRWDYfBb90lNL3jgtsOfWc+g/oZeDHrIolrfne5vql24usKVlBdzyh3eoY+JsyDnB8x/HUMWnRsC4R94dhSl6Q==}
     dependencies:
       '@alenaksu/json-viewer': 2.0.1
-      '@holochain-open-dev/utils': 0.400.0-dev.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain-open-dev/utils': 0.400.0-dev.0
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@scoped-elements/cytoscape': 0.2.0
       '@shoelace-style/shoelace': 2.16.0(@types/react@18.3.4)
       lit: 3.2.0
@@ -1029,11 +1071,29 @@ packages:
       - '@types/react'
       - bufferutil
       - utf-8-validate
+    dev: false
 
-  /@holochain-open-dev/utils@0.400.0-dev.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+  /@holochain-open-dev/stores@0.400.0-dev.3(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-keo5lLzsz151tCLLHKfbmcEYd7aDpFMDhG9QphvloqETuVAX/MRINrrgY8yEaas2upmTBI+G2avs9VZLXc1mxw==}
+    dependencies:
+      '@alenaksu/json-viewer': 2.0.1
+      '@holochain-open-dev/utils': 0.400.0-dev.4(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@scoped-elements/cytoscape': 0.2.0
+      '@shoelace-style/shoelace': 2.16.0(@types/react@18.3.4)
+      lit: 3.2.0
+      lit-svelte-stores: 0.3.3
+      svelte: 3.59.2
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+    dev: true
+
+  /@holochain-open-dev/utils@0.400.0-dev.0:
     resolution: {integrity: sha512-FEgfaYQKCyGe6zDPLzLID6yuroHKjytQyRYoU2eoLR44ftqm0OEQ689snbTxkwjO3VEWyFmxrxEjpnV2rGQYAg==}
     dependencies:
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@msgpack/msgpack': 2.8.0
       blakejs: 1.2.1
       emittery: 1.0.3
@@ -1042,6 +1102,21 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: false
+
+  /@holochain-open-dev/utils@0.400.0-dev.4(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-/SJIrR2uPJqXPHQ18a2fSjs83G94zbluMA34103iMqnN06JXWfSyiZWHrgovgP9MQ2DXDK1D9QahsTHzvmlQwQ==}
+    dependencies:
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@msgpack/msgpack': 2.8.0
+      blakejs: 1.2.1
+      emittery: 1.0.3
+      lodash-es: 4.17.21
+      sort-keys: 5.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: true
 
   /@holochain-playground/cli@0.1.1:
     resolution: {integrity: sha512-JbapAe+uBaec52rTePjdlP0mq3zQhJG/hrdbCd+eecZLA3cXWEGgISR5YwLtx6udN+0ghCDH4U6KILjPiwWZMg==}
@@ -1099,8 +1174,44 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@holochain/client@0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+  /@holochain/client@0.18.0-dev.13(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-pwmqsVRhzERt036Ms3Nch7UT94u1+kEPnGF1rcYParrx8lE5aol5XxW5UqS1wiIoadd5iYjYXJE8CJI2fga0Sg==}
+    engines: {node: '>=18.0.0 || >=20.0.0'}
+    dependencies:
+      '@bitgo/blake2b': 3.2.4
+      '@holochain/serialization': 0.1.0-beta-rc.3
+      '@msgpack/msgpack': 2.8.0
+      emittery: 1.0.3
+      isomorphic-ws: 5.0.0(ws@8.18.0)
+      js-base64: 3.7.7
+      libsodium-wrappers: 0.7.13
+      lodash-es: 4.17.21
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: true
+
+  /@holochain/client@0.18.0-dev.3:
     resolution: {integrity: sha512-TlEJKKCoB/10VhZt7izHjOCts99zUv75flAaPr7Czs7fsiXQ5N2Yspjer5KosNsTIy2tSjzh9KRKQynFq58apA==}
+    engines: {node: '>=18.0.0 || >=20.0.0'}
+    dependencies:
+      '@bitgo/blake2b': 3.2.4
+      '@holochain/serialization': 0.1.0-beta-rc.3
+      '@msgpack/msgpack': 2.8.0
+      emittery: 1.0.3
+      isomorphic-ws: 5.0.0(ws@8.18.0)
+      js-base64: 3.7.7
+      libsodium-wrappers: 0.7.13
+      lodash-es: 4.17.21
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@holochain/client@0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-y9dfvrnUL4OeIhW+yHUnsjsBMoWvL1HnvUKGjfoBQDBsqJGpanmysV6ALScNErF5axPVZ30/m0nmQ9NgpFzUGg==}
     engines: {node: '>=18.0.0 || >=20.0.0'}
     dependencies:
       '@bitgo/blake2b': 3.2.4
@@ -1264,16 +1375,16 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@leosprograms/graphql-client-holochain@0.6.12(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0):
-    resolution: {integrity: sha512-s0xiTxdfSNDFZRS5i0mYv0CnK/FBmEfd5CnSsGYVMzcI5M1tJLxgHl5qurcEahikfW1IdIziRUfP9zBcJ3k4DA==}
+  /@leosprograms/graphql-client-holochain@0.6.19(@apollo/client@3.9.10)(@types/react@18.3.4)(graphql@15.8.0):
+    resolution: {integrity: sha512-cLcckLuoUnN9c9XWF4PPu2Xhzwl7LE8eSfEkgiPZmm9E9DQQd+Rm3P4ZSu5xdw/C80NiiOgiY+5x55RHEdCqSw==}
     peerDependencies:
       '@apollo/client': '>=3'
       graphql: '14'
     dependencies:
       '@apollo/client': 3.9.10(@types/react@18.3.4)(graphql@15.8.0)
       '@apollo/link-schema': 2.0.0-beta.3(@types/react@18.3.4)(graphql@15.8.0)
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@leosprograms/vf-graphql-holochain': 0.6.12(graphql@15.8.0)
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@leosprograms/vf-graphql-holochain': 0.6.19(graphql@15.8.0)
       graphql: 15.8.0
       tslib: 2.6.2
     transitivePeerDependencies:
@@ -1286,15 +1397,15 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql-holochain@0.6.12(graphql@15.8.0):
-    resolution: {integrity: sha512-K+6Boe+guWdna9rBOxjb7t+vwycHpynFL04c7dII8PlvUR4d8spBP6x71ZFtj+pmj+XnviL3jvbREn+kfrzYcQ==}
+  /@leosprograms/vf-graphql-holochain@0.6.19(graphql@15.8.0):
+    resolution: {integrity: sha512-XulCLH5F0jee/fQp4SUStrzIGC+H2skLzbg6Xl72+KDRKT/gvvHNR5RUqDqaSB77EgIeAQ+XqMCHQ1Q6qKLXkQ==}
     peerDependencies:
       graphql: '14'
     dependencies:
       '@graphql-tools/schema': 9.0.19(graphql@15.8.0)
       '@graphql-tools/utils': 9.2.1(graphql@15.8.0)
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@leosprograms/vf-graphql': 0.9.0-alpha.11(graphql@15.8.0)
+      '@holochain/client': 0.18.0-rc.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@leosprograms/vf-graphql': 0.9.0-alpha.12(graphql@15.8.0)
       base64-js: 1.5.1
       big.js: 6.2.1
       buffer: 6.0.3
@@ -1311,8 +1422,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@leosprograms/vf-graphql@0.9.0-alpha.11(graphql@15.8.0):
-    resolution: {integrity: sha512-o8OHrgcloblzTnvR8L8UGsAgZArhVcEg57ByzI3hyXIf4XAIgvhk9Xy/nVzSuGyra4IwJE/k0lhmoIfZIzoZLg==}
+  /@leosprograms/vf-graphql@0.9.0-alpha.12(graphql@15.8.0):
+    resolution: {integrity: sha512-XBvpZ/4uZ6w89ERQYzcq4YfTt/z3NbgKp+xrfEuSMRLbGKOs/go44qH2iLJwB0F8q7KzXYImyPE5Jd8Beoyvhg==}
     peerDependencies:
       graphql: '>=14'
     dependencies:
@@ -1320,54 +1431,21 @@ packages:
       graphql: 15.8.0
     dev: false
 
-  /@lightningrodlabs/we-applet@0.17.1(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+  /@lightningrodlabs/we-applet@0.17.1(@types/react@18.3.4):
     resolution: {integrity: sha512-RoUttzPPziSfq+cbtw6k/ZjZkHsUMJOm0lSmI9Vo1wOPy3x8CK9Iau9mjyXCwiuGzKR8+1AJCTHSNlGyyzIabw==}
     dependencies:
-      '@holochain-open-dev/profiles': 0.400.0-dev.1(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain-open-dev/profiles': 0.400.0-dev.1(@types/react@18.3.4)
+      '@holochain/client': 0.18.0-dev.3
       '@msgpack/msgpack': 2.8.0
       js-base64: 3.7.7
     transitivePeerDependencies:
       - '@types/react'
       - bufferutil
       - utf-8-validate
+    dev: false
 
-  /@lightningrodlabs/we-dev-cli@0.13.0-beta.0(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4):
-    resolution: {integrity: sha512-zYGHi5FcY0aFdx28bo/f8X9t4MuSpUEoee6FvBXr5dfyAAgJlNWvQMfNcbMnczAb4BrD0KFxpC/VTIu7zQoJGQ==}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      '@electron-toolkit/preload': 2.0.0(electron@29.4.6)
-      '@electron-toolkit/utils': 2.0.1(electron@29.4.6)
-      '@holochain-open-dev/utils': 0.400.0-dev.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@holochain/client': 0.18.0-dev.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@lightningrodlabs/we-applet': 0.17.1(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@lightningrodlabs/we-rust-utils': 0.400.0-dev.10
-      '@matthme/electron-updater': 6.3.0-alpha.1
-      '@msgpack/msgpack': 2.8.0
-      adm-zip: 0.5.14
-      bufferutil: 4.0.8
-      commander: 11.1.0
-      electron: 29.4.6
-      electron-context-menu: 3.6.1
-      mime: 4.0.0
-      nanoid: 5.0.4
-      split: 1.0.1
-      ts-node: 10.9.2(@types/node@22.5.0)(typescript@5.5.4)
-      utf-8-validate: 6.0.4
-      uuid: 9.0.1
-      winston: 3.11.0
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - '@types/react'
-      - supports-color
-      - typescript
-    dev: true
-
-  /@lightningrodlabs/we-rust-utils-darwin-arm64@0.400.0-dev.10:
-    resolution: {integrity: sha512-yM1S3OuV3qmJjZcPRDax1GcfL5GyPt7ceRQg4DvigQwkjW3QOHJ1Slt7QtX1Mf7FJW8KuqkcT8WgsWfUlQHAZQ==}
+  /@lightningrodlabs/we-rust-utils-darwin-arm64@0.400.0-dev.12:
+    resolution: {integrity: sha512-tIfjYSxsdNzBhB7pKuKCZF4wQQ2q0jiJ7hyDyWqpll7gWiEq76h9E7mIRZMnS5geUZst3FLg124E8mFUKFFG2A==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -1375,8 +1453,8 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils-darwin-x64@0.400.0-dev.10:
-    resolution: {integrity: sha512-OiypY/Q9JxQBAJDcMrplbQqo6IbjISPDGUigAKtmsETEYzktzVsCzQB5eRhc92i6mbbxv2jLcu0I4WsVpapJ2w==}
+  /@lightningrodlabs/we-rust-utils-darwin-x64@0.400.0-dev.12:
+    resolution: {integrity: sha512-28iceGbg77MweUfEdZig0lyOan+IMmB9PnnWoYXjfwBfSjuC672aUrcxFbjfWvg07qTmw3u/SOL1voqszK0uNg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -1384,8 +1462,8 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils-linux-x64-gnu@0.400.0-dev.10:
-    resolution: {integrity: sha512-maOFyrp3xfPtcVWTqROYX17XHsMKYnQHpzj8ibShq8vINxNCUQUWIwYG4Tz4Mk+HZWbDJCOOvDxCk9t2r+iRmQ==}
+  /@lightningrodlabs/we-rust-utils-linux-x64-gnu@0.400.0-dev.12:
+    resolution: {integrity: sha512-8DhzdVqQdCrS8VsRkopW2x8lWpoWf5hXQODRz2th3Lqy3sU8OZZTLt3qGBKCl0qjBeQlNnvApUzdsIKwRqxk6g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -1393,8 +1471,8 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils-win32-x64-msvc@0.400.0-dev.10:
-    resolution: {integrity: sha512-MkkVQVGg39qEA6Sef80P5nuzER4s/pWwYfQvf8efif7KHFKri9YlF5o6l191p7ihJNuBgYzW4OlnZ/tauX30eQ==}
+  /@lightningrodlabs/we-rust-utils-win32-x64-msvc@0.400.0-dev.12:
+    resolution: {integrity: sha512-iP54daZSJsomgzp2bF6udnfSQ+fBwepr/mqdcsEV2KC8q45kGKEfYGns/U5sgyVGZU2C9Tedk2uAMbHE9cYq4w==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -1402,14 +1480,14 @@ packages:
     dev: true
     optional: true
 
-  /@lightningrodlabs/we-rust-utils@0.400.0-dev.10:
-    resolution: {integrity: sha512-DWu8+Xk7fodFpBcGEP7XQeN6OvpQcpDqZkM80Z1/AvrQ2J30A+/fBKRbC0gZBt39civ1mMhPxMrpeJGiYyRY1g==}
+  /@lightningrodlabs/we-rust-utils@0.400.0-dev.12:
+    resolution: {integrity: sha512-hHxHMHwsueDk0CqXdnKf4/eIaFTU4C6UNFO1hZDPUkc2NmZ2fmC5GmtMYKajJvrT0KC3sRRpqC4k78Ctuq0Crg==}
     engines: {node: '>= 10'}
     optionalDependencies:
-      '@lightningrodlabs/we-rust-utils-darwin-arm64': 0.400.0-dev.10
-      '@lightningrodlabs/we-rust-utils-darwin-x64': 0.400.0-dev.10
-      '@lightningrodlabs/we-rust-utils-linux-x64-gnu': 0.400.0-dev.10
-      '@lightningrodlabs/we-rust-utils-win32-x64-msvc': 0.400.0-dev.10
+      '@lightningrodlabs/we-rust-utils-darwin-arm64': 0.400.0-dev.12
+      '@lightningrodlabs/we-rust-utils-darwin-x64': 0.400.0-dev.12
+      '@lightningrodlabs/we-rust-utils-linux-x64-gnu': 0.400.0-dev.12
+      '@lightningrodlabs/we-rust-utils-win32-x64-msvc': 0.400.0-dev.12
     dev: true
 
   /@lit-labs/ssr-dom-shim@1.2.0:
@@ -1690,6 +1768,53 @@ packages:
   /@tauri-apps/api@1.5.3:
     resolution: {integrity: sha512-zxnDjHHKjOsrIzZm6nO5Xapb/BxqUq1tc7cGkFXsFkGTsSWgCPH1D8mm0XS9weJY2OaR73I3k3S+b7eSzJDfqA==}
     engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
+
+  /@theweave/api@0.2.0(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-JrY8Q3g3JEzz44PO8NulNIAGH+jLslre9htHEoWG+kjpF+AeYOMGtPGf18GuFRiJdumIPocPTqOls3L+H05Wtg==}
+    dependencies:
+      '@holochain-open-dev/profiles': 0.400.0-dev.4(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain/client': 0.18.0-dev.13(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@msgpack/msgpack': 2.8.0
+      js-base64: 3.7.7
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+    dev: true
+
+  /@theweave/cli@0.13.0-gamma.6(@types/node@22.5.0)(@types/react@18.3.4)(typescript@5.5.4):
+    resolution: {integrity: sha512-QwFbnaP6JLgozT6N1O8oNYZHCIEFsVIZyZlSu3WiV9SWouePeGc9DqukV394/v5sH//PpboeEu5IQdDo3YXapg==}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@electron-toolkit/preload': 2.0.0(electron@29.4.6)
+      '@electron-toolkit/utils': 2.0.1(electron@29.4.6)
+      '@holochain-open-dev/utils': 0.400.0-dev.4(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@holochain/client': 0.18.0-dev.13(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      '@lightningrodlabs/we-rust-utils': 0.400.0-dev.12
+      '@matthme/electron-updater': 6.3.0-alpha.1
+      '@msgpack/msgpack': 2.8.0
+      '@theweave/api': 0.2.0(@types/react@18.3.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      adm-zip: 0.5.14
+      bufferutil: 4.0.8
+      commander: 11.1.0
+      electron: 29.4.6
+      electron-context-menu: 3.6.1
+      mime: 4.0.0
+      nanoid: 5.0.4
+      split: 1.0.1
+      ts-node: 10.9.2(@types/node@22.5.0)(typescript@5.5.4)
+      utf-8-validate: 6.0.4
+      uuid: 9.0.1
+      winston: 3.11.0
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - '@types/react'
+      - supports-color
+      - typescript
+    dev: true
 
   /@trysound/sax@0.2.0:
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
@@ -4677,6 +4802,10 @@ packages:
     dependencies:
       p-limit: 3.1.0
     dev: true
+
+  /papaparse@5.4.1:
+    resolution: {integrity: sha512-HipMsgJkZu8br23pW15uvo6sib6wne/4woLZPlFf3rpDyMe9ywEXUsuD7+6K9PRkJlVT51j/sCOYDKGGS3ZJrw==}
+    dev: false
 
   /parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}

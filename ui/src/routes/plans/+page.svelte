@@ -8,7 +8,7 @@
   import { page } from "$app/stores"
   import type { ReadableQuery } from 'svelte-apollo'
   import type { RelayConn } from '$lib/graphql/helpers'
-  import type { PlanConnection } from '@valueflows/vf-graphql'
+  import type { PlanConnection } from '@leosprograms/vf-graphql'
   import Export from '$lib/Export.svelte'
 
 

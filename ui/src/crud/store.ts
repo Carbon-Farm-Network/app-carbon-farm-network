@@ -14,6 +14,8 @@ export const allEconomicResources = writable([]);
 export const allActions = writable([]);
 export const fullPlans = writable({});
 export const allFulfillments = writable([]);
+export const allCommitments = writable([]);
+export const allAgreements = writable([]);
 
 export function setHashChanges(newHashChanges: any) {
     allHashChanges.update(v => newHashChanges);
@@ -80,20 +82,36 @@ export function setFulfillments(newFulfillments: any) {
     allFulfillments.update(v => newFulfillments);
 }
 
+export function setCommitments(newCommitments: any) {
+    allCommitments.update(v => newCommitments);
+}
+
+export function setAgreements(newAgreements: any) {
+    allAgreements.update(v => newAgreements);
+}
+
 export function addToFullPlans(newPlan: any) {
     fullPlans.update(v => {
         return { ...v, [newPlan.id]: newPlan };
     });
 }
 
+export function addNonProcessCommitmentsToPlan(planId: string, commitments: any[]) {
+    fullPlans.update(v => {
+        let newPlan = v[planId]
+        newPlan.nonProcessCommitments = commitments
+        return { ...v, [newPlan.id]: newPlan };
+    });
+}
+
 export function updateProcessInPlan(process: any) {
-    console.log('updateProcessInPlan', process);
+    // console.log('updateProcessInPlan', process);
     const planId = process.plannedWithin.id;
     fullPlans.update(v => {
         // find the plan with the correct id
         // then replace the relevant process with the new one
         let newPlan = v[planId]
-        console.log(newPlan)
+        // console.log(newPlan)
         newPlan.processes = newPlan.processes.map((p: any) => {
             if (p.id == process.id) {
                 return process
@@ -101,7 +119,7 @@ export function updateProcessInPlan(process: any) {
                 return p
             }
         })
-        console.log("NEW PLAN", newPlan)
+        // console.log("NEW PLAN", newPlan)
         return { ...v, [newPlan.id]: newPlan };
     });
 }
@@ -110,13 +128,53 @@ export function removeProcessCommitmentFromPlan(planId: string, processId: strin
     fullPlans.update(v => {
         let newPlan = v[planId]
         newPlan.processes = newPlan.processes.map((p: any) => {
+            // console.log(p.id, processId)
             if (p.id == processId) {
-                p.commitments = p.commitments.filter((c: any) => c.id != commitmentId)
+                p.committedInputs = p.committedInputs.filter((c: any) => c.id != commitmentId)
+                p.committedOutputs = p.committedOutputs.filter((c: any) => c.id != commitmentId)
                 return p
             } else {
                 return p
             }
         })
+        return { ...v, [newPlan.id]: newPlan };
+    });
+}
+
+export function removeNonProcessCommitmentFromPlan(planId: string, commitmentId: string) {
+    fullPlans.update(v => {
+        let newPlan = v[planId]
+        newPlan.nonProcessCommitments = newPlan.nonProcessCommitments.filter((c: any) => c.id != commitmentId)
+        return { ...v, [newPlan.id]: newPlan };
+    });
+}
+
+export function addProcessCommitmentToPlan(planId: string, processId: string, inputOutput: any, commitment: any) {
+    // console.log('addProcessCommitmentToPlan', planId, processId, inputOutput, commitment);
+    fullPlans.update(v => {
+        let newPlan = v[planId]
+        newPlan.processes = newPlan.processes.map((p: any) => {
+            if (p.id == processId) {
+                p[inputOutput].push(commitment)
+                return p
+            } else {
+                return p
+            }
+        })
+        return { ...v, [newPlan.id]: newPlan };
+    });
+}
+
+export function addNonProcessCommitmentToPlan(planId: string, commitment: any) {
+    // console.log('addNonProcessCommitmentToPlan', planId, commitment);
+    fullPlans.update(v => {
+        let newPlan = v[planId]
+        // console.log("new plan 0 " + JSON.stringify(newPlan.nonProcessCommitments.length))
+        newPlan.nonProcessCommitments.push({
+            ...commitment,
+            stageId: commitment.stage
+        })
+        // console.log("new plan 1 " + JSON.stringify(newPlan.nonProcessCommitments.length))
         return { ...v, [newPlan.id]: newPlan };
     });
 }

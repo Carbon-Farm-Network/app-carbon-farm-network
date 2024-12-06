@@ -249,6 +249,22 @@
             <button
               type="button"
               class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/commitments')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Exchanges</button
+            >
+            <button
+              type="button"
+              class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/units')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Units</button
+            >
+            <button
+              type="button"
+              class="block px-4 py-2 text-sm text-gray-700"
               on:click={() => navigate('/facets')}
               role="menuitem"
               tabindex="-1"

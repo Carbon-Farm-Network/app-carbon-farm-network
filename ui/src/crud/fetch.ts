@@ -1,15 +1,17 @@
 import { gql } from 'graphql-tag'
-import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@valueflows/vf-graphql'
+import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@leosprograms/vf-graphql'
 import { FULFILLMENT_CORE_FIELDS } from '$lib/graphql/fulfillment_fragments'
+import { AGREEMENT_CORE_FIELDS } from '$lib/graphql/agreement.fragments'
 import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
 import { FACET_GROUP_CORE_FIELDS, FACET_VALUE_CORE_FIELDS } from "$lib/graphql/facet.fragments"
 import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-import { COMMITMENT_RETURN_FIELDS, PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
+import { COMMITMENT_RETURN_FIELDS, NON_PROCESS_COMMITMENT_RETURN_FIELDS, PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
 import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragments'
 import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources.fragments'
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments } from './store'
+import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, 
+  setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan } from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
 import { decode } from '@msgpack/msgpack';
@@ -93,8 +95,10 @@ query GetUnits {
       cursor
       node {
         id
+        revisionId
         label
         symbol
+        omUnitIdentifier
       }
     }
   }
@@ -157,6 +161,38 @@ query {
 }
 `
 
+const GET_AGREEMENTS = gql`
+${AGREEMENT_CORE_FIELDS}
+query {
+  agreements(last: 100000) {
+    edges {
+      cursor
+      node {
+        ...AgreementCoreFields
+      }
+    }
+  }
+}
+`
+
+const GET_COMMITMENTS = gql`
+${COMMITMENT_RETURN_FIELDS}
+query {
+  commitments(last: 100000) {
+    pageInfo {
+      startCursor
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        ...CommitmentReturnFields
+      }
+    }
+  }
+}
+`
+
 const GET_PLAN = gql`
 ${PLAN_RETURN_FIELDS}
 query GetPlan($id: ID!) {
@@ -165,6 +201,16 @@ query GetPlan($id: ID!) {
   }
 }
 `
+
+const GET_NON_PROCESS_COMMITMENTS = gql`
+${NON_PROCESS_COMMITMENT_RETURN_FIELDS}
+query GetPlan($id: ID!) {
+  plan(id: $id) {
+    ...nonProcessCommitments
+  }
+}
+`
+
 
 const GET_SIMPLIFIED_PLAN = gql`
 ${SIMPLIFIED_PLAN_RETURN_FIELDS}
@@ -312,6 +358,24 @@ export const getAllActions = async () => {
   return res.data.actions
 }
 
+export const getAllCommitments = async () => {
+  const res = await client.query({
+    query: GET_COMMITMENTS,
+    fetchPolicy: 'no-cache'
+  })
+  setCommitments(res.data.commitments.edges.map((edge: any) => edge.node))
+  return res
+}
+
+export const getAllAgreements = async () => {
+  const res = await client.query({
+    query: GET_AGREEMENTS,
+    fetchPolicy: 'no-cache'
+  })
+  setAgreements(res.data.agreements.edges.map((edge: any) => edge.node))
+  return res
+}
+
 const getFulfillments = async () => {
   // const res = await client.query({
   //   query: GET_FULFILLMENTS,
@@ -334,13 +398,11 @@ const getFulfillments = async () => {
         fn_name: 'read_all_fulfillments',
         payload: {},
     })
-    console.log("get all ful", res)
     let formattedResults = res.edges.map((edge: any) => {return {
       id: translateId(`${encodeHashToBase64(edge.node.id[1])}:${encodeHashToBase64(edge.node.id[0])}`),
       fulfilledBy: translateId(`${encodeHashToBase64(edge.node.fulfilledBy[1])}:${encodeHashToBase64(edge.node.fulfilledBy[0])}`),
       fulfills: translateId(`${encodeHashToBase64(edge.node.fulfills[1])}:${encodeHashToBase64(edge.node.fulfills[0])}`),
     }})
-    console.log("formatted", formattedResults)
     setFulfillments(formattedResults)
     return formattedResults
   }
@@ -351,7 +413,6 @@ export const getAllEconomicEvents = async () => {
     query: GET_ECONOMIC_EVENTS,
     fetchPolicy: 'no-cache'
   })
-  console.log("get all ec", res)
   await getFulfillments()
   setEconomicEvents(res.data.economicEvents.edges.map((edge: any) => edge.node))
   return res
@@ -387,7 +448,6 @@ export const getAllEconomicResources = async () => {
     query: GET_ECONOMIC_RESOURCES,
     fetchPolicy: 'no-cache'
   })
-  console.log("get all resources", res)
   setEconomicResources(res.data.economicResources.edges.map((edge: any) => edge.node))
   return res
 }
@@ -402,6 +462,18 @@ export const getPlan = async (id: string) => {
   })
   addToFullPlans(res.data.plan)
   return res.data.plan
+}
+
+export const getNonProcessCommitments = async (id: string) => {
+  const res = await client.query({
+    query: GET_NON_PROCESS_COMMITMENTS,
+    variables: {
+      id
+    },
+    fetchPolicy: 'no-cache'
+  })
+  addNonProcessCommitmentsToPlan(id, res.data.plan.nonProcessCommitments)
+  return res.data.plan.nonProcessCommitments
 }
 
 export const getSimplifiedPlan = async (id: string) => {

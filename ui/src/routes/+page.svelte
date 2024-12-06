@@ -5,7 +5,7 @@
   import { query } from 'svelte-apollo'
   import type { ReadableQuery } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
-  import type { AgentConnection, Agent, Proposal, ProposalConnection, ProposedIntent } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, Proposal, ProposalConnection, ProposedIntent } from '@leosprograms/vf-graphql'
   import ErrorPage from './__error.svelte'
   import Search from '$lib/Search.svelte'
   import SidePanel from '$lib/SidePanel.svelte'

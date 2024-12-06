@@ -62,6 +62,7 @@ if (browser) {
 
   .main {
     grid-area: main;
+    overflow: auto;
   }
 
 </style>

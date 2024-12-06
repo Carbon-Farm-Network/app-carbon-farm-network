@@ -3,7 +3,7 @@
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   // import agents from '$lib/data/agents.json'
-  import type { AgentConnection, Agent, UnitConnection, Action } from '@valueflows/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection, Action } from '@leosprograms/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
@@ -47,13 +47,13 @@
     filteredActions = actions.filter((a) => a.label == 'transfer')
   }
 
-  $: if (selectedCommitment) {
-    if (selectedCommitment.clauseOf && selectedCommitment.clauseOf.commitments.length > 0) {
-      saveCost = true
-    } else {
-      saveCost = false
-    }
-  }
+  // $: if (selectedCommitment) {
+  //   if (selectedCommitment.clauseOf && selectedCommitment.clauseOf.commitments.length > 0) {
+  //     saveCost = true
+  //   } else {
+  //     saveCost = false
+  //   }
+  // }
 
   $: provider = selectedCommitment.providerId ? agents.find(a => a.id == selectedCommitment.providerId) : selectedCommitment.provider
   $: receiver = selectedCommitment.receiverId ? agents.find(a => a.id == selectedCommitment.receiverId) : selectedCommitment.receiver
