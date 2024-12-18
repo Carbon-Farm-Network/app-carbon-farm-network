@@ -270,14 +270,30 @@
               tabindex="-1"
               id="user-menu-item-1">Facets</button
             >
-            <!-- <button
+            <button
               type="button"
               class="block px-4 py-2 text-sm text-gray-700"
               on:click={() => navigate('/recipes')}
               role="menuitem"
               tabindex="-1"
               id="user-menu-item-1">Recipes</button
-            > -->
+            >
+            <button
+              type="button"
+              class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/recipe_exchanges')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Recipe Exchanges</button
+            >
+            <button
+              type="button"
+              class="block px-4 py-2 text-sm text-gray-700"
+              on:click={() => navigate('/export')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Export/Import</button
+            >
           </div>
         </div>
       </div>

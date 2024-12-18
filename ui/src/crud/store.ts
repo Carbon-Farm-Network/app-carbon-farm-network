@@ -16,6 +16,8 @@ export const fullPlans = writable({});
 export const allFulfillments = writable([]);
 export const allCommitments = writable([]);
 export const allAgreements = writable([]);
+export const allRecipes = writable([]);
+export const allRecipeExchanges = writable([]);
 
 export function setHashChanges(newHashChanges: any) {
     allHashChanges.update(v => newHashChanges);
@@ -177,4 +179,12 @@ export function addNonProcessCommitmentToPlan(planId: string, commitment: any) {
         // console.log("new plan 1 " + JSON.stringify(newPlan.nonProcessCommitments.length))
         return { ...v, [newPlan.id]: newPlan };
     });
+}
+
+export function setRecipes(newRecipes: any) {
+    allRecipes.update(v => newRecipes);
+}
+
+export function setRecipeExchanges(newRecipeExchanges: any) {
+    allRecipeExchanges.update(v => newRecipeExchanges);
 }

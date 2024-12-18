@@ -1,5 +1,5 @@
 <script lang="ts">
-  import recipes from '$lib/data/recipes-with-exchanges.json'
+  // import recipes from '$lib/data/recipes-with-exchanges.json'
   import { Decimal } from 'decimal.js'
   import PlanModal from '$lib/PlanModal.svelte'
   import CommitmentModal from '$lib/CommitmentModal.svelte'
@@ -8,13 +8,18 @@
   import { browser } from '$app/environment'
   import type { Unit, Action, Agent, Proposal, ResourceSpecification, PlanCreateParams } from '@leosprograms/vf-graphql'
   import { allActions, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../crud/store'
-  import { getAllActions, getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllResourceSpecifications, getAllUnits } from '../../../crud/fetch'
+  import { getAllActions, getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits } from '../../../crud/fetch'
   import { dragscroll } from '@svelte-put/dragscroll';
-  import { allHashChanges } from '../../../crud/store'
+  import { allHashChanges, allRecipes, allRecipeExchanges } from '../../../crud/store'
   import Export from '$lib/Export.svelte'
   import { createCommitments, makeAgreement, findExchange, assignProviderReceiver, createAgreements, aggregateCommitments, type Process, type Commitment, type Demand } from '../=helper'
   import { importPlan } from '../../../crud/import'
   import { goto } from '$app/navigation'
+
+  let recipes: any[] = []
+  allRecipes.subscribe((res) => {recipes = res})
+  let recipeExchanges: any[] = []
+  allRecipeExchanges.subscribe((res) => {recipeExchanges = res})
 
   let hashChanges: any = {}
   let agents: Agent[] = []
@@ -62,9 +67,25 @@
 
   allProposals.subscribe((res) => {
     if (!res.length || res.length == 0) return
-    requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
-    offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
-    proposalsList = res
+    let dedupedRes = res.map(it => {
+       //dedupe .publishes
+      let publishes = it.publishes
+      let deduped = publishes.reduce((acc, current) => {
+        const x = acc.find(item => item.id === current.id);
+        if (!x) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      }, []);
+      return {
+        ...it,
+        publishes: deduped
+      }
+    })
+    requests = dedupedRes.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
+    offers = dedupedRes.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
+    proposalsList = dedupedRes
   })
 
   onMount(async () => {
@@ -76,51 +97,60 @@
       await getAllUnits()
       await getAllResourceSpecifications()
       await getAllProcessSpecifications()
+      await getAllRecipes()
+      await getAllRecipeExchanges()
     }
   })
 
 
   // ===========================================
   const previousColumn = column => {
+    console.log("new column: ", column)
     return column
       .reduce((acc, input) => {
         if (input.resourceQuantity.hasNumericalValue > 0) {
           // find a recipe that outputs what the demand wants
           const recipe = recipes
-            .filter(it => it.type == 'recipe_process')
+            // .filter(it => it.type == 'recipe_process')
             .find(a_recipe => {
+              console.log("testing recipe: ", a_recipe, "input: ", input)
               if (input.stage) {
-                return a_recipe?.has_recipe_output?.some(
+                console.log("outputs 0: ", a_recipe.recipeOutputs, "input: ", input)
+                return a_recipe?.recipeOutputs?.some(
                   output =>
                     output.resourceConformsTo.name == input.resourceConformsTo.name &&
-                    a_recipe.process_conforms_to.name == input.stage.name
+                    a_recipe.processConformsToId == input.stage.id
                 )
               } else {
-                return a_recipe.has_recipe_output.some(
+                console.log("outputs 1: ", a_recipe.recipeOutputs, "input: ", input)
+                return a_recipe.recipeOutputs.some(
                   output =>
-                    output.resourceConformsTo.name == input.resourceConformsTo.name
+                    output.resourceConformsTo?.name == input.resourceConformsTo?.name
                 )
               }
             })
           // if there is no recipe we just continue
           if (!recipe) {
+            console.log("no recipe found")
             return acc
           }
+          console.log("recipe found", recipe?.recipeOutputs.map(o => o.resourceConformsTo?.id), "input:", input.resourceConformsTo?.id)
           // find the output that matches the demand
-          let matching_output = recipe?.has_recipe_output?.find(
-            output => output.resourceConformsTo.name == input.resourceConformsTo.name
+          let matching_output = recipe?.recipeOutputs?.find(
+            output => output.resourceConformsTo?.id == input.resourceConformsTo?.id
           )
           // find the multiplier to make the demand required
           // TODO round up not down like it is now
-          // console.log(recipe, matching_output?.resourceQuantity?.hasNumericalValue)
+          console.log("recipe: ", recipe, "output: ", matching_output?.resourceQuantity?.hasNumericalValue)
           const multiplier = new Decimal(
             input.resourceQuantity.hasNumericalValue || '1'
           ).div(new Decimal(matching_output?.resourceQuantity?.hasNumericalValue))
 
-          let matching_input = recipe?.has_recipe_input?.find(
+          let matching_input = recipe?.recipeInputs?.find(
             an_input =>
-              an_input.resourceConformsTo.name == input.resourceConformsTo.name
+              an_input.resourceConformsTo?.id == input.resourceConformsTo?.id
           )
+          console.log("matchin input ((())): ", matching_input)
           matching_input = assignProviderReceiver(matching_input, agents)
           matching_input = Object.assign({}, matching_input, {
             resourceQuantity: {
@@ -130,6 +160,7 @@
                 .toString()
             }
           })
+          console.log("matchin input ((())): ", matching_input)
 
           matching_output = assignProviderReceiver(matching_output, agents)
           matching_output = Object.assign({}, matching_output, {
@@ -149,6 +180,7 @@
             matching_output?.action.label == 'modify'
           ) {
             const existing_process = acc.find(it => it.id == recipe.id)
+
             if (existing_process) {
               const remaining_processes = acc.filter(it => it.id != existing_process.id)
               const existing_services = existing_process.committedOutputs.filter(
@@ -202,6 +234,7 @@
               const non_matching_dependent_inputs = non_matching_inputs.filter(
                 it => !it.independent
               )
+
               return [
                 ...remaining_processes,
                 {
@@ -219,10 +252,11 @@
                 }
               ]
             } else {
-              const services = recipe?.has_recipe_output
+              const services = recipe?.recipeOutputs
                 .filter(output => output.action.label != 'dropoff' && output.action.label != 'modify')
                 .map(service => assignProviderReceiver(service, agents))
-              const non_matching_inputs = recipe?.has_recipe_input
+              console.log("here************************", matching_input)
+              const non_matching_inputs = recipe?.recipeInputs
                 .filter(
                   previous_input =>
                     previous_input.id != matching_input?.id &&
@@ -236,15 +270,17 @@
           } else {
             committedOutputs = [
               matching_output,
-              ...recipe?.has_recipe_output
+              ...recipe?.recipeOutputs
                 .filter(it => it.id != matching_output?.id)
                 .map(it => ({ ...it, editable: true }))
                 .map(output => assignProviderReceiver(output, agents))
             ]
-            committedInputs = recipe?.has_recipe_input
+            console.log("assigning committedInputs: ", recipe?.recipeInputs)
+            committedInputs = recipe?.recipeInputs
               ?.map(input => assignProviderReceiver(input, agents))
-              .map(input =>
-                Object.assign({}, input, {
+              .map(input => {
+                console.log("committed inputs: ", input)
+                return Object.assign({}, input, {
                   resourceQuantity: {
                     ...input.resourceQuantity,
                     hasNumericalValue: new Decimal(
@@ -255,15 +291,17 @@
                       .toString()
                   }
                 })
-              )
+              })
           }
+
+          console.log("&&&", committedInputs)
 
           return [
             ...acc,
             {
               id: recipe.id,
               name: recipe.name,
-              based_on: recipe.process_conforms_to,
+              based_on: processSpecifications.find(it => it.id == recipe.processConformsToId),
               committedOutputs,
               committedInputs
             }
@@ -275,6 +313,7 @@
   }
 
   function runInstructions(process: Process): Process {
+    console.log("running instructions on process: ", process)
     return {
       ...process,
       committedOutputs: process.committedOutputs.map(output => {
@@ -321,9 +360,11 @@
 
   function generateColumns(aggregatedCommitments: any[]): any[] {
     let previousProcesses = previousColumn(aggregatedCommitments)
+    console.log("previous processes: ", previousProcesses)
     let allColumnsLocal: any[] = []
     while (previousProcesses.length != 0) {
       allColumnsLocal = [previousProcesses, ...allColumnsLocal]
+      console.log("about to start new column: ", previousProcesses)
       previousProcesses = previousColumn(
         previousProcesses
           .flatMap((it: any) => it.committedInputs)
@@ -545,7 +586,7 @@
                       </p>
                       -->
                       <p>
-                        {action.label}
+                        {action?.label}
                         {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
                         {resourceQuantity?.hasUnit?.label}
                       </p>
@@ -649,7 +690,7 @@
             >
               <PlusCircle />
             </button>
-            {#if commitments.length == 0}
+            {#if commitments.length == 0 && recipes.length > 0}
               <div class="flex justify-center my-4">
                 <button
                   type="button"
@@ -693,6 +734,17 @@
                   }}
                 />
               </div> -->
+            {:else if recipes.length == 0}
+              <!-- loading button -->
+              <div class="flex justify-center my-4">
+                <button
+                  type="button"
+                  class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  disabled
+                >
+                  Loading recipes...
+                </button>
+              </div>
             {/if}
             {#each commitments as c}
               {@const resourceConformsTo = c.resourceConformsTo}

@@ -104,6 +104,10 @@ export const PROPOSAL_RETURN_FIELDS = gql`
             symbol
           }
         }
+        stage {
+          id
+          name
+        }
         provider {
           id
           name

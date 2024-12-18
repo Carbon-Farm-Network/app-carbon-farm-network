@@ -238,6 +238,7 @@ export function createAgreements(process: Process, recipes, offers, agents): Pro
 }
 
 export function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
+  console.log("requests", requests)
   return requests.flatMap(request =>
     request.publishes.filter(it => !it.reciprocal).map(proposed_intent => ({
       ...proposed_intent.publishes,
@@ -281,10 +282,13 @@ export function aggregateCommitments(commitments: Commitment[]): Demand[] {
           }
         }
       } else {
+        console.log("commitment ^^^", commitment)
         acc[commitment.resourceConformsTo.name] = {
-          resourceQuantity: commitment.resourceQuantity,
-          resourceConformsTo: commitment.resourceConformsTo,
-          stage: { name: 'Ship' }
+          ...commitment,
+          // resourceQuantity: commitment.resourceQuantity,
+          // resourceConformsTo: commitment.resourceConformsTo,
+          // stage: commitment.stage
+          // stage: { name: 'Ship' }
         }
       }
       return acc

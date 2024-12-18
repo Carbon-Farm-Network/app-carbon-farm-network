@@ -1,8 +1,30 @@
 <script lang="ts">
   import { clickOutside } from '../utils'
+  import { onMount } from 'svelte';
+  import { createRecipeProcess, updateRecipeProcess } from '../crud/commit'
+  import { getAllRecipes } from '../crud/fetch'
+  import { goto } from '$app/navigation'
 
   // public CustomElement attributes
   export let open = false
+  export let recipeProcess;
+  export let processSpecifications;
+
+  $: validToCreate = recipeProcess?.name && recipeProcess?.processConformsTo
+
+  function checkKey(e: any) {
+    if (e.key === "Escape" && !e.shiftKey) {
+      e.preventDefault();
+      open = false;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener("keydown", checkKey);
+    return () => {
+      window.removeEventListener("keydown", checkKey);
+    };
+  });
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -45,7 +67,6 @@
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
               Recipe Process
             </h3>
-
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -55,6 +76,8 @@
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
                   <input
+                    bind:value={recipeProcess.name}
+                    on:input={(e) => (recipeProcess.name = e.target.value)}
                     type="text"
                     name="name"
                     id="name"
@@ -76,10 +99,16 @@
                   >Process specification</label
                 >
                 <select
+                  bind:value={recipeProcess.processConformsTo}
+                  on:input={(e) => (recipeProcess.processConformsTo = e.target.value)}
                   id="provider"
                   name="provider"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
+                >
+                  {#each processSpecifications as processSpecification}
+                    <option value={processSpecification.id}>{processSpecification.name}</option>
+                  {/each}
+                </select>
               </div>
             </div>
 
@@ -92,6 +121,8 @@
                 >
                 <div class="mt-2">
                   <textarea
+                    bind:value={recipeProcess.note}
+                    on:input={(e) => (recipeProcess.note = e.target.value)}
                     id="note"
                     name="note"
                     rows="3"
@@ -103,12 +134,36 @@
           </div>
         </div>
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-          <button
-            type="button"
-            class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-          >
-            Create
-          </button>
+          {#if recipeProcess?.revisionId}
+            <button
+              type="button"
+              class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+              on:click={async () => {
+                console.log("recipe process 1", recipeProcess)
+                const res = await updateRecipeProcess(recipeProcess)
+                console.log("recipe process 2", res)
+                open = false
+                getAllRecipes()
+              }}
+            >
+              Update
+            </button>
+          {:else}
+            <button
+              disabled={!validToCreate}
+              type="button"
+              class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+              on:click={async () => {
+                console.log("recipe process 1", recipeProcess)
+                const res = await createRecipeProcess(recipeProcess)
+                console.log("recipe process 2", res)
+                open = false
+                goto(`/recipes/edit/${encodeURIComponent(res.data.createRecipeProcess.recipeProcess.id)}`)
+              }}
+            >
+              Create
+            </button>
+          {/if}
           <button
             type="button"
             on:click={() => (open = false)}

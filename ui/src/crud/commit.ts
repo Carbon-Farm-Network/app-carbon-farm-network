@@ -1,5 +1,5 @@
 import { gql } from 'graphql-tag'
-import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, EconomicEvent } from '@leosprograms/vf-graphql'
+import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, EconomicEvent, RecipeProcessCreateParams } from '@leosprograms/vf-graphql'
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
@@ -12,6 +12,7 @@ import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragm
 import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources.fragments'
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
+import { RECIPE_FLOW_CORE_FIELDS, RECIPE_PROCESS_CORE_FIELDS, RECIPE_EXCHANGE_CORE_FIELDS } from '$lib/graphql/recipe.fragments'
 import type { ProcessCreateParams } from '@leosprograms/vf-graphql';
 
 let client: any;
@@ -271,6 +272,90 @@ mutation($process: ProcessCreateParams!){
 }
 `
 
+const CREATE_RECIPE_FLOW = gql`
+${RECIPE_FLOW_CORE_FIELDS},
+mutation($recipeFlow: RecipeFlowCreateParams!){
+  createRecipeFlow(recipeFlow: $recipeFlow) {
+    recipeFlow {
+      ...RecipeFlowCoreFields
+    }
+  }
+}
+`
+
+const UPDATE_RECIPE_FLOW = gql`
+${RECIPE_FLOW_CORE_FIELDS},
+mutation($recipeFlow: RecipeFlowUpdateParams!){
+  updateRecipeFlow(recipeFlow: $recipeFlow) {
+    recipeFlow {
+      ...RecipeFlowCoreFields
+    }
+  }
+}
+`
+
+const DELETE_RECIPE_FLOW = gql`
+mutation($revisionId: ID!){
+  deleteRecipeFlow(revisionId: $revisionId)
+}
+`
+
+const CREATE_RECIPE_PROCESS = gql`
+${RECIPE_PROCESS_CORE_FIELDS},
+mutation($recipeProcess: RecipeProcessCreateParams!){
+  createRecipeProcess(recipeProcess: $recipeProcess) {
+    recipeProcess {
+      ...RecipeProcessCoreFields
+    }
+  }
+}
+`
+
+const UPDATE_RECIPE_PROCESS = gql`
+${RECIPE_PROCESS_CORE_FIELDS},
+mutation($recipeProcess: RecipeProcessUpdateParams!){
+  updateRecipeProcess(recipeProcess: $recipeProcess) {
+    recipeProcess {
+      ...RecipeProcessCoreFields
+    }
+  }
+}
+`
+
+const DELETE_RECIPE_PROCESS = gql`
+mutation($revisionId: ID!){
+  deleteRecipeProcess(revisionId: $revisionId)
+}
+`
+
+const CREATE_RECIPE_EXCHANGE = gql`
+${RECIPE_EXCHANGE_CORE_FIELDS},
+mutation($recipeExchange: RecipeExchangeCreateParams!){
+  createRecipeExchange(recipeExchange: $recipeExchange) {
+    recipeExchange {
+      ...RecipeExchangeCoreFields
+    }
+  }
+}
+`
+
+const UPDATE_RECIPE_EXCHANGE = gql`
+${RECIPE_EXCHANGE_CORE_FIELDS},
+mutation($recipeExchange: RecipeExchangeUpdateParams!){
+  updateRecipeExchange(recipeExchange: $recipeExchange) {
+    recipeExchange {
+      ...RecipeExchangeCoreFields
+    }
+  }
+}
+`
+
+const DELETE_RECIPE_EXCHANGE = gql`
+mutation($revisionId: ID!){
+  deleteRecipeExchange(revisionId: $revisionId)
+}
+`
+
 export const addUnit = async (unit: any) => {
   const res = await client.mutate({
     mutation: ADD_UNIT,
@@ -527,6 +612,88 @@ export const createProcess = async (process: any) => {
     mutation: CREATE_PROCESS,
     variables: {
       process
+    }
+  })
+}
+
+export const createRecipeFlow = async (recipeFlow: any) => {
+  return await client.mutate({
+    mutation: CREATE_RECIPE_FLOW,
+    variables: {
+      recipeFlow
+    }
+  })
+}
+
+export const updateRecipeFlow = async (recipeFlow: any) => {
+  return await client.mutate({
+    mutation: UPDATE_RECIPE_FLOW,
+    variables: {
+      recipeFlow
+    }
+  })
+}
+
+export const deleteRecipeFlow = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_RECIPE_FLOW,
+    variables: {
+      revisionId
+    }
+  })
+}
+
+export const createRecipeProcess = async (recipeProcess: RecipeProcessCreateParams) => {
+  console.log('createRecipeProcess', recipeProcess)
+  return await client.mutate({
+    mutation: CREATE_RECIPE_PROCESS,
+    variables: {
+      recipeProcess
+    }
+  })
+}
+
+export const updateRecipeProcess = async (recipeProcess: any) => {
+  return await client.mutate({
+    mutation: UPDATE_RECIPE_PROCESS,
+    variables: {
+      recipeProcess
+    }
+  })
+}
+
+export const deleteRecipeProcess = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_RECIPE_PROCESS,
+    variables: {
+      revisionId
+    }
+  })
+}
+
+export const createRecipeExchange = async (recipeExchange: any) => {
+  return await client.mutate({
+    mutation: CREATE_RECIPE_EXCHANGE,
+    variables: {
+      recipeExchange
+    }
+  })
+}
+
+export const updateRecipeExchange = async (recipeExchange: any) => {
+  return await client.mutate({
+    mutation: UPDATE_RECIPE_EXCHANGE,
+    variables: {
+      recipeExchange
+    }
+  })
+}
+
+export const deleteRecipeExchange = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_RECIPE_EXCHANGE,
+    variables: {
+      revisionId
     }
   })
 }

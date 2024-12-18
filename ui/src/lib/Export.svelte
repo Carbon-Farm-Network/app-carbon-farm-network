@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { getAllHashChanges } from '../crud/fetch';
   const dispatch = createEventDispatcher();
 
   export let dataName: string;
@@ -12,6 +13,10 @@
 
   let dataToImport: any = null;
   let dataUploaded: boolean = false;
+
+  onMount(async () => {
+    await getAllHashChanges();
+  });
 
   $: dataToImport;
 
@@ -38,6 +43,20 @@
     dataToImport = reader.readAsText(file);
     dataUploaded = true;
   }
+
+  function checkKey(e: any) {
+    if (e.key === "Escape" && !e.shiftKey) {
+      e.preventDefault();
+      open = false;
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('keydown', checkKey);
+    return () => {
+      window.removeEventListener('keydown', checkKey);
+    }
+  });
 </script>
 
 <!-- {#if !hideExport} -->

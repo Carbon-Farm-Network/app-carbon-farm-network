@@ -10,7 +10,8 @@ import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragm
 import { ECONOMIC_RESOURCE_RETURN_FIELDS } from '$lib/graphql/economic_resources.fragments'
 import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, 
+import { RECIPE_RETURN_FIELDS, RECIPE_EXCHANGE_RETURN_FIELDS } from '$lib/graphql/recipe.fragments'
+import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setRecipes, setRecipeExchanges, 
   setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan } from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
@@ -284,6 +285,34 @@ query {
 }
 `
 
+const GET_ALL_RECIPES = gql`
+${RECIPE_RETURN_FIELDS}
+query {
+  recipeProcesses(last: 100000) {
+    edges {
+      cursor
+      node {
+        ...RecipeCoreFields
+      }
+    }
+  }
+}
+`
+
+const GET_ALL_RECIPE_EXCHANGES = gql`
+${RECIPE_EXCHANGE_RETURN_FIELDS}
+query {
+  recipeExchanges(last: 100000) {
+    edges {
+      cursor
+      node {
+        ...RecipeExchangeCoreFields
+      }
+    }
+  }
+}
+`
+
 export const getAllAgents = async () => {
   const res = await client.query({
     query: GET_ALL_AGENTS,
@@ -336,6 +365,7 @@ export const getAllProcessSpecifications = async () => {
     query: GET_ALL_PROCESS_SPECIFICATIONS,
     fetchPolicy: 'no-cache'
   })
+  console.log("process specs", res)
   setProcessSpecifications(res.data.processSpecifications.edges.map((edge: any) => edge.node))
   return res
 }
@@ -495,4 +525,36 @@ export const getProcess = async (id: string) => {
     fetchPolicy: 'no-cache'
   })
   updateProcessInPlan(process.data.process)
+}
+
+export const getAllRecipes = async () => {
+  const res = await client.query({
+    query: GET_ALL_RECIPES,
+    fetchPolicy: 'no-cache'
+  })
+  let dedupedRecipes = res.data.recipeProcesses.edges.map((edge: any) => edge.node).map((recipe: any) => {
+    return {
+      ...recipe,
+      recipeInputs: recipe.recipeInputs.filter((input: any, index: number, self: any) => self.findIndex((t: any) => t.id === input.id) === index),
+      recipeOutputs: recipe.recipeOutputs.filter((output: any, index: number, self: any) => self.findIndex((t: any) => t.id === output.id) === index)
+    }
+  })
+  console.log("recipes", dedupedRecipes)
+  setRecipes(dedupedRecipes)
+  return res
+}
+
+export const getAllRecipeExchanges = async () => {
+  const res = await client.query({
+    query: GET_ALL_RECIPE_EXCHANGES,
+    fetchPolicy: 'no-cache'
+  })
+  let dedupedRecipeExchanges = res.data.recipeExchanges.edges.map((edge: any) => edge.node).map((recipeExchange: any) => {
+    return {
+      ...recipeExchange,
+      recipeClauses: recipeExchange.recipeClauses.filter((clause: any, index: number, self: any) => self.findIndex((t: any) => t.id === clause.id) === index),
+      recipeReciprocalClauses: recipeExchange.recipeReciprocalClauses.filter((reciprocalClause: any, index: number, self: any) => self.findIndex((t: any) => t.id === reciprocalClause.id) === index)
+    }
+  })
+  setRecipeExchanges(dedupedRecipeExchanges)
 }

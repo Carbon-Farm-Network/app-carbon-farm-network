@@ -6,13 +6,33 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, UnitConnection } from '@leosprograms/vf-graphql'
   import recipes from '$lib/data/recipes-with-exchanges.json'
+  import { createRecipeProcess, createRecipeExchange, createRecipeFlow } from '../crud/commit';
+  import { getAllProcessSpecifications, getAllResourceSpecifications, getAllActions, getAllUnits } from '../crud/fetch';
+  import { allProcessSpecifications, allResourceSpecifications, allActions, allUnits } from '../crud/store'
 
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
   import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
 
-  const devInit = false
+  let processSpecifications: any[] = []
+  allProcessSpecifications.subscribe(value => {
+    processSpecifications = value
+  })
+  let resourceSpecifications: any[] = []
+  allResourceSpecifications.subscribe(value => {
+    resourceSpecifications = value
+  })
+  let actions: any[] = []
+  allActions.subscribe(value => {
+    actions = value
+  })
+  let units: any[] = []
+  allUnits.subscribe(value => {
+    units = value
+  })
+
+  const devInit = true
 
   const INITIALIZE_UNITS = gql`
     ${UNIT_CORE_FIELDS}
@@ -154,6 +174,99 @@
   }
   const getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
 
+  async function addRecipes() {
+
+    await getAllProcessSpecifications()
+    await getAllResourceSpecifications()
+    await getAllActions()
+    await getAllUnits()
+
+    // add all recipes and recipe exchanges
+    for (let r of recipes) {
+      if (r.type == "recipe_process") {
+        // console.log(r)
+        // console.log(processSpecifications)
+        // let rProcRes = await createRecipeProcess({
+        //   name: r.name,
+        //   processConformsTo: processSpecifications.find(p => p.name === r.process_conforms_to.name)?.id,
+        // })
+        // for (let i of r.has_recipe_input) {
+        //   let rFlowInput = {
+        //     note: "asdf",
+        //     recipeInputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
+        //     resourceConformsTo: resourceSpecifications.find(rs => rs.name === i.resourceConformsTo.name)?.id,
+        //     action: actions.find(a => a.name === i.action.name)?.id,
+        //     providerRole: i.provider_role,
+        //     receiverRole: i.receiver_role,
+        //     resourceQuantity: {
+        //       hasNumericalValue: Number(i.resourceQuantity.hasNumericalValue),
+        //       hasUnit: units.find(u => u.label === i.resourceQuantity.hasUnit.label)?.id,
+        //     },
+        //     stage: processSpecifications.find(p => p.name === r.process_conforms_to?.name)?.id,
+        //   }
+        //   console.log(rFlowInput)
+        //   let rFlowRes = await createRecipeFlow(rFlowInput)
+        // }
+        // for (let o of r.has_recipe_output) {
+        //   let rFlowOutput = {
+        //     note: "asdf",
+        //     recipeOutputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
+        //     resourceConformsTo: resourceSpecifications.find(rs => rs.name === o.resourceConformsTo.name)?.id,
+        //     action: actions.find(a => a.name === o.action.name)?.id,
+        //     providerRole: o.provider_role,
+        //     receiverRole: o.receiver_role,
+        //     resourceQuantity: {
+        //       hasNumericalValue: Number(o.resourceQuantity.hasNumericalValue),
+        //       hasUnit: units.find(u => u.label === o.resourceQuantity.hasUnit.label)?.id,
+        //     },
+        //     stage: processSpecifications.find(p => p.name === r.process_conforms_to?.name)?.id,
+        //   }
+        //   console.log(rFlowOutput)
+        //   let rFlowRes = await createRecipeFlow(rFlowOutput)
+        // }
+      } else if (r.type == "recipe_exchange") {
+        console.log(r)
+        let rRespEx = await createRecipeExchange({
+          name: r.name
+        })
+        for (let i of r.has_recipe_clause) {
+          let rFlowInput = {
+            note: "asdf",
+            recipeClauseOf: rRespEx.data?.createRecipeExchange.recipeExchange.id,
+            resourceConformsTo: resourceSpecifications.find(rs => rs.name === i.resourceConformsTo.name)?.id,
+            action: actions.find(a => a.name === i.action.name)?.id,
+            providerRole: i.provider_role,
+            receiverRole: i.receiver_role,
+            resourceQuantity: {
+              hasNumericalValue: Number(i.resourceQuantity.hasNumericalValue),
+              hasUnit: units.find(u => u.label === i.resourceQuantity.hasUnit.label)?.id,
+            },
+            stage: processSpecifications.find(p => p.name === i.process_conforms_to?.name)?.id ? processSpecifications.find(p => p.name === i.process_conforms_to?.name)?.id : processSpecifications[0].id,
+          }
+          console.log(rFlowInput)
+          let rFlowRes = await createRecipeFlow(rFlowInput)
+        }
+        for (let o of r.has_recipe_reciprocal_clause) {
+          let rFlowOutput = {
+            note: "asdf",
+            recipeReciprocalClauseOf: rRespEx.data?.createRecipeExchange.recipeExchange.id,
+            resourceConformsTo: resourceSpecifications.find(rs => rs.name === o.resourceConformsTo.name)?.id,
+            action: actions.find(a => a.name === o.action.name)?.id,
+            providerRole: o.provider_role,
+            receiverRole: o.receiver_role,
+            resourceQuantity: {
+              hasNumericalValue: Number(o.resourceQuantity.hasNumericalValue),
+              hasUnit: units.find(u => u.label === o.resourceQuantity.hasUnit.label)?.id,
+            },
+            stage: processSpecifications.find(p => p.name === o.process_conforms_to?.name)?.id ? processSpecifications.find(p => p.name === o.process_conforms_to?.name)?.id : processSpecifications[0].id,
+          }
+          console.log(rFlowOutput)
+          let rFlowRes = await createRecipeFlow(rFlowOutput)
+        }
+      }
+    }
+  }
+
   // :NOTE: assumes that FacetGroups & ResourceSpecification are not yet created if Units aren't
   async function runInitialization() {
     if (saving) return
@@ -231,13 +344,19 @@
           console.log(p)
           let x = await addProcessSpecification({ variables: {
             process: {
-              name: p
+              name: p,
+              image: ["../../knitting.svg", "../../farm.svg", "../../sheep.svg", "../../truck.svg"][Math.floor(Math.random() * 4)],
             },
           }})
           console.log(x)
         }
       }
         
+      await getAllProcessSpecifications()
+      await getAllResourceSpecifications()
+      await getAllActions()
+      await getAllUnits()
+      await addRecipes()
       
     } catch(e) {
       error = e as Error
@@ -257,11 +376,9 @@
   onMount(checkDependencies)
   // dependenciesOk = false
 </script>
-
 {#if dependenciesOk === true}
   <slot></slot>
 {:else}
-
 <div class="p-12">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">

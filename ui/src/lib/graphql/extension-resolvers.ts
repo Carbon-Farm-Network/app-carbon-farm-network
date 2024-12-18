@@ -74,28 +74,21 @@ const bindResolvers = async (dnaConfig: ExtendedDnaConfig, conductorUri: string)
   return {
     Mutation: {
       putFacetGroup: async function (_root: any, args: { facetGroup: FacetGroupParams }): Promise<FacetGroupResponse> {
-console.info('NEW GROUP', args.facetGroup)
         const res = await runCreateGroup(args.facetGroup)
-console.log(res)
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
         return res && { facetGroup: encodeIdentifiers<FacetGroup>(res) } as FacetGroupResponse
       },
 
       putFacet: async function (_root: any, args: { facet: FacetParams }): Promise<FacetResponse> {
-      console.info('NEW FACET', args.facet)
-      console.log(args.facet)
     
       const res = await runCreateOption(args.facet)
 
-console.log(res)
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
         return res && { facet: encodeIdentifiers<Facet>(res) } as FacetResponse
       },
 
       putFacetValue: async function (_root: any, args: { facetValue: FacetValueParams }): Promise<FacetValueResponse> {
-        console.info('NEW VALUE', args.facetValue)
         const res = await runCreateValue(args.facetValue)
-        console.log(res)
 
         // console.log(encodeIdentifiers<FacetValue>(res))
         //@ts-ignore unsure about how to encode `EntryHash`->`EntryHashB64` conversions in `encodeIdentifiers`
@@ -104,9 +97,7 @@ console.log(res)
 
       associateFacetValue: async function (_root: any, args: AssociateFacetValue): Promise<boolean> {
         args.identifier = "identifier-" + args.identifier
-        console.info('NEW ASSOCIATION', args)
         const res = await runAssociateFacetValue(args)
-        console.log(res)
         return res
       },
 
@@ -119,7 +110,6 @@ console.log(res)
       // I suspect you can parameterise the API like
       deleteFacetValue: async function (_root: any, args: { revisionId: string }): Promise<boolean> {
         const res = await runDeleteFacetValue({ revision_id: args.revisionId })
-        console.log(res)
         return res
       }
       // instead of adding the previously proposed `associationId` field to `FacetValue`.
