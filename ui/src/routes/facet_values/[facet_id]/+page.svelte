@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FacetValueModal from "$lib/FacetValueModal.svelte"
+  import FacetValueModal from "../FacetValueModal.svelte"
   // import facetValues from '$lib/data/facet_values.json'
   import { gql } from 'graphql-tag'
   import { onMount } from 'svelte'

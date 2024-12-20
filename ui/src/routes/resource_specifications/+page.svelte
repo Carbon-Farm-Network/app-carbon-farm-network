@@ -1,11 +1,12 @@
 <script lang="ts">
-  import ResourceSpecificationModal from "$lib/ResourceSpecificationModal.svelte"
+  import ResourceSpecificationModal from "./ResourceSpecificationModal.svelte"
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { gql } from 'graphql-tag'
   import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
   import Header from "$lib/Header.svelte"
+  import Loading from "$lib/Loading.svelte"
   import Export from "$lib/Export.svelte"
   import { addHashChange } from "../../crud/commit"
   import { getAllResourceSpecifications } from "../../crud/fetch"
@@ -22,6 +23,7 @@
   let facets: Facet[] | undefined;
   let selectedFacets: any = {};
   let handleSubmit: any;
+  let loading: boolean = false;
   let importing: boolean = false;
   let resourceSpecifications: any[]
 
@@ -50,7 +52,9 @@
 
   onMount(async () => {
     if (browser) {
+      loading = resourceSpecifications.length == 0
       await getAllResourceSpecifications()
+      loading = false
     }
   })
 
@@ -59,6 +63,10 @@
 
 <Header title="Resource Specifications" description="The types of resources your network creates, uses, trades; types of work; currencies, tokens." />
 <ResourceSpecificationModal bind:handleSubmit bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={getAllResourceSpecifications} />
+
+{#if loading}
+<Loading />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

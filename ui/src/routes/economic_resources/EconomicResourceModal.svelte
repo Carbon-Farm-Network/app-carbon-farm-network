@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { clickOutside } from '../utils'
+    import { clickOutside } from '../../utils'
     import { onMount } from 'svelte'
     import { createEventDispatcher } from 'svelte';
-    import { updateEconomicResource } from '../crud/commit'
+    import { updateEconomicResource } from '../../crud/commit'
     import type { EconomicResource, ProcessSpecification } from '@leosprograms/vf-graphql';
 
     const dispatch = createEventDispatcher();

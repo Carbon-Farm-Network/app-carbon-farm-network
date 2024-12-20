@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Decimal } from 'decimal.js'
-  import PlanModal from '$lib/PlanModal.svelte'
-  import CommitmentModal from '$lib/CommitmentModal.svelte'
-  import EconomicEventModal from '$lib/EconomicEventModal.svelte'
+  import PlanModal from '../../PlanModal.svelte'
+  import CommitmentModal from '../../CommitmentModal.svelte'
+  import EconomicEventModal from '../../../economic_events/EconomicEventModal.svelte'
   import { Trash, Pencil, PlusCircle, EconomicEvent } from '$lib/icons'
   import { page } from '$app/stores';
   import { onMount } from 'svelte'
@@ -10,15 +10,13 @@
   import type { Fulfillment, Unit, AgentConnection, Agent, Action, Proposal, CommitmentCreateParams, EconomicResource, EconomicResourceCreateParams, ResourceSpecification, ProcessSpecification, PlanConnection, EconomicEventCreateParams, FulfillmentCreateParams, CommitmentUpdateParams, Agreement } from '@leosprograms/vf-graphql'
   import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
-  import { getAllActions, getAllAgents, getAllProcessSpecifications, getAllEconomicEvents, getAllProposals, getAllResourceSpecifications, getAllUnits, getAllEconomicResources, getProcess, getNonProcessCommitments } from '../../../../crud/fetch'
+  import { getAllActions, getAllAgents, getAllProcessSpecifications, getAllEconomicEvents, getAllProposals, getAllResourceSpecifications, getAllUnits, getAllEconomicResources, getProcess, getNonProcessCommitments, getAllRecipes } from '../../../../crud/fetch'
   import { createEconomicEvent, createFulfillment, createEconomicEventWithResource, updateCommitment, createCommitment, createAgreement, deleteCommitment, deleteAgreement } from '../../../../crud/commit'
   import { allActions, allAgents, allUnits, allResourceSpecifications, allFulfillments, allProcessSpecifications, allProposals, allEconomicResources, allEconomicEvents } from '../../../../crud/store'
   import Loading from '$lib/Loading.svelte'
   import { matchingOffer, makeAgreement } from '../../=helper'
   import { getPlan } from '../../../../crud/fetch'
-  import { fullPlans, removeProcessCommitmentFromPlan, addProcessCommitmentToPlan, addNonProcessCommitmentToPlan, removeNonProcessCommitmentFromPlan } from '../../../../crud/store'
-  import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client'
-  import { get } from 'svelte/store'
+  import { fullPlans, removeProcessCommitmentFromPlan, addProcessCommitmentToPlan, addNonProcessCommitmentToPlan, removeNonProcessCommitmentFromPlan, allRecipes } from '../../../../crud/store'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -49,6 +47,7 @@
   let economicEvents: EconomicEvent[] = [];
   let fulfillments: Fulfillment[] = []
   let selectedStage: string | undefined = undefined;
+  let recipes: any[] = []
   let zoomLevel: string = "1";
   $: zoomLevel;
 
@@ -71,6 +70,7 @@
   allUnits.subscribe((res) => {units = res})
   allActions.subscribe((res) => {actions = res})
   allFulfillments.subscribe((res) => {fulfillments = res})
+  allRecipes.subscribe((res) => {recipes = res})
   
   const debouncedPlanSubscribe = debounce(async (res) => {
     plan = res[$page.params.plan_id]
@@ -117,6 +117,103 @@
       clearTimeout(timeout);
       timeout = setTimeout(later, wait);
     };
+  }
+
+  function decrementWithRecipe(inputs: any[], recipeInputs: any[]): any[] | boolean {
+    // console.log("apply recipe", inputs, recipeInputs)
+    let decrementedInputs = [...inputs]
+    for (let i = 0; i < recipeInputs.length; i++) {
+      let recipeInput = recipeInputs[i]
+      let input = decrementedInputs.find(it => it.resourceConformsTo.id == recipeInput.resourceConformsTo.id)
+      if (input) {
+        let newValue = new Decimal(input.resourceQuantity.hasNumericalValue).minus(new Decimal(recipeInput.resourceQuantity.hasNumericalValue))//.toString()
+        if (newValue < new Decimal(0)) {
+          console.log("negative value", input, recipeInput.resourceQuantity.hasNumericalValue, newValue.toString())
+          return false
+        } else {
+          console.log("111111", recipeInput.resourceQuantity.hasNumericalValue)
+        }
+        console.log("decremented input", input.resourceQuantity?.hasNumericalValue, recipeInput.resourceQuantity.hasNumericalValue, newValue.toString())
+        input.resourceQuantity.hasNumericalValue = newValue.toString()
+        // decrementedInputs[index]?.resourceQuantity?.hasNumericalValue ? decrementedInputs[i].resourceQuantity.hasNumericalValue = newValue : null
+      } else {
+        console.log("no input found", recipeInput)
+      }
+      // console.log("decremented input", decrementedInputs[index].resourceQuantity?.hasNumericalValue, recipeInput.resourceQuantity.hasNumericalValue, input.resourceQuantity?.hasNumericalValue)
+    }
+    return decrementedInputs
+  }
+
+  function calculateForward(columnIndex: number) {
+    console.log("hello 2")
+    let column = allColumns[columnIndex]
+    console.log(column)
+    // If input column
+    // for each process
+
+    // *** for both inputs and outputs, use events as quantities if present
+
+    let suggestedOutputs: any[] = []
+    for (let i = 0; i < column.length; i++) {
+      let process = column[i]
+      let inputs = [...process.committedInputs]
+      let outputs = [...process.committedOutputs]
+      console.log("inputs", inputs)
+      console.log("outputs", outputs)
+      console.log("recipes", recipes)
+      const processSpecificationId = process.basedOn.id
+      // recipe with same process specification id and contains all output resource specifications
+      const allOutputResourceSpecificationIds = outputs.map(it => it.resourceConformsTo.id)
+      const allInputResourceSpecificationIds = inputs.map(it => it.resourceConformsTo.id)
+      const recipesWithMatchingProcessSpecification = recipes.filter(it => it.processConformsToId == processSpecificationId)
+      console.log("recipesWithMatchingProcessSpecification", recipesWithMatchingProcessSpecification)
+      const recWithAllOutputRSpecs = recipesWithMatchingProcessSpecification.filter(it => {
+        const allRecipeOutputResourceSpecificationIds = it.recipeOutputs.map(it => it.resourceConformsTo.id)
+        console.log("allRecipeOutputResourceSpecificationIds", allRecipeOutputResourceSpecificationIds, allOutputResourceSpecificationIds)
+        return allOutputResourceSpecificationIds.every(it => allRecipeOutputResourceSpecificationIds.includes(it))
+      })
+      const recWithAllInputRSpecs = recipesWithMatchingProcessSpecification.filter(it => {
+        const allRecipeInputResourceSpecificationIds = it.recipeInputs.map(it => it.resourceConformsTo.id)
+        console.log("allRecipeInputResourceSpecificationIds", allRecipeInputResourceSpecificationIds, allInputResourceSpecificationIds)
+        return allInputResourceSpecificationIds.every(it => allRecipeInputResourceSpecificationIds.includes(it))
+      })
+      let recipe = recWithAllInputRSpecs[0]
+      console.log("recipe", recipe)
+      console.log("inputs", inputs)
+
+      let recipeCycles = 0
+      let decrementedInputs = [...inputs]
+      while (recipeCycles < 100) {
+        let res = decrementWithRecipe(decrementedInputs, recipe.recipeInputs)
+        console.log("res", res)
+        if (res) {
+          recipeCycles++
+          decrementedInputs = res
+        } else {
+          break
+        }
+      }
+      console.log("Recipe cycles", recipeCycles)
+      console.log("decrementedInputs", decrementedInputs)
+      
+      // add each recipe output multiplied by the number of times the recipe was applied
+      let newOutputs = [...outputs]
+      let recipeOutputs = recipe.recipeOutputs
+      for (let i = 0; i < recipeOutputs.length; i++) {
+        let recipeOutput = recipeOutputs[i]
+        let output = newOutputs.find(it => it.resourceConformsTo.id == recipeOutput.resourceConformsTo.id)
+        if (output) {
+          let newValue = new Decimal(recipeOutput.resourceQuantity.hasNumericalValue).times(new Decimal(recipeCycles))
+          console.log("***", new Decimal(recipeOutput.resourceQuantity.hasNumericalValue), new Decimal(recipeCycles), newValue)
+          output.resourceQuantity.hasNumericalValue = newValue.toString()
+        } else {
+          console.log("no output found", recipeOutput)
+        }
+      }
+      console.log('newOutputs', newOutputs)
+      suggestedOutputs.push(newOutputs)
+    }
+    return suggestedOutputs
   }
 
   async function includeCommitment(commitment: Commitment) {
@@ -389,6 +486,7 @@
         { array: units, func: getAllUnits },
         { array: agents, func: getAllAgents },
         { array: economicEvents, func: getAllEconomicEvents},
+        { array: recipes, func: getAllRecipes },
         // { array: proposals, func: getAllProposals },
         { array: resourceSpecifications, func: getAllResourceSpecifications },
         { array: processSpecifications, func: getAllProcessSpecifications },
@@ -948,6 +1046,17 @@ bind:open={economicEventModalOpen}
     <div class="min-w-[420px]">
       <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
       <h2 class="text-center text-xl font-semibold">{name}</h2>
+      <button
+        class="flex justify-center items-center w-full mb-2"
+        on:click={() => {
+          console.log("hello")
+          let x = calculateForward(columnIndex)
+          console.log(x)
+        }}
+        >
+        {"in --> out"}
+      </button>
+
       {#each processes as { committedInputs, committedOutputs }, processIndex}
 
       <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
@@ -993,13 +1102,6 @@ bind:open={economicEventModalOpen}
                                 {unit.label}
                               {/if}
                             {/each}
-                          <!-- {:else if yellowAmounts[id]}
-                            {yellowAmounts[id]}
-                            {#each units as unit}
-                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                {unit.label}
-                              {/if}
-                            {/each} -->
                           {:else}
                             {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
                             <!-- {resourceQuantity?.hasUnit?.label} -->

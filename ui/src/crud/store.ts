@@ -13,6 +13,7 @@ export const allEconomicEvents = writable([]);
 export const allEconomicResources = writable([]);
 export const allActions = writable([]);
 export const fullPlans = writable({});
+export const plansList = writable([]);
 export const allFulfillments = writable([]);
 export const allCommitments = writable([]);
 export const allAgreements = writable([]);
@@ -96,6 +97,10 @@ export function addToFullPlans(newPlan: any) {
     fullPlans.update(v => {
         return { ...v, [newPlan.id]: newPlan };
     });
+}
+
+export function setPlansList(newPlans: any) {
+    plansList.update(v => newPlans);
 }
 
 export function addNonProcessCommitmentsToPlan(planId: string, commitments: any[]) {

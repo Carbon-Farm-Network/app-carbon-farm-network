@@ -5,10 +5,11 @@
     import { getAllEconomicEvents, getAllEconomicResources, getAllResourceSpecifications, getAllUnits } from "../../crud/fetch";
     import { allEconomicEvents, allEconomicResources, allFulfillments, allAgents, allUnits, allResourceSpecifications } from "../../crud/store";
     import { importEconomicEvents } from '../../crud/import';
-    import EconomicEventModal from '$lib/EconomicEventModal.svelte';
+    import EconomicEventModal from './EconomicEventModal.svelte';
     import Export from '$lib/Export.svelte';
     import { createEconomicEvent, createEconomicEventWithResource } from '../../crud/commit'
     import EconomicEvent from '$lib/icons/EconomicEvent.svelte'
+    import Loading from '$lib/Loading.svelte';
 
     let economicEvents: EconomicEvent[] = [];
     allEconomicEvents.subscribe(value => {
@@ -41,14 +42,18 @@
     });
 
     let exportOpen = false;
+    let loading: boolean = false;
     let importing = false;
     let modalOpen = false;
 
     onMount(async () => {
-        await getAllEconomicEvents();
-        await getAllEconomicResources();
-        await getAllUnits();
-        await getAllResourceSpecifications();
+      loading = economicEvents.length === 0 || units.length === 0 || resourceSpecifications.length === 0;
+      console.log(economicEvents.length, units.length, resourceSpecifications.length)
+      await getAllEconomicEvents();
+      await getAllEconomicResources();
+      await getAllUnits();
+      await getAllResourceSpecifications();
+      loading = false;
     });
 
     async function saveEconomicEvent(economicEvent: EconomicEventCreateParams) {
@@ -106,6 +111,10 @@
     saveEconomicEvent(e.detail.event);
   }}
 />
+
+{#if loading}
+  <Loading />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { clickOutside } from '../utils'
+    import { clickOutside } from '../../utils'
     import { onMount } from 'svelte'
     import { createEventDispatcher } from 'svelte';
-    import { addUnit, updateUnit } from '../crud/commit'
+    import { addUnit, updateUnit } from '../../crud/commit'
     import type { Unit } from '@leosprograms/vf-graphql';
     import Papa from "papaparse";
 

@@ -41,6 +41,7 @@ export const RECIPE_RETURN_FIELDS = gql`
             note
             providerRole
             receiverRole
+            insructions
             stage {
                 id
                 name
@@ -72,6 +73,7 @@ export const RECIPE_RETURN_FIELDS = gql`
             note
             providerRole
             receiverRole
+            instructions
             stage {
                 id
                 name

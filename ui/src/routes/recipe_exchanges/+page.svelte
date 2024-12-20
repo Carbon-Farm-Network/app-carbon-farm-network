@@ -2,11 +2,12 @@
   // import recipes from '$lib/data/recipes.json'
   import { onMount } from 'svelte';
   import Header from '$lib/Header.svelte'
+  import Loading from '$lib/Loading.svelte';
   import { goto } from '$app/navigation'
   import { allRecipeExchanges } from '../../crud/store'
   import { getAllRecipeExchanges } from '../../crud/fetch';
   import { deleteRecipeExchange, deleteRecipeFlow } from '../../crud/commit';
-  import RecipeExchangeModal from '$lib/RecipeExchangeModal.svelte'
+  import RecipeExchangeModal from './RecipeExchangeModal.svelte'
   import Export from '$lib/Export.svelte';
 
   let recipeExchanges: any[] = []
@@ -22,9 +23,13 @@
   };
   let currentRecipeExchange = {...newRecipeExchange};
 
+  let loading: boolean = false
+
   onMount(async () => {
+    loading = recipeExchanges.length === 0
     await getAllRecipeExchanges()
     console.log("recipe exchanges", recipeExchanges)
+    loading = false
   })
 </script>
 
@@ -33,6 +38,10 @@
 <!-- </div> -->
 
 <RecipeExchangeModal bind:open={recipeExchangeModalOpen} recipeExchange={currentRecipeExchange} />
+
+{#if loading}
+  <Loading />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

@@ -1,7 +1,8 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import Header from "$lib/Header.svelte";
-import UnitModal from "$lib/UnitModal.svelte";
+import UnitModal from "./UnitModal.svelte";
+import Loading from "$lib/Loading.svelte";
 import type { Unit } from "@leosprograms/vf-graphql";
 import { getAllUnits } from "../../crud/fetch";
 import { allUnits } from "../../crud/store";
@@ -13,11 +14,14 @@ allUnits.subscribe(value => {
 
 let selectedUnit: Unit | undefined = undefined;
 let modalOpen = false;
+let loading = false;
 let editing = false;
 $: selectedUnit, modalOpen, units;
 
 onMount(async () => {
-  await getAllUnits();
+    let loading = units.length === 0;
+    await getAllUnits();
+    loading = false;
 });
 
 </script>
@@ -28,6 +32,10 @@ onMount(async () => {
         modalOpen = false; 
         getAllUnits()
     }} />
+
+{#if loading}
+<Loading />
+{/if}
 
 <div class="p-12">
     <div class="sm:flex sm:items-center">

@@ -1,12 +1,14 @@
 <script lang="ts">
     import type { EconomicResource, Agent }  from '@leosprograms/vf-graphql'
     import Header from "$lib/Header.svelte";
-    import EconomicResourceModal from "$lib/EconomicResourceModal.svelte";
+    import EconomicResourceModal from "./EconomicResourceModal.svelte";
     import { onMount } from "svelte";
     import { getAllEconomicResources, getAllProcessSpecifications, getAllUnits } from "../../crud/fetch";
     import { updateEconomicResource } from '../../crud/commit';
     import { allEconomicResources, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications } from "../../crud/store";
-    import { get } from 'svelte/store'
+    import Loading from '$lib/Loading.svelte';
+
+    let loading: boolean = false;
 
     let economicResources: EconomicResource[] = [];
     allEconomicResources.subscribe(value => {
@@ -38,10 +40,12 @@
     $: selectedEconomicResource;
 
     onMount(async () => {
-        await getAllEconomicResources();
-        console.log('economicResources', economicResources);
-        await getAllProcessSpecifications();
-        await getAllUnits();
+      loading = economicResources.length === 0 || units.length === 0 || processSpecifications.length === 0;
+      await getAllEconomicResources();
+      console.log('economicResources', economicResources);
+      await getAllProcessSpecifications();
+      await getAllUnits();
+      loading = false;
     });
 </script>
 
@@ -59,6 +63,10 @@
     // updateEconomicResource(updatedEconomicResource);
   }}
 />
+
+{#if loading}
+  <Loading />
+{/if}
 
 <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

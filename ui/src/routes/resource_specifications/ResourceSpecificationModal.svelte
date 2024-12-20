@@ -1,24 +1,25 @@
 <script lang="ts">
-  export let open = false;
-  export let currentAgent: any = {};
-  export let name = "";
-  export let logo = "";
-  export let type = "Organization";
-  export let role = "Farmer";
-  export let certification = "";
-  export let editing = false;
-  export let facets: Facet[] | undefined;
-  export let selectedFacets: string[];
-  import { createEventDispatcher } from 'svelte';
-  import { onMount } from 'svelte'
   import { gql } from 'graphql-tag'
-  import { AGENT_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import type { AgentConnection, Agent, Organization, OrganizationCreateParams, OrganizationUpdateParams } from '@leosprograms/vf-graphql'
+  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@leosprograms/vf-graphql'
+  import { createEventDispatcher } from 'svelte';
+  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '../../lib/graphql/resource_specification.fragments'
   import { mutation, query } from 'svelte-apollo'
-  import type { ReadableQuery } from 'svelte-apollo'
-  import type { Facet, FacetGroup, FacetParams } from "$lib/graphql/extension-schemas"
-  import { addAgent, updateAgent, associateAgentWithValue } from '../crud/commit'
+  import type { Facet } from "$lib/graphql/extension-schemas"
+  import { onMount } from 'svelte'
+  import { allUnits } from '../../crud/store';
+  import { getAllUnits } from '../../crud/fetch';
+  import { addResourceSpecification, associateResourceSpecificationAndFacetValue, updateResourceSpecification } from '../../crud/commit';
+  const dispatch = createEventDispatcher();
+  
+  export let open = false;
+  export let editing = false;
+  export let currentResourceSpecification: any = {};
+  export let name = "";
+  export let units: any[];
+  export let facets: Facet[] | undefined;
+  export let selectedFacets: any;
+
+  allUnits.subscribe(value => {units = value})
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -27,45 +28,39 @@
     }
   }
 
-  onMount(() => {
+  onMount(async() => {
+    await getAllUnits()
+    console.log(currentResourceSpecification)
     window.addEventListener("keydown", checkKey);
   });
 
-  const dispatch = createEventDispatcher();
-
-  let roles = [
-    "Farmer",
-    "Scouring Mill",
-    "Spinning Mill",
-    "Knitting Factory",
-    "Weaving Factory",
-    "Designer",
-    "Shipping",
-    "Network",
-  ]
-  let roleImages = {
-    "Farmer": "farm.svg",
-    "Scouring Mill": "mill.svg",
-    "Spinning Mill": "mill.svg",
-    "Knitting Factory": "mill.svg",
-    "Weaving Factory": "mill.svg",
-    "Designer": "knitting.svg",
-    "Shipping": "truck.svg",
-    "Network": "knitting.svg",
-  }
-
-  export async function createAgent(agent: OrganizationCreateParams, facetsToAssociate: string[]) {
+  export async function handleSubmit(currentResourceSpecification: ResourceSpecificationCreateParams) {
+    // let unitOfResource = units.find(unit => unit.id === currentResourceSpecification.defaultUnitOfResource).id
+    // let unitId = {
+    //   UnitId: currentResourceSpecification.defaultUnitOfResource
+    // }
+    let resource: ResourceSpecificationCreateParams = {
+      name: currentResourceSpecification.name,
+      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
+      // defaultUnitOfEffort: "Administrative work",
+      note: currentResourceSpecification.note,
+      image: currentResourceSpecification.image,
+    }
     try {
-      const res = await addAgent(agent)
-      const identifier = res.data.createOrganization.agent.id
+      const res = await addResourceSpecification(resource)
+
+      const identifier = res.data.createResourceSpecification.resourceSpecification.id
       // for each facet in selectedFacets, associate the agent with the selected value
-      for (let facet in facetsToAssociate) {
-        if (facetsToAssociate[facet] == null) {
+      for (let facet in selectedFacets) {
+        console.log(facet)
+        console.log(selectedFacets)
+        console.log(selectedFacets[facet])
+        if (selectedFacets[facet] == null) {
           continue
         }
-        const res2 = await associateAgentWithValue(identifier, facetsToAssociate[facet])
-        console.log("associate", res2)
+        const res2 = await associateResourceSpecificationAndFacetValue(identifier, selectedFacets[facet])
       }
+
       dispatch("submit");
       open = false;
       console.log(res)
@@ -75,56 +70,49 @@
     }
   }
 
-  async function handleSubmit() {
-    let agent: OrganizationCreateParams = {
-        name: currentAgent.name,
-        image: currentAgent.imageUrl,
-        note: currentAgent.note,
-        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role],
-
-        // $: name, latitude, longitude, note, logo, type, role, certification;
-    }
-    await createAgent(agent, selectedFacets)
-  }
-
   async function handleUpdate() {
-    let agent: OrganizationUpdateParams = {
-        name: currentAgent.name,
-        image: currentAgent.imageUrl,
-        note: currentAgent.note,
-        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role],
-        revisionId: currentAgent.revisionId
+    // getAgent();
+
+    let resource: ResourceSpecificationUpdateParams = {
+      name: currentResourceSpecification.name,
+      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
+      // defaultUnitOfEffort: currentResourceSpecification.defaultUnitOfEffort,
+      note: currentResourceSpecification.note,
+      image: currentResourceSpecification.image,
+      revisionId: currentResourceSpecification.revisionId
     }
     try {
-      const res = await updateAgent(agent)
+      const res = await updateResourceSpecification(resource)
 
-      const identifier = res.data.updateOrganization.agent.id
-      // const identifier = currentAgent.id
-      console.log(identifier)
+      const identifier = res.data.updateResourceSpecification.resourceSpecification.id
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in selectedFacets) {
         console.log(facet)
+        console.log(selectedFacets)
         console.log(selectedFacets[facet])
         if (selectedFacets[facet] == null) {
           continue
         }
-        const res2 = await associateAgentWithValue(identifier, selectedFacets[facet])
+        const res2 = await associateResourceSpecificationAndFacetValue(identifier, selectedFacets[facet])
         console.log("associate", res2)
       }
 
       dispatch("submit");
       open = false;
-      console.log(res)
     } catch (error) {
       console.error(error)
     }
   }
 
-  $: name, type, role, certification, editing, currentAgent; //, client;
 
-  $: isAgentValid = true && currentAgent.lat && currentAgent.long && currentAgent.name && currentAgent.imageUrl && currentAgent.role;
+  onMount(async () => {
+  })
+
+  $: editing, currentResourceSpecification, units; //, client;
+
+  $: isResourceSpecificationValid = true && currentResourceSpecification.name && currentResourceSpecification.defaultUnitOfResourceId; // && currentResourceSpecification.note && currentResourceSpecification.image;
+
 </script>
-
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on modal state.
@@ -155,11 +143,10 @@
       <div
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
       >
-
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
-              Agent
+              Resource Specification
             </h3>
 
             <div class="mt-4">
@@ -169,18 +156,17 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Name</label
                 >
                 <div class="relative mt-2 rounded-md shadow-sm">
-                  <!-- "block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6" -->
                   <input
                     type="text"
                     name="name"
                     id="name"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder=""
-                    bind:value={currentAgent.name}
+                    bind:value={currentResourceSpecification.name}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        name = input.value;
+                        currentResourceSpecification.name = input.value;
                         // console.log(name)
                       }
                     }}
@@ -210,139 +196,91 @@
                 </p> -->
               </div>
             </div>
-
-            {#if false}
+            
+            {#if units}
             <div class="mt-4 text-left">
               <div>
                 <label
-                  for="type"
+                  for="defaultUnitOfResource"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                  >Type</label
-                >
+                  >Default unit of resource</label>
+
                 <select
-                  id="type"
-                  name="type"
-                  on:change={e => {
-                    const input = e.target;
-                    if (input instanceof HTMLSelectElement) {
-                      type = input.value;
-                    }
+                  id="classifiedAs"
+                  name="classifiedAs"
+                  bind:value={currentResourceSpecification.defaultUnitOfResourceId}
+                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  on:click={e => {
+                    console.log(currentResourceSpecification.defaultUnitOfResourceId)
                   }}
+                  >
+                  {#each units as unit}
+                    {#if unit.label === "pound"}
+                      <option selected value={unit.id}>Pound</option>
+                    {:else if unit.label === "one"}
+                      <option value={unit.id}>Each</option>
+                    {/if}
+                  {/each}
+                </select>
+
+                <!-- <select
+                  id="defaultUnitOfResource"
+                  name="defaultUnitOfResource"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
-                  <option>Person</option>
-                  <option selected>Organization</option>
-                  <option>Ecological agent</option>
-                </select>
+                  <option selected>Pound</option>
+                  <option>Each</option>
+                </select> -->
               </div>
             </div>
             {/if}
 
-            <div class="mt-4 text-left">
+            <!-- <div class="mt-4 text-left">
               <div>
                 <label
-                  for="classifiedAs"
+                  for="defaultUnitOfEffort"
                   class="block text-sm font-medium leading-6 text-gray-900"
-                >Role in the network</label>
+                  >Default unit of effort</label
+                >
                 <select
-                  id="classifiedAs"
-                  name="classifiedAs"
-                  bind:value={currentAgent.role}
-                  on:change={e => {
-                    const input = e.target;
-                    if (input instanceof HTMLSelectElement) {
-                      const role = input.value;
-                      //@ts-ignore
-                      currentAgent.imageUrl = roleImages[role] || 'profile.png'
-                    }
-                  }}
+                  id="defaultUnitOfEffort"
+                  name="defaultUnitOfEffort"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
-                  {#each roles as role (role)}
-                    <option {role} selected={role === currentAgent.role}>{role}</option>
-                  {/each}
+                  <option selected>Administrative work</option>
+                  <option>Delivery work</option>
                 </select>
               </div>
-            </div>
-
-            <div class="mt-4 text-left flex justify-between">
-              <div>
-                <label
-                  for="latitude"
-                  class="block text-sm font-medium leading-6 text-gray-900"
-                  >Latitude</label
-                >
-                <div class="mt-2">
-                  <input
-                    type="text"
-                    name="latitude"
-                    id="latitude"
-                    autocomplete="latitude"
-                    bind:value={currentAgent.lat}
-                    on:input={e => {
-                      const input = e.target;
-                      if (input instanceof HTMLInputElement) {
-                        currentAgent.lat = input.value;
-                      }
-                    }}
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  for="longitude"
-                  class="block text-sm font-medium leading-6 text-gray-900"
-                  >Longitude</label
-                >
-                <div class="mt-2">
-                  <input
-                    type="text"
-                    name="longitude"
-                    id="longitude"
-                    autocomplete="longitude"
-                    bind:value={currentAgent.long}
-                    on:input={e => {
-                      const input = e.target;
-                      if (input instanceof HTMLInputElement) {
-                        currentAgent.long = input.value;
-                      }
-                    }}
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-            </div>
+            </div> -->
 
             <div class="mt-4 text-left">
               <div class="col-span-full">
                 <label
                   for="note"
-                  class="block text-sm font-medium leading-6 text-gray-900">Display information</label
+                  class="block text-sm font-medium leading-6 text-gray-900">Description</label
                 >
                 <div class="mt-2">
                   <textarea
                     id="note"
                     name="note"
                     rows="3"
-                    bind:value={currentAgent.note}
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    bind:value={currentResourceSpecification.note}
                     on:input={e => {
                       const input = e.target;
                       if (input instanceof HTMLInputElement) {
-                        currentAgent.note = input.value;
+                        currentResourceSpecification.note = input.value;
                       }
                     }}
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
+                    />
                 </div>
-                <p class="mt-3 text-sm leading-6 text-gray-600">
-                  This will display on the map from the popup.
-                </p>
+                <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
+                  Description for the description field
+                </p> -->
               </div>
             </div>
 
-            <div class="mt-4 text-left">
+            <!-- <div class="mt-4 text-left">
               <div class="col-span-full">
                 <label
                   for="image"
@@ -356,11 +294,30 @@
                     id="longitude"
                     autocomplete="longitude"
                     placeholder="https://www.example.com/logo.png"
-                    bind:value={currentAgent.imageUrl}
+                    bind:value={currentResourceSpecification.image}
+                    on:input={e => {
+                      const input = e.target;
+                      if (input instanceof HTMLInputElement) {
+                        currentResourceSpecification.image = input.value;
+                      }
+                    }}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
-                <!-- <div
+              </div>
+            </div> -->
+          </div>
+        </div>
+
+
+            <!-- <div class="mt-4 text-left">
+              <div class="col-span-full">
+                <label
+                  for="image"
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                  >Default image</label
+                >
+                <div
                   class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"
                 >
                   <div class="text-center">
@@ -395,11 +352,11 @@
                       PNG, JPG, GIF up to 10MB
                     </p>
                   </div>
-                </div> -->
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </div> -->
+          <!-- </div>
+        </div> -->
 
         {#if facets && selectedFacets}
         {#each facets as {id, name, values}}
@@ -413,7 +370,7 @@
               <select
                 bind:value={selectedFacets[id]}
                 on:change={(e) => {
-                  console.log(selectedFacets)
+                  console.log(selectedFacets[id])
                 }}
                 id="type"
                 name="type"
@@ -434,21 +391,21 @@
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           <button
             type="button"
-            disabled={!isAgentValid}
+            disabled={!isResourceSpecificationValid}
             on:click={() => {
               if (editing) {
                 handleUpdate()
               } else {
-                handleSubmit()
+                handleSubmit(currentResourceSpecification)
               }
             }}
             class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             >
-            {#if editing}
-            Update
-            {:else}
-            Create
-            {/if}
+              {#if editing}
+                Update
+              {:else}
+                Create
+              {/if}
             </button
           >
           <button

@@ -1,8 +1,8 @@
 <script lang="ts">
   // import recipes from '$lib/data/recipes-with-exchanges.json'
   import { Decimal } from 'decimal.js'
-  import PlanModal from '$lib/PlanModal.svelte'
-  import CommitmentModal from '$lib/CommitmentModal.svelte'
+  import PlanModal from '../PlanModal.svelte'
+  import CommitmentModal from '../CommitmentModal.svelte'
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'

@@ -1,19 +1,13 @@
 <script lang="ts">
   import { DateInput } from 'date-picker-svelte'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  import type { RelayConn } from '$lib/graphql/helpers'
   import { gql } from 'graphql-tag'
-  import type { ReadableQuery } from 'svelte-apollo'
-  import { clickOutside } from '../utils'
+  import { clickOutside } from '../../utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
   import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@leosprograms/vf-graphql'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
-  import { browser } from '$app/environment'
-  import { addHashChange } from '../crud/commit'
-  import ResourceSpecificationModal from './ResourceSpecificationModal.svelte'
+  import { addHashChange } from '../../crud/commit'
 
   // public CustomElement attributes
   export let open = false;
@@ -348,7 +342,7 @@
                   <!-- for required:  class="block w-full rounded-md border-0 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"-->
                   {#if currentIntent.availableQuantity}
                   <input
-                    type="text"
+                    type="number"
                     name="name"
                     id="name"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -420,7 +414,7 @@
                 <div class="relative mt-2 rounded-md shadow-sm">
                   {#if currentReciprocalIntent && currentReciprocalIntent.resourceQuantity}
                   <input
-                    type="text"
+                    type="number"
                     name="name"
                     id="name"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -503,7 +497,7 @@
                 <div class="relative mt-2 rounded-md shadow-sm">
                   {#if currentIntent.resourceQuantity}
                   <input
-                    type="text"
+                    type="number"
                     name="name"
                     id="name"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"

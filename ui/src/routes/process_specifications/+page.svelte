@@ -1,9 +1,10 @@
 <script lang="ts">
-  import ProcessSpecificationModal from "$lib/ProcessSpecificationModal.svelte"
+  import ProcessSpecificationModal from "./ProcessSpecificationModal.svelte"
   import { browser } from '$app/environment'
   import { onMount } from 'svelte'
   import { addHashChange } from "../../crud/commit"
   import Header from "$lib/Header.svelte"
+  import Loading from "$lib/Loading.svelte"
   import Export from "$lib/Export.svelte"
   import { getAllProcessSpecifications } from "../../crud/fetch"
   import { deleteProcessSpecification } from "../../crud/commit"
@@ -11,6 +12,7 @@
 
   let modalOpen: boolean = false;
   let exportOpen: boolean = false;
+  let loading: boolean = false;
   let editing: boolean = false;
   let name = "";
   let id = "";
@@ -29,7 +31,9 @@
   // DELETE PROCESS SPECIFICATION ENDS
   onMount(async () => {
     if (browser) {
+      loading = processSpecifications.length == 0
       await getAllProcessSpecifications()
+      loading = false
     }
   })
 
@@ -48,6 +52,10 @@
 <!-- </div> -->
 <!-- <Units /> -->
 <ProcessSpecificationModal bind:handleSubmit bind:open={modalOpen} {name} {editing} {currentProcessSpecification} on:submit={getAllProcessSpecifications} />
+
+{#if loading}
+  <Loading />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

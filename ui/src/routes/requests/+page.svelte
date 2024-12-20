@@ -1,5 +1,5 @@
 <script lang="ts">
-  import RequestModal from '$lib/RequestModal.svelte'
+  import RequestModal from './RequestModal.svelte'
   import offers from '$lib/data/offers.json'
   import { DateInput } from 'date-picker-svelte'
   import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
@@ -17,7 +17,7 @@
   import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../crud/fetch'
   import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../crud/store'
   import { loop_guard } from 'svelte/internal'
-  import ResourceSpecificationModal from '$lib/ResourceSpecificationModal.svelte'
+  import ResourceSpecificationModal from '../resource_specifications/ResourceSpecificationModal.svelte'
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"

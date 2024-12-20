@@ -1,17 +1,14 @@
 <script lang="ts">
-  import { clickOutside } from '../utils'
+  import { clickOutside } from '../../utils'
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
-  // import agents from '$lib/data/agents.json'
-  import type { AgentConnection, Agent, UnitConnection, Action } from '@leosprograms/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection } from '@leosprograms/vf-graphql'
   import type { RelayConn } from '$lib/graphql/helpers'
   import type { ReadableQuery } from 'svelte-apollo'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { query } from 'svelte-apollo'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  // import resource_specifications from '$lib/data/resource_specifications.json'
-  // import units from '$lib/data/units.json'
-  // import actions from '$lib/data/actions.json'
+  import actions from '$lib/data/actions.json'
   import { gql } from 'graphql-tag'
   import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
 
@@ -20,61 +17,29 @@
   export let commitmentModalProcess: number | undefined;
   export let commitmentModalSide: string | undefined;
   export let selectedCommitmentId: string | undefined
-  export let process: any[] | undefined;
+  export let process: any[];
   export let independentDemands: any[]
   export let nonProcessCommitments: any[]
   export let agents: Agent[];
   export let resourceSpecifications: any[];
   export let units: any[];
-  export let actions: Action[];
-  export let selectedStage: string | undefined;
-
-  let filteredActions: Action[] = []
 
   const dispatch = createEventDispatcher();
 
   let name = ''
   let note = ''
-  let saveCost: boolean = false;
-  let finished: boolean = false;
-
-  $: saveCost, actions, filteredActions;
-  $: if (commitmentModalSide == 'committedInputs' && actions) {
-    filteredActions = actions.filter((a) => a.inputOutput == 'input' || a.inputOutput == 'outputInput')
-  } else if (commitmentModalSide == 'committedOutputs' && actions) {
-    filteredActions = actions.filter((a) => a.inputOutput == 'output' || a.inputOutput == 'outputInput')
-  } else if (actions) {
-    filteredActions = actions.filter((a) => a.label == 'transfer')
-  }
-
-  // $: if (selectedCommitment) {
-  //   if (selectedCommitment.clauseOf && selectedCommitment.clauseOf.commitments.length > 0) {
-  //     saveCost = true
-  //   } else {
-  //     saveCost = false
-  //   }
-  // }
-
-  $: provider = selectedCommitment.providerId ? agents.find(a => a.id == selectedCommitment.providerId) : selectedCommitment.provider
-  $: receiver = selectedCommitment.receiverId ? agents.find(a => a.id == selectedCommitment.receiverId) : selectedCommitment.receiver
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
       e.preventDefault()
-      // selectedCommitmentId = undefined
-      // previousSelectedCommitmentId = undefined
       open = false
     }
   }
 
   onMount(async() => {
     window.addEventListener('keydown', checkKey)
-    // await fetchUnits();
-    // await fetchAgents();
-    // await fetchResourceSpecifications();
   })
 
-  // let selectedCommitment: any;
   let newCommitmentTemplate = {
     id: undefined,
     resourceConformsTo: {
@@ -90,14 +55,6 @@
     },
     receiverId: '',
     providerId: '',
-    // receiver: {
-    //   id: '',
-    //   name: ''
-    // },
-    // provider: {
-    //   id: '',
-    //   name: ''
-    // },
     note: '',
     fulfilledBy: [],
     finished: false
@@ -105,12 +62,14 @@
   let newCommitment = Object.assign({}, newCommitmentTemplate)
   let selectedCommitment = Object.assign({}, newCommitmentTemplate)
   $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide, selectedCommitment, selectedCommitmentId
+  $: provider = selectedCommitment.providerId ? agents.find(a => a.id == selectedCommitment.providerId) : selectedCommitment.provider
+  $: receiver = selectedCommitment.receiverId ? agents.find(a => a.id == selectedCommitment.receiverId) : selectedCommitment.receiver
 
   let previousSelectedCommitmentId: string | undefined;
   $: {
     if (selectedCommitmentId !== previousSelectedCommitmentId) {
       previousSelectedCommitmentId = selectedCommitmentId;
-      if (process && selectedCommitmentId && commitmentModalColumn > -1) {
+      if (selectedCommitmentId && commitmentModalColumn > -1) {
         try {
           selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
         } catch (e) {
@@ -124,9 +83,7 @@
             console.log(e)
           }
         }
-
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
-        console.log(independentDemands)
         try {
           selectedCommitment = JSON.parse(JSON.stringify(independentDemands.find(it => it.id == selectedCommitmentId)));
         } catch (e) {
@@ -136,27 +93,15 @@
             console.log(e)
           }
         } 
-        console.log(selectedCommitment)
       } else {
-        selectedCommitment = {};
+        selectedCommitment = Object.assign({}, newCommitmentTemplate)
       }
     }
   }
-
 </script>
 
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-  <!--
-    Background backdrop, show/hide based on modal state.
-
-    Entering: "ease-out duration-300"
-      From: "opacity-0"
-      To: "opacity-100"
-    Leaving: "ease-in duration-200"
-      From: "opacity-100"
-      To: "opacity-0"
-  -->
   <div
     class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
     class:hidden={!open}
@@ -166,16 +111,6 @@
     <div
       class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
     >
-      <!--
-        Modal panel, show/hide based on modal state.
-
-        Entering: "ease-out duration-300"
-          From: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-          To: "opacity-100 translate-y-0 sm:scale-100"
-        Leaving: "ease-in duration-200"
-          From: "opacity-100 translate-y-0 sm:scale-100"
-          To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-      -->
       <div
         class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
         class:hidden={!open}
@@ -184,12 +119,9 @@
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
-              {#if selectedCommitmentId}
-                Edit commitment
-              {:else}
-                Add commitment
-              {/if}
+              Record Economic Event
             </h3>
+
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -197,32 +129,29 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Provider</label
                 >
-
+                <!-- {JSON.stringify(selectedCommitment.provider)} -->
                 {#if selectedCommitment?.id && provider}
                   <select
                     id="provider"
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={provider?.id}
+                    value={selectedCommitment.providerId}
                     on:change={(e) => {
                       let id = e.target.value
-                      selectedCommitment.providerId = id
-                      selectedCommitment.provider.id = id
-                      // let selectedAgent = agents.find((rs) => rs.id === id)
-                      // console.log(selectedAgent.name)
-                      // if (selectedCommitment.provider) {
-                      //   selectedCommitment.provider = selectedAgent
-                      // } else {
-                      //   console.log(selectedCommitment.provider)
-                      // }
+                      let selectedAgent = agents.find((rs) => rs.id === id)
+                      if (selectedCommitment.provider) {
+                        selectedCommitment.provider = selectedAgent
+                        selectedCommitment.providerId = selectedAgent.id
+                      } else if (selectedCommitment.providerId) {
+                        console.log(selectedCommitment.provider)
+                        selectedCommitment.providerId = selectedAgent.id
+                      }
                     }}
 
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
                     {/each}
-                    <!-- <option selected>Lazy Acre Alpacca</option>
-                  <option>Woodland meadow farm</option> -->
                   </select>
                 {:else if agents}
                   <select
@@ -233,13 +162,13 @@
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)
-                      newCommitment.providerId = id
-                      // let selectedAgent = agents.find((rs) => rs.id === id)
-                      // if (newCommitment.providerId) {
-                      //   newCommitment.providerId = selectedAgent.id
-                      // } else {
-                      //   console.log(newCommitment.providerId)
-                      // }
+                      let selectedAgent = agents.find((rs) => rs.id === id)
+                      newCommitment.providerId = selectedAgent.id
+                      if (newCommitment.provider) {
+                        newCommitment.provider = selectedAgent
+                      } else {
+                        console.log(newCommitment.provider)
+                      }
                     }}
                     >
                     {#each agents as agent}
@@ -257,12 +186,19 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Receiver</label
                 >
-                {#if selectedCommitment?.id && receiver}
+                {#if selectedCommitment?.id && selectedCommitment.receiverId}
+                  <!-- <p>{selectedCommitment.receiver.name}</p> -->
+                  {#each agents as agent}
+                    {#if agent.id == selectedCommitment.receiverId}
+                      {agent.name}
+                    {/if}
+                  {/each}
+                {:else if selectedCommitment?.id && agents}
                   <select
                     id="receiver"
                     name="receiver"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={receiver?.id}
+                    value={""}
                     on:change={(e) => {
                       let id = e.target.value
                       console.log(id)
@@ -283,7 +219,6 @@
                       let id = e.target.value
                       console.log(id)
                       newCommitment.receiverId = id
-                      console.log(newCommitment)
                     }}
                     >
                     {#each agents as agent}
@@ -301,29 +236,23 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Resource specification</label
                 >
-                <!-- {JSON.stringify(selectedCommitment)} -->
                 {#if selectedCommitment?.id && selectedCommitment?.resourceConformsTo}
                   <p>{selectedCommitment?.resourceConformsTo.name}</p>
                 {:else if resourceSpecifications}
-                  <!-- {JSON.stringify(newCommitmentTemplate)} -->
-                  <!-- {selectedCommitment?.resourceConformsTo?.name} -->
-                  <select
+                    <select
                     id="defaultUnitOfResource"
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={newCommitment.resourceConformsTo.id}
+                    value={newCommitment.resourceConformsTo.name}
                       on:change={(e) => {
                         console.log(e.target.value)
-                        const rspec = resourceSpecifications.find((rs) => rs.id === e.target.value)
-                        newCommitment.defaultUnitOfResourceId = rspec.defaultUnitOfResource.id
+                        const rspec = resourceSpecifications.find((rs) => rs.name === e.target.value)
+                        newCommitment.resourceConformsTo.defaultUnitOfResource = rspec.defaultUnitOfResource
                         newCommitment.resourceConformsTo = rspec
-                        selectedCommitment.resourceConformsTo = rspec
-                        selectedCommitment.defaultUnitOfResourceId = rspec.defaultUnitOfResource.id
-                        console.log(newCommitment)
                       }}
                     >
                     {#each resourceSpecifications as rs}
-                      <option value={rs.id}>{rs.name}</option>
+                      <option value={rs.name}>{rs.name}</option>
                     {/each}
                   </select>
                 {/if}
@@ -345,18 +274,11 @@
                     id="action"
                     name="action"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.action.id}
-                    on:change={(e) => {
-                      const action = actions.find((a) => a.id === e.target.value)
-                      console.log(action)
-                      newCommitment.action = action
-                    }}
+                    bind:value={newCommitment.action.label}
                   >
-                  {#if filteredActions}
-                    {#each filteredActions as action}
-                      <option value={action.id}>{action.label}</option>
+                    {#each actions as action}
+                      <option value={action}>{action}</option>
                     {/each}
-                  {/if}
                   </select>
                 {/if}
               </div>
@@ -453,47 +375,42 @@
                       bind:value={newCommitment.note}
                     />
                   {/if}
-                </div>
 
-                {#if !(selectedCommitment?.resourceConformsTo?.name == 'USD')} <!-- only show finished and save cost checkbox if resource is not USD -->
-                  {#if selectedCommitmentId}
-                    <div class="mt-4 flex items-center">
-                      <input type="checkbox" id="finished" 
-                        on:change={(e) => {
-                          selectedCommitment.finished = e.target.checked
-                          console.log(selectedCommitment.finished)
-                        }}
-                        bind:checked={selectedCommitment.finished} 
-                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        >
+                  {#if selectedCommitment.id}
+                    <div class="mt-4 text-left">
+                      <!-- <div class="mt-4 flex items-center">
+                        <input
+                          id="save_cost"
+                          name="save_cost"
+                          type="checkbox"
+                          checked={saveCost}
+                          on:change={(e) => {
+                            saveCost = e.target.checked
+                          }}
+                          class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
+                      </div> -->
+                      <div class="mt-4 flex items-center">
+                        <input type="checkbox" id="finished" 
+                          on:change={(e) => {
+                            let tempFinished = e.target.checked
+                            console.log(tempFinished)
+                            selectedCommitment.finished = tempFinished
+                            console.log(selectedCommitment.finished)
+                          }}
+                          bind:checked={selectedCommitment.finished} 
+                          class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          >
 
-                        <label
-                        for="date"
-                        class="block text-sm font-medium leading-6 text-gray-900"
-                        >&nbsp;Commitment finished</label>
+                          <label
+                          for="date"
+                          class="block text-sm font-medium leading-6 text-gray-900"
+                          >&nbsp;Commitment finished</label>
+                      </div>
                     </div>
                   {/if}
-
-                  <!-- save cost? checkbox -->
-                  <!-- {#if commitmentModalProcess != undefined} -->
-                  <div class="mt-4 flex items-center">
-                    <input
-                      id="save_cost"
-                      name="save_cost"
-                      type="checkbox"
-                      checked={false}
-                      on:change={(e) => {
-                        saveCost = e.target.checked
-                      }}
-                      class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <label for="save_cost" class="ml-2 block text-sm text-gray-900">Save cost</label>
-                  </div>
-                  <!-- {/if} -->
-                {/if}
-                <!-- <p class="mt-3 text-sm leading-6 text-gray-600">
-                  Description for the description field
-                </p> -->
+                </div>
               </div>
             </div>
           </div>
@@ -504,37 +421,19 @@
           type="button"
           class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
           on:click={() => {
-            // console.log(JSON.stringify(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].provider.name))
-
-            // let allColumnsCopy = [...allColumns]
-            
-            // plan_created = true;
-
-            if (selectedCommitment.clauseOf) {
-              selectedCommitment.clauseOf.commitments = selectedCommitment.clauseOf.commitments.map((c) => {
-                return {
-                  ...c,
-                  provider: selectedCommitment.provider,
-                }
-              })
-            }
-
+            console.log("selected commitment", selectedCommitment)
             let updatedCommitment = {...selectedCommitment}
-            if (!selectedCommitment.providerId) {
-              updatedCommitment.providerId = newCommitment.providerId
-            }
             if (!selectedCommitment.provider) {
               updatedCommitment.provider = newCommitment.provider
             }
-            if (!selectedCommitment.receiverId) {
-              updatedCommitment.receiverId = newCommitment.receiverId
+            if (!selectedCommitment.providerId) {
+              updatedCommitment.providerId = newCommitment.providerId
             }
             if (!selectedCommitment.receiver) {
               updatedCommitment.receiver = newCommitment.receiver
             }
             if (!selectedCommitment.resourceConformsTo) {
               updatedCommitment.resourceConformsTo = newCommitment.resourceConformsTo
-              updatedCommitment.defaultUnitOfResourceId = newCommitment.resourceConformsTo.defaultUnitOfResource.id
             }
             if (!selectedCommitment.resourceQuantity) {
               updatedCommitment.resourceQuantity = newCommitment.resourceQuantity
@@ -546,68 +445,35 @@
               updatedCommitment.note = newCommitment.note
             }
 
-            if (commitmentModalColumn == undefined) {
-            //   let commitmentIndex = commitments.findIndex(
-            //    it => it.id == selectedCommitmentId
-            //   )
-            //   commitments[commitmentIndex] = selectedCommitment
-            //   commitments = commitments
-            // } else {
-            //   let commitmentIndex = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(
-            //    it => it.id == selectedCommitmentId
-            //   )
-            //   allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][commitmentIndex] = {...updatedCommitment}
-            //   selectedCommitment = Object.assign({}, newCommitmentTemplate)
-            }
+            // updatedCommitment.finished = selectedCommitment.finished
+            console.log("selected commitment2 ", selectedCommitment)
+
             dispatch('submit', {
               column: commitmentModalColumn,
               process: commitmentModalProcess,
               side: commitmentModalSide,
-              commitment: updatedCommitment,
-              useAs: 'update',
-              saveCost: saveCost
+              event: updatedCommitment,
+              useAs: 'update'
             });
             open = false;
           }}
-          >Save changes</button>
+          >Add Event</button>
           {:else}
           <button
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             on:click={() => {
-              // if (commitmentModalColumn == undefined) {
-                // let commitmentIndex = commitments.findIndex(
-                // it => it.id == selectedCommitmentId
-                // )
-                // if (commitmentIndex != -1) {
-                //   commitments[commitmentIndex] = selectedCommitment
-                //   commitments = commitments
-                // } else {
-                //   commitments = [...commitments, newCommitment]
-                //   newCommitment = Object.assign({}, newCommitmentTemplate)
-                // }
-              // } else {
-                if (selectedStage) {
-                  newCommitment['stage'] = selectedStage
-                }
                 console.log(newCommitment)
                 dispatch('submit', {
                   column: commitmentModalColumn,
                   process: commitmentModalProcess,
                   side: commitmentModalSide,
-                  commitment: {
+                  event: {
                     ...newCommitment,
                     id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
                   },
-                  useAs: 'new',
-                  saveCost: saveCost
+                  useAs: 'new'
                 });
-              // }
-
-              // console.log(JSON.stringify(newCommitment))
-              // console.log(JSON.stringify(newCommitmentTemplate))
-              // newCommitment = {...newCommitmentTemplate}
-              // console.log(JSON.stringify(newCommitment))
               open = false
             }}
           >

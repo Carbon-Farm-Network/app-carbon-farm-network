@@ -5,14 +5,14 @@
   import type { RelayConn } from '$lib/graphql/helpers'
   import { gql } from 'graphql-tag'
   import type { ReadableQuery } from 'svelte-apollo'
-  import { clickOutside } from '../utils'
+  import { clickOutside } from '../../utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
   import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@leosprograms/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
-  import ResourceSpecificationModal from './ResourceSpecificationModal.svelte'
+  import ResourceSpecificationModal from '../resource_specifications/ResourceSpecificationModal.svelte'
 
   // public CustomElement attributes
   export let open = false;
@@ -383,7 +383,7 @@
                 <div class="relative mt-2 rounded-md shadow-sm">
                   {#if currentIntent.resourceQuantity}
                   <input
-                    type="text"
+                    type="number"
                     name="name"
                     id="name"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"

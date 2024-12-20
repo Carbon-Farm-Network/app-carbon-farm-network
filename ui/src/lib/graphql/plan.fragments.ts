@@ -6,45 +6,6 @@ export const SIMPLIFIED_PLAN_RETURN_FIELDS = gql`
     revisionId
     name
     note
-    meta {
-      retrievedRevision {
-        id
-        time
-      }
-    }
-    independentDemands {
-      id
-      revisionId
-      action {
-        id
-        label
-      }
-      receiverId
-      resourceQuantity {
-        hasNumericalValue
-        hasUnitId
-      }
-      resourceConformsTo {
-        id
-        name
-        defaultUnitOfResourceId
-      }
-    }
-    processes {
-      id
-      revisionId
-      name
-      meta {
-        retrievedRevision {
-          id
-          time
-        }
-      }
-      basedOn {
-        id
-        name
-      }
-    }
   }
 `
 

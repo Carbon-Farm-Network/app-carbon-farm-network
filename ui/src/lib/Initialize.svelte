@@ -208,6 +208,7 @@
             action: actions.find(a => a.label === i.action.label.replaceAll("_", "-")).id,
             providerRole: i.provider_role,
             receiverRole: i.receiver_role,
+            instructions: i.instructions,
             resourceQuantity: {
               hasNumericalValue: Number(i.resourceQuantity.hasNumericalValue),
               hasUnit: units.find(u => u.label === i.resourceQuantity.hasUnit.label)?.id,
@@ -229,6 +230,7 @@
             action: actions.find(a => a.label === o.action.label.replaceAll("_", "-")).id,
             providerRole: o.provider_role,
             receiverRole: o.receiver_role,
+            instructions: o.instructions,
             resourceQuantity: {
               hasNumericalValue: Number(o.resourceQuantity.hasNumericalValue),
               hasUnit: units.find(u => u.label === o.resourceQuantity.hasUnit.label)?.id,

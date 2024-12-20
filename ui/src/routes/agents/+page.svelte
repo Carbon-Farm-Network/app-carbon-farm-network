@@ -1,7 +1,6 @@
 <script lang="ts">
-  import AgentModal from "$lib/AgentModal.svelte"
+  import AgentModal from "./AgentModal.svelte"
   import { onMount } from 'svelte'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
   import type { Facet, FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
   import { deleteAgent, addHashChange } from '../../crud/commit'
   import { getAllFacetGroups, getAllAgents } from '../../crud/fetch'
@@ -10,6 +9,7 @@
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
+  import Loading from "$lib/Loading.svelte"
 
   let error: any;
   let modalOpen = false;
@@ -22,6 +22,7 @@
   let selectedFacets: any = {};
   let createAgent: any;
   let associateAgentWithValue: any;
+  let loading = false;
   let importing = false;
   let exportOpen = false;
   let hashChanges: any = {}
@@ -92,8 +93,10 @@
   }
 
   onMount(async () => {
+    loading = agents.length == 0
     await getAllAgents();
     await fetchFacets();
+    loading = false;
   })
 
   // reactive data bindings
@@ -106,6 +109,10 @@
 <AgentModal bind:createAgent bind:associateAgentWithValue bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={getAllAgents} />
 
 <Error {error} />
+
+{#if loading}
+<Loading />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from '../utils'
+  import { clickOutside } from '../../utils'
   import type { FacetValue, FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
   import { mutation } from 'svelte-apollo';
   export let open = false

@@ -12,7 +12,7 @@ import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graph
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
 import { RECIPE_RETURN_FIELDS, RECIPE_EXCHANGE_RETURN_FIELDS } from '$lib/graphql/recipe.fragments'
 import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setRecipes, setRecipeExchanges, 
-  setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan } from './store'
+  setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan, setPlansList } from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
 import { decode } from '@msgpack/msgpack';
@@ -199,6 +199,20 @@ ${PLAN_RETURN_FIELDS}
 query GetPlan($id: ID!) {
   plan(id: $id) {
     ...PlanReturnFields
+  }
+}
+`
+
+const GET_PLANS = gql`
+${SIMPLIFIED_PLAN_RETURN_FIELDS}
+query {
+  plans(last: 100000) {
+    edges {
+      cursor
+      node {
+        ...SimplifiedPlanReturnFields
+      }
+    }
   }
 }
 `
@@ -493,6 +507,15 @@ export const getPlan = async (id: string) => {
   addToFullPlans(res.data.plan)
   return res.data.plan
 }
+
+export const getAllPlans = async () => {
+  const res = await client.query({
+    query: GET_PLANS,
+    fetchPolicy: 'no-cache'
+  })
+  setPlansList(res.data.plans.edges.map((edge: any) => edge.node))
+  return res
+}  
 
 export const getNonProcessCommitments = async (id: string) => {
   const res = await client.query({

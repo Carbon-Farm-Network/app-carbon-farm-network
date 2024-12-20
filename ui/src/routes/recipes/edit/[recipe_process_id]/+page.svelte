@@ -1,5 +1,5 @@
 <script lang="ts">
-  import RecipeProcessModal from '$lib/RecipeProcessModal.svelte'
+  import RecipeProcessModal from '../../RecipeProcessModal.svelte'
   import RecipeFlowModal from '$lib/RecipeFlowModal.svelte'
   // import recipes from '$lib/data/recipes.json'
   import Header from '$lib/Header.svelte'

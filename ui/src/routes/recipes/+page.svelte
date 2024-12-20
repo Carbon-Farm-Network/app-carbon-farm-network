@@ -2,11 +2,12 @@
   // import recipes from '$lib/data/recipes.json'
   import { onMount } from 'svelte';
   import Header from '$lib/Header.svelte'
+  import Loading from '$lib/Loading.svelte';
   import { goto } from '$app/navigation'
   import { allRecipes, allProcessSpecifications, allHashChanges } from '../../crud/store'
   import { getAllProcessSpecifications, getAllRecipes, getAllHashChanges } from '../../crud/fetch';
   import { deleteRecipeProcess, deleteRecipeFlow, addHashChange, createRecipeProcess, createRecipeFlow } from '../../crud/commit';
-  import RecipeProcessModal from '$lib/RecipeProcessModal.svelte'
+  import RecipeProcessModal from './RecipeProcessModal.svelte'
   import Export from '$lib/Export.svelte';
 
   let hashChanges: any = {}
@@ -86,11 +87,15 @@
     await getAllRecipes()
   }
 
+  let loading: boolean = false
+
   onMount(async () => {
+    loading = recipes.length === 0 || processSpecifications.length === 0
     await getAllProcessSpecifications()
     await getAllRecipes()
     console.log('recipes', recipes)
     console.log('processSpecifications', processSpecifications)
+    loading = false
   })
 </script>
 
@@ -99,6 +104,10 @@
 <!-- </div> -->
 
 <RecipeProcessModal bind:open={recipeProcessModalOpen} recipeProcess={currentRecipeProcess} {processSpecifications} />
+
+{#if loading}
+  <Loading />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">

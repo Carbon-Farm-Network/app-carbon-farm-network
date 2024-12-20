@@ -2,11 +2,11 @@
   import { gql } from 'graphql-tag'
   import type { RecordMeta, ProcessSpecification, ProcessSpecificationCreateParams, ProcessSpecificationUpdateParams } from '@leosprograms/vf-graphql'
   import { createEventDispatcher } from 'svelte';
-  import { PROCESS_SPECIFICATION_CORE_FIELDS } from './graphql/process_specification.fragments'
+  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '../../lib/graphql/process_specification.fragments'
   import { mutation, query } from 'svelte-apollo'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { onMount } from 'svelte'
-  import { addProcessSpecification, updateProcessSpecification } from '../crud/commit';
+  import { addProcessSpecification, updateProcessSpecification } from '../../crud/commit';
   const dispatch = createEventDispatcher();
   
   export let open = false;

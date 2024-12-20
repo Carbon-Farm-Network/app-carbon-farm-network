@@ -12,55 +12,6 @@ export function matchingOffer(commitment: any, offers: any[]) {
   })
 }
 
-// export function makeAgreement1(
-//   commitment: any,
-//   agreement: undefined | any,
-//   offers: any[]
-// ): undefined | any {
-//   let specific_provider = commitment.provider
-//   let numerical_value;
-//   let hasUnit;
-//   let reciprocal_intent;
-//   let primary_intent;
-//   // TODO get data to test the matching offer logic
-//   const matching_offer = matchingOffer(commitment, offers)
-//   if (matching_offer) {
-//     reciprocal_intent = matching_offer.publishes.find(
-//       intent => intent.reciprocal
-//     )
-//     primary_intent = matching_offer.publishes.find(
-//       intent => !intent.reciprocal
-//     )
-//     numerical_value = reciprocal_intent.publishes?.resourceQuantity.hasNumericalValue / primary_intent.publishes?.resourceQuantity.hasNumericalValue
-    
-//     hasUnit = primary_intent.publishes?.resourceQuantity?.hasUnit
-//   } else {
-//     return
-//   }
-
-//   if (!numerical_value || !hasUnit) return
-
-//   return {
-//     commitments: [
-//     {
-//       action: {
-//         label: reciprocal_intent?.publishes?.action?.label
-//       },
-//       provider: reciprocal_intent?.publishes?.receiverId,
-//       // stage: reciprocal_clause?.stage,
-//       resourceConformsTo: reciprocal_intent?.publishes?.resourceConformsTo,
-//       resourceQuantity: {
-//         hasNumericalValue: new Decimal(numerical_value)
-//           .mul(commitment.resourceQuantity.hasNumericalValue)
-//           .toDecimalPlaces(0, Decimal.ROUND_UP)
-//           .toString(),
-//         hasUnit: hasUnit
-//       }
-//     }],
-//     primaryIntent: primary_intent
-//   }
-// }
-
 export function makeAgreement(
   commitment: any,
   recipe: undefined | any,
@@ -116,18 +67,6 @@ export function makeAgreement(
     note: recipe?.note,
     primaryIntent: primary_intent,
     commitment: {
-      // action:  reciprocal_intent?.publishes?.action?.label,
-      // provider: reciprocal_intent?.publishes?.receiver,
-      // // stage: reciprocal_clause?.stage,
-      // resourceConformsTo: reciprocal_intent?.publishes?.resourceConformsTo,
-      // resourceQuantity: {
-      //   hasNumericalValue: new Decimal(numerical_value)
-      //     .mul(commitment.resourceQuantity.hasNumericalValue)
-      //     .toDecimalPlaces(0, Decimal.ROUND_UP)
-      //     .toString(),
-      //   hasUnit: hasUnit
-      // }
-
       action: {
         label: reciprocal_intent?.publishes?.action?.label
       },

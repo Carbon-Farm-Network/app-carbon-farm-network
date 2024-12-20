@@ -262,6 +262,23 @@ mutation($plan: PlanCreateParams!){
 }
 `
 
+const UPDATE_PLAN = gql`
+${SIMPLIFIED_PLAN_RETURN_FIELDS},
+mutation($plan: PlanUpdateParams!){
+  updatePlan(plan: $plan) {
+    plan {
+      ...SimplifiedPlanReturnFields
+    }
+  }
+}
+`
+
+const DELETE_PLAN = gql`
+mutation($revisionId: ID!){
+  deletePlan(revisionId: $revisionId)
+}
+`
+
 const CREATE_PROCESS = gql`
 ${PROCESS_RETURN_FIELDS},
 mutation($process: ProcessCreateParams!){
@@ -270,6 +287,23 @@ mutation($process: ProcessCreateParams!){
       ...ProcessReturnFields
     }
   }
+}
+`
+
+const UPDATE_PROCESS = gql`
+${PROCESS_RETURN_FIELDS},
+mutation($process: ProcessUpdateParams!){
+  updateProcess(process: $process) {
+    process {
+      ...ProcessReturnFields
+    }
+  }
+}
+`
+
+const DELETE_PROCESS = gql`
+mutation($revisionId: ID!){
+  deleteProcess(revisionId: $revisionId)
 }
 `
 
@@ -608,11 +642,47 @@ export const createPlan = async (plan: any) => {
   })
 }
 
+export const updatePlan = async (plan: any) => {
+  return await client.mutate({
+    mutation: UPDATE_PLAN,
+    variables: {
+      plan
+    }
+  })
+}
+
+export const deletePlan = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_PLAN,
+    variables: {
+      revisionId
+    }
+  })
+}
+
 export const createProcess = async (process: any) => {
   return await client.mutate({
     mutation: CREATE_PROCESS,
     variables: {
       process
+    }
+  })
+}
+
+export const updateProcess = async (process: any) => {
+  return await client.mutate({
+    mutation: UPDATE_PROCESS,
+    variables: {
+      process
+    }
+  })
+}
+
+export const deleteProcess = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_PROCESS,
+    variables: {
+      revisionId
     }
   })
 }

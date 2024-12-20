@@ -1,92 +1,139 @@
 <script lang="ts">
-  // import plan from '$lib/data/plan.json'
   import Header from '$lib/Header.svelte'
   import { goto } from '$app/navigation'
-  import { gql } from 'graphql-tag'
   import { onMount } from 'svelte'
-  import { mutation, query } from 'svelte-apollo'
-  import { page } from "$app/stores"
-  import type { ReadableQuery } from 'svelte-apollo'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import type { PlanConnection } from '@leosprograms/vf-graphql'
-  import Export from '$lib/Export.svelte'
+  import { deletePlan, deleteProcess, deleteAgreement, deleteCommitment, deleteEconomicEvent } from '../../crud/commit'
+  import { getAllPlans, getPlan } from '../../crud/fetch'
+  import { plansList, fullPlans } from '../../crud/store';
+  import Loading from '$lib/Loading.svelte'
 
+  let plans: any[];
+  plansList.subscribe(value => {
+    plans = value
+  })
 
-  export let plans: any[];
+  let allFullPlans: any = {}
+  fullPlans.subscribe(value => {
+    allFullPlans = value
+  })
 
   let exportOpen = false
   let importing = false
+  let loading = false
+  let deleting = false
 
-  const GET_PLANS = gql`
-    query fetchPlans {
-      plans {
-        edges {
-          node {
-            meta {
-              retrievedRevision {
-                time
-              }
-            }
-            id
-            revisionId
-            name
-            note
-          }
-        }
-      }
-    }
-  `
-
-  const GET_PROCESSES = gql`
-    query fetchProcesses {
-      processes {
-        edges {
-          node {
-            id
-            name
-          }
-        }
-      }
-    }
-  `
-
-  const DELETE_PLAN = gql`mutation($revisionId: ID!){
-    deletePlan(revisionId: $revisionId)
-  }`
-
-  interface PlansQueryResponse {
-    plans: PlanConnection & RelayConn<any>
-  }
-
-  interface ProcessesQueryResponse {
-    processes: PlanConnection & RelayConn<any>
-  }
-  
-  let plansQuery: ReadableQuery<PlansQueryResponse> = query(GET_PLANS)
-  let processesQuery: ReadableQuery<ProcessesQueryResponse> = query(GET_PROCESSES)
-  let deletePlan: any = mutation(DELETE_PLAN)
-
-  // let plansQuery = query(GET_PLANS)
-
-  async function fetchPlans() {
-    const res = await plansQuery.refetch()
-    plans = res.data.plans.edges
-  }
-
-  async function fetchProcesses() {
-    const res = await processesQuery.refetch()
-  }
-
-  async function removePlan(revisionId: any) {
+  async function removePlan(id: string, revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this plan?")
     if (areYouSure == true) {
-      const res = await deletePlan({ variables: { revisionId } })
-      await fetchPlans()
+      deleting = true
+      let fullPlan = allFullPlans[id]
+      if (!fullPlan) {
+        await getPlan(id)
+        fullPlan = allFullPlans[id]
+      }
+      if (!fullPlan) {
+        console.error('no full plan found')
+        return
+      }
+      console.log('fullPlan', fullPlan)
+      for (let process of fullPlan.processes) {
+        const processCommitments = [...process.committedInputs, ...process.committedOutputs]
+        for (let commitment of processCommitments) {
+          const economicEvents = commitment.fulfilleedBy?.economicEvents || []
+          for (let economicEvent of economicEvents) {
+            try {
+              await deleteEconomicEvent(economicEvent.id)
+            } catch (error) {
+              console.error('error deleting economic event', error)
+            }
+          }
+
+          const agreementRevisionId = commitment.clauseOf?.revisionId
+          try {
+            await deleteAgreement(agreementRevisionId)
+          } catch (error) {
+            console.error('error deleting commitment', error)
+          }
+
+          const recipocals = commitment.clauseOf?.commitments || []
+          for (let recipocal of recipocals) {
+            const recipocalEconomicEvents = recipocal.fulfilleedBy?.economicEvents || []
+            for (let recipocalEconomicEvent of recipocalEconomicEvents) {
+              try {
+                await deleteEconomicEvent(recipocalEconomicEvent.revisionId)
+              } catch (error) {
+                console.error('error deleting recipocal economic event', error)
+              }
+            }
+            try {
+              await deleteCommitment(recipocal.revisionId)
+            } catch (error) {
+              console.error('error deleting recipocal commitment', error)
+            }
+          }
+          try {
+            await deleteCommitment(commitment.revisionId)
+          } catch (error) {
+            console.error('error deleting commitment', error)
+          }
+        }
+
+        // try {
+        //   console.log('deleting process', process.revisionId)
+        //   await deleteProcess(process.revisionId)
+        // } catch (error) {
+        //   console.error('error deleting process', error)
+        // }
+      }
+      
+      const otherCommitments = [...fullPlan.nonProcessCommitments, ...fullPlan.independentDemands]
+      for (let commitment of otherCommitments) {
+        const economicEvents = commitment.fulfilleedBy?.economicEvents || []
+        for (let economicEvent of economicEvents) {
+          try {
+            await deleteEconomicEvent(economicEvent.id)
+          } catch (error) {
+            console.error('error deleting economic event', error)
+          }
+        }
+        const recipocals = commitment.clausOf?.committments || []
+        for (let recipocal of recipocals) {
+          const recipocalEconomicEvents = recipocal.fulfilleedBy?.economicEvents || []
+          for (let recipocalEconomicEvent of recipocalEconomicEvents) {
+            try {
+              await deleteEconomicEvent(recipocalEconomicEvent.revisionId)
+            } catch (error) {
+              console.error('error deleting recipocal economic event', error)
+            }
+          }
+          try {
+            await deleteCommitment(recipocal.revisionId)
+          } catch (error) {
+            console.error('error deleting recipocal commitment', error)
+          }
+        }
+        try {
+          await deleteCommitment(commitment.revisionId)
+        } catch (error) {
+          console.error('error deleting commitment', error)
+        }
+      }
+
+      try {
+        await deletePlan(fullPlan.revisionId)
+      } catch (error) {
+        console.error('error deleting plan', error)
+      }
+      await getAllPlans()
+      deleting = false
     }
   }
 
   onMount(async () => {
-    await fetchPlans()
+    loading = plans.length == 0
+    await getAllPlans()
+    loading = false
+    console.log('plans', plans)
     // await fetchProcesses()
   })
 
@@ -96,6 +143,10 @@
 <!-- <div style="height: 8vh"> -->
   <Header title="Plans" description="Current operational planning" />
 <!-- </div> -->
+
+{#if loading || deleting}
+<Loading />
+{/if}
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -148,23 +199,23 @@
             {#each plans as plan, index}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
-                  >{plan.node.name}</td
+                  >{plan.name}</td
                 >
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{plan.node.note}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{plan.note}</td>
                 <td
                   class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                 >
                   <button type="button" class="text-indigo-600 hover:text-indigo-900"
                   on:click={() => {
-                    goto(`/plans/update/${encodeURIComponent(plan.node.id)}`)
+                    goto(`/plans/update/${encodeURIComponent(plan.id)}`)
                   }}
                   >Open<span class="sr-only">, {name}</span></button
                   >
                   &nbsp;
                   <button type="button" class="text-indigo-600 hover:text-indigo-900"
                   on:click={() => {
-                    console.log('delete', plan.node.id)
-                    removePlan(plan.node.revisionId)
+                    console.log('delete', plan.id)
+                    removePlan(plan.id, plan.revisionId)
                   }}
                   >
                     Delete</button

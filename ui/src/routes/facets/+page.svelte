@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FacetModal from "$lib/FacetModal.svelte"
+  import FacetModal from "./FacetModal.svelte"
   // import allFacetGroups from '$lib/data/facet_groups.json'
   // import facets from '$lib/data/facets.json'
   import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"

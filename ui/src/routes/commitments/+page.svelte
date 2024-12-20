@@ -1,6 +1,6 @@
 <script lang="ts">
 import Header from "$lib/Header.svelte";
-import type { Commitment } from "@leosprograms/vf-graphql";
+import Loading from "$lib/Loading.svelte";
 import { getAllCommitments, getAllUnits, getAllAgreements } from "../../crud/fetch";
 import { allCommitments, allUnits, allAgreements } from "../../crud/store";
 import { onMount } from "svelte";
@@ -20,13 +20,22 @@ allAgreements.subscribe(value => {
 //   commitments = value;
 // });
 
+let loading: boolean = false;
+
 onMount(async () => {
+  loading = agreements.length === 0;
+  console.log("loading", agreements.length, loading);
   await getAllAgreements();
-  // await getAllCommitments();
-  // await getAllUnits();
+  console.log("agreements", agreements);
+  loading = false;
 });
 </script>
+
 <Header title="Exchanges" description="The exchanges in a network." />
+
+{#if loading}
+  <Loading />
+{/if}
 
 <div class="p-12">
     <div class="sm:flex sm:items-center">

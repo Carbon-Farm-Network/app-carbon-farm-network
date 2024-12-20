@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { clickOutside } from '../utils'
+  import { clickOutside } from '../../utils'
   import { onMount } from 'svelte';
-  import { createRecipeExchange, updateRecipeExchange } from '../crud/commit'
-  import { getAllRecipeExchanges } from '../crud/fetch'
+  import { createRecipeExchange, updateRecipeExchange } from '../../crud/commit'
+  import { getAllRecipeExchanges } from '../../crud/fetch'
   import { goto } from '$app/navigation'
 
   // public CustomElement attributes
