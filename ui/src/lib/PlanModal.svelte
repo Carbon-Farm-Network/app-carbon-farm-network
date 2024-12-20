@@ -152,7 +152,7 @@
       name: process.name,
       note: process.note,
       plannedWithin: process.plannedWithin,
-      basedOn: processSpecifications.find((rs) => rs.name === process.based_on.name).id,
+      basedOn: processSpecifications.find((rs) => rs.name === process.basedOn.name).id,
     }
     let p = await addProcess({
       variables: {
@@ -355,6 +355,7 @@
 
     for (const column of allColumns) {
       for (const process of column) {
+        console.log("process is ... ", process)
         process.plannedWithin = p.data.res.plan.id
         // save process
         // wait

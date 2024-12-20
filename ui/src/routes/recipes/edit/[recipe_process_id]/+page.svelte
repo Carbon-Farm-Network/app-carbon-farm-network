@@ -54,7 +54,7 @@
       hasUnit: '',
     },
     resourceConformsTo: '',
-    stage: '',
+    // stage: '',
   };
   let currentRecipeFlow: RecipeFlowCreateParams | RecipeFlowUpdateParams = {...newRecipeFlow};
 

@@ -67,14 +67,15 @@ export function makeAgreement(
   offers: any[],
   agents: any[] | undefined
 ): undefined | any {
-  const reciprocal_clause = recipe?.has_recipe_reciprocal_clause?.[0]
+  console.log("reciprocal_clause", recipe)
+  const reciprocal_clause = recipe?.recipeReciprocalClauses?.[0]
   if (reciprocal_clause) {
     return {
       name: recipe?.name,
       note: recipe?.note,
       commitment: {
         action:  reciprocal_clause.action?.label,
-        provider: agents?.find((a) => a.role == reciprocal_clause.provider_role),
+        provider: agents?.find((a) => a.role == reciprocal_clause.providerRole),
         stage: reciprocal_clause?.stage,
         resourceConformsTo: reciprocal_clause.resourceConformsTo,
         resourceQuantity: {
@@ -147,19 +148,18 @@ export function makeAgreement(
 export function findExchange(
   commitment: any,
   based_on_name: string | undefined,
-  recipes: any[]
+  recipeExchanges: any[]
 ): undefined | { name: string; note: string } {
-  return recipes
-  .filter(it => it.type == 'recipe_exchange')
+  return recipeExchanges
   .find(a_recipe => {
     if (based_on_name) {
-      return a_recipe?.has_recipe_clause?.some(
+      return a_recipe?.recipeClauses?.some(
         clause =>
           clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
           clause.stage?.name == based_on_name
       )
     }
-    return a_recipe?.has_recipe_clause?.some(
+    return a_recipe?.recipeClauses?.some(
       clause =>
         clause.resourceConformsTo.name == commitment?.resourceConformsTo?.name &&
         clause.stage?.name == commitment.stage?.name
@@ -189,25 +189,25 @@ export function assignProviderReceiver(commitment, agents) {
 export type Process = {
   id: string
   name: string
-  based_on: {
+  basedOn: {
     name: string
   }
   committedOutputs: any[]
   committedInputs: any[]
 }
 
-export function createAgreements(process: Process, recipes, offers, agents): Process {
+export function createAgreements(process: Process, recipeExchanges, offers, agents): Process {
   return {
     ...process,
     committedOutputs: process.committedOutputs.map(output => {
-      const output_exchange = findExchange(output, process.based_on.name, recipes)
-      // console.log("output_exchange", output_exchange, "process", process.based_on)
+      const output_exchange = findExchange(output, process.basedOn.name, recipeExchanges)
+      console.log("output_exchange", output_exchange, "process", process.basedOn)
       if (output_exchange) {
-        // console.log("maybe making agreement 1", output_exchange)
+        console.log("maybe making agreement 1", output_exchange)
         const output_agreement = makeAgreement(output, output_exchange, offers, agents)
-        // console.log('output_agreement', output_agreement)
+        console.log('output_agreement', output_agreement)
         if (output_agreement) {
-          // console.log("actually making agreement 1", output, output_agreement)
+          console.log("actually making agreement 1", output, output_agreement)
           return {
             ...output,
             agreement: output_agreement
@@ -218,8 +218,8 @@ export function createAgreements(process: Process, recipes, offers, agents): Pro
     }),
     committedInputs: process.committedInputs.map(input => {
       // if there is no input, we don't need to make an agreement
-      const input_exchange = findExchange(input, process.based_on.name, recipes)
-      // console.log("input_exchange", input_exchange, "process", process.based_on)
+      const input_exchange = findExchange(input, process.basedOn.name, recipeExchanges)
+      // console.log("input_exchange", input_exchange, "process", process.basedOn)
       if (input_exchange) {
         // console.log("maybe making agreement 2", input_exchange)
         const input_agreement = makeAgreement(input, input_exchange, offers, agents)
@@ -238,7 +238,6 @@ export function createAgreements(process: Process, recipes, offers, agents): Pro
 }
 
 export function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
-  console.log("requests", requests)
   return requests.flatMap(request =>
     request.publishes.filter(it => !it.reciprocal).map(proposed_intent => ({
       ...proposed_intent.publishes,
@@ -282,13 +281,10 @@ export function aggregateCommitments(commitments: Commitment[]): Demand[] {
           }
         }
       } else {
-        console.log("commitment ^^^", commitment)
         acc[commitment.resourceConformsTo.name] = {
-          ...commitment,
-          // resourceQuantity: commitment.resourceQuantity,
-          // resourceConformsTo: commitment.resourceConformsTo,
-          // stage: commitment.stage
-          // stage: { name: 'Ship' }
+          resourceQuantity: commitment.resourceQuantity,
+          resourceConformsTo: commitment.resourceConformsTo,
+          stage: { name: 'Ship' }
         }
       }
       return acc

@@ -50,7 +50,7 @@
     }
   }
 
-  $: validToSave = recipeFlow.resourceQuantity && Number(recipeFlow.resourceQuantity.hasNumericalValue) > 0 && recipeFlow.resourceQuantity.hasUnit != '' && recipeFlow.stage != '' && recipeFlow.resourceConformsTo != '' && recipeFlow.action != '';
+  $: validToSave = recipeFlow.resourceQuantity && Number(recipeFlow.resourceQuantity.hasNumericalValue) > 0 && recipeFlow.resourceQuantity.hasUnit != '' && recipeFlow.resourceConformsTo != '' && recipeFlow.action != '';
 
   onMount(async () => {
     window.addEventListener("keydown", checkKey);
@@ -259,7 +259,7 @@
                   for="unit"
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
-                {recipeFlow.resourceQuantity?.hasUnit ? units.find(it => it.id === recipeFlow.resourceQuantity.hasUnit).label
+                {recipeFlow.resourceQuantity?.hasUnit ? units.find(it => it.id === recipeFlow.resourceQuantity.hasUnit)?.label
                  : ""}
                 <!-- <select
                   id="unit"
@@ -289,9 +289,12 @@
                   value={recipeFlow.stage}
                   on:change={(e) => {
                     recipeFlow.stage = e.target.value
+                    if (recipeFlow.stage === 'undefined') {
+                      recipeFlow.stage = undefined
+                    }
                   }}
                 >
-                  <option value={''}></option>
+                  <option value={undefined}></option>
                   {#each processSpecifications as processSpecification}
                     <option value={processSpecification.id}>{processSpecification.name}</option>
                   {/each}

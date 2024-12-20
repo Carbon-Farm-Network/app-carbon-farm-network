@@ -1,5 +1,6 @@
 import { gql } from 'graphql-tag'
-import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, EconomicEvent, RecipeProcessCreateParams } from '@leosprograms/vf-graphql'
+import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, 
+  EconomicEvent, RecipeProcessCreateParams, RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
@@ -616,7 +617,7 @@ export const createProcess = async (process: any) => {
   })
 }
 
-export const createRecipeFlow = async (recipeFlow: any) => {
+export const createRecipeFlow = async (recipeFlow: RecipeFlowCreateParams) => {
   return await client.mutate({
     mutation: CREATE_RECIPE_FLOW,
     variables: {
@@ -625,7 +626,7 @@ export const createRecipeFlow = async (recipeFlow: any) => {
   })
 }
 
-export const updateRecipeFlow = async (recipeFlow: any) => {
+export const updateRecipeFlow = async (recipeFlow: RecipeFlowUpdateParams) => {
   return await client.mutate({
     mutation: UPDATE_RECIPE_FLOW,
     variables: {

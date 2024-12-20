@@ -34,6 +34,14 @@
 
   const devInit = true
 
+
+  let processImages = {
+    "Pick Up": "/pickup.svg",
+    "Ship": "/truck.svg",
+    "Spin Yarn": "/socks.svg",
+    "Scour Fiber": "/washing-machine.svg"
+  }
+
   const INITIALIZE_UNITS = gql`
     ${UNIT_CORE_FIELDS}
     mutation {
@@ -182,48 +190,57 @@
     await getAllUnits()
 
     // add all recipes and recipe exchanges
+    let initialProcessSpecificationId = processSpecifications.find(p => p.name === "Initial")?.id
     for (let r of recipes) {
       if (r.type == "recipe_process") {
         // console.log(r)
         // console.log(processSpecifications)
-        // let rProcRes = await createRecipeProcess({
-        //   name: r.name,
-        //   processConformsTo: processSpecifications.find(p => p.name === r.process_conforms_to.name)?.id,
-        // })
-        // for (let i of r.has_recipe_input) {
-        //   let rFlowInput = {
-        //     note: "asdf",
-        //     recipeInputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
-        //     resourceConformsTo: resourceSpecifications.find(rs => rs.name === i.resourceConformsTo.name)?.id,
-        //     action: actions.find(a => a.name === i.action.name)?.id,
-        //     providerRole: i.provider_role,
-        //     receiverRole: i.receiver_role,
-        //     resourceQuantity: {
-        //       hasNumericalValue: Number(i.resourceQuantity.hasNumericalValue),
-        //       hasUnit: units.find(u => u.label === i.resourceQuantity.hasUnit.label)?.id,
-        //     },
-        //     stage: processSpecifications.find(p => p.name === r.process_conforms_to?.name)?.id,
-        //   }
-        //   console.log(rFlowInput)
-        //   let rFlowRes = await createRecipeFlow(rFlowInput)
-        // }
-        // for (let o of r.has_recipe_output) {
-        //   let rFlowOutput = {
-        //     note: "asdf",
-        //     recipeOutputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
-        //     resourceConformsTo: resourceSpecifications.find(rs => rs.name === o.resourceConformsTo.name)?.id,
-        //     action: actions.find(a => a.name === o.action.name)?.id,
-        //     providerRole: o.provider_role,
-        //     receiverRole: o.receiver_role,
-        //     resourceQuantity: {
-        //       hasNumericalValue: Number(o.resourceQuantity.hasNumericalValue),
-        //       hasUnit: units.find(u => u.label === o.resourceQuantity.hasUnit.label)?.id,
-        //     },
-        //     stage: processSpecifications.find(p => p.name === r.process_conforms_to?.name)?.id,
-        //   }
-        //   console.log(rFlowOutput)
-        //   let rFlowRes = await createRecipeFlow(rFlowOutput)
-        // }
+        let rProcRes = await createRecipeProcess({
+          name: r.name,
+          processConformsTo: processSpecifications.find(p => p.name === r.process_conforms_to.name)?.id,
+        })
+        for (let i of r.has_recipe_input) {
+          console.log(i)
+          let rFlowInput = {
+            note: "asdf",
+            recipeInputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
+            resourceConformsTo: resourceSpecifications.find(rs => rs.name === i.resourceConformsTo.name)?.id,
+            action: actions.find(a => a.label === i.action.label.replaceAll("_", "-")).id,
+            providerRole: i.provider_role,
+            receiverRole: i.receiver_role,
+            resourceQuantity: {
+              hasNumericalValue: Number(i.resourceQuantity.hasNumericalValue),
+              hasUnit: units.find(u => u.label === i.resourceQuantity.hasUnit.label)?.id,
+            },
+          }
+          let stageId = processSpecifications.find(p => p.name === i.stage?.name)?.id
+          if (stageId) {
+            rFlowInput.stage = stageId
+          }
+          console.log(rFlowInput)
+          let rFlowRes = await createRecipeFlow(rFlowInput)
+        }
+        for (let o of r.has_recipe_output) {
+          console.log(o)
+          let rFlowOutput = {
+            note: "asdf",
+            recipeOutputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
+            resourceConformsTo: resourceSpecifications.find(rs => rs.name === o.resourceConformsTo.name)?.id,
+            action: actions.find(a => a.label === o.action.label.replaceAll("_", "-")).id,
+            providerRole: o.provider_role,
+            receiverRole: o.receiver_role,
+            resourceQuantity: {
+              hasNumericalValue: Number(o.resourceQuantity.hasNumericalValue),
+              hasUnit: units.find(u => u.label === o.resourceQuantity.hasUnit.label)?.id,
+            },
+          }
+          let stageId = processSpecifications.find(p => p.name === o.stage?.name)?.id
+          if (stageId) {
+            rFlowOutput.stage = stageId
+          }
+          console.log(rFlowOutput)
+          let rFlowRes = await createRecipeFlow(rFlowOutput)
+        }
       } else if (r.type == "recipe_exchange") {
         console.log(r)
         let rRespEx = await createRecipeExchange({
@@ -234,14 +251,17 @@
             note: "asdf",
             recipeClauseOf: rRespEx.data?.createRecipeExchange.recipeExchange.id,
             resourceConformsTo: resourceSpecifications.find(rs => rs.name === i.resourceConformsTo.name)?.id,
-            action: actions.find(a => a.name === i.action.name)?.id,
+            action: actions.find(a => a.label === i.action.label.replaceAll("_", "-")).id,
             providerRole: i.provider_role,
             receiverRole: i.receiver_role,
             resourceQuantity: {
               hasNumericalValue: Number(i.resourceQuantity.hasNumericalValue),
               hasUnit: units.find(u => u.label === i.resourceQuantity.hasUnit.label)?.id,
             },
-            stage: processSpecifications.find(p => p.name === i.process_conforms_to?.name)?.id ? processSpecifications.find(p => p.name === i.process_conforms_to?.name)?.id : processSpecifications[0].id,
+          }
+          let stageId = processSpecifications.find(p => p.name === i.stage?.name)?.id
+          if (stageId) {
+            rFlowInput.stage = stageId
           }
           console.log(rFlowInput)
           let rFlowRes = await createRecipeFlow(rFlowInput)
@@ -251,14 +271,17 @@
             note: "asdf",
             recipeReciprocalClauseOf: rRespEx.data?.createRecipeExchange.recipeExchange.id,
             resourceConformsTo: resourceSpecifications.find(rs => rs.name === o.resourceConformsTo.name)?.id,
-            action: actions.find(a => a.name === o.action.name)?.id,
+            action: actions.find(a => a.label === o.action.label.replaceAll("_", "-")).id,
             providerRole: o.provider_role,
             receiverRole: o.receiver_role,
             resourceQuantity: {
               hasNumericalValue: Number(o.resourceQuantity.hasNumericalValue),
               hasUnit: units.find(u => u.label === o.resourceQuantity.hasUnit.label)?.id,
             },
-            stage: processSpecifications.find(p => p.name === o.process_conforms_to?.name)?.id ? processSpecifications.find(p => p.name === o.process_conforms_to?.name)?.id : processSpecifications[0].id,
+          }
+          let stageId = processSpecifications.find(p => p.name === o.stage?.name)?.id
+          if (stageId) {
+            rFlowOutput.stage = stageId
           }
           console.log(rFlowOutput)
           let rFlowRes = await createRecipeFlow(rFlowOutput)
@@ -340,12 +363,13 @@
         }
         
         console.log(pSpecs)
+        
         for (let p of pSpecs) {
           console.log(p)
           let x = await addProcessSpecification({ variables: {
             process: {
               name: p,
-              image: ["../../knitting.svg", "../../farm.svg", "../../sheep.svg", "../../truck.svg"][Math.floor(Math.random() * 4)],
+              image: processImages[p],
             },
           }})
           console.log(x)
@@ -376,13 +400,18 @@
   onMount(checkDependencies)
   // dependenciesOk = false
 </script>
+<!-- <button
+    on:click={addRecipes}
+  >
+    RECIPES
+  </button> -->
 {#if dependenciesOk === true}
   <slot></slot>
 {:else}
 <div class="p-12">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
-
+  
   {#if error}
     <h1 class="text-base font-semibold leading-6 text-gray-900">Error initializing shared data.</h1>
     <p class="mt-2 text-sm text-gray-700">The operation may have timed out. Try freeing up some system resources and restart the app.</p>
