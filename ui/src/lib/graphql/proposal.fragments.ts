@@ -12,7 +12,13 @@ export const PROPOSAL_CORE_FIELDS = gql`
 export const INTENT_CORE_FIELDS = gql`
   fragment IntentCoreFields on Intent {
     id
+    revisionId
     provider {
+      id
+      name
+    }
+    receiver {
+      id
       name
     }
     action {
@@ -41,6 +47,7 @@ export const PROPOSED_INTENT_CORE_FIELDS = gql`
     reciprocal
     publishes {
       id
+      revisionId
       provider {
         name
       }
@@ -64,8 +71,10 @@ export const PROPOSAL_RETURN_FIELDS = gql`
     unitBased
     publishes {
       id
+      revisionId
       reciprocal
       publishes {
+        id
         revisionId
         action {
           id

@@ -137,13 +137,14 @@
                         console.log('thisRecipeFlow', thisRecipeFlow)
                         currentRecipeFlow = {
                           revisionId: thisRecipeFlow.revisionId,
+                          instructions: thisRecipeFlow.instructions,
                           note: thisRecipeFlow.note,
-                          action: thisRecipeFlow.action.id,
+                          action: thisRecipeFlow.action?.id,
                           providerRole: thisRecipeFlow.providerRole,
                           receiverRole: thisRecipeFlow.receiverRole,
                           resourceQuantity: {
-                            hasNumericalValue: thisRecipeFlow.resourceQuantity.hasNumericalValue,
-                            hasUnit: thisRecipeFlow.resourceQuantity.hasUnit.id,
+                            hasNumericalValue: thisRecipeFlow.resourceQuantity?.hasNumericalValue,
+                            hasUnit: thisRecipeFlow.resourceQuantity.hasUnit?.id,
                           },
                           resourceConformsTo: thisRecipeFlow.resourceConformsTo.id,
                           stage: thisRecipeFlow.stage?.id,
@@ -259,6 +260,7 @@
                         console.log('thisRecipeFlow', thisRecipeFlow)
                         currentRecipeFlow = {
                           revisionId: thisRecipeFlow.revisionId,
+                          instructions: thisRecipeFlow.instructions,
                           note: thisRecipeFlow.note,
                           action: thisRecipeFlow.action.id,
                           providerRole: thisRecipeFlow.providerRole,

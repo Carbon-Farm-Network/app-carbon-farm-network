@@ -6,7 +6,7 @@
   import { mutation, query } from 'svelte-apollo'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { onMount } from 'svelte'
-  import { addProcessSpecification, updateProcessSpecification } from '../../crud/commit';
+  import { createProcessSpecification, updateProcessSpecification } from '../../crud/commit';
   const dispatch = createEventDispatcher();
   
   export let open = false;
@@ -33,7 +33,7 @@
     }
     console.log(process)
     try {
-      const res = await addProcessSpecification(process)
+      const res = await createProcessSpecification(process)
       dispatch("submit");
       open = false;
       console.log(res)

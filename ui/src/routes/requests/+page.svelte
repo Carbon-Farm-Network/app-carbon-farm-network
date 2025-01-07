@@ -1,16 +1,16 @@
 <script lang="ts">
   import RequestModal from './RequestModal.svelte'
-  import offers from '$lib/data/offers.json'
-  import { DateInput } from 'date-picker-svelte'
-  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-  import type { RelayConn } from '$lib/graphql/helpers'
+  // import offers from '$lib/data/offers.json'
+  // import { DateInput } from 'date-picker-svelte'
+  // import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
+  // import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
+  // import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
+  // import type { RelayConn } from '$lib/graphql/helpers'
   import { gql } from 'graphql-tag'
-  import type { ReadableQuery } from 'svelte-apollo'
+  // import type { ReadableQuery } from 'svelte-apollo'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
-  import { createEventDispatcher } from 'svelte';
+  // import { createEventDispatcher } from 'svelte';
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@leosprograms/vf-graphql'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
@@ -21,12 +21,14 @@
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
+  import Loading from '$lib/Loading.svelte'
+  import { importProposals } from '../../crud/import'
 
   // externally provided data
   let units: Unit[];
   let resourceSpecifications: ResourceSpecification[];
   let agents: Agent[];
-  let offersList: Proposal[] = [];
+  let requestsList: Proposal[] = [];
 
   // component UI state
   let modalOpen = false
@@ -34,6 +36,7 @@
   let usdRSpecId: string | undefined;
   let name = ''
   let error: any;
+  let loading = false;
 
   // Export
   let exportOpen = false;
@@ -60,7 +63,9 @@
   let currentProposedIntent: any = {};
 
   allProposals.subscribe((res) => {
-    offersList = res.map((p) => {
+    requestsList = res
+    .filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
+    .map((p) => {
       return {
         ...p,
         publishes: p.publishes.map((i) => {
@@ -137,14 +142,16 @@
 
   onMount(async () => {
     if (browser) {
+      loading = requestsList.length == 0
       await getAllResourceSpecifications()
       await getAllAgents()
       await getAllUnits()
       await getAllProposals()
+      loading = false
     }
   })
 
-  $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, offersList, editing, modalOpen, name
+  $: currentProposal, currentIntent, currentProposedIntent, agents, units, resourceSpecifications, requestsList, editing, modalOpen, name
 </script>
 
 
@@ -152,7 +159,11 @@
   <Header title="Requests" description="The goods or services you are requesting within the network, now or generally." />
   <!-- </div> -->
   
-<Error {error} />
+  <Error {error} />
+  
+  {#if loading}
+    <Loading />
+  {/if}
 
 <RequestModal bind:createRequest on:submit={getAllProposals} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
@@ -181,51 +192,12 @@
       >
     </div>
     <Export dataName="list of requests" fileName="cfn-requests" 
-      data={offersList} 
+      data={requestsList} 
       bind:open={exportOpen}
       bind:importing
       on:import={async (event) => {
         // importData(event.detail)
-        for (let i = 0; i < event.detail.length; i++) {
-          let currentIntent = event.detail[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
-          if (currentIntent.receiver) {
-            let currentReciprocalIntent = event.detail[i].publishes.find(({ reciprocal }) => reciprocal).publishes
-            console.log(currentReciprocalIntent)
-            currentReciprocalIntent.action = currentReciprocalIntent.action.id
-            currentReciprocalIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
-            currentReciprocalIntent.receiver = hashChanges[currentReciprocalIntent.receiver?.id]
-            currentReciprocalIntent.provider = hashChanges[currentReciprocalIntent.provider?.id]            
-            currentReciprocalIntent.resourceQuantity = {
-              hasNumericalValue: currentReciprocalIntent.resourceQuantity.hasNumericalValue,
-              hasUnit: currentIntent.resourceQuantity.hasUnit?.id
-            }
-            currentIntent.resourceQuantity = {
-              hasNumericalValue: currentIntent.resourceQuantity.hasNumericalValue,
-              hasUnit: currentIntent.resourceQuantity.hasUnit.id
-            }
-            currentIntent.action = currentIntent.action.id
-            currentIntent.receiver = hashChanges[currentIntent.receiver.id]
-            if (!currentIntent.receiver) { importing = false; error = "Stopped import due to dependency data 3"; return }
-            currentIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
-            if (!currentIntent.resourceConformsTo) { importing = false; error = "Stopped import due to dependency data 4"; return }
-            currentReciprocalIntent.action = currentReciprocalIntent.action.id
-            currentIntent.availableQuantity = {
-              hasNumericalValue: currentIntent.availableQuantity.hasNumericalValue,
-              hasUnit: currentIntent.availableQuantity.hasUnit.id
-            }
-            currentIntent.resourceQuantity = {
-              hasNumericalValue: currentIntent.resourceQuantity.hasNumericalValue,
-              hasUnit: currentIntent.resourceQuantity.hasUnit.id
-            }
-            var d = new Date(Date.now());
-            let newProposal = {
-              hasBeginning: event.detail[i].hasBeginning,
-              unitBased: event.detail[i].unitBased,
-              note: event.detail[i].note
-            }
-            let res = await createRequest(newProposal, currentIntent, currentReciprocalIntent)
-          }
-        }
+        await importProposals(event.detail)
         await getAllProposals()
         importing = false
         exportOpen = false
@@ -268,7 +240,7 @@
           </thead>
           <tbody class="bg-white">
             <!-- {#each offers as { proposed_intents }, index} -->
-            {#each offersList as p, index}
+            {#each requestsList as p, index}
               {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
               {#if mainIntent && mainIntent.publishes.receiver?.name}
               {@const proposedReciprocalIntent = p.publishes?.find(

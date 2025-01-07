@@ -236,7 +236,7 @@
         hasUnit: unitId
       },
     }
-    console.log("commitment check unit id", commitment)
+    console.log("commitment check unit id", commitment, o)
 
     const defaultAgent = agents.find((a) => a.classifiedAs[2] === "Network")
 
@@ -247,7 +247,7 @@
         o.provider = agents.find((a) => a.name === commitment.provider.name).id
       }
     } catch (e) {
-      console.log("can't find receiver", e)
+      console.log("can't find receiver")
       o.provider = defaultAgent.id
       console.log("saved by setting default agent", defaultAgent)
     }
@@ -258,7 +258,7 @@
         o.receiver = agents.find((a) => a.name === commitment.receiver.name).id
       }
     } catch (e) {
-      console.log("can't find provider", e)
+      console.log("can't find provider for", commitment)
       o.receiver = defaultAgent.id
       console.log("saved by setting default agent", defaultAgent)
     }

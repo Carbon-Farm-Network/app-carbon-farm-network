@@ -54,14 +54,15 @@ export const FACET_VALUE_CORE_FIELDS = gql`
 //   }
 // `
 
-// export const FACET_CORE_FIELDS = gql`
-//   fragment FacetCoreFields on Facet {
-//     name
-//     note
-//     id
-//     revisionId
-//   }
-// `
+export const FACET_CORE_FIELDS = gql`
+  fragment FacetCoreFields on Facet {
+    name
+    note
+    id
+    revisionId
+  }
+`
+
 // export const PERSON_CORE_FIELDS = gql`
 //   fragment PersonCoreFields on Person {
 //     id

@@ -63,6 +63,7 @@
           recipeInputOf: recipeProcessId,
           stage: hashChanges[recipeInput.stage.id] ? hashChanges[recipeInput.stage.id] : recipeInput.stage.id,
           action: recipeInput.action.id,
+          instructions: recipeInput.instructions,
           note: recipeInput.note,
         })
         addHashChange(recipeInput.revisionId, recipeInputRes.data.createRecipeFlow.recipeFlow.revisionId)
@@ -79,6 +80,7 @@
           recipeOutputOf: recipeProcessId,
           stage: hashChanges[recipeOutput.stage.id] ? hashChanges[recipeOutput.stage.id] : recipeOutput.stage.id,
           action: recipeOutput.action.id,
+          instructions: recipeOutput.instructions,
           note: recipeOutput.note,
         })
         addHashChange(recipeOutput.revisionId, recipeOutputRes.data.createRecipeFlow.recipeFlow.revisionId)

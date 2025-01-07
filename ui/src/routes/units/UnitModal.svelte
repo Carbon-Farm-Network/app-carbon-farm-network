@@ -2,7 +2,7 @@
     import { clickOutside } from '../../utils'
     import { onMount } from 'svelte'
     import { createEventDispatcher } from 'svelte';
-    import { addUnit, updateUnit } from '../../crud/commit'
+    import { createUnit, updateUnit } from '../../crud/commit'
     import type { Unit } from '@leosprograms/vf-graphql';
     import Papa from "papaparse";
 
@@ -70,7 +70,7 @@
     onMount(async () => {
         window.addEventListener('keydown', checkKey)
         window.addEventListener('click', (e: any) => {
-            if (!document.getElementById('name').contains(e.target)) {
+            if (!document.getElementById('name')?.contains(e.target)) {
                 showSuggestions = false
             }
         })
@@ -172,7 +172,7 @@
                         class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
                         on:click={async () => {
                             editing ? await updateUnit({ revisionId: unit.revisionId, label: unit.label, symbol: unit.symbol, omUnitIdentifier: unit.omUnitIdentifier }) :
-                            await addUnit({ label: unit.label, symbol: unit.symbol, omUnitIdentifier: unit.omUnitIdentifier })
+                            await createUnit({ label: unit.label, symbol: unit.symbol, omUnitIdentifier: unit.omUnitIdentifier })
                             dispatch('submit')
                         }}
                         >

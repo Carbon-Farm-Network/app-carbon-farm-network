@@ -3,13 +3,15 @@
   import { createEventDispatcher } from 'svelte';
   import { mutation, query } from 'svelte-apollo'
   import { onMount } from 'svelte'
+  import { goto } from '$app/navigation';
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, UnitConnection } from '@leosprograms/vf-graphql'
   import recipes from '$lib/data/recipes-with-exchanges.json'
   import { createRecipeProcess, createRecipeExchange, createRecipeFlow } from '../crud/commit';
-  import { getAllProcessSpecifications, getAllResourceSpecifications, getAllActions, getAllUnits } from '../crud/fetch';
-  import { allProcessSpecifications, allResourceSpecifications, allActions, allUnits } from '../crud/store'
+  import { getAllFacetGroups, getAllProcessSpecifications, getAllResourceSpecifications, getAllActions, getAllUnits } from '../crud/fetch';
+  import { allProcessSpecifications, allResourceSpecifications, allActions, allUnits, allFacets } from '../crud/store'
 
+  import { get } from 'svelte/store'
   import type { RelayConn } from '$lib/graphql/helpers'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
@@ -32,7 +34,7 @@
     units = value
   })
 
-  const devInit = true
+  const devInit = false
 
 
   let processImages = {
@@ -250,7 +252,7 @@
         })
         for (let i of r.has_recipe_clause) {
           let rFlowInput = {
-            note: "asdf",
+            note: "",
             recipeClauseOf: rRespEx.data?.createRecipeExchange.recipeExchange.id,
             resourceConformsTo: resourceSpecifications.find(rs => rs.name === i.resourceConformsTo.name)?.id,
             action: actions.find(a => a.label === i.action.label.replaceAll("_", "-")).id,
@@ -270,7 +272,7 @@
         }
         for (let o of r.has_recipe_reciprocal_clause) {
           let rFlowOutput = {
-            note: "asdf",
+            note: "",
             recipeReciprocalClauseOf: rRespEx.data?.createRecipeExchange.recipeExchange.id,
             resourceConformsTo: resourceSpecifications.find(rs => rs.name === o.resourceConformsTo.name)?.id,
             action: actions.find(a => a.label === o.action.label.replaceAll("_", "-")).id,
@@ -298,11 +300,12 @@
     saving = true
     let units: Unit[] = []
     try {
-      const created = await initUnits({})
-      console.log("created units", created)
-      units = [created.data?.unitEa.unit as Unit, created.data?.unitLb.unit as Unit]
-
+      
       if (devInit) {
+        const created = await initUnits({})
+        console.log("created units", created)
+        units = [created.data?.unitEa.unit as Unit, created.data?.unitLb.unit as Unit]
+        
         await initData({ variables: {
           g1: {
             name: "Agent",
@@ -324,37 +327,38 @@
         }})
       } else {
         await initData({ variables: {
-        g1: {
-          name: "Agent",
-          note: "All facet classifications relevant to Agent records.",
-        },
-        g2: {
-          name: "Resource Specification",
-          note: "All facet classifications relevant to types of resources.",
-        }
-      }})
+          g1: {
+            name: "Agent",
+            note: "All facet classifications relevant to Agent records.",
+          },
+          g2: {
+            name: "Resource Specification",
+            note: "All facet classifications relevant to types of resources.",
+          }
+        }})
+        console.log("GO TO EXPORT")
+        goto("export")
       }
 
-      let specs: any[] = ["Brown 50/50 Yarn", "Ivory 50/50 Yarn", "Gray 50/50 Yarn", "Shipping Service", "Spinning Service", "Brown Alpaca Clean", "White Wool Clean", "White Alpaca Clean", "Gray Alpaca Clean", "Scouring Service", "Brown Alpaca Dirty", ]
-      let rSpecs: any[] = []
-      let pSpecs: any[] = []
+      if (devInit) {
+        let rSpecs: any[] = []
+        let pSpecs: any[] = []
 
-      for (let r of recipes) {
-        if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
-          console.log(r.process_conforms_to)
-          pSpecs.push(r.process_conforms_to.name)
-        }
-        let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
-        let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
-        let combined = input.concat(output)
-        for (let s of combined) {
-          if (!rSpecs.includes(s.resourceConformsTo.name)) {
-            rSpecs.push(s.resourceConformsTo.name)
+        for (let r of recipes) {
+          if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
+            console.log(r.process_conforms_to)
+            pSpecs.push(r.process_conforms_to.name)
+          }
+          let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
+          let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
+          let combined = input.concat(output)
+          for (let s of combined) {
+            if (!rSpecs.includes(s.resourceConformsTo.name)) {
+              rSpecs.push(s.resourceConformsTo.name)
+            }
           }
         }
-      }
       
-      if (devInit) {
         for (let r of rSpecs) {
           let x = await addResourceSpecification({ variables: {
             resource: {
@@ -376,27 +380,31 @@
           }})
           console.log(x)
         }
+          
+        await getAllProcessSpecifications()
+        await getAllResourceSpecifications()
+        await getAllActions()
+        await getAllUnits()
+        await addRecipes()
       }
-        
-      await getAllProcessSpecifications()
-      await getAllResourceSpecifications()
-      await getAllActions()
-      await getAllUnits()
-      await addRecipes()
       
     } catch(e) {
       error = e as Error
       console.log(e)
     }
     dependenciesOk = units.length > 0
+    checkDependencies()
     saving = false
     return units
   }
 
   async function checkDependencies() {
-    const res = await getUnits.refetch()
-    let units = flattenRelayConnection(res.data?.units)
-    dependenciesOk = units.length > 0
+    // const res = await getUnits.refetch()
+    // let units = flattenRelayConnection(res.data?.units)
+    // dependenciesOk = units.length > 0
+    await getAllFacetGroups()
+    console.log("all facets", get(allFacets))
+    dependenciesOk = get(allFacets).length > 0
   }
 
   onMount(checkDependencies)

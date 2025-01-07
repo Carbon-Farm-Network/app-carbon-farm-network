@@ -14,9 +14,11 @@
   import { createEconomicEvent, createFulfillment, createEconomicEventWithResource, updateCommitment, createCommitment, createAgreement, deleteCommitment, deleteAgreement } from '../../../../crud/commit'
   import { allActions, allAgents, allUnits, allResourceSpecifications, allFulfillments, allProcessSpecifications, allProposals, allEconomicResources, allEconomicEvents } from '../../../../crud/store'
   import Loading from '$lib/Loading.svelte'
+  import PlanForwardModal from './PlanForwardModal.svelte'
   import { matchingOffer, makeAgreement } from '../../=helper'
   import { getPlan } from '../../../../crud/fetch'
   import { fullPlans, removeProcessCommitmentFromPlan, addProcessCommitmentToPlan, addNonProcessCommitmentToPlan, removeNonProcessCommitmentFromPlan, allRecipes } from '../../../../crud/store'
+  import { cloneDeep } from "lodash";
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -48,15 +50,17 @@
   let fulfillments: Fulfillment[] = []
   let selectedStage: string | undefined = undefined;
   let recipes: any[] = []
+  let planForwardModalOpen = false;
+  let forwardSuggestions: any = {}
   let zoomLevel: string = "1";
   $: zoomLevel;
 
-  let processImages = {
-    "Pick Up": "/pickup.svg",
-    "Ship": "/truck.svg",
-    "Spin Yarn": "/socks.svg",
-    "Scour Fiber": "/washing-machine.svg"
-  }
+  // let processImages = {
+  //   "Pick Up": "/pickup.svg",
+  //   "Ship": "/truck.svg",
+  //   "Spin Yarn": "/socks.svg",
+  //   "Scour Fiber": "/washing-machine.svg"
+  // }
 
   let planId = ''
   $: if ($page.params.plan_id) {
@@ -121,32 +125,88 @@
 
   function decrementWithRecipe(inputs: any[], recipeInputs: any[]): any[] | boolean {
     // console.log("apply recipe", inputs, recipeInputs)
-    let decrementedInputs = [...inputs]
+    let decrementedInputs = cloneDeep(inputs)
     for (let i = 0; i < recipeInputs.length; i++) {
-      let recipeInput = recipeInputs[i]
+      let recipeInput = cloneDeep(recipeInputs[i])
+      
+      // don't consider these actions when decrementing
+      // if (['consume', 'use', 'work', 'cite', 'combine'].includes(recipeInput.action.label)) {
+      if (['use', 'work', 'cite', 'combine'].includes(recipeInput.action.label)) {
+          continue
+      }
+
       let input = decrementedInputs.find(it => it.resourceConformsTo.id == recipeInput.resourceConformsTo.id)
       if (input) {
         let newValue = new Decimal(input.resourceQuantity.hasNumericalValue).minus(new Decimal(recipeInput.resourceQuantity.hasNumericalValue))//.toString()
         if (newValue < new Decimal(0)) {
-          console.log("negative value", input, recipeInput.resourceQuantity.hasNumericalValue, newValue.toString())
+          // console.log("negative value", input, recipeInput.resourceQuantity.hasNumericalValue, newValue.toString())
           return false
         } else {
-          console.log("111111", recipeInput.resourceQuantity.hasNumericalValue)
+          // console.log("recipe input numerical value", recipeInput.resourceQuantity.hasNumericalValue)
         }
-        console.log("decremented input", input.resourceQuantity?.hasNumericalValue, recipeInput.resourceQuantity.hasNumericalValue, newValue.toString())
+        // console.log("decremented input", input.resourceQuantity?.hasNumericalValue, recipeInput.resourceQuantity.hasNumericalValue, newValue.toString())
         input.resourceQuantity.hasNumericalValue = newValue.toString()
         // decrementedInputs[index]?.resourceQuantity?.hasNumericalValue ? decrementedInputs[i].resourceQuantity.hasNumericalValue = newValue : null
       } else {
-        console.log("no input found", recipeInput)
+        // console.log("no input found", recipeInput)
       }
       // console.log("decremented input", decrementedInputs[index].resourceQuantity?.hasNumericalValue, recipeInput.resourceQuantity.hasNumericalValue, input.resourceQuantity?.hasNumericalValue)
     }
     return decrementedInputs
   }
 
-  function calculateForward(columnIndex: number) {
+  function calculateOutputToInput(columnIndex: number) {
+    let column = cloneDeep(allColumns[columnIndex])
+    let nextColumn = cloneDeep(allColumns[columnIndex + 1])
+
+    let flattenedOutputs = column.map(it => it.committedOutputs).flat()
+    // create list of all output resource specifications with summed quantities
+    let outputsCombined = flattenedOutputs.reduce((acc, output) => {
+      if (acc[output.resourceConformsTo.id]) {
+        acc[output.resourceConformsTo.id] = new Decimal(output.resourceQuantity.hasNumericalValue).plus(new Decimal(acc[output.resourceConformsTo.id]))
+      } else {
+        acc[output.resourceConformsTo.id] = output.resourceQuantity.hasNumericalValue
+      }
+      
+      return acc
+    }, {})
+
+    let flattenedInputs = nextColumn.map(it => it.committedInputs).flat()
+    let inputsCombined = flattenedInputs.reduce((acc, input) => {
+      if (acc[input.resourceConformsTo.id]) {
+        acc[input.resourceConformsTo.id] = new Decimal(input.resourceQuantity.hasNumericalValue).plus(new Decimal(acc[input.resourceConformsTo.id]))
+      } else {
+        acc[input.resourceConformsTo.id] = input.resourceQuantity.hasNumericalValue
+      }
+      
+      return acc
+    }, {})
+
+    // console.log("inputs combined", inputsCombined)
+    // console.log("outputs combined", outputsCombined)
+
+    let suggestedInputs = []
+    for (let i = 0; i < nextColumn.length; i++) {
+      let process = nextColumn[i]
+      let inputs = cloneDeep(process.committedInputs)
+      let newInputs = inputs.map(it => {
+        let proportion = new Decimal(it.resourceQuantity.hasNumericalValue).dividedBy(new Decimal(inputsCombined[it.resourceConformsTo.id]))
+        // console.log("pro", proportion)
+        let newValue = new Decimal(outputsCombined[it.resourceConformsTo.id]).times(new Decimal(proportion)).floor()
+        // console.log("newv", newValue)
+        it.resourceQuantity.hasNumericalValue = newValue.toString()
+        // console.log("*")
+        return it
+      })
+      suggestedInputs.push(newInputs)
+    }
+
+    return suggestedInputs
+  }
+
+  function calculateInputToOutput(columnIndex: number) {
     console.log("hello 2")
-    let column = allColumns[columnIndex]
+    let column = cloneDeep(allColumns[columnIndex])
     console.log(column)
     // If input column
     // for each process
@@ -156,36 +216,47 @@
     let suggestedOutputs: any[] = []
     for (let i = 0; i < column.length; i++) {
       let process = column[i]
-      let inputs = [...process.committedInputs]
-      let outputs = [...process.committedOutputs]
-      console.log("inputs", inputs)
-      console.log("outputs", outputs)
-      console.log("recipes", recipes)
+      // let inputs = [...process.committedInputs]
+      let inputs = cloneDeep(process.committedInputs)
+      // let outputs = [...process.committedOutputs]
+      let outputs = cloneDeep(process.committedOutputs)
+      // console.log("inputs", inputs)
+      // console.log("outputs", outputs)
+      // console.log("recipes", recipes)
       const processSpecificationId = process.basedOn.id
       // recipe with same process specification id and contains all output resource specifications
       const allOutputResourceSpecificationIds = outputs.map(it => it.resourceConformsTo.id)
       const allInputResourceSpecificationIds = inputs.map(it => it.resourceConformsTo.id)
       const recipesWithMatchingProcessSpecification = recipes.filter(it => it.processConformsToId == processSpecificationId)
-      console.log("recipesWithMatchingProcessSpecification", recipesWithMatchingProcessSpecification)
-      const recWithAllOutputRSpecs = recipesWithMatchingProcessSpecification.filter(it => {
-        const allRecipeOutputResourceSpecificationIds = it.recipeOutputs.map(it => it.resourceConformsTo.id)
-        console.log("allRecipeOutputResourceSpecificationIds", allRecipeOutputResourceSpecificationIds, allOutputResourceSpecificationIds)
-        return allOutputResourceSpecificationIds.every(it => allRecipeOutputResourceSpecificationIds.includes(it))
-      })
+      // console.log("recipesWithMatchingProcessSpecification", recipesWithMatchingProcessSpecification)
+      // const recWithAllOutputRSpecs = recipesWithMatchingProcessSpecification.filter(it => {
+      //   const allRecipeOutputResourceSpecificationIds = it.recipeOutputs.map(it => it.resourceConformsTo.id)
+      //   console.log("allRecipeOutputResourceSpecificationIds", allRecipeOutputResourceSpecificationIds, allOutputResourceSpecificationIds)
+      //   return allOutputResourceSpecificationIds.every(it => allRecipeOutputResourceSpecificationIds.includes(it))
+      // })
       const recWithAllInputRSpecs = recipesWithMatchingProcessSpecification.filter(it => {
         const allRecipeInputResourceSpecificationIds = it.recipeInputs.map(it => it.resourceConformsTo.id)
-        console.log("allRecipeInputResourceSpecificationIds", allRecipeInputResourceSpecificationIds, allInputResourceSpecificationIds)
+        // console.log("allRecipeInputResourceSpecificationIds", allRecipeInputResourceSpecificationIds, allInputResourceSpecificationIds)
         return allInputResourceSpecificationIds.every(it => allRecipeInputResourceSpecificationIds.includes(it))
       })
       let recipe = recWithAllInputRSpecs[0]
-      console.log("recipe", recipe)
-      console.log("inputs", inputs)
+      // console.log("recipe", recipe)
+      // console.log("inputs", inputs)
 
+      // check if suminputs is in the outputs
+      // let sumInputs: boolean = recipe.recipeInputs.some(it => it.instructions == 'SumInputs')
+      // let sumOutputs: boolean = recipe.recipeOutputs.some(it => it.instructions == 'SumOutputs')
+      
+      // console.log("SUM INPUTS", sumInputs, sumOutputs)
+
+      // let stage = recipe.processSpecification.name
+      // console.log(recipe)
+      
       let recipeCycles = 0
       let decrementedInputs = [...inputs]
-      while (recipeCycles < 100) {
+      while (recipeCycles < 1000) {
         let res = decrementWithRecipe(decrementedInputs, recipe.recipeInputs)
-        console.log("res", res)
+        // console.log("res", res)
         if (res) {
           recipeCycles++
           decrementedInputs = res
@@ -193,19 +264,46 @@
           break
         }
       }
-      console.log("Recipe cycles", recipeCycles)
-      console.log("decrementedInputs", decrementedInputs)
+      // console.log("Recipe cycles", recipeCycles)
+      // console.log("decrementedInputs", decrementedInputs)
       
       // add each recipe output multiplied by the number of times the recipe was applied
-      let newOutputs = [...outputs]
+      let newOutputs = cloneDeep(outputs)
       let recipeOutputs = recipe.recipeOutputs
       for (let i = 0; i < recipeOutputs.length; i++) {
-        let recipeOutput = recipeOutputs[i]
+        let recipeOutput = cloneDeep(recipeOutputs[i])
         let output = newOutputs.find(it => it.resourceConformsTo.id == recipeOutput.resourceConformsTo.id)
         if (output) {
-          let newValue = new Decimal(recipeOutput.resourceQuantity.hasNumericalValue).times(new Decimal(recipeCycles))
-          console.log("***", new Decimal(recipeOutput.resourceQuantity.hasNumericalValue), new Decimal(recipeCycles), newValue)
-          output.resourceQuantity.hasNumericalValue = newValue.toString()
+          console.log("output", output.resourceConformsTo.name, recipeOutput.instructions)
+          let matchingInput = inputs.find(it => it.resourceConformsTo.id == output.resourceConformsTo.id)
+          if (recipeOutput.instructions == "SumInputs") {
+            console.log("sumInputs", output)
+            let newValue = inputs.reduce((acc, it) => {
+              return new Decimal(acc).plus(new Decimal(it.resourceQuantity.hasNumericalValue))
+            }, 0)
+            output.resourceQuantity.hasNumericalValue = newValue.floor().toString()
+          } else if (recipeOutput.instructions == "SumOutputs") {
+            console.log("sum outputs", output, newOutputs.map(it => it.resourceQuantity.hasNumericalValue))
+            let newValue = newOutputs.reduce((acc, it) => {
+              if (it.resourceConformsTo.id == output.resourceConformsTo.id) {
+                return new Decimal(acc)
+              } else {
+                return new Decimal(acc).plus(new Decimal(it.resourceQuantity.hasNumericalValue))
+              }
+            }, 0)
+            output.resourceQuantity.hasNumericalValue = newValue.floor().toString()
+          } else if (matchingInput) {
+            console.log("matching input", output, matchingInput)
+            let recipeInput = recipe.recipeInputs.find(it => it.resourceConformsTo.id == output.resourceConformsTo.id)
+            if (!recipeInput) { continue; }
+            let ratio = recipeOutput.resourceQuantity?.hasNumericalValue / recipeInput.resourceQuantity?.hasNumericalValue
+            if (!ratio) { continue; }
+            let newValue = new Decimal(matchingInput.resourceQuantity?.hasNumericalValue).times(new Decimal(ratio))
+            output.resourceQuantity.hasNumericalValue = newValue.floor().toString()
+          } else {
+            let newValue = new Decimal(recipeOutput.resourceQuantity.hasNumericalValue).times(new Decimal(recipeCycles))
+            output.resourceQuantity.hasNumericalValue = newValue.floor().toString()
+          }
         } else {
           console.log("no output found", recipeOutput)
         }
@@ -355,7 +453,8 @@
         const newProcess = {
           ...process,
           basedOn: {
-            image: processImages[process.basedOn.name],
+            // image: processImages[process.basedOn.name],
+            image: processSpecifications.find(it => it.id == process.basedOn.id)?.image,
             name: process.basedOn.name,
             id: process.basedOn.id,
           },
@@ -389,7 +488,7 @@
         if (process.basedOn.id !== lastLastSeenProcessSpecification) {
           allColumns.push(lastColumn)
         } else {
-          console.log("SAME PROCESS", process.basedOn.name, lastSeenProcessSpecification)
+          // console.log("SAME PROCESS", process.basedOn.name, lastSeenProcessSpecification)
         }
         lastLastSeenProcessSpecification = process.basedOn.id
         loadingPlan = false;
@@ -400,7 +499,7 @@
 
 
       for (const commitment of plan.nonProcessCommitments.filter(it => {return it.stageId != "undefined"})) {
-        console.log("non process commitment", commitment)
+        // console.log("non process commitment", commitment)
         await includeCommitment(commitment)
       }
 
@@ -439,7 +538,7 @@
         resourceConformsTo: updatedColumn[i].resourceConformsTo?.id,
         resourceInventoriedAs: updatedColumn[i].resourceInventoriedAs,
         resourceQuantity: {
-          hasNumericalValue: updatedColumn[i].resourceQuantity?.hasNumericalValue,
+          hasNumericalValue: Number(updatedColumn[i].resourceQuantity?.hasNumericalValue),
           hasUnit: updatedColumn[i].resourceQuantity?.hasUnitId
         },
       }
@@ -473,14 +572,6 @@
         }
       });
 
-      if (!plan) {
-        await getPlan(planId)
-        await buildPlan()
-      } else {
-        console.log("plan already exists")
-        await buildPlan()
-        getPlanLater()
-      }
       let functions = [
         { array: actions, func: getAllActions },
         { array: units, func: getAllUnits },
@@ -497,6 +588,15 @@
         if (item.array.length === 0) {
           await item.func();
         }
+      }
+
+      if (!plan) {
+        await getPlan(planId)
+        await buildPlan()
+      } else {
+        console.log("plan already exists")
+        await buildPlan()
+        getPlanLater()
       }
     }
   })
@@ -557,12 +657,26 @@
   }
 </script>
 
+{#if planForwardModalOpen}
+<PlanForwardModal
+  bind:open={planForwardModalOpen}
+  {forwardSuggestions}
+  on:accept={async (event) => {
+    console.log(event)
+    for (let i = 0; i < forwardSuggestions.new.length; i++) {
+      allColumns[forwardSuggestions.columnIndex][i][forwardSuggestions.side] = forwardSuggestions.new[i]
+      await updateColumns(forwardSuggestions.columnIndex, i, forwardSuggestions.side)
+    }
+  }}
+/>
+{/if}
+
 {#if plan}
 <PlanModal
   bind:open={planModalOpen} 
   planObject = {plan} 
   {allColumns} 
-  commitments={independentDemands} 
+  commitments={independentDemands}
   {commitmentsToDelete}
   {units}
   {agents}
@@ -1046,17 +1160,7 @@ bind:open={economicEventModalOpen}
     <div class="min-w-[420px]">
       <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
       <h2 class="text-center text-xl font-semibold">{name}</h2>
-      <button
-        class="flex justify-center items-center w-full mb-2"
-        on:click={() => {
-          console.log("hello")
-          let x = calculateForward(columnIndex)
-          console.log(x)
-        }}
-        >
-        {"in --> out"}
-      </button>
-
+      
       {#each processes as { committedInputs, committedOutputs }, processIndex}
 
       <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
@@ -1064,18 +1168,42 @@ bind:open={economicEventModalOpen}
         <!-- Sub-columns -->
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <button
-            class="flex justify-center items-center w-full mb-2"
-            on:click={() => {
-              commitmentModalProcess = processIndex
-              commitmentModalColumn = columnIndex
-              commitmentModalSide = "committedInputs"
-              commitmentModalOpen = true
-              selectedCommitmentId = undefined
-            }}
+            <div class="flex justify-center items-center w-full mb-2">
+              <div class="flex space-x-2">
+                <button
+                  title="Add a new commitment to this process"
+                  class="flex justify-center items-center"
+                  on:click={() => {
+                  commitmentModalProcess = processIndex
+                  commitmentModalColumn = columnIndex
+                  commitmentModalSide = "committedInputs"
+                  commitmentModalOpen = true
+                  selectedCommitmentId = undefined
+                  }}
                 >
-                <PlusCircle />
-              </button>
+                  <PlusCircle />
+                </button>
+
+                {#if processIndex == 0}
+                  <button
+                    title="Auto-fill the output commitments based on the input commitments"
+                    class="flex justify-center items-center"
+                    on:click={() => {
+                    forwardSuggestions = {
+                      side: "committedOutputs",
+                      columnIndex: columnIndex,
+                      current: allColumns[columnIndex].map(it => it.committedOutputs),
+                      new: calculateInputToOutput(columnIndex)
+                    }
+                    planForwardModalOpen = true
+                    }}
+                  >
+                    {"↳"}
+                  </button>                  
+                {/if}
+              </div>
+            </div>
+
                 {#each committedInputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf, meta }}
                   {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
                   <div
@@ -1345,21 +1473,43 @@ bind:open={economicEventModalOpen}
                 {/each}
               </div>
               <div>
-                <button
-                  class="flex justify-center items-center w-full mb-2"
+                <div class="flex justify-center items-center w-full mb-2">
+                  <div class="flex space-x-2">
+                    <button
+                      class="flex justify-center items-center w-full mb-2"
 
-                  on:click={() => {
-                    commitmentModalProcess = processIndex
-                    commitmentModalColumn = columnIndex
-                    commitmentModalSide = "committedOutputs"
-                    // console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
-                    commitmentModalOpen = true
-                    // console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
-                    selectedCommitmentId = undefined
-                  }}
-                >
-                  <PlusCircle />
-                </button>
+                      on:click={() => {
+                        commitmentModalProcess = processIndex
+                        commitmentModalColumn = columnIndex
+                        commitmentModalSide = "committedOutputs"
+                        // console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
+                        commitmentModalOpen = true
+                        // console.log(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].id)
+                        selectedCommitmentId = undefined
+                      }}
+                    >
+                      <PlusCircle />
+                    </button>
+
+                    {#if processIndex == 0}
+                      <button
+                        title="Auto-fill the output commitments based on the input commitments"
+                        class="flex justify-center items-center"
+                        on:click={() => {
+                        forwardSuggestions = {
+                          side: "committedInputs",
+                          columnIndex: columnIndex + 1,
+                          current: allColumns[columnIndex + 1]?.map(it => it.committedInputs),
+                          new: calculateOutputToInput(columnIndex)
+                        }
+                        planForwardModalOpen = true
+                        }}
+                      >
+                        {"↳"}
+                      </button>
+                    {/if}
+                  </div>
+                </div>
 
                 {#each committedOutputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
                 {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}

@@ -1,12 +1,14 @@
 import { gql } from 'graphql-tag'
 import type { AgentConnection, Agent, Organization, OrganizationCreateParams, EconomicResourceUpdateParams, OrganizationUpdateParams, 
   EconomicEvent, RecipeProcessCreateParams, RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
-import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './store'
+import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, 
+  setHashChanges, setEconomicEvents, setEconomicResources, addToHashChanges, addAUnit, 
+  updateAUnit} from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
 import { getAllHashChanges } from './fetch'
 import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-import { FACET_GROUP_CORE_FIELDS, FACET_VALUE_CORE_FIELDS } from "$lib/graphql/facet.fragments"
+import { FACET_GROUP_CORE_FIELDS, FACET_CORE_FIELDS, FACET_VALUE_CORE_FIELDS } from "$lib/graphql/facet.fragments"
 import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
 import { COMMITMENT_RETURN_FIELDS, PLAN_RETURN_FIELDS, PROCESS_RETURN_FIELDS, SIMPLIFIED_PLAN_RETURN_FIELDS } from '$lib/graphql/plan.fragments'
 import { ECONOMIC_EVENT_RETURN_FIELDS } from '$lib/graphql/economic_events.fragments'
@@ -22,6 +24,7 @@ clientStored.subscribe(value => {
 });
 
 export async function addHashChange(original: string, newHash: string) {
+  if (original == undefined || newHash == undefined) { return; }
   if (isWeContext()) {
       let weClient = await WeaveClient.connect(appletServices);
       await weClient.renderInfo.appletClient.callZome({
@@ -34,7 +37,8 @@ export async function addHashChange(original: string, newHash: string) {
               current: String(newHash),
           },
       })
-      getAllHashChanges()
+      addToHashChanges({ original, current: newHash })
+      // getAllHashChanges()
   }
 }
 
@@ -58,6 +62,42 @@ mutation($unit: UnitUpdateParams!){
     }
   }
 }
+`
+
+const ADD_FACET_GROUP = gql`
+${FACET_GROUP_CORE_FIELDS},
+mutation($facetGroup: FacetGroupCreateParams!){
+  createFacetGroup(facetGroup: $facetGroup) {
+    facetGroup {
+      ...FacetGroupCoreFields
+    }
+  }
+}
+`
+
+const CREATE_FACET = gql`
+  mutation($facet: FacetParams!){
+    putFacet(facet: $facet) {
+      facet {
+        name
+        note
+        id
+        revisionId
+      }
+    }
+  }
+`
+const CREATE_FACET_VALUE = gql`
+  mutation($facetValue: FacetValueParams!){
+    putFacetValue(facetValue: $facetValue) {
+      facetValue {
+        value
+        note
+        id
+        revisionId
+      }
+    }
+  }
 `
 
 const ADD_AGENT = gql`
@@ -391,13 +431,99 @@ mutation($revisionId: ID!){
 }
 `
 
-export const addUnit = async (unit: any) => {
+const CREATE_PROPOSAL = gql`
+${PROPOSAL_RETURN_FIELDS},
+mutation($proposal: ProposalCreateParams!){
+  createProposal(proposal: $proposal) {
+    proposal {
+      ...ProposalReturnFields
+    }
+  }
+}
+`
+
+const UPDATE_PROPOSAL = gql`
+${PROPOSAL_RETURN_FIELDS},
+mutation($proposal: ProposalUpdateParams!){
+  updateProposal(proposal: $proposal) {
+    proposal {
+      ...ProposalReturnFields
+    }
+  }
+}
+`
+
+const DELETE_PROPOSAL = gql`
+mutation($revisionId: ID!){
+  deleteProposal(revisionId: $revisionId)
+}
+`
+
+const CREATE_INTENT = gql`
+${INTENT_CORE_FIELDS},
+mutation($intent: IntentCreateParams!){
+  createIntent(intent: $intent) {
+    intent {
+      ...IntentCoreFields
+    }
+  }
+}
+`
+
+const UPDATE_INTENT = gql`
+${INTENT_CORE_FIELDS},
+mutation($intent: IntentUpdateParams!){
+  updateIntent(intent: $intent) {
+    intent {
+      ...IntentCoreFields
+    }
+  }
+}
+`
+
+const DELETE_INTENT = gql`
+mutation($revisionId: ID!){
+  deleteIntent(revisionId: $revisionId)
+}
+`
+
+const CREATE_PROPOSED_INTENT = gql`
+${PROPOSED_INTENT_CORE_FIELDS},
+mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
+  proposeIntent(reciprocal: $reciprocal, publishedIn: $publishedIn, publishes: $publishes) {
+    proposedIntent {
+      ...ProposedIntentCoreFields
+    }
+  }
+}
+`
+
+const UPDATE_PROPOSED_INTENT = gql`
+${PROPOSED_INTENT_CORE_FIELDS},
+mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
+  proposeIntent(reciprocal: $reciprocal, publishedIn: $publishedIn, publishes: $publishes) {
+    proposedIntent {
+      ...ProposedIntentCoreFields
+    }
+  }
+}
+`
+
+
+const DELETE_PROPOSED_INTENT = gql`
+mutation($revisionId: ID!){
+  deleteProposedIntent(revisionId: $revisionId)
+}
+`
+
+export const createUnit = async (unit: any) => {
   const res = await client.mutate({
     mutation: ADD_UNIT,
     variables: {
       unit
     }
   });
+  addAUnit(res.data.createUnit.unit)
   return res
 }
 
@@ -408,11 +534,41 @@ export const updateUnit = async (unit: any) => {
       unit
     }
   });
+  updateAUnit(res.data.updateUnit.unit)
   return res
 }
 
-export const addProcessSpecification = async (process: ProcessCreateParams) => {
-  console.log('addProcessSpecification', process)
+export const createFacetGroup = async (facetGroup: any) => {
+  const res = await client.mutate({
+    mutation: ADD_FACET_GROUP,
+    variables: {
+      facetGroup
+    }
+  });
+  return res
+}
+
+export const createFacet = async (facet: any) => {
+  const res = await client.mutate({
+    mutation: CREATE_FACET,
+    variables: {
+      facet
+    }
+  });
+  return res
+}
+
+export const createFacetValue = async (facetValue: any) => {
+  const res = await client.mutate({
+    mutation: CREATE_FACET_VALUE,
+    variables: {
+      facetValue
+    }
+  });
+  return res
+}
+
+export const createProcessSpecification = async (process: ProcessCreateParams) => {
   const res = await client.mutate({
     mutation: ADD_PROCESS_SPECIFICATION,
     variables: {
@@ -441,7 +597,7 @@ export const deleteProcessSpecification = async (revisionId: string) => {
   });
 };
 
-export const addResourceSpecification = async (resource: any) => {
+export const createResourceSpecification = async (resource: any) => {
   const res = await client.mutate({
     mutation: ADD_RESOURCE_SPECIFICATION,
     variables: {
@@ -480,7 +636,7 @@ export const deleteResourceSpecification = async (revisionId: string) => {
   });
 };
 
-export const addAgent = async (agent: OrganizationCreateParams) => {
+export const createAgent = async (agent: OrganizationCreateParams) => {
   const res = await client.mutate({
     mutation: ADD_AGENT,
     variables: {
@@ -688,21 +844,27 @@ export const deleteProcess = async (revisionId: string) => {
 }
 
 export const createRecipeFlow = async (recipeFlow: RecipeFlowCreateParams) => {
-  return await client.mutate({
+  console.log('createRecipeFlow', recipeFlow)
+  const res = await client.mutate({
     mutation: CREATE_RECIPE_FLOW,
     variables: {
       recipeFlow
     }
   })
+  console.log('createRecipeFlow', res)
+  return res
 }
 
 export const updateRecipeFlow = async (recipeFlow: RecipeFlowUpdateParams) => {
-  return await client.mutate({
+  console.log('updateRecipeFlow', recipeFlow)
+  const res = await client.mutate({
     mutation: UPDATE_RECIPE_FLOW,
     variables: {
       recipeFlow
     }
   })
+  console.log('updateRecipeFlow', res)
+  return res
 }
 
 export const deleteRecipeFlow = async (revisionId: string) => {
@@ -763,6 +925,93 @@ export const updateRecipeExchange = async (recipeExchange: any) => {
 export const deleteRecipeExchange = async (revisionId: string) => {
   return await client.mutate({
     mutation: DELETE_RECIPE_EXCHANGE,
+    variables: {
+      revisionId
+    }
+  })
+}
+
+export const createProposal = async (proposal: any) => {
+  console.log('createProposal', proposal)
+  return await client.mutate({
+    mutation: CREATE_PROPOSAL,
+    variables: {
+      proposal
+    }
+  })
+}
+
+export const updateProposal = async (proposal: any) => {
+  return await client.mutate({
+    mutation: UPDATE_PROPOSAL,
+    variables: {
+      proposal
+    }
+  })
+}
+
+export const deleteProposal = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_PROPOSAL,
+    variables: {
+      revisionId
+    }
+  })
+}
+
+export const createIntent = async (intent: any) => {
+  return await client.mutate({
+    mutation: CREATE_INTENT,
+    variables: {
+      intent
+    }
+  })
+}
+
+export const updateIntent = async (intent: any) => {
+  return await client.mutate({
+    mutation: UPDATE_INTENT,
+    variables: {
+      intent
+    }
+  })
+}
+
+export const deleteIntent = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_INTENT,
+    variables: {
+      revisionId
+    }
+  })
+}
+
+export const createProposedIntent = async (reciprocal: boolean, publishedIn: string, publishes: string) => {
+  console.log('createProposedIntent', reciprocal, publishedIn, publishes)
+  return await client.mutate({
+    mutation: CREATE_PROPOSED_INTENT,
+    variables: {
+      reciprocal,
+      publishedIn,
+      publishes
+    }
+  })
+}
+
+export const updateProposedIntent = async (reciprocal: boolean, publishedIn: string, publishes: string) => {
+  return await client.mutate({
+    mutation: UPDATE_PROPOSED_INTENT,
+    variables: {
+      reciprocal,
+      publishedIn,
+      publishes
+    }
+  })
+}
+
+export const deleteProposedIntent = async (revisionId: string) => {
+  return await client.mutate({
+    mutation: DELETE_PROPOSED_INTENT,
     variables: {
       revisionId
     }

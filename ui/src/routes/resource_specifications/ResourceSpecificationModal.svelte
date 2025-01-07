@@ -8,7 +8,7 @@
   import { onMount } from 'svelte'
   import { allUnits } from '../../crud/store';
   import { getAllUnits } from '../../crud/fetch';
-  import { addResourceSpecification, associateResourceSpecificationAndFacetValue, updateResourceSpecification } from '../../crud/commit';
+  import { createResourceSpecification, associateResourceSpecificationAndFacetValue, updateResourceSpecification } from '../../crud/commit';
   const dispatch = createEventDispatcher();
   
   export let open = false;
@@ -47,7 +47,7 @@
       image: currentResourceSpecification.image,
     }
     try {
-      const res = await addResourceSpecification(resource)
+      const res = await createResourceSpecification(resource)
 
       const identifier = res.data.createResourceSpecification.resourceSpecification.id
       // for each facet in selectedFacets, associate the agent with the selected value
@@ -58,7 +58,7 @@
         if (selectedFacets[facet] == null) {
           continue
         }
-        const res2 = await associateResourceSpecificationAndFacetValue(identifier, selectedFacets[facet])
+        await associateResourceSpecificationAndFacetValue(identifier, selectedFacets[facet])
       }
 
       dispatch("submit");
@@ -215,10 +215,10 @@
                   }}
                   >
                   {#each units as unit}
-                    {#if unit.label === "pound"}
-                      <option selected value={unit.id}>Pound</option>
+                    {#if unit.symbol === "lb"}
+                      <option selected value={unit.id}>{unit.label}</option>
                     {:else if unit.label === "one"}
-                      <option value={unit.id}>Each</option>
+                      <option value={unit.id}>{unit.label}</option>
                     {/if}
                   {/each}
                 </select>

@@ -12,7 +12,8 @@ import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graph
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
 import { RECIPE_RETURN_FIELDS, RECIPE_EXCHANGE_RETURN_FIELDS } from '$lib/graphql/recipe.fragments'
 import { addToFullPlans, setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setRecipes, setRecipeExchanges, 
-  setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan, setPlansList } from './store'
+  setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan, setPlansList, 
+  allFacets} from './store'
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { appletServices } from '../../we';
 import { decode } from '@msgpack/msgpack';
@@ -88,6 +89,15 @@ query GetFacets {
   }
 }
 `
+
+// const GET_FACET_VALUES = gql`
+// ${FACET_VALUE_CORE_FIELDS}
+// query GetFacetValues {
+//   facetValues {
+//     ...FacetValueCoreFields
+//   }
+// }
+// `
 
 const GET_UNITS = gql`
 query GetUnits {
@@ -203,6 +213,20 @@ query GetPlan($id: ID!) {
 }
 `
 
+const GET_ALL_FULL_PLANS = gql`
+${PLAN_RETURN_FIELDS}
+query {
+  plans(last: 100000) {
+    edges {
+      cursor
+      node {
+        ...PlanReturnFields
+      }
+    }
+  }
+}
+`
+
 const GET_PLANS = gql`
 ${SIMPLIFIED_PLAN_RETURN_FIELDS}
 query {
@@ -306,7 +330,7 @@ query {
     edges {
       cursor
       node {
-        ...RecipeCoreFields
+        ...RecipeFields
       }
     }
   }
@@ -320,7 +344,7 @@ query {
     edges {
       cursor
       node {
-        ...RecipeExchangeCoreFields
+        ...RecipeExchangeFields
       }
     }
   }
@@ -350,11 +374,23 @@ export const getAgent = async (id: string) => {
 }
 
 export const getAllFacetGroups = async () => {
-  return await client.query({
+  const res = await client.query({
     query: GET_FACET_GROUPS,
     fetchPolicy: 'no-cache'
   })
+  console.log("facet groups", res)
+  allFacets.update(v => res.data.facetGroups)
+  return res
 }
+
+// export const getAllFacetValues = async () => {
+//   const res = await client.query({
+//     query: GET_FACET_VALUES,
+//     fetchPolicy: 'no-cache'
+//   })
+//   allFacets.update(v => res.data.facetValues)
+//   return res
+// }
 
 export const getAllUnits = async () => {
   const res = await client.query({
@@ -389,6 +425,7 @@ export const getAllProposals = async () => {
     query: GET_All_PROPOSALS,
     fetchPolicy: 'no-cache'
   })
+  console.log("proposals", res)
   setProposals(res.data.proposals.edges.map((edge: any) => edge.node))
   return res
 }
@@ -515,7 +552,16 @@ export const getAllPlans = async () => {
   })
   setPlansList(res.data.plans.edges.map((edge: any) => edge.node))
   return res
-}  
+}
+
+export const getAllFullPlans = async () => {
+  const res = await client.query({
+    query: GET_ALL_FULL_PLANS,
+    fetchPolicy: 'no-cache'
+  })
+  res.data.plans.edges.forEach((edge: any) => addToFullPlans(edge.node))
+  return res
+}
 
 export const getNonProcessCommitments = async (id: string) => {
   const res = await client.query({

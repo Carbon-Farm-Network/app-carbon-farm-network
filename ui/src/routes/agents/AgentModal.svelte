@@ -13,7 +13,7 @@
   import { onMount } from 'svelte'
   import type { OrganizationCreateParams, OrganizationUpdateParams } from '@leosprograms/vf-graphql'
   import type { Facet } from "$lib/graphql/extension-schemas"
-  import { addAgent, updateAgent, associateAgentWithValue } from '../../crud/commit'
+  import { createAgent, updateAgent, associateAgentWithValue } from '../../crud/commit'
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -49,9 +49,9 @@
     "Network": "knitting.svg",
   }
 
-  export async function createAgent(agent: OrganizationCreateParams, facetsToAssociate: string[]) {
+  export async function createAgentWrapped(agent: OrganizationCreateParams, facetsToAssociate: string[]) {
     try {
-      const res = await addAgent(agent)
+      const res = await createAgent(agent)
       const identifier = res.data.createOrganization.agent.id
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in facetsToAssociate) {
@@ -61,6 +61,7 @@
         const res2 = await associateAgentWithValue(identifier, facetsToAssociate[facet])
         console.log("associate", res2)
       }
+
       dispatch("submit");
       open = false;
       console.log(res)
@@ -79,7 +80,7 @@
 
         // $: name, latitude, longitude, note, logo, type, role, certification;
     }
-    await createAgent(agent, selectedFacets)
+    await createAgentWrapped(agent, selectedFacets)
   }
 
   async function handleUpdate() {

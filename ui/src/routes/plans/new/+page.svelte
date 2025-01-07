@@ -84,7 +84,7 @@
       }
     })
     requests = dedupedRes.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
-    offers = dedupedRes.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
+    offers = dedupedRes.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
     proposalsList = dedupedRes
   })
 

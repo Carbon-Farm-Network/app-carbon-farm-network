@@ -6,7 +6,8 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@leosprograms/vf-graphql'
+  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification, IMeasure } from '@leosprograms/vf-graphql'
+  import { createProposal, updateProposal, createIntent, updateIntent, createProposedIntent } from '../../crud/commit'
   import { addHashChange } from '../../crud/commit'
 
   // public CustomElement attributes
@@ -39,69 +40,6 @@
 
   const dispatch = createEventDispatcher();
 
-  // GraphQL query bindings
-
-  const ADD_PROPOSAL = gql`
-    ${PROPOSAL_CORE_FIELDS},
-    mutation($proposal: ProposalCreateParams!){
-      createProposal(proposal: $proposal) {
-        proposal {
-          ...ProposalCoreFields
-        }
-      }
-    }
-  `
-
-  const UPDATE_PROPOSAL = gql`
-    ${PROPOSAL_CORE_FIELDS},
-    mutation($proposal: ProposalUpdateParams!){
-      updateProposal(proposal: $proposal) {
-        proposal {
-          ...ProposalCoreFields
-        }
-      }
-    }
-  `
-
-  const ADD_INTENT = gql`
-    ${INTENT_CORE_FIELDS},
-    mutation($intent: IntentCreateParams!){
-      createIntent(intent: $intent) {
-        intent {
-          ...IntentCoreFields
-        }
-      }
-    }
-  `
-
-  const UPDATE_INTENT = gql`
-    ${INTENT_CORE_FIELDS},
-    mutation($intent: IntentUpdateParams!){
-      updateIntent(intent: $intent) {
-        intent {
-          ...IntentCoreFields
-        }
-      }
-    }
-  `
-
-  const ADD_PROPOSED_INTENT = gql`
-    ${PROPOSED_INTENT_CORE_FIELDS},
-    mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
-      proposeIntent(reciprocal: $reciprocal, publishedIn: $publishedIn, publishes: $publishes) {
-        proposedIntent {
-          ...ProposedIntentCoreFields
-        }
-      }
-    }
-  `
-
-  let addProposal: any= mutation(ADD_PROPOSAL)
-  let updateProposal: any= mutation(UPDATE_PROPOSAL)
-  let addIntent: any= mutation(ADD_INTENT)
-  let updateIntent: any= mutation(UPDATE_INTENT)
-  let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
-
   // helper to workaround direct bind:value syntax coercing things to strings
   function parseFormValues(val: IMeasure) {
     if (val.hasNumericalValue || val.hasNumericalValue === "0") val.hasNumericalValue = parseFloat(val.hasNumericalValue)
@@ -113,6 +51,7 @@
     if (currency) {
       currentReciprocalIntent.resourceConformsTo = currency
     }
+    console.log("CURENCY", currency, currentReciprocalIntent)
     try {
       // create proposal
       var d = new Date(Date.now());
@@ -121,8 +60,8 @@
         unitBased: true,
         note: "shearing end of May"
       }
-      const res1 = await addProposal({ variables: { proposal } })
-      const res1ID: String = String(res1.data.createProposal.proposal.id)
+      const res1 = await createProposal(proposal);
+      const res1ID: string = String(res1.data.createProposal.proposal.id)
 
       // create intent
       const intent: IntentCreateParams = {
@@ -142,7 +81,7 @@
       if (intent.resourceQuantity) {
         intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
       }
-      const res2 = await addIntent({ variables: { intent } });
+      const res2 = await createIntent(intent)
       const res2ID = res2.data.createIntent.intent.id
       console.log(res2);
 
@@ -155,25 +94,30 @@
         receiver: currentIntent.provider,
         action: "transfer",
         resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
-        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
+        resourceQuantity: currentReciprocalIntent.resourceQuantity ? {
+          ...parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure),
+          hasUnit: resourceSpecifications.find((rs) => rs.id === currentReciprocalIntent.resourceConformsTo)?.defaultUnitOfResource?.id
+        } : undefined,
       }
-      const res3 = await addIntent({ variables: { intent: recipIntent } })
+      console.log("((((", recipIntent, currentReciprocalIntent)
+      const res3 = await createIntent(recipIntent)
+      console.log(res3)
       const res3ID: string = String(res3.data.createIntent.intent.id)
 
       if (hashMap) {
         addHashChange(recipIntent.id, res3ID)
       }
 
-      let reciprocal: Boolean = false
+      let reciprocal: boolean = false
       let publishedIn = res1ID
       let publishes = res2ID
 
-      const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+      const res4 = await createProposedIntent(reciprocal, publishedIn, publishes)
 
       reciprocal = true
       publishes = res3ID
 
-      const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+      const res5 = await createProposedIntent(reciprocal, publishedIn, publishes)
 
 
       dispatch("submit");
@@ -189,7 +133,7 @@
     currentReciprocalIntent.resourceConformsTo = currency
     // console.log(currentProposal)
     let proposal = currentProposal
-    await updateProposal({ variables: { proposal: proposal } })
+    await updateProposal(proposal)
     // let intent = currentIntent
     let intent = {
       revisionId: currentIntent.revisionId,
@@ -209,18 +153,21 @@
       intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
     }
     console.log(intent)
-    const res = await updateIntent({ variables: { intent: intent } })
+    const res = await updateIntent(intent)
     console.log(res)
 
     let intent2 = {
       receiver: currentIntent.provider,
-        revisionId: currentReciprocalIntent.revisionId,
-        action: currentReciprocalIntent.action as string,
-        resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
-        resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
+      revisionId: currentReciprocalIntent.revisionId,
+      action: currentReciprocalIntent.action as string,
+      resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
+      resourceQuantity: currentReciprocalIntent.resourceQuantity ? {
+        ...parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure),
+        hasUnit: resourceSpecifications.find((rs) => rs.id === currentReciprocalIntent.resourceConformsTo)?.defaultUnitOfResource?.id
+      } : undefined,
     }
-    console.log(intent2)
-    const res2 = await updateIntent({ variables: { intent: intent2 } })
+    console.log("___", intent2, currentReciprocalIntent)
+    const res2 = await updateIntent(intent2)
     dispatch("submit");
     console.log(res2)
     submitting = false;

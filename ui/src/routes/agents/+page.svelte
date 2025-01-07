@@ -20,8 +20,7 @@
   let agents: any[]
   let facets: Facet[] | undefined;
   let selectedFacets: any = {};
-  let createAgent: any;
-  let associateAgentWithValue: any;
+  let createAgentWrapped: any;
   let loading = false;
   let importing = false;
   let exportOpen = false;
@@ -76,7 +75,7 @@
         }
         let facets = data[i].facets.map((f) => hashChanges[f.id])
         console.log(agent)
-        let res = await createAgent(agent, facets)
+        let res = await createAgentWrapped(agent, facets)
         console.log(res)
         console.log("adding hash change", data[i].id, res.data.createOrganization.agent.id)
         addHashChange(data[i].id, res.data.createOrganization.agent.id)
@@ -106,7 +105,7 @@
 <!-- <div style="height: 8vh"> -->
   <Header title="Agents" description="A list of all the people, organizations and ecological agents related to the network." />
 <!-- </div> -->
-<AgentModal bind:createAgent bind:associateAgentWithValue bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={getAllAgents} />
+<AgentModal bind:createAgentWrapped bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={getAllAgents} />
 
 <Error {error} />
 

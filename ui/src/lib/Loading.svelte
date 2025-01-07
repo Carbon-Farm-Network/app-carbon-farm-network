@@ -1,10 +1,30 @@
+<script lang="ts">
+  export let status: string = '';
+  export let error: string = '';
+</script>
+
 <div id="plan-loading-animation">
+  <div id="status">
+    {status}
+  </div>
+  <div id="error">
+    {error}
+  </div>
   <div class="loader"></div>
 </div>
 
 <style>
+  #error {
+    color: red;
+    margin-bottom: 1rem;
+  }
+  #status {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
   #plan-loading-animation {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 80vh;

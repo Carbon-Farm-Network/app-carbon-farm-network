@@ -3,9 +3,11 @@ import { onMount } from "svelte";
 import Header from "$lib/Header.svelte";
 import UnitModal from "./UnitModal.svelte";
 import Loading from "$lib/Loading.svelte";
+import Export from "$lib/Export.svelte";
 import type { Unit } from "@leosprograms/vf-graphql";
 import { getAllUnits } from "../../crud/fetch";
 import { allUnits } from "../../crud/store";
+  import { importUnits } from "../../crud/import"
 
 let units: Unit[] = [];
 allUnits.subscribe(value => {
@@ -16,6 +18,8 @@ let selectedUnit: Unit | undefined = undefined;
 let modalOpen = false;
 let loading = false;
 let editing = false;
+let exportOpen = false;
+let importing = false;
 $: selectedUnit, modalOpen, units;
 
 onMount(async () => {
@@ -29,8 +33,7 @@ onMount(async () => {
 <Header title="Units" description="The units in a network." />
 <UnitModal bind:open={modalOpen} unit={selectedUnit} bind:editing on:close={() => modalOpen = false} 
     on:submit={() => {
-        modalOpen = false; 
-        getAllUnits()
+        modalOpen = false;
     }} />
 
 {#if loading}
@@ -56,7 +59,15 @@ onMount(async () => {
           }}
           class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Add a unit</button>
-      </div>
+        </div>
+        <Export bind:importing bind:open={exportOpen} dataName="list of Units" fileName="cfn-units" data={units}
+          on:import={async (event) => {
+              await importUnits(event.detail);
+              await getAllUnits();
+              importing = false;
+              exportOpen = false;
+          }}
+        />
     </div>
     <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

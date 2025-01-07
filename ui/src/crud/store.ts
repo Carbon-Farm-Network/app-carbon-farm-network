@@ -20,6 +20,14 @@ export const allAgreements = writable([]);
 export const allRecipes = writable([]);
 export const allRecipeExchanges = writable([]);
 
+export function addToHashChanges(newHashChange: any) {
+    allHashChanges.update(v => {
+        let newHashChanges = v;
+        newHashChanges[newHashChange.original] = newHashChange.current;
+        return newHashChanges;
+    });
+}
+
 export function setHashChanges(newHashChanges: any) {
     allHashChanges.update(v => newHashChanges);
 }
@@ -63,6 +71,23 @@ export function setFacets(newFacets: any) {
 
 export function setFacetValues(newFacetValues: any) {
     allFacetValues.update(v => newFacetValues);
+}
+
+export function addAUnit(newUnit: any) {
+    allUnits.update(v => {
+        return [newUnit, ...v];
+    });
+}
+
+export function updateAUnit(unit: any) {
+    allUnits.update(v => {
+        return v.map((u: any) => {
+            if (u.id == unit.id) {
+                return unit;
+            }
+            return u;
+        });
+    });
 }
 
 export function setUnits(newUnits: any) {

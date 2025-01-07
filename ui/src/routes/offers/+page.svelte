@@ -6,11 +6,14 @@
   import { mutation, query } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@leosprograms/vf-graphql'
   import { browser } from '$app/environment'
+  import { deleteProposal, deleteIntent, deleteProposedIntent, updateProposal } from '../../crud/commit'
   import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../crud/fetch'
   import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../crud/store'
+  import { importProposals } from '../../crud/import'
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
+  import Loading from '$lib/Loading.svelte'
 
   // externally provided data
   let units: Unit[];
@@ -24,6 +27,7 @@
   let usdRSpecId: string | undefined;
   let error: any;
   let name = ''
+  let loading: boolean = true
 
   // Export
   let handleSubmit: any;
@@ -65,7 +69,9 @@
   }
 
   allProposals.subscribe((res) => {
-    offersList = res.map((p) => {
+    offersList = res
+    .filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
+    .map((p) => {
       return {
         ...p,
         publishes: p.publishes.map((i) => {
@@ -111,38 +117,53 @@
       })
   })
 
-  const UPDATE_PROPOSAL = gql`
-    ${PROPOSAL_CORE_FIELDS},
-    mutation($proposal: ProposalUpdateParams!){
-      updateProposal(proposal: $proposal) {
-        proposal {
-          ...ProposalCoreFields
-        }
-      }
-    }
-  `
-  let updateProposal: any = mutation(UPDATE_PROPOSAL)
+  // const UPDATE_PROPOSAL = gql`
+  //   ${PROPOSAL_CORE_FIELDS},
+  //   mutation($proposal: ProposalUpdateParams!){
+  //     updateProposal(proposal: $proposal) {
+  //       proposal {
+  //         ...ProposalCoreFields
+  //       }
+  //     }
+  //   }
+  // `
+  // let updateProposal: any = mutation(UPDATE_PROPOSAL)
 
   // DELETE PROPOSAL  
-  const DELETE_PROPOSAL = gql`mutation($revisionId: ID!){
-    deleteProposal(revisionId: $revisionId)
-  }`
-  let deleteProposal: any = mutation(DELETE_PROPOSAL)
+  // const DELETE_PROPOSAL = gql`mutation($revisionId: ID!){
+  //   deleteProposal(revisionId: $revisionId)
+  // }`
+  // let deleteProposal: any = mutation(DELETE_PROPOSAL)
 
   async function deleteAProposal(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this offer?")
     if (areYouSure == true) {
-      const res = await deleteProposal({ variables: { revisionId } })
+      // delete all intents associated with this proposal
+      const proposal = offersList.find(p => p.revisionId === revisionId)
+      if (proposal) {
+        console.log(proposal)
+        // for (const intent of proposal.publishes) {
+          // console.log('deleting intent', intent)
+          // await deleteIntent(intent.revisionId)
+          // if (intent.publishes) {
+          //   await deleteProposedIntent(intent.publishes.revisionId)
+          // }
+        // }
+      }
+      const res = await deleteProposal(revisionId)
       await getAllProposals()
     }
   }
 
   onMount(async () => {
     if (browser) {
+      console.log('loading offers', offersList, units, resourceSpecifications, agents)
+      loading = offersList.length === 0 //|| units.length === 0 || resourceSpecifications.length === 0 || agents.length === 0
       await getAllResourceSpecifications()
       await getAllAgents()
       await getAllUnits()
       await getAllProposals()
+      loading = false
     }
   })
 
@@ -154,6 +175,11 @@
 <!-- </div> -->
 
 <Error {error} />
+
+{#if loading}
+<Loading />
+{/if}
+
 <OfferModal on:submit={getAllProposals} bind:open={modalOpen} bind:handleSubmit bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
@@ -183,31 +209,8 @@
     <Export bind:importing bind:open={exportOpen} dataName="list of offers" fileName="cfn-offers"
     data={offersList}
     on:import={async (event) => {
-      for (let i = 0; i < event.detail.length; i++) {
-        let currentIntent = event.detail[i].publishes.find(({ reciprocal }) => !reciprocal).publishes
-        if (currentIntent.provider) {
-          let currentReciprocalIntent = event.detail[i].publishes.find(({ reciprocal }) => reciprocal).publishes
-          currentIntent.action = currentIntent.action.id
-          currentIntent.resourceConformsTo = hashChanges[currentIntent.resourceConformsTo.id]
-          if (!currentIntent.resourceConformsTo) { importing = false; error = "Stopped import due to dependency data"; return }
-          currentIntent.provider = hashChanges[currentIntent.provider.id]
-          if (!currentIntent.provider) { importing = false; error = "Stopped import due to dependency data"; return }
-          currentIntent.resourceQuantity = {
-            hasUnit: currentIntent.resourceQuantity.hasUnit.id,
-            hasNumericalValue: currentIntent.resourceQuantity.hasNumericalValue
-          }
-          currentIntent.availableQuantity.hasUnit = currentIntent.availableQuantity = {
-            hasUnit: currentIntent.availableQuantity.hasUnit.id,
-            hasNumericalValue: currentIntent.availableQuantity.hasNumericalValue
-          }
-          currentReciprocalIntent.resourceConformsTo = hashChanges[currentReciprocalIntent.resourceConformsTo.id]
-          currentReciprocalIntent.resourceQuantity = {
-            hasNumericalValue: currentReciprocalIntent.resourceQuantity.hasNumericalValue,
-            hasUnit: currentReciprocalIntent.resourceQuantity.hasUnit
-          }
-          await handleSubmit(currentIntent, currentReciprocalIntent, true)
-        }
-      }
+      await importProposals(event.detail)
+      await getAllProposals()
       importing = false
       exportOpen = false
     }}
@@ -286,7 +289,7 @@
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{resourceQuantity.hasNumericalValue}
-                  {proposedReciprocalIntent?.publishes.resourceQuantity?.hasUnit?.id || "USD"}
+                  {proposedReciprocalIntent?.publishes.resourceConformsTo?.name}
 
                   / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
                   {availableQuantity.hasUnit?.label}
@@ -305,7 +308,7 @@
                         };
 
 
-                        updateProposal({ variables: { proposal: proposal } });
+                        updateProposal(proposal);
 
                         getAllProposals();
                       } else {
@@ -315,7 +318,7 @@
                           hasEnd: new Date(),
                         };
 
-                        updateProposal({ variables: { proposal: proposal } });
+                        updateProposal(proposal);
 
                         getAllProposals();
                       }

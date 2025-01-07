@@ -28,7 +28,7 @@ export const RECIPE_EXCHANGE_CORE_FIELDS = gql`
     `
 
 export const RECIPE_RETURN_FIELDS = gql`
-    fragment RecipeCoreFields on RecipeProcess {
+    fragment RecipeFields on RecipeProcess {
         id
         revisionId
         name
@@ -41,7 +41,7 @@ export const RECIPE_RETURN_FIELDS = gql`
             note
             providerRole
             receiverRole
-            insructions
+            instructions
             stage {
                 id
                 name
@@ -103,7 +103,7 @@ export const RECIPE_RETURN_FIELDS = gql`
 
 
 export const RECIPE_EXCHANGE_RETURN_FIELDS = gql`
-    fragment RecipeExchangeCoreFields on RecipeExchange {
+    fragment RecipeExchangeFields on RecipeExchange {
         id
         revisionId
         name

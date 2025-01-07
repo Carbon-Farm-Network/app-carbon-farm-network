@@ -9,10 +9,10 @@
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
   import { createEventDispatcher } from 'svelte';
-  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification,IMeasure } from '@leosprograms/vf-graphql'
+  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification, IMeasure } from '@leosprograms/vf-graphql'
+  import { createProposal, updateProposal, createIntent, updateIntent, createProposedIntent } from '../../crud/commit'
   import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
-  import ResourceSpecificationModal from '../resource_specifications/ResourceSpecificationModal.svelte'
 
   // public CustomElement attributes
   export let open = false;
@@ -45,66 +45,66 @@
 
   // GraphQL query bindings
 
-  const ADD_PROPOSAL = gql`
-    ${PROPOSAL_CORE_FIELDS},
-    mutation($proposal: ProposalCreateParams!){
-      createProposal(proposal: $proposal) {
-        proposal {
-          ...ProposalCoreFields
-        }
-      }
-    }
-  `
+  // const ADD_PROPOSAL = gql`
+  //   ${PROPOSAL_CORE_FIELDS},
+  //   mutation($proposal: ProposalCreateParams!){
+  //     createProposal(proposal: $proposal) {
+  //       proposal {
+  //         ...ProposalCoreFields
+  //       }
+  //     }
+  //   }
+  // `
 
-  const UPDATE_PROPOSAL = gql`
-    ${PROPOSAL_CORE_FIELDS},
-    mutation($proposal: ProposalUpdateParams!){
-      updateProposal(proposal: $proposal) {
-        proposal {
-          ...ProposalCoreFields
-        }
-      }
-    }
-  `
+  // const UPDATE_PROPOSAL = gql`
+  //   ${PROPOSAL_CORE_FIELDS},
+  //   mutation($proposal: ProposalUpdateParams!){
+  //     updateProposal(proposal: $proposal) {
+  //       proposal {
+  //         ...ProposalCoreFields
+  //       }
+  //     }
+  //   }
+  // `
 
-  const ADD_INTENT = gql`
-    ${INTENT_CORE_FIELDS},
-    mutation($intent: IntentCreateParams!){
-      createIntent(intent: $intent) {
-        intent {
-          ...IntentCoreFields
-        }
-      }
-    }
-  `
+  // const ADD_INTENT = gql`
+  //   ${INTENT_CORE_FIELDS},
+  //   mutation($intent: IntentCreateParams!){
+  //     createIntent(intent: $intent) {
+  //       intent {
+  //         ...IntentCoreFields
+  //       }
+  //     }
+  //   }
+  // `
 
-  const UPDATE_INTENT = gql`
-    ${INTENT_CORE_FIELDS},
-    mutation($intent: IntentUpdateParams!){
-      updateIntent(intent: $intent) {
-        intent {
-          ...IntentCoreFields
-        }
-      }
-    }
-  `
+  // const UPDATE_INTENT = gql`
+  //   ${INTENT_CORE_FIELDS},
+  //   mutation($intent: IntentUpdateParams!){
+  //     updateIntent(intent: $intent) {
+  //       intent {
+  //         ...IntentCoreFields
+  //       }
+  //     }
+  //   }
+  // `
 
-  const ADD_PROPOSED_INTENT = gql`
-    ${PROPOSED_INTENT_CORE_FIELDS},
-    mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
-      proposeIntent(reciprocal: $reciprocal, publishedIn: $publishedIn, publishes: $publishes) {
-        proposedIntent {
-          ...ProposedIntentCoreFields
-        }
-      }
-    }
-  `
+  // const ADD_PROPOSED_INTENT = gql`
+  //   ${PROPOSED_INTENT_CORE_FIELDS},
+  //   mutation($reciprocal: Boolean, $publishedIn: ID!, $publishes: ID!){
+  //     proposeIntent(reciprocal: $reciprocal, publishedIn: $publishedIn, publishes: $publishes) {
+  //       proposedIntent {
+  //         ...ProposedIntentCoreFields
+  //       }
+  //     }
+  //   }
+  // `
 
-  let addProposal: any= mutation(ADD_PROPOSAL)
-  let updateProposal: any= mutation(UPDATE_PROPOSAL)
-  let addIntent: any= mutation(ADD_INTENT)
-  let updateIntent: any= mutation(UPDATE_INTENT)
-  let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
+  // let addProposal: any= mutation(ADD_PROPOSAL)
+  // let updateProposal: any= mutation(UPDATE_PROPOSAL)
+  // let addIntent: any= mutation(ADD_INTENT)
+  // let updateIntent: any= mutation(UPDATE_INTENT)
+  // let addProposedIntent: any= mutation(ADD_PROPOSED_INTENT)
 
   // helper to workaround direct bind:value syntax coercing things to strings
   function parseFormValues(val: IMeasure) {
@@ -116,8 +116,9 @@
 
   export async function createRequest(proposal: any, localIntent: any, localReciprocalIntent: any) {
     
-    const res1 = await addProposal({ variables: { proposal } })
-    const res1ID: String = String(res1.data.createProposal.proposal.id)
+    console.log(proposal)
+    const res1 = await createProposal(proposal)
+    const res1ID: string = String(res1.data.createProposal.proposal.id)
 
     // create intent
     const intent: IntentCreateParams = {
@@ -138,7 +139,7 @@
       intent.resourceQuantity.hasUnit = localIntent.availableQuantity?.hasUnit
     }
     console.info(intent)
-    const res2 = await addIntent({ variables: { intent } });
+    const res2 = await createIntent(intent);
     const res2ID = res2.data.createIntent.intent.id
     console.log(res2);
 
@@ -150,38 +151,23 @@
       resourceQuantity: localReciprocalIntent.resourceQuantity ? parseFormValues(localReciprocalIntent.resourceQuantity as IMeasure) : undefined,
     }
     console.info(recipIntent)
-    const res3 = await addIntent({ variables: { intent: recipIntent } })
-    const res3ID: String = String(res3.data.createIntent.intent.id)
+    const res3 = await createIntent(recipIntent)
+    const res3ID: string = String(res3.data.createIntent.intent.id)
     console.log(res3);
 
 
-    let reciprocal: Boolean = false
+    let reciprocal: boolean = false
     let publishedIn = res1ID
     let publishes = res2ID
 
-    const res4 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+    const res4 = await createProposedIntent(reciprocal, publishedIn,  publishes)
     console.log(res4)
 
     reciprocal = true
     publishes = res3ID
 
-    const res5 = await addProposedIntent({ variables: { reciprocal, publishedIn, publishes } })
+    const res5 = await createProposedIntent(reciprocal, publishedIn, publishes)
     console.log(res5)
-  }
-
-  async function handleSubmit2() {
-    console.log(currentProposal)
-    console.log(currentIntent)
-    console.log(currentReciprocalIntent)
-    console.log(currentProposedIntent)
-    try {
-      submitting = true;
-      submitting = submitting;
-      console.log("submitting", submitting)
-    }
-    catch (error) {
-      console.error(error)
-    }
   }
 
   async function handleSubmit() {
@@ -201,7 +187,7 @@
       let proposal: ProposalCreateParams = {
         hasBeginning: d,
         unitBased: true,
-        note: "shearing end of May"
+        note: ""
       }
       await createRequest(proposal, currentIntent, currentReciprocalIntent)
       dispatch("submit");
@@ -220,7 +206,7 @@
     submitting = true;
     // console.log(currentProposal)
     let proposal = currentProposal
-    await updateProposal({ variables: { proposal: proposal } })
+    await updateProposal(proposal)
     // let intent = currentIntent
     let intent = {
       revisionId: currentIntent.revisionId,
@@ -240,7 +226,7 @@
       intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
     }
     console.log(intent)
-    const res = await updateIntent({ variables: { intent: intent } })
+    const res = await updateIntent(intent)
     console.log(res)
 
     let intent2 = {
@@ -254,7 +240,7 @@
     //   intent2.resourceQuantity.hasUnit = intent2.availableQuantity?.hasUnit
     // }
     console.log(intent2)
-    const res2 = await updateIntent({ variables: { intent: intent2 } })
+    const res2 = await updateIntent(intent2)
     dispatch("submit");
     console.log(res2)
     submitting = false;

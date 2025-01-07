@@ -8,6 +8,10 @@ export const RESOURCE_SPECIFICATION_CORE_FIELDS = gql`
     image
     note
     resourceClassifiedAs
+    facets {
+      name
+      value
+    }
   }
 `
 
@@ -16,6 +20,7 @@ export const UNIT_CORE_FIELDS = gql`
     id
     label
     symbol
+    omUnitIdentifier
     revisionId
   }
 `
