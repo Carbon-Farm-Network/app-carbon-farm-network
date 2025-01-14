@@ -76,7 +76,7 @@
               -->
               <div class="ml-8">
                 {#if panelInfo && panelInfo.imageUrl}
-                  <img class="h-20 w-20" src={panelInfo.imageUrl} alt="" />
+                  <img class="w-20" src={panelInfo.imageUrl} alt="" />
                 {:else}
                   <span
                     class="inline-block h-14 w-14 rounded-full overflow-hidden bg-gray-100"

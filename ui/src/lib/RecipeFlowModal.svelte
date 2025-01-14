@@ -1,6 +1,6 @@
 <script lang="ts">
   import { clickOutside } from '../utils'
-  import { allActions, allResourceSpecifications, allUnits } from '../crud/store';
+  import { allActions, allResourceSpecifications, allUnits, allRoles } from '../crud/store';
   import { createRecipeFlow, updateRecipeFlow } from '../crud/commit';
   import { onMount } from 'svelte';
   import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
@@ -30,18 +30,23 @@
     resourceSpecifications = value
   })
 
-  const dispatch = createEventDispatcher();
+  let roles: any = allRoles
+  allRoles.subscribe(value => {
+    roles = value
+  })
 
-  let roles = [
-    "Farmer",
-    "Scouring Mill",
-    "Spinning Mill",
-    "Knitting Factory",
-    "Weaving Factory",
-    "Designer",
-    "Shipping",
-    "Network",
-  ]
+  // let roles = [
+  //   "Farmer",
+  //   "Scouring Mill",
+  //   "Spinning Mill",
+  //   "Knitting Factory",
+  //   "Weaving Factory",
+  //   "Designer",
+  //   "Shipping",
+  //   "Network",
+  // ]
+
+  const dispatch = createEventDispatcher();
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -127,7 +132,7 @@
                   for="provider_role"
                   class="block text-sm font-medium leading-6 text-gray-900">Provider Role</label
                 >
-                <select
+                <!-- <select
                   id="provider_role"
                   name="provider_role"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -140,7 +145,28 @@
                   {#each roles as role}
                     <option value={role}>{role}</option>
                   {/each}
-                </select>
+                </select> -->
+                <input
+                  type="text"
+                  id="classifiedAs"
+                  name="classifiedAs"
+                  list="roleSuggestions"
+                  bind:value={recipeFlow.providerRole}
+                  on:input={e => {
+                  const input = e.target;
+                  if (input instanceof HTMLInputElement) {
+                    recipeFlow.providerRole = input.value;
+                    //@ts-ignore
+                    // currentAgent.imageUrl = roleImages[role] || 'profile.png'
+                  }
+                  }}
+                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+                <datalist id="roleSuggestions">
+                  {#each roles as role (role)}
+                  <option value={role}>{role}</option>
+                  {/each}
+                </datalist>
               </div>
             </div>
 
@@ -150,7 +176,7 @@
                   for="receiverRole"
                   class="block text-sm font-medium leading-6 text-gray-900">Receiver Role</label
                 >
-                <select
+                <!-- <select
                   id="receiverRole"
                   name="receiverRole"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -163,7 +189,28 @@
                   {#each roles as role}
                     <option value={role}>{role}</option>
                   {/each}
-                </select>
+                </select> -->
+                <input
+                  type="text"
+                  id="classifiedAs"
+                  name="classifiedAs"
+                  list="roleSuggestions"
+                  bind:value={recipeFlow.receiverRole}
+                  on:input={e => {
+                  const input = e.target;
+                  if (input instanceof HTMLInputElement) {
+                    recipeFlow.receiverRole = input.value;
+                    //@ts-ignore
+                    // currentAgent.imageUrl = roleImages[role] || 'profile.png'
+                  }
+                  }}
+                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+                <datalist id="roleSuggestions">
+                  {#each roles as role (role)}
+                  <option value={role}>{role}</option>
+                  {/each}
+                </datalist>
               </div>
             </div>
 
@@ -259,20 +306,23 @@
                   for="unit"
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
-                {recipeFlow.resourceQuantity?.hasUnit ? units.find(it => it.id === recipeFlow.resourceQuantity.hasUnit)?.label
-                 : ""}
-                <!-- <select
+                <!-- {recipeFlow.resourceQuantity?.hasUnit ? units.find(it => it.id === recipeFlow.resourceQuantity.hasUnit)?.label
+                 : ""} -->
+                <select
                   id="unit"
                   name="unit"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  value={recipeFlow.resourceQuantity?.hasUnit}
                   on:change={(e) => {
-                    recipeFlow.unit = e.target.value
+                    if (recipeFlow.resourceQuantity) {
+                      recipeFlow.resourceQuantity.hasUnit = e.target.value
+                    }
                   }}
                 >
                   {#each $allUnits as unit}
                     <option value={unit.id}>{unit.label}</option>
                   {/each}
-                </select> -->
+                </select>
               </div>
             </div>
 

@@ -405,11 +405,9 @@
   onMount(checkDependencies)
   // dependenciesOk = false
 </script>
-<!-- <button
-    on:click={addRecipes}
-  >
-    RECIPES
-  </button> -->
+
+<!-- <button on:click={addRecipes}>RECIPES</button> -->
+
 {#if dependenciesOk === true}
   <slot></slot>
 {:else}

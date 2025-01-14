@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 export const allHashChanges = writable([]);
 export const clientStored = writable(null);
 export const allAgents = writable([]);
+export const allRoles = writable([]);
 export const allFacets = writable([]);
 export const allFacetValues = writable([]);
 export const allUnits = writable([]);
@@ -42,6 +43,9 @@ export function setActions(newActions: any) {
 
 export function setAgents(newAgents: any) {
     allAgents.update(v => newAgents);
+    const roles = newAgents.map((a: any) => a.classifiedAs[2]).flat();
+    const uniqueRoles = Array.from(new Set(roles));
+    allRoles.update(v => uniqueRoles);
 }
 
 export function setEconomicEvents(newEconomicEvents: any) {

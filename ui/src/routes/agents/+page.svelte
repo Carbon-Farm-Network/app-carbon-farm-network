@@ -36,7 +36,7 @@
         ...a,
         "name": a.name,
         "imageUrl": a.image,
-        "iconUrl": a.image,
+        "iconUrl": a.classifiedAs[3],// ? a.classifiedAs[3] : a.image,
         "lat": a.classifiedAs[0],
         "long": a.classifiedAs[1],
         "role": a.classifiedAs[2],

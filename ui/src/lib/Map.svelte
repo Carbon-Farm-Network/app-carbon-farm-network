@@ -31,10 +31,10 @@
   }
 
   const defaultIconOptions = {
-    iconSize: [41, 41],
-    iconAnchor: [20, 41],
-    popupAnchor: [1, -34],
-    tooltipAnchor: [16 - 28]
+    iconSize: [31, 31],
+    // iconAnchor: [20, 41],
+    // popupAnchor: [1, -34],
+    // tooltipAnchor: [16 - 28]
   }
 </script>
 
@@ -52,7 +52,7 @@
       }}
     >
       {#if agent.iconUrl }
-        <Icon options={{iconUrl: agent.iconUrl}} />
+        <Icon options={{iconUrl: agent.iconUrl, ...defaultIconOptions}} />
         <!-- <img class="h-20 w-20" src={agent.iconUrl} alt="" /> -->
 
       {/if}

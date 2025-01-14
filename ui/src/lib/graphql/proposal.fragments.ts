@@ -16,10 +16,12 @@ export const INTENT_CORE_FIELDS = gql`
     provider {
       id
       name
+      classifiedAs
     }
     receiver {
       id
       name
+      classifiedAs
     }
     action {
       label
@@ -50,6 +52,7 @@ export const PROPOSED_INTENT_CORE_FIELDS = gql`
       revisionId
       provider {
         name
+        classifiedAs
       }
       resourceConformsTo {
         name
@@ -120,10 +123,12 @@ export const PROPOSAL_RETURN_FIELDS = gql`
         provider {
           id
           name
+          classifiedAs
         }
         receiver {
           id
           name
+          classifiedAs
         }
         finished
         note

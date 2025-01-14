@@ -19,6 +19,7 @@
   import { getPlan } from '../../../../crud/fetch'
   import { fullPlans, removeProcessCommitmentFromPlan, addProcessCommitmentToPlan, addNonProcessCommitmentToPlan, removeNonProcessCommitmentFromPlan, allRecipes } from '../../../../crud/store'
   import { cloneDeep } from "lodash";
+  import SvgIcon from '$lib/SvgIcon.svelte'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -1163,46 +1164,46 @@ bind:open={economicEventModalOpen}
       
       {#each processes as { committedInputs, committedOutputs }, processIndex}
 
-      <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
-      <div class="border-gray-400 p-2" style="background-color: #BFBFBF;">
-        <!-- Sub-columns -->
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <div class="flex justify-center items-center w-full mb-2">
-              <div class="flex space-x-2">
-                <button
-                  title="Add a new commitment to this process"
-                  class="flex justify-center items-center"
-                  on:click={() => {
-                  commitmentModalProcess = processIndex
-                  commitmentModalColumn = columnIndex
-                  commitmentModalSide = "committedInputs"
-                  commitmentModalOpen = true
-                  selectedCommitmentId = undefined
-                  }}
-                >
-                  <PlusCircle />
-                </button>
-
-                {#if processIndex == 0}
+        <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
+        <div class="border-gray-400 p-2" style="background-color: #BFBFBF;">
+          <!-- Sub-columns -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <div class="flex justify-center items-center w-full mb-2">
+                <div class="flex space-x-2">
                   <button
-                    title="Auto-fill the output commitments based on the input commitments"
+                    title="Add a new commitment to this process"
                     class="flex justify-center items-center"
                     on:click={() => {
-                    forwardSuggestions = {
-                      side: "committedOutputs",
-                      columnIndex: columnIndex,
-                      current: allColumns[columnIndex].map(it => it.committedOutputs),
-                      new: calculateInputToOutput(columnIndex)
-                    }
-                    planForwardModalOpen = true
+                    commitmentModalProcess = processIndex
+                    commitmentModalColumn = columnIndex
+                    commitmentModalSide = "committedInputs"
+                    commitmentModalOpen = true
+                    selectedCommitmentId = undefined
                     }}
                   >
-                    {"↳"}
-                  </button>                  
-                {/if}
+                    <PlusCircle />
+                  </button>
+
+                  {#if processIndex == 0}
+                    <button
+                      title="Auto-fill the output commitments based on the input commitments"
+                      class="flex justify-center items-center"
+                      on:click={() => {
+                      forwardSuggestions = {
+                        side: "committedOutputs",
+                        columnIndex: columnIndex,
+                        current: allColumns[columnIndex].map(it => it.committedOutputs),
+                        new: calculateInputToOutput(columnIndex)
+                      }
+                      planForwardModalOpen = true
+                      }}
+                    >
+                      <SvgIcon icon=faForward size=12/>
+                    </button>                  
+                  {/if}
+                </div>
               </div>
-            </div>
 
                 {#each committedInputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf, meta }}
                   {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
@@ -1476,8 +1477,8 @@ bind:open={economicEventModalOpen}
                 <div class="flex justify-center items-center w-full mb-2">
                   <div class="flex space-x-2">
                     <button
-                      class="flex justify-center items-center w-full mb-2"
-
+                      title="Add a new commitment to this process"
+                      class="flex justify-center items-center"
                       on:click={() => {
                         commitmentModalProcess = processIndex
                         commitmentModalColumn = columnIndex
@@ -1505,7 +1506,7 @@ bind:open={economicEventModalOpen}
                         planForwardModalOpen = true
                         }}
                       >
-                        {"↳"}
+                        <SvgIcon icon=faForward size=12/>
                       </button>
                     {/if}
                   </div>

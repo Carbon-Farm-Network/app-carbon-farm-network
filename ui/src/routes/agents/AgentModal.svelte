@@ -14,6 +14,12 @@
   import type { OrganizationCreateParams, OrganizationUpdateParams } from '@leosprograms/vf-graphql'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { createAgent, updateAgent, associateAgentWithValue } from '../../crud/commit'
+  import { allRoles } from '../../crud/store';
+
+  let roles: any = allRoles
+  allRoles.subscribe(value => {
+    roles = value
+  })
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -28,16 +34,17 @@
 
   const dispatch = createEventDispatcher();
 
-  let roles = [
-    "Farmer",
-    "Scouring Mill",
-    "Spinning Mill",
-    "Knitting Factory",
-    "Weaving Factory",
-    "Designer",
-    "Shipping",
-    "Network",
-  ]
+  // let roles = [
+  //   "Farmer",
+  //   "Scouring Mill",
+  //   "Spinning Mill",
+  //   "Knitting Factory",
+  //   "Weaving Factory",
+  //   "Designer",
+  //   "Shipping",
+  //   "Network",
+  // ]
+
   let roleImages = {
     "Farmer": "farm.svg",
     "Scouring Mill": "mill.svg",
@@ -48,6 +55,17 @@
     "Shipping": "truck.svg",
     "Network": "knitting.svg",
   }
+
+  let images = [
+    "farm.svg",
+    "mill.svg",
+    "knitting.svg",
+    "truck.svg",
+    "scissors.svg",
+    "socks.svg",
+    "transfer.svg",
+    "building.svg"
+  ]
 
   export async function createAgentWrapped(agent: OrganizationCreateParams, facetsToAssociate: string[]) {
     try {
@@ -72,11 +90,14 @@
   }
 
   async function handleSubmit() {
+    if (!currentAgent.iconUrl) {
+      currentAgent.iconUrl = roleImages[currentAgent.role] || 'building.png'
+    }
     let agent: OrganizationCreateParams = {
         name: currentAgent.name,
         image: currentAgent.imageUrl,
         note: currentAgent.note,
-        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role],
+        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role, currentAgent.iconUrl],
 
         // $: name, latitude, longitude, note, logo, type, role, certification;
     }
@@ -84,11 +105,14 @@
   }
 
   async function handleUpdate() {
+    if (!currentAgent.iconUrl) {
+      currentAgent.iconUrl = roleImages[currentAgent.role] || 'building.png'
+    }
     let agent: OrganizationUpdateParams = {
         name: currentAgent.name,
         image: currentAgent.imageUrl,
         note: currentAgent.note,
-        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role],
+        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role, currentAgent.iconUrl],
         revisionId: currentAgent.revisionId
     }
     try {
@@ -240,24 +264,29 @@
                   for="classifiedAs"
                   class="block text-sm font-medium leading-6 text-gray-900"
                 >Role in the network</label>
-                <select
+                <input
+                  type="text"
                   id="classifiedAs"
                   name="classifiedAs"
+                  list="roleSuggestions"
                   bind:value={currentAgent.role}
-                  on:change={e => {
-                    const input = e.target;
-                    if (input instanceof HTMLSelectElement) {
-                      const role = input.value;
-                      //@ts-ignore
-                      currentAgent.imageUrl = roleImages[role] || 'profile.png'
+                  on:input={e => {
+                  const input = e.target;
+                  if (input instanceof HTMLInputElement) {
+                    const role = input.value;
+                    //@ts-ignore
+                    if (roleImages[role]) {
+                      currentAgent.iconUrl = roleImages[role]
                     }
+                  }
                   }}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                >
+                />
+                <datalist id="roleSuggestions">
                   {#each roles as role (role)}
-                    <option {role} selected={role === currentAgent.role}>{role}</option>
+                  <option value={role}>{role}</option>
                   {/each}
-                </select>
+                </datalist>
               </div>
             </div>
 
@@ -350,11 +379,17 @@
                     type="text"
                     name="longitude"
                     id="longitude"
+                    list="iconSuggestions"
                     autocomplete="longitude"
                     placeholder="https://www.example.com/logo.png"
                     bind:value={currentAgent.imageUrl}
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  <datalist id="iconSuggestions">
+                    {#each images as image (image)}
+                    <option value={image}>{image}</option>
+                    {/each}
+                  </datalist>
                 </div>
                 <!-- <div
                   class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"
@@ -392,6 +427,33 @@
                     </p>
                   </div>
                 </div> -->
+              </div>
+            </div>
+
+            <div class="mt-4 text-left">
+              <div class="col-span-full">
+                <label
+                  for="image"
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                  >Map icon url</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    name="icon"
+                    id="icon"
+                    list="iconSuggestions"
+                    autocomplete="icon"
+                    placeholder="https://www.example.com/logo.png"
+                    bind:value={currentAgent.iconUrl}
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                </div>
+                <datalist id="iconSuggestions">
+                  {#each images as image (image)}
+                  <option value={image}>{image}</option>
+                  {/each}
+                </datalist>
               </div>
             </div>
           </div>

@@ -136,6 +136,36 @@
             >
               Plans
             </button>
+
+
+            <button
+              style="cursor: pointer;"
+              class="{path === '/commitments' ? 'nav-active' : 'nav-inactive'} nav-default"
+              on:click={() => navigate('/commitments')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Exchanges</button
+            >
+
+
+            <button
+              style="cursor: pointer;"
+              class="{path === '/economic_events' ? 'nav-active' : 'nav-inactive'} nav-default"
+              on:click={() => navigate('/economic_events')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Activity</button
+            >
+
+
+            <button
+              style="cursor: pointer;"
+              class="{path === '/economic_resources' ? 'nav-active' : 'nav-inactive'} nav-default"
+              on:click={() => navigate('/economic_resources')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Inventory</button
+            >
           </div>
         </div>
       </div>
@@ -207,7 +237,7 @@
             <!-- Active: "bg-gray-100", Not Active: "" -->
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+                class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               on:click={() => navigate('/agents')}
               role="menuitem"
               tabindex="-1"
@@ -215,7 +245,7 @@
             >
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+              class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               style="text-align: left;"
               on:click={() => navigate('/resource_specifications')}
               role="menuitem"
@@ -224,7 +254,7 @@
             >
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+              class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               on:click={() => navigate('/process_specifications')}
               role="menuitem"
               tabindex="-1"
@@ -232,31 +262,7 @@
             >
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
-              on:click={() => navigate('/economic_events')}
-              role="menuitem"
-              tabindex="-1"
-              id="user-menu-item-1">Economic events</button
-            >
-            <button
-              type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
-              on:click={() => navigate('/economic_resources')}
-              role="menuitem"
-              tabindex="-1"
-              id="user-menu-item-1">Economic resources</button
-            >
-            <button
-              type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
-              on:click={() => navigate('/commitments')}
-              role="menuitem"
-              tabindex="-1"
-              id="user-menu-item-1">Exchanges</button
-            >
-            <button
-              type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+              class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               on:click={() => navigate('/units')}
               role="menuitem"
               tabindex="-1"
@@ -264,7 +270,7 @@
             >
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+              class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               on:click={() => navigate('/facets')}
               role="menuitem"
               tabindex="-1"
@@ -272,7 +278,7 @@
             >
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+              class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               on:click={() => navigate('/recipes')}
               role="menuitem"
               tabindex="-1"
@@ -280,7 +286,7 @@
             >
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+              class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               on:click={() => navigate('/recipe_exchanges')}
               role="menuitem"
               tabindex="-1"
@@ -288,7 +294,7 @@
             >
             <button
               type="button"
-              class="block px-4 py-2 text-sm text-gray-700"
+              class="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               on:click={() => navigate('/export')}
               role="menuitem"
               tabindex="-1"

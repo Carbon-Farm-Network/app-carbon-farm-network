@@ -32,12 +32,12 @@
   allAgents.subscribe((res) => {
     agents = res.map((a) => {
       // @ts-ignore
-      let iconUrl = roleImages[a.classifiedAs[2]] || 'mill.svg'
+      let iconUrl = roleImages[a.classifiedAs[2]] || a.image//'mill.svg'
       return {
         ...a,
         "name": a.name,
         "imageUrl": a.image,
-        "iconUrl": iconUrl,
+        "iconUrl": a.classifiedAs[3] || a.image,
         "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
         "address": a.note,
         "offers": offersList?.filter((o: Proposal) => (o.publishes || [])
