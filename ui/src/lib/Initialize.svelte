@@ -179,11 +179,6 @@
   const addResourceSpecification = mutation(CREATE_RESOURCE_SPECIFICATION)
   const addProcessSpecification = mutation(CREATE_PROCESS_SPECIFICATION)
 
-  interface UnitsQueryResponse {
-    units: UnitConnection & RelayConn<Unit>
-  }
-  const getUnits: ReadableQuery<UnitsQueryResponse> = query(GET_UNITS)
-
   async function addRecipes() {
 
     await getAllProcessSpecifications()

@@ -90,67 +90,45 @@ export async function load() {
       }
       
     } else if (appPort) {
-      // env.APP_INTERFACE_PORT = appPort
-      // window.env.APP_INTERFACE_PORT = appPort
       console.log("adminPort is", adminPort)
       console.log("url is", url)
       console.log("appId is", appId)
-      let cellID: CellId;
+
       if (adminPort) {
-        console.log("1")
-        console.log(new URL(`ws://localhost:${adminPort}`))
         const adminWebsocket = await AdminWebsocket.connect({url: new URL(`ws://localhost:${adminPort}`)})
-        console.log("2")
-        const x = await adminWebsocket.listApps({})
-        console.log("apps", x)
         const cellIds = await adminWebsocket.listCellIds()
-        cellID = cellIds[0]
-        console.log("CELL IDS",cellIds)
         await adminWebsocket.authorizeSigningCredentials(cellIds[0])
         await adminWebsocket.authorizeSigningCredentials(cellIds[1])
         await adminWebsocket.authorizeSigningCredentials(cellIds[2])
+      }
         console.log("authorized three cells")
       } else {
         console.log("no admin port")
       }
- 
-      console.log('new url', new URL(url))
-      // pull DNA config separately in order to bind to CFN-specific extension Cells
-      const conn = await AppWebsocket.connect({url: new URL(url)})
-      // const conn = await AppWebsocket.connect(ENV_CONNECTION_URI)
-      console.log("conn is ", conn)
+       
+      // pull DNA config separately in order to bind to CFN-specific extension Cells\
+      let adminConn = await AdminWebsocket.connect({url: new URL(`ws://localhost:${adminPort}`), defaultTimeout: 999999999})
+      let tokenResp = await adminConn.issueAppAuthenticationToken({
+        installed_app_id: appId,
+      });
+      let token = tokenResp.token;
+
+      const conn = await AppWebsocket.connect({url: new URL(url), token: token})
       const { dnaConfig } = await sniffHolochainAppCells(conn, appId)
-      console.log("dna config", dnaConfig)
       let boundResolvers = await bindResolvers(dnaConfig as ExtendedDnaConfig, url)
-      console.log("bound resolvers", boundResolvers)
-      let oc = await openConnection(url)
-      console.log("oc", oc)
       const autoConnectInput = {
         weaveAppAgentClient: undefined,
         appID: appId,
         extensionSchemas,
         extensionResolvers: boundResolvers,
         conductorUri: url,
-        adminConductorUri: undefined,
+        adminConductorUri: new URL(`ws://localhost:${adminPort}`),
       }
-      console.log("autoconnect input", autoConnectInput)
       const output = await autoConnect(autoConnectInput)
       await setClient(output)
       return {
         client: output
-      }      // return {
-      //   client: await autoConnect({
-      //     weaveAppAgentClient: undefined,
-      //     appID: appId,
-      //     extensionSchemas,
-      //     extensionResolvers: await bindResolvers(dnaConfig as ExtendedDnaConfig, url),
-      //     conductorUri: url,
-      //     adminConductorUri: `ws://localhost:${adminPort}`,
-      //   }),
-      // }
-    } else {
-      throw error(500, "Holochain connection error, couldn't connect to client")
-    }
+      }
   } catch (e) {
     console.error("Holochain connection error", e)
     throw error(500, "Holochain connection error")
