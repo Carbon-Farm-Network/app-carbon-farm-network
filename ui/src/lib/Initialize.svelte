@@ -7,15 +7,10 @@
   import type { ReadableQuery } from 'svelte-apollo'
   import type { Unit, UnitConnection } from '@leosprograms/vf-graphql'
   import recipes from '$lib/data/recipes-with-exchanges.json'
-  import { createRecipeProcess, createRecipeExchange, createRecipeFlow } from '../crud/commit';
+  import { createRecipeProcess, createRecipeExchange, createRecipeFlow, createFacetGroup } from '../crud/commit';
   import { getAllFacetGroups, getAllProcessSpecifications, getAllResourceSpecifications, getAllActions, getAllUnits } from '../crud/fetch';
-  import { allProcessSpecifications, allResourceSpecifications, allActions, allUnits, allFacets } from '../crud/store'
-
+  import { allProcessSpecifications, allResourceSpecifications, allActions, allUnits, allFacets, allFacetGroups } from '../crud/store'
   import { get } from 'svelte/store'
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
 
   let processSpecifications: any[] = []
   allProcessSpecifications.subscribe(value => {
@@ -33,154 +28,12 @@
   allUnits.subscribe(value => {
     units = value
   })
-
-  const devInit = false
-
-
-  let processImages = {
-    "Pick Up": "/pickup.svg",
-    "Ship": "/truck.svg",
-    "Spin Yarn": "/socks.svg",
-    "Scour Fiber": "/washing-machine.svg"
-  }
-
-  const INITIALIZE_UNITS = gql`
-    ${UNIT_CORE_FIELDS}
-    mutation {
-      unitLb: createUnit(
-        unit: {
-          label: "pound"
-          symbol: "lb"
-          omUnitIdentifier: "poundAvoirdupois"
-        }
-      ){
-        unit {
-          ...UnitCoreFields
-        }
-      }
-      unitEa: createUnit(
-        unit: {
-          label: "one"
-          symbol: "one"
-          omUnitIdentifier: "one"
-        }
-      ){
-        unit {
-          ...UnitCoreFields
-        }
-      }
-    }
-  `
-
-  let INITIALIZE_GLOBAL_RECORDS: any
-
-  if (devInit) {
-    INITIALIZE_GLOBAL_RECORDS = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    ${UNIT_CORE_FIELDS}
-    mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!, $resource: ResourceSpecificationCreateParams!, $agent: OrganizationCreateParams) {
-
-      g1: putFacetGroup(facetGroup: $g1) {
-        facetGroup {
-          id
-          revisionId
-          name
-        }
-      }
-      g2: putFacetGroup(facetGroup: $g2) {
-        facetGroup {
-          id
-          revisionId
-          name
-        }
-      }
-
-      rs: createResourceSpecification(resourceSpecification: $resource) {
-        resourceSpecification {
-          ...ResourceSpecificationCoreFields
-          defaultUnitOfResource {
-            ...UnitCoreFields
-          }
-        }
-      }
-
-      a: createOrganization(organization: $agent) {
-        organization {
-          id
-        }
-      }
-    }
-    `
-  } else {
-    INITIALIZE_GLOBAL_RECORDS = gql`
-      ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-      ${UNIT_CORE_FIELDS}
-      mutation($g1: FacetGroupParams!, $g2: FacetGroupParams!) {
-        g1: putFacetGroup(facetGroup: $g1) {
-          facetGroup {
-            id
-            revisionId
-            name
-          }
-        }
-        g2: putFacetGroup(facetGroup: $g2) {
-          facetGroup {
-            id
-            revisionId
-            name
-          }
-        }
-      }
-    `
-  }
-
-  const CREATE_RESOURCE_SPECIFICATION = gql`
-    ${RESOURCE_SPECIFICATION_CORE_FIELDS}
-    mutation($resource: ResourceSpecificationCreateParams!) {
-      rs: createResourceSpecification(resourceSpecification: $resource) {
-        resourceSpecification {
-          ...ResourceSpecificationCoreFields
-        }
-      }
-    }
-  `
-
-  const CREATE_PROCESS_SPECIFICATION = gql`
-    ${PROCESS_SPECIFICATION_CORE_FIELDS}
-    mutation($process: ProcessSpecificationCreateParams!) {
-      rs: createProcessSpecification(processSpecification: $process) {
-        processSpecification {
-          ...ProcessSpecificationCoreFields
-        }
-      }
-    }
-  `
-
-  const GET_UNITS = gql`
-    ${UNIT_CORE_FIELDS}
-    query {
-      units {
-        edges {
-          cursor
-          node {
-            ...UnitCoreFields
-          }
-        }
-      }
-    }
-  `
-
+ 
   let dependenciesOk: boolean | null = null
   let error: Error | null = null
   let saving = false
 
-  const initUnits = mutation<{ unitEa: { unit: Unit }, unitLb: { unit: Unit } }, {}>(INITIALIZE_UNITS)
-  const initData = mutation(INITIALIZE_GLOBAL_RECORDS)
-  const addResourceSpecification = mutation(CREATE_RESOURCE_SPECIFICATION)
-  const addProcessSpecification = mutation(CREATE_PROCESS_SPECIFICATION)
-
   async function addRecipes() {
-
     await getAllProcessSpecifications()
     await getAllResourceSpecifications()
     await getAllActions()
@@ -295,99 +148,40 @@
     saving = true
     let units: Unit[] = []
     try {
+      await createFacetGroup({
+        name: "Agent",
+        note: "All facet classifications relevant to Agent records.",
+      })
+      await createFacetGroup({
+        name: "Resource Specification",
+        note: "All facet classifications relevant to types of resources.",
+      })
       
-      if (devInit) {
-        const created = await initUnits({})
-        console.log("created units", created)
-        units = [created.data?.unitEa.unit as Unit, created.data?.unitLb.unit as Unit]
-        
-        await initData({ variables: {
-          g1: {
-            name: "Agent",
-            note: "All facet classifications relevant to Agent records.",
-          },
-          g2: {
-            name: "Resource Specification",
-            note: "All facet classifications relevant to types of resources.",
-          },
-          resource: {
-            name: "USD",
-            defaultUnitOfResource: units.find(u => u.symbol === 'one')?.id,
-          },
-          agent: {
-            name: "Carbon Farm Network",
-            classifiedAs: ["40.689247", "-74.044502", "Network"],
-            image: "knitting.svg"
-          }
-        }})
-      } else {
-        await initData({ variables: {
-          g1: {
-            name: "Agent",
-            note: "All facet classifications relevant to Agent records.",
-          },
-          g2: {
-            name: "Resource Specification",
-            note: "All facet classifications relevant to types of resources.",
-          }
-        }})
-        console.log("GO TO EXPORT")
+        // await initData({ variables: {
+        //   g1: {
+        //     name: "Agent",
+        //     note: "All facet classifications relevant to Agent records.",
+        //   },
+        //   g2: {
+        //     name: "Resource Specification",
+        //     note: "All facet classifications relevant to types of resources.",
+        //   }
+        // }})
+        // console.log("GO TO EXPORT")
         goto("export")
-      }
 
-      if (devInit) {
-        let rSpecs: any[] = []
-        let pSpecs: any[] = []
-
-        for (let r of recipes) {
-          if (r.process_conforms_to && !pSpecs.includes(r.process_conforms_to.name)) {
-            console.log(r.process_conforms_to)
-            pSpecs.push(r.process_conforms_to.name)
-          }
-          let input: any[] = r.has_recipe_input ? r.has_recipe_input : []
-          let output: any[] = r.has_recipe_output ? r.has_recipe_output : []
-          let combined = input.concat(output)
-          for (let s of combined) {
-            if (!rSpecs.includes(s.resourceConformsTo.name)) {
-              rSpecs.push(s.resourceConformsTo.name)
-            }
-          }
-        }
-      
-        for (let r of rSpecs) {
-          let x = await addResourceSpecification({ variables: {
-            resource: {
-              name: r,
-              defaultUnitOfResource: units.find(u => u.symbol === 'lb')?.id,
-            },
-          }})
-        }
-        
-        console.log(pSpecs)
-        
-        for (let p of pSpecs) {
-          console.log(p)
-          let x = await addProcessSpecification({ variables: {
-            process: {
-              name: p,
-              image: processImages[p],
-            },
-          }})
-          console.log(x)
-        }
-          
-        await getAllProcessSpecifications()
-        await getAllResourceSpecifications()
-        await getAllActions()
-        await getAllUnits()
-        await addRecipes()
-      }
+        // await getAllProcessSpecifications()
+        // await getAllResourceSpecifications()
+        // await getAllActions()
+        // await getAllUnits()
+        // await addRecipes()
+      // }
       
     } catch(e) {
       error = e as Error
       console.log(e)
     }
-    dependenciesOk = units.length > 0
+    dependenciesOk = get(allFacetGroups).length > 0//units.length > 0
     checkDependencies()
     saving = false
     return units
@@ -399,7 +193,7 @@
     // dependenciesOk = units.length > 0
     await getAllFacetGroups()
     console.log("all facets", get(allFacets))
-    dependenciesOk = get(allFacets).length > 0
+    dependenciesOk = get(allFacetGroups).length > 0
   }
 
   onMount(checkDependencies)
@@ -407,7 +201,6 @@
 </script>
 
 <!-- <button on:click={addRecipes}>RECIPES</button> -->
-
 {#if dependenciesOk === true}
   <slot></slot>
 {:else}

@@ -2,10 +2,12 @@ import { writable } from 'svelte/store';
 
 export const allHashChanges = writable([]);
 export const clientStored = writable(null);
+export const clientHC = writable(null);
 export const allAgents = writable([]);
 export const allRoles = writable([]);
 export const allFacets = writable([]);
 export const allFacetValues = writable([]);
+export const allFacetGroups = writable([]);
 export const allUnits = writable([]);
 export const allResourceSpecifications = writable([]);
 export const allProcessSpecifications = writable([]);
@@ -37,6 +39,10 @@ export function setClient(client: any) {
     clientStored.update(v => client);
 }
 
+export function setClientHC(client: any) {
+    clientHC.update(v => client);
+}
+
 export function setActions(newActions: any) {
     allActions.update(v => newActions);
 }
@@ -46,6 +52,22 @@ export function setAgents(newAgents: any) {
     const roles = newAgents.map((a: any) => a.classifiedAs[2]).flat();
     const uniqueRoles = Array.from(new Set(roles));
     allRoles.update(v => uniqueRoles);
+}
+
+export function addAnAgent(newAgent: any) {
+    allAgents.update(v => {
+        return [newAgent, ...v];
+    });
+    const roles = newAgent.classifiedAs[2];
+    allRoles.update(v => {
+        return [...v, ...roles];
+    });
+}
+
+export function removeAnAgent(agentId: string) {
+    allAgents.update(v => {
+        return v.filter((a: any) => a.id != agentId);
+    });
 }
 
 export function setEconomicEvents(newEconomicEvents: any) {
@@ -69,6 +91,10 @@ export function updateAnAgent(agent: any) {
     });
 }
 
+export function setFacetGroups(newFacetGroups: any) {
+    allFacetGroups.update(v => newFacetGroups);
+}
+
 export function setFacets(newFacets: any) {
     allFacets.update(v => newFacets);
 }
@@ -85,8 +111,9 @@ export function addAUnit(newUnit: any) {
 
 export function updateAUnit(unit: any) {
     allUnits.update(v => {
+        console.log('currentunits', v)
         return v.map((u: any) => {
-            if (u.id == unit.id) {
+            if (u.revisionId == unit.revisionId) {
                 return unit;
             }
             return u;
@@ -120,6 +147,18 @@ export function setCommitments(newCommitments: any) {
 
 export function setAgreements(newAgreements: any) {
     allAgreements.update(v => newAgreements);
+}
+
+export function removeAnAgreement(agreementId: string) {
+    allAgreements.update(v => {
+        return v.filter((a: any) => a.id != agreementId);
+    });
+}
+
+export function addAnAgreement(newAgreement: any) {
+    allAgreements.update(v => {
+        return [newAgreement, ...v];
+    });
 }
 
 export function addToFullPlans(newPlan: any) {

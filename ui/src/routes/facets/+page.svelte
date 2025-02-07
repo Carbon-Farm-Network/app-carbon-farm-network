@@ -2,16 +2,18 @@
   import FacetModal from "./FacetModal.svelte"
   // import allFacetGroups from '$lib/data/facet_groups.json'
   // import facets from '$lib/data/facets.json'
-  import { FACET_GROUP_CORE_FIELDS } from "$lib/graphql/facet.fragments"
   import type { Facet, FacetGroup, FacetParams, FacetGroupParams } from "$lib/graphql/extension-schemas"
   import type { ReadableQuery } from 'svelte-apollo'
   import { mutation, query } from 'svelte-apollo'
   import gql from 'graphql-tag'
   import { onMount } from 'svelte'
   import { addHashChange } from "../../crud/commit"
+  import { getAllFacetGroups } from "../../crud/fetch"
   import { goto } from '$app/navigation';
   import Header from "$lib/Header.svelte"
+  import { allFacetGroups } from "../../crud/store"
   import Export from "$lib/Export.svelte"
+  import { deleteFacet } from "../../crud/commit"
 
   function navigate(location: string) {
     goto(location);
@@ -27,49 +29,54 @@
   let importing: boolean = false;
   let showExport: boolean = false;
 
+  allFacetGroups.subscribe(value => {
+    facetGroups = value
+  })
 
   // DELETE FACET
-  const DELETE_FACET = gql`mutation($revisionId: ID!){
-    deleteFacetOption(revisionId: $revisionId)
-  }`
-  let deleteFacetOption: any = mutation(DELETE_FACET)
+  // const DELETE_FACET = gql`mutation($revisionId: ID!){
+  //   deleteFacetOption(revisionId: $revisionId)
+  // }`
+  // let deleteFacetOption: any = mutation(DELETE_FACET)
 
-  async function deleteFacet(revisionId: string) {
+  async function deleteFacetOption(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this facet?")
     if (areYouSure == true) {
       console.log(revisionId)
-      const res = await deleteFacetOption({ variables: { revisionId } })
-      console.log(res)
+      const res = await deleteFacet( revisionId )
+      // const res = await deleteFacetOption({ variables: { revisionId } })
+      // console.log(res)
       await fetchFacets()
     }
   }
   // DELETE FACET
 
-  const GET_FACET_GROUPS = gql`
-    ${FACET_GROUP_CORE_FIELDS}
-    query GetFacets {
-      facetGroups {
-        ...FacetGroupCoreFields
-      }
-    }
-  `
+  // const GET_FACET_GROUPS = gql`
+  //   ${FACET_GROUP_CORE_FIELDS}
+  //   query GetFacets {
+  //     facetGroups {
+  //       ...FacetGroupCoreFields
+  //     }
+  //   }
+  // `
 
-  interface FacetGroupResponse {
-    facetGroups: FacetGroup[]
-  }
-  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+  // interface FacetGroupResponse {
+  //   facetGroups: FacetGroup[]
+  // }
+  // let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
 
   // let addFacet: any = mutation(CREATE_FACET)
 
   async function fetchFacets() {
-    let y = await queryFacetGroups.refetch()
+    await getAllFacetGroups()
+  //   let y = await queryFacetGroups.refetch()
     let selectedGroupId: String;
     if (currentFacetGroup) {
       selectedGroupId = currentFacetGroup.id;
     } else {
       selectedGroupId = y.data.facetGroups[0].id
     }
-    facetGroups = y.data.facetGroups
+  //   facetGroups = y.data.facetGroups
     currentFacetGroup = facetGroups.find((g) => {return g.id == selectedGroupId})
   }
 
@@ -193,14 +200,14 @@ on:submit={fetchFacets} />
         >Add a facet</button
       >
     </div>
-    <Export dataName="Facets" fileName="cfn-facets" data={facetGroups}
+    <!-- <Export dataName="Facets" fileName="cfn-facets" data={facetGroups}
       bind:importing
       bind:open={showExport}
       on:import={(e) => {
         console.log("importing data", e.detail)
         importData(e.detail)
       }}
-    />
+    /> -->
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -239,8 +246,8 @@ on:submit={fetchFacets} />
           <tbody class="bg-white">
             <!-- Odd row -->
             <!-- {#each facets as {id, name, description, order, values}, index} -->
-            {#if currentFacetGroup && currentFacetGroup.facets}
-            {#each currentFacetGroup.facets as facet, index}
+            {#if currentFacetGroup && currentFacetGroup.facetOptions}
+            {#each currentFacetGroup.facetOptions as facet, index}
             
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
@@ -255,9 +262,9 @@ on:submit={fetchFacets} />
               <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{values.join(", ")}</td
               > -->
-              {#if facet.values}
+              {#if facet.facetValues}
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{facet.values.map((v) => {return v.value}).join(', ')}</td
+                >{facet.facetValues.map((v) => {return v.value}).join(', ')}</td
               >
               {/if}
               <!-- <td
@@ -278,7 +285,7 @@ on:submit={fetchFacets} />
                   >Edit values<span class="sr-only">, Lindsay Walton</span></a
                 >
                 &nbsp;&nbsp;
-                <button on:click={() => {deleteFacet(facet.revisionId)}} type="button" class="text-indigo-600 hover:text-indigo-900"
+                <button on:click={() => {deleteFacetOption(facet.revisionId)}} type="button" class="text-indigo-600 hover:text-indigo-900"
                   >Delete facet<span class="sr-only">, Lindsay Walton</span></button
                 >
               </td>

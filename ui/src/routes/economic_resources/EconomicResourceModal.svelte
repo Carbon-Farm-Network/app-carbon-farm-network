@@ -13,22 +13,32 @@
     export let processSpecifications: ProcessSpecification[] | undefined = undefined
 
     // let stageId = economicResource?.stageId
-    // let trackingIdentifier = economicResource?.trackingIdentifier
+    let trackingIdentifier = economicResource?.trackingIdentifier
     // let name = economicResource?.name
     let note = economicResource?.note
 
-    function saveEconomicResource() {
-      if (!note) {return;}
-      updateEconomicResource({
+    async function saveEconomicResource() {
+      if (!note && !trackingIdentifier) {return;}
+      await updateEconomicResource({
+        id: economicResource?.id,
         revisionId: economicResource?.revisionId,
-        note,
-        // name,
-        // stageId,
-        // trackingIdentifier
+        note: note ? note : economicResource?.note,
+        accountingQuantity: {
+          has_numerical_value: economicResource?.accountingQuantity?.hasNumericalValue,
+          has_unit: economicResource?.accountingQuantity?.hasUnit?.id
+        },
+        onhandQuantity: {
+          has_numerical_value: economicResource?.onhandQuantity?.hasNumericalValue,
+          has_unit: economicResource?.onhandQuantity?.hasUnit?.id
+        },
+        conformsTo: economicResource?.conformsTo?.id,
+        name: economicResource?.name,
+        primaryAccountable: economicResource?.primaryAccountable?.id,
+        trackingIdentifier: trackingIdentifier ? trackingIdentifier : economicResource?.trackingIdentifier,
+        updatedAt: new Date(Date.now())
       })
     }
 </script>
-
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div
       class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
@@ -58,13 +68,14 @@
                             class="block text-sm font-medium leading-6 text-gray-900"
                             >Name</label
                         >
-                        {economicResource?.name}
-                        <!-- <input
+                        <!-- {economicResource?.name} -->
+                        <input
                             id="name"
                             name="name"
                             class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            bind:value={name}
-                        /> -->
+                            value={economicResource?.name}
+                            on:change={(e) => economicResource.name = e.target.value}
+                        />
                     </div>
                     <div>
                       <label
@@ -94,13 +105,14 @@
                             class="block text-sm font-medium leading-6 text-gray-900"
                             >Tracking Identifier</label
                         >
-                        {economicResource?.trackingIdentifier}
-                        <!-- <input
+                        <!-- {economicResource?.trackingIdentifier} -->
+                        <input
                           id="note"
                           name="note"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          bind:value={trackingIdentifier}
-                        /> -->
+                          value={economicResource?.trackingIdentifier}
+                          on:change={(e) => trackingIdentifier = e.target.value}
+                        />
                     </div>
                     <div>
                         <label
@@ -108,7 +120,7 @@
                             class="block text-sm font-medium leading-6 text-gray-900"
                             >Accounting Quantity</label
                         >
-                        {economicResource?.accountingQuantity.hasNumericalValue} {units?.find(u => u.id === economicResource?.accountingQuantity.hasUnitId)?.label}
+                        {economicResource?.accountingQuantity?.hasNumericalValue} {units?.find(u => u.id === economicResource?.accountingQuantity?.hasUnitId)?.label}
                     </div>
                 </div>
             </div>
@@ -123,8 +135,8 @@
             <!-- submit -->
             <button
             type="button"
-            on:click={() => {
-              saveEconomicResource()
+            on:click={async () => {
+              await saveEconomicResource()
               dispatch('submit', { economicResource })
             }}
               class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"

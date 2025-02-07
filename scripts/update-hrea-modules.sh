@@ -31,4 +31,4 @@ for package in "${packages[@]}"; do
 done
 
 # Install dependencies using pnpm
-pnpm install
+npm install

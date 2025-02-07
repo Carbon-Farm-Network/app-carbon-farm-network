@@ -2,8 +2,6 @@
   import { gql } from 'graphql-tag'
   import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@leosprograms/vf-graphql'
   import { createEventDispatcher } from 'svelte';
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '../../lib/graphql/resource_specification.fragments'
-  import { mutation, query } from 'svelte-apollo'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { onMount } from 'svelte'
   import { allUnits } from '../../crud/store';
@@ -29,8 +27,8 @@
   }
 
   onMount(async() => {
-    await getAllUnits()
-    console.log(currentResourceSpecification)
+    // await getAllUnits()
+    console.log(currentResourceSpecification, units)
     window.addEventListener("keydown", checkKey);
   });
 
@@ -49,7 +47,8 @@
     try {
       const res = await createResourceSpecification(resource)
 
-      const identifier = res.data.createResourceSpecification.resourceSpecification.id
+      // const identifier = res.data.createResourceSpecification.resourceSpecification.id
+      const identifier = res.id
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in selectedFacets) {
         console.log(facet)
@@ -79,12 +78,13 @@
       // defaultUnitOfEffort: currentResourceSpecification.defaultUnitOfEffort,
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.image,
+      id: currentResourceSpecification.id,
       revisionId: currentResourceSpecification.revisionId
     }
     try {
       const res = await updateResourceSpecification(resource)
 
-      const identifier = res.data.updateResourceSpecification.resourceSpecification.id
+      const identifier = res.id//.data.updateResourceSpecification.resourceSpecification.id
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in selectedFacets) {
         console.log(facet)
@@ -215,11 +215,7 @@
                   }}
                   >
                   {#each units as unit}
-                    {#if unit.symbol === "lb"}
-                      <option selected value={unit.id}>{unit.label}</option>
-                    {:else if unit.label === "one"}
-                      <option value={unit.id}>{unit.label}</option>
-                    {/if}
+                    <option value={unit.id}>{unit.label}</option>
                   {/each}
                 </select>
 
@@ -359,7 +355,7 @@
         </div> -->
 
         {#if facets && selectedFacets}
-        {#each facets as {id, name, values}}
+        {#each facets as {id, name, facetValues: values}}
           <div class="mt-4 text-left">
             <div>
               <label

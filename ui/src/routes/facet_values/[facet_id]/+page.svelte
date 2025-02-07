@@ -4,16 +4,23 @@
   import { gql } from 'graphql-tag'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
-  import { FACET_GROUP_CORE_FIELDS  } from "$lib/graphql/facet.fragments"
-  import type { ReadableQuery } from 'svelte-apollo'
   import type { Facet, FacetGroup, FacetParams, FacetValue } from "$lib/graphql/extension-schemas"
   import { page } from "$app/stores"
   import { goto } from "$app/navigation"
+  import { allFacetGroups } from "../../../crud/store"
+  import { getAllFacetGroups } from "../../../crud/fetch"
+  import { deleteFacetValue } from "../../../crud/commit"
   let modalOpen = false;
   let selectedId: string;
   let localFacet: Facet;
   let facetValues: any[] = [];
   let currentValue: FacetValue;
+
+  let facetGroups: FacetGroup[] = []
+  allFacetGroups.subscribe(value => {
+    facetGroups = value
+  })
+
   // export let facetId;
 
   // const GET_FACET_VALUES = gql`
@@ -35,44 +42,45 @@
 
 
   // DELETE VALUE
-  const DELETE_VALUE = gql`mutation($revisionId: ID!){
-    deleteFacetValue(revisionId: $revisionId)
-  }`
-  let deleteFacetValue: any = mutation(DELETE_VALUE)
+  // const DELETE_VALUE = gql`mutation($revisionId: ID!){
+  //   deleteFacetValue(revisionId: $revisionId)
+  // }`
+  // let deleteFacetValue: any = mutation(DELETE_VALUE)
 
   async function deleteVal(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this facet value?")
     if (areYouSure == true) {
-      const res = await deleteFacetValue({ variables: { revisionId } })
+      const res = await deleteFacetValue( revisionId )
       console.log(res)
       await fetchValues()
     }
   }
   // DELETE VALUE
 
-  const GET_FACET_GROUPS = gql`
-    ${FACET_GROUP_CORE_FIELDS}
-    query GetFacets {
-      facetGroups {
-        ...FacetGroupCoreFields
-      }
-    }
-  `
-  interface FacetGroupResponse {
-    facetGroups: FacetGroup[]
-  }
-  let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
+  // const GET_FACET_GROUPS = gql`
+  //   ${FACET_GROUP_CORE_FIELDS}
+  //   query GetFacets {
+  //     facetGroups {
+  //       ...FacetGroupCoreFields
+  //     }
+  //   }
+  // `
+  // interface FacetGroupResponse {
+  //   facetGroups: FacetGroup[]
+  // }
+  // let queryFacetGroups: ReadableQuery<FacetGroupResponse> = query(GET_FACET_GROUPS)
 
   async function fetchValues() {
     console.log('starting')
     let facetId = $page.params.facet_id
-    console.log($page.params)
-    await queryFacetGroups.getCurrentResult()
-    let y = await queryFacetGroups.refetch()
-    let facetGroups = y.data.facetGroups
+    console.log(facetId)
+    // await queryFacetGroups.getCurrentResult()
+    // let y = await queryFacetGroups.refetch()
+    // let facetGroups = y.data.facetGroups
+    await getAllFacetGroups()
     for (let facetGroup of facetGroups) {
-        if (facetGroup.facets) {
-          for (let facet of facetGroup.facets) {
+        if (facetGroup.facetOptions) {
+          for (let facet of facetGroup.facetOptions) {
               if (facet.id === facetId) {
                   localFacet = facet
                   currentValue = {value: "", note: "", facetId: localFacet.id, id: "", revisionId: ""}
@@ -80,8 +88,8 @@
           }
         }
     }
-    if (localFacet.values) {
-      facetValues = localFacet.values;
+    if (localFacet.facetValues) {
+      facetValues = localFacet.facetValues;
     }
   }
 

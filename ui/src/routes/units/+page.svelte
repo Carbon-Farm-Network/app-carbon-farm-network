@@ -4,6 +4,7 @@ import Header from "$lib/Header.svelte";
 import UnitModal from "./UnitModal.svelte";
 import Loading from "$lib/Loading.svelte";
 import Export from "$lib/Export.svelte";
+import SvgIcon from "$lib/SvgIcon.svelte";
 import type { Unit } from "@leosprograms/vf-graphql";
 import { getAllUnits } from "../../crud/fetch";
 import { allUnits } from "../../crud/store";
@@ -17,15 +18,24 @@ allUnits.subscribe(value => {
 let selectedUnit: Unit | undefined = undefined;
 let modalOpen = false;
 let loading = false;
+let fetching = false;
 let editing = false;
 let exportOpen = false;
 let importing = false;
 $: selectedUnit, modalOpen, units;
 
+async function refresh() {
+    fetching = true
+    await getAllUnits()
+    fetching = false
+  }
+
 onMount(async () => {
     let loading = units.length === 0;
-    await getAllUnits();
-    loading = false;
+    if (loading) {
+        await getAllUnits();
+        loading = false;
+    }
 });
 
 </script>
@@ -43,9 +53,24 @@ onMount(async () => {
 <div class="p-12">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
+    </div>
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+        <button
+        type="button"
+        disabled={fetching}
+        on:click={refresh}
+        class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          <span class="flex items-center" class:animate-spin={fetching}>
+            <SvgIcon icon="faRefresh" color="#fff" />
+          </span>
+        </button>
       </div>
+
       <!-- add economic event with modal -->
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+      <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
         <button
           type="button"
           on:click={() => {
@@ -60,14 +85,14 @@ onMount(async () => {
           class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >Add a unit</button>
         </div>
-        <Export bind:importing bind:open={exportOpen} dataName="list of Units" fileName="cfn-units" data={units}
+        <!-- <Export bind:importing bind:open={exportOpen} dataName="list of Units" fileName="cfn-units" data={units}
           on:import={async (event) => {
               await importUnits(event.detail);
               await getAllUnits();
               importing = false;
               exportOpen = false;
           }}
-        />
+        /> -->
     </div>
     <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

@@ -6,14 +6,13 @@
   import ErrorPage from './__error.svelte'
   import Search from '$lib/Search.svelte'
   import SidePanel from '$lib/SidePanel.svelte'
-  import type { AgentExtended } from '$lib/graphql/extension-schemas'
-  import { getAllAgents, getAllProposals } from '../crud/fetch'
+  import { getAllAgents, getAllProposals, getAllResourceSpecifications } from '../crud/fetch'
   import { allAgents, allProposals } from '../crud/store'
   import Loading from '$lib/Loading.svelte'
   let loading = false;
   let error: any;
-  let agents: AgentExtended[];
-  let matchedAgents: AgentExtended[];
+  let agents: any[];
+  let matchedAgents: any[];
   let offersList: Proposal[] = [];
   let roleImages = {
     "Farmer": "farm.svg",
@@ -38,7 +37,7 @@
         "name": a.name,
         "imageUrl": a.image,
         "iconUrl": a.classifiedAs[3] || a.image,
-        "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+        "latLng": {lat: JSON.parse(a.classifiedAs[0]), lon: JSON.parse(a.classifiedAs[1])},
         "address": a.note,
         "offers": offersList?.filter((o: Proposal) => (o.publishes || [])
           .filter((pi: ProposedIntent) => !pi.reciprocal && pi.publishes.provider?.id === a.id).length > 0)
@@ -52,9 +51,12 @@
 
   onMount(async () => {
     loading = agents.length === 0
+    await getAllResourceSpecifications()
     await getAllProposals()
     await getAllAgents()
     loading = false
+    console.log("agents", agents)
+    getAllProposals()
     // setInterval(function(){
     //   fetchAgents()
     // }, 20000)

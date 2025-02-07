@@ -158,7 +158,8 @@
                 const res = await createRecipeProcess(recipeProcess)
                 console.log("recipe process 2", res)
                 open = false
-                goto(`/recipes/edit/${encodeURIComponent(res.data.createRecipeProcess.recipeProcess.id)}`)
+                // goto(`/recipes/edit/${encodeURIComponent(res.data.createRecipeProcess.recipeProcess.id)}`)
+                goto(`/recipes/edit/${encodeURIComponent(res.id)}`)
               }}
             >
               Create

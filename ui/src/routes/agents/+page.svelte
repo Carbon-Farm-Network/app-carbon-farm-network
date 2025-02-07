@@ -10,6 +10,7 @@
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
   import Loading from "$lib/Loading.svelte"
+  import SvgIcon from "$lib/SvgIcon.svelte"
 
   let error: any;
   let modalOpen = false;
@@ -22,6 +23,7 @@
   let selectedFacets: any = {};
   let createAgentWrapped: any;
   let loading = false;
+  let fetching = false;
   let importing = false;
   let exportOpen = false;
   let hashChanges: any = {}
@@ -37,8 +39,8 @@
         "name": a.name,
         "imageUrl": a.image,
         "iconUrl": a.classifiedAs[3],// ? a.classifiedAs[3] : a.image,
-        "lat": a.classifiedAs[0],
-        "long": a.classifiedAs[1],
+        "lat": JSON.parse(a.classifiedAs[0]),
+        "long": JSON.parse(a.classifiedAs[1]),
         "role": a.classifiedAs[2],
         "address": a.note,
         "facets": a.facets
@@ -48,8 +50,11 @@
 
   async function fetchFacets() {
     let res = await getAllFacetGroups()
-    let facetGroups = res.data.facetGroups
-    facets = facetGroups.find((g) => {return g.name == "Agent"})?.facets
+    console.log("facet groups", res)
+    let facetGroups = res//res.data.facetGroups
+    console.log("facet groups 2", facetGroups)
+    facets = facetGroups.find((g) => {return g.name == "Agent"})?.facetOptions
+    console.log("facets", facets)
   }
 
   async function deleteAnAgent(revisionId: string) {
@@ -73,7 +78,7 @@
           image: data[i].image,
           classifiedAs: data[i].classifiedAs,
         }
-        let facets = data[i].facets.map((f) => hashChanges[f.id])
+        let facets = data[i].facetOptions.map((f) => hashChanges[f.id])
         console.log(agent)
         let res = await createAgentWrapped(agent, facets)
         console.log(res)
@@ -91,11 +96,20 @@
     }
   }
 
-  onMount(async () => {
-    loading = agents.length == 0
+  async function refresh() {
+    fetching = true
     await getAllAgents();
     await fetchFacets();
-    loading = false;
+    fetching = false
+  }
+
+  onMount(async () => {
+    loading = agents.length == 0 || facets == undefined;
+    if (loading) {
+      await getAllAgents();
+      await fetchFacets();
+      loading = false;
+    }
   })
 
   // reactive data bindings
@@ -121,14 +135,29 @@
         A list of all the people, organizations and ecological agents related to the network.
       </p> -->
     </div>
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => {editing = false; modalOpen = true; currentAgent = {}}}
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an agent</button>
     </div>
-    <Export dataName="list of agents" fileName="cfn-agents" data={agents} 
+    <!-- <Export dataName="list of agents" fileName="cfn-agents" data={agents} 
     bind:open={exportOpen}
     bind:importing
     on:import={async (event) => {
@@ -138,7 +167,7 @@
       // console.log("hi")
       // importData({ variables: { proposals: event.detail } })
     }}
-    />
+    /> -->
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -189,7 +218,8 @@
               >
               {#if facets}
               {#each facets as facet}
-              {@const facetValue = agent.facets.findLast((f) => {return f.facet.id == facet.id})?.value}
+              <!-- {@const facetValue = agent.facets.findLast((f) => {return f.facetId == facet.id})?.value} -->
+              {@const facetValue = agent.facets.findLast((f) => {return f.facetId == facet.id})?.value}
                 <th
                   scope="col"
                   class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
@@ -207,7 +237,7 @@
                   name = agent.name; id = agent.id; currentAgent = agent; editing = true; modalOpen = true;
                   selectedFacets = {};
                   agent.facets.map((f) => {
-                    selectedFacets[f.facet.id] = f.id
+                    selectedFacets[f.facetId] = f.id
                   })
                   }}  class="text-indigo-600 hover:text-indigo-900"
                   >Edit<span class="sr-only">, Lindsay Walton</span></button

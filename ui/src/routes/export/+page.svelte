@@ -2,8 +2,8 @@
     import { onMount } from 'svelte';
     import Header from '$lib/Header.svelte';
     import Loading from '$lib/Loading.svelte';
-    import { allFacets, allFacetValues, allActions, allUnits, allAgents, allProcessSpecifications, allProposals, allResourceSpecifications, allRecipes, allRecipeExchanges, fullPlans, allHashChanges } from '../../crud/store';
-    import { getAllActions, getAllAgents, getAllAgreements, getAllFacetGroups, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits, getAllFullPlans } from '../../crud/fetch';
+    import { allFacets, allFacetValues, allFacetGroups, allActions, allUnits, allAgents, allProcessSpecifications, allProposals, allResourceSpecifications, allRecipes, allRecipeExchanges, fullPlans, allHashChanges } from '../../crud/store';
+    import { getAllActions, getAllAgents, getAllAgreements, getAllFacetGroups, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits, getAllFullPlans, getAllHashChanges } from '../../crud/fetch';
     import { importUnits, importFacets, importAgents, importProcessSpecifications, importPlan, importResourceSpecifications, importProposals, importRecipes, importRecipeExchanges } from '../../crud/import';
     import { goto } from '$app/navigation';
     import { get } from 'svelte/store';
@@ -21,7 +21,7 @@
     $: importFiles;
 
     let exportTypes = [
-        {name: 'Facets', store: allFacets},
+        {name: 'Facets', store: allFacetGroups},
         {name: 'Units', store: allUnits},
         {name: 'Agents', store: allAgents},
         {name: 'Process Specifications', store: allProcessSpecifications},
@@ -46,7 +46,7 @@
             status = 'Retrieving facets...';
             try {
                 await getAllFacetGroups();
-                zip.file('facets.json', JSON.stringify(get(allFacets)));
+                zip.file('facets.json', JSON.stringify(get(allFacetGroups)));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -246,7 +246,7 @@
     }
 
     onMount(async () => {
-        console.log(get(allHashChanges));
+        await getAllHashChanges();
     })
 </script>
 

@@ -1,19 +1,17 @@
 <script lang="ts">
   import OfferModal from './OfferModal.svelte'
-  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { gql } from 'graphql-tag'
   import { onMount } from 'svelte'
-  import { mutation, query } from 'svelte-apollo'
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@leosprograms/vf-graphql'
   import { browser } from '$app/environment'
   import { deleteProposal, deleteIntent, deleteProposedIntent, updateProposal } from '../../crud/commit'
-  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../crud/fetch'
+  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents, getAllActions } from '../../crud/fetch'
   import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../crud/store'
   import { importProposals } from '../../crud/import'
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
   import Loading from '$lib/Loading.svelte'
+  import SvgIcon from '$lib/SvgIcon.svelte'
 
   // externally provided data
   let units: Unit[];
@@ -28,6 +26,7 @@
   let error: any;
   let name = ''
   let loading: boolean = true
+  let fetching: boolean = false
 
   // Export
   let handleSubmit: any;
@@ -69,6 +68,7 @@
   }
 
   allProposals.subscribe((res) => {
+    console.log('allProposals', res)
     offersList = res
     .filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
     .map((p) => {
@@ -151,19 +151,34 @@
         // }
       }
       const res = await deleteProposal(revisionId)
-      await getAllProposals()
+      await refresh()
     }
+  }
+
+  async function refresh() {
+    fetching = true
+    // await getAllUnits()
+    // await getAllActions()
+    // await getAllResourceSpecifications()
+    // await getAllAgents()
+    await getAllProposals()
+    fetching = false
   }
 
   onMount(async () => {
     if (browser) {
       console.log('loading offers', offersList, units, resourceSpecifications, agents)
       loading = offersList.length === 0 //|| units.length === 0 || resourceSpecifications.length === 0 || agents.length === 0
-      await getAllResourceSpecifications()
-      await getAllAgents()
-      await getAllUnits()
-      await getAllProposals()
-      loading = false
+      if (loading) {
+        // await getAllUnits()
+        // await getAllActions()
+        // await getAllResourceSpecifications()
+        // await getAllAgents()
+        await getAllProposals()
+        loading = false
+      }
+
+      console.log('loaded offers', offersList)
     }
   })
 
@@ -180,7 +195,7 @@
 <Loading />
 {/if}
 
-<OfferModal on:submit={getAllProposals} bind:open={modalOpen} bind:handleSubmit bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<OfferModal on:submit={refresh} bind:open={modalOpen} bind:handleSubmit bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -190,8 +205,23 @@
         The goods or services you are offering within the network, now or generally.
       </p> -->
     </div>
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
     {#if agents && resourceSpecifications && units}
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => {
@@ -206,7 +236,8 @@
         >Add an offer</button
       >
     </div>
-    <Export bind:importing bind:open={exportOpen} dataName="list of offers" fileName="cfn-offers"
+
+    <!-- <Export bind:importing bind:open={exportOpen} dataName="list of offers" fileName="cfn-offers"
     data={offersList}
     on:import={async (event) => {
       await importProposals(event.detail)
@@ -214,7 +245,7 @@
       importing = false
       exportOpen = false
     }}
-    />
+    /> -->
     {:else}
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
@@ -264,7 +295,7 @@
             <!-- {#each offers as { proposed_intents }, index} -->
             {#if offersList}
             {#each offersList as p, index}
-              {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
+            {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
               {#if mainIntent && mainIntent.publishes.provider?.name}
               {@const proposedReciprocalIntent = p.publishes?.find(
                 ({ reciprocal }) => reciprocal
@@ -292,36 +323,23 @@
                   {proposedReciprocalIntent?.publishes.resourceConformsTo?.name}
 
                   / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
-                  {availableQuantity.hasUnit?.label}
+                  {resourceQuantity?.hasUnit?.label}
                   <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
                   </td
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <input
                     on:change={(e) => {
-                      if (e.target.checked) {
+                      let proposal = {
+                        id: p.id,
+                        revisionId: p.revisionId,
+                        hasBeginning: p.hasBeginning,
+                        hasEnd: e.target.checked ? null : new Date(),
+                      };
 
-                        let proposal = {
-                          revisionId: p.revisionId,
-                          hasBeginning: p.hasBeginning,
-                          hasEnd: null,
-                        };
+                      updateProposal(proposal);
 
-
-                        updateProposal(proposal);
-
-                        getAllProposals();
-                      } else {
-                        let proposal = {
-                          revisionId: p.revisionId,
-                          hasBeginning: p.hasBeginning,
-                          hasEnd: new Date(),
-                        };
-
-                        updateProposal(proposal);
-
-                        getAllProposals();
-                      }
+                      refresh();
                     }}
                     id="candidates"
                     aria-describedby="candidates-description"
@@ -336,6 +354,7 @@
                 >
                 <button type="button" on:click={() => {
                   currentProposal = {
+                    id: p.id,
                     revisionId: p.revisionId,
                     hasBeginning: p.hasBeginning,
                     note: p.note

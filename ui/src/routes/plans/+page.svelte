@@ -6,6 +6,7 @@
   import { getAllPlans, getPlan } from '../../crud/fetch'
   import { plansList, fullPlans } from '../../crud/store';
   import Loading from '$lib/Loading.svelte'
+  import SvgIcon from '$lib/SvgIcon.svelte'
 
   let plans: any[];
   plansList.subscribe(value => {
@@ -20,6 +21,7 @@
   let exportOpen = false
   let importing = false
   let loading = false
+  let fetching = false
   let deleting = false
 
   async function removePlan(id: string, revisionId: string) {
@@ -129,12 +131,19 @@
     }
   }
 
+  async function refresh() {
+    fetching = true
+    await getAllPlans()
+    fetching = false
+  }
+
   onMount(async () => {
     loading = plans.length == 0
-    await getAllPlans()
-    loading = false
-    console.log('plans', plans)
-    // await fetchProcesses()
+    if (loading) {
+      await getAllPlans()
+      loading = false
+      console.log('plans', plans)
+    }
   })
 
 
@@ -156,7 +165,22 @@
         The goods or services you are offering within the network, now or generally.
       </p> -->
     </div>
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => goto('/plans/new')}

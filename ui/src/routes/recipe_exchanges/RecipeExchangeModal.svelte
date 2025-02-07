@@ -135,7 +135,7 @@
                 const res = await createRecipeExchange(recipeExchange)
                 console.log("recipe exchange 2", res)
                 open = false
-                goto(`/recipe_exchanges/edit/${encodeURIComponent(res.data.createRecipeExchange.recipeExchange.id)}`)
+                goto(`/recipe_exchanges/edit/${encodeURIComponent(res.id)}`)//.data.createRecipeExchange.recipeExchange.id)}`)
               }}
             >
               Create

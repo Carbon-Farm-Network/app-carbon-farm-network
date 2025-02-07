@@ -5,11 +5,12 @@
   import { onMount } from 'svelte'
   import type { FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
   import { createEventDispatcher } from 'svelte';
-  // import { FACET_CORE_FIELDS } from '$lib/graphql/facet.fragments'
+  import { createFacet, createFacetValue } from '../../crud/commit';
   export let open = false
   export let facetGroups: FacetGroup[];
   export let currentFacetGroup: FacetGroup;
   export let currentFacet: any;
+
   let name = ''
   let description = ''
 
@@ -26,45 +27,51 @@
 
   const dispatch = createEventDispatcher();
 
-  const CREATE_FACET = gql`
-    mutation($facet: FacetParams!){
-      putFacet(facet: $facet) {
-        facet {
-          name
-          note
-          id
-          revisionId
-        }
-      }
-    }
-  `
-  const CREATE_VALUE = gql`
-    mutation($facetValue: FacetValueParams!){
-      putFacetValue(facetValue: $facetValue) {
-        facetValue {
-          value
-          note
-          id
-          revisionId
-        }
-      }
-    }
-  `
-  let addFacet: any = mutation(CREATE_FACET)
-  let addValue: any = mutation(CREATE_VALUE)
+  // const CREATE_FACET = gql`
+  //   mutation($facet: FacetParams!){
+  //     putFacet(facet: $facet) {
+  //       facet {
+  //         name
+  //         note
+  //         id
+  //         revisionId
+  //       }
+  //     }
+  //   }
+  // `
+  // const CREATE_VALUE = gql`
+  //   mutation($facetValue: FacetValueParams!){
+  //     putFacetValue(facetValue: $facetValue) {
+  //       facetValue {
+  //         value
+  //         note
+  //         id
+  //         revisionId
+  //       }
+  //     }
+  //   }
+  // `
+  // let addFacet: any = mutation(CREATE_FACET)
+  // let addValue: any = mutation(CREATE_VALUE)
 
   export async function submit(facet, facetGroup) {
-    let groupID: String = facetGroups[0].id
+    // let groupID: String = facetGroups[0].id
 
-    let f = await addFacet({
-      variables: {
-        facet: {
-          name: facet.name,
-          note: facet.note,
-          facetGroupId: facetGroup.id
-        }
-      }
+    let f = await createFacet({
+      name: facet.name,
+      note: facet.note,
+      facetGroupId: facetGroup.id
     })
+
+    // let f = await addFacet({
+    //   variables: {
+    //     facet: {
+    //       name: facet.name,
+    //       note: facet.note,
+    //       facetGroupId: facetGroup.id
+    //     }
+    //   }
+    // })
     console.log(f)
     dispatch("submit")
     open = false

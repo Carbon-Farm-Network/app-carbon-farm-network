@@ -1,27 +1,16 @@
 <script lang="ts">
   import RequestModal from './RequestModal.svelte'
-  // import offers from '$lib/data/offers.json'
-  // import { DateInput } from 'date-picker-svelte'
-  // import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS, PROPOSAL_RETURN_FIELDS } from '$lib/graphql/proposal.fragments'
-  // import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  // import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-  // import type { RelayConn } from '$lib/graphql/helpers'
-  import { gql } from 'graphql-tag'
-  // import type { ReadableQuery } from 'svelte-apollo'
   import { onMount } from 'svelte'
-  import { mutation, query } from 'svelte-apollo'
-  // import { createEventDispatcher } from 'svelte';
   import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@leosprograms/vf-graphql'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
   import { browser } from '$app/environment'
-  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents } from '../../crud/fetch'
+  import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents, getAllActions } from '../../crud/fetch'
+  import { deleteProposal } from '../../crud/commit'
   import { allProposals, allResourceSpecifications, allUnits, allAgents, allHashChanges } from '../../crud/store'
-  import { loop_guard } from 'svelte/internal'
-  import ResourceSpecificationModal from '../resource_specifications/ResourceSpecificationModal.svelte'
   import Header from '$lib/Header.svelte'
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
   import Loading from '$lib/Loading.svelte'
+  import SvgIcon from '$lib/SvgIcon.svelte'
   import { importProposals } from '../../crud/import'
 
   // externally provided data
@@ -37,6 +26,7 @@
   let name = ''
   let error: any;
   let loading = false;
+  let fetching = false;
 
   // Export
   let exportOpen = false;
@@ -63,6 +53,9 @@
   let currentProposedIntent: any = {};
 
   allProposals.subscribe((res) => {
+    console.log("allProposals", res, res
+      .filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
+    )
     requestsList = res
     .filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
     .map((p) => {
@@ -125,29 +118,32 @@
     }
   }
 
-  // DELETE PROPOSAL  
-  const DELETE_PROPOSAL = gql`mutation($revisionId: ID!){
-    deleteProposal(revisionId: $revisionId)
-  }`
-  let deleteProposal: any = mutation(DELETE_PROPOSAL)
-
+  // DELETE PROPOSAL
   async function deleteAProposal(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this request?")
     if (areYouSure == true) {
-      const res = await deleteProposal({ variables: { revisionId } })
-      await getAllProposals()
+      const res = await deleteProposal(revisionId)
+      await refresh()
     }
   }
   // DELETE PROPOSAL ENDS
 
+  async function refresh() {
+    fetching = true
+    await getAllProposals()
+    console.log("requests", requestsList)
+    fetching = false
+  }
+
   onMount(async () => {
     if (browser) {
       loading = requestsList.length == 0
-      await getAllResourceSpecifications()
-      await getAllAgents()
-      await getAllUnits()
-      await getAllProposals()
-      loading = false
+      if (loading) {
+        await getAllProposals()
+        loading = false
+      }
+
+      console.log("requests", requestsList)
     }
   })
 
@@ -165,7 +161,7 @@
     <Loading />
   {/if}
 
-<RequestModal bind:createRequest on:submit={getAllProposals} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
+<RequestModal bind:createRequest on:submit={refresh} bind:open={modalOpen} bind:editing bind:units bind:agents bind:resourceSpecifications bind:currentProposal bind:currentIntent bind:currentReciprocalIntent bind:currentProposedIntent />
 
 <div class="p-12">
   <div class="sm:flex sm:items-center">
@@ -175,8 +171,25 @@
         The goods or services you are offering within the network, now or generally.
       </p> -->
     </div>
+
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
+
     {#if agents && resourceSpecifications && units}
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => {
@@ -191,7 +204,7 @@
         >Add a request</button
       >
     </div>
-    <Export dataName="list of requests" fileName="cfn-requests" 
+    <!-- <Export dataName="list of requests" fileName="cfn-requests" 
       data={requestsList} 
       bind:open={exportOpen}
       bind:importing
@@ -202,7 +215,7 @@
         importing = false
         exportOpen = false
       }}
-      />
+      /> -->
     {:else}
     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
       <button
@@ -251,7 +264,7 @@
                 ...currentReciprocalIntent.resourceQuantity,
                 hasUnit: null,  // previously 'each' in older VF (< 0.6) spec
               }}
-              {#if mainIntent && availableQuantity && resourceQuantity}
+              {#if mainIntent && resourceQuantity}
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
                   {mainIntent.publishes.receiver?.name}
@@ -261,7 +274,7 @@
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
-                  {availableQuantity.hasUnit?.label}
+                  {mainIntent.publishes.resourceQuantity?.hasUnit?.label}
                   <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
                 </td>
 
@@ -270,6 +283,7 @@
                 >
                 <button type="button" on:click={() => {
                   currentProposal = {
+                    id: p.id,
                     revisionId: p.revisionId,
                     hasBeginning: p.hasBeginning,
                     note: p.note

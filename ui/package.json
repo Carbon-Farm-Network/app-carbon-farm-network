@@ -13,15 +13,12 @@
     "format": "prettier --plugin-search-dir . --write ."
   },
   "dependencies": {
-    "@apollo/client": "^3.7.14",
     "@holochain/client": "^0.18.0-dev.13",
     "@lightningrodlabs/we-applet": "^0.17.1",
     "@msgpack/msgpack": "^2.7.2",
     "@tailwindcss/forms": "^0.5.3",
     "@vaadin/date-time-picker": "^23.3.13",
     "@leosprograms/vf-graphql": "^0.9.0-alpha.19",
-    "@leosprograms/graphql-client-holochain": "0.6.39",
-    "@leosprograms/vf-graphql-holochain": "0.6.39",
     "lodash": "^4.17.21",
     "date-picker-svelte": "^2.4.3",
     "dayjs": "^1.11.9",

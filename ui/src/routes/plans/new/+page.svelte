@@ -8,10 +8,11 @@
   import { browser } from '$app/environment'
   import type { Unit, Action, Agent, Proposal, ResourceSpecification, PlanCreateParams } from '@leosprograms/vf-graphql'
   import { allActions, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../crud/store'
-  import { getAllActions, getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits } from '../../../crud/fetch'
+  import { getAllActions, getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits, getAllEconomicResources } from '../../../crud/fetch'
   import { dragscroll } from '@svelte-put/dragscroll';
-  import { allHashChanges, allRecipes, allRecipeExchanges } from '../../../crud/store'
+  import { allHashChanges, allRecipes, allRecipeExchanges, allEconomicResources } from '../../../crud/store'
   import Export from '$lib/Export.svelte'
+  import { cloneDeep } from 'lodash'
   import { createCommitments, makeAgreement, findExchange, assignProviderReceiver, createAgreements, aggregateCommitments, type Process, type Commitment, type Demand } from '../=helper'
   import { importPlan } from '../../../crud/import'
   import { goto } from '$app/navigation'
@@ -20,6 +21,8 @@
   allRecipes.subscribe((res) => {recipes = res})
   let recipeExchanges: any[] = []
   allRecipeExchanges.subscribe((res) => {recipeExchanges = res})
+  let economicResources: any[] = []
+  allEconomicResources.subscribe((res) => {economicResources = res})
 
   let hashChanges: any = {}
   let agents: Agent[] = []
@@ -66,6 +69,7 @@
   allProcessSpecifications.subscribe((res) => {processSpecifications = res})
 
   allProposals.subscribe((res) => {
+    console.log('proposals', res)
     if (!res.length || res.length == 0) return
     let dedupedRes = res.map(it => {
        //dedupe .publishes
@@ -90,23 +94,35 @@
 
   onMount(async () => {
     if (browser) {
-      await getAllActions()
-      await getAllProposals()
-      await getAllHashChanges()
-      await getAllAgents()
-      await getAllUnits()
-      await getAllResourceSpecifications()
-      await getAllProcessSpecifications()
-      await getAllRecipeExchanges()
-      await getAllRecipes()
+
+      let functions = [
+        { array: actions, func: getAllActions },
+        { array: hashChanges, func: getAllHashChanges },
+        { array: agents, func: getAllAgents },
+        { array: units, func: getAllUnits },
+        { array: resourceSpecifications, func: getAllResourceSpecifications },
+        { array: processSpecifications, func: getAllProcessSpecifications },
+        { array: proposalsList, func: getAllProposals },
+        { array: recipeExchanges, func: getAllRecipeExchanges },
+        { array: recipes, func: getAllRecipes },
+        { array: economicResources, func: getAllEconomicResources }
+      ];
+
+      for (let item of functions) {
+        if (item.array.length === 0) {
+          await item.func();
+        }
+      }
+
+      console.log(resourceSpecifications, proposalsList)
     }
   })
 
 
   // ===========================================
-  const previousColumn = column => {
+  const previousColumn = (column: any) => {
     return column
-      .reduce((acc, input) => {
+      .reduce((acc: any, input: any) => {
         if (input.resourceQuantity.hasNumericalValue > 0) {
           // find a recipe that outputs what the demand wants
           // console.log("input", input)
@@ -117,7 +133,7 @@
                   output =>
                     output.resourceConformsTo?.name == input.resourceConformsTo?.name &&
                     a_recipe.processConformsToId == processSpecifications.find(it => it.name == input.stage?.name)?.id
-                )
+                  )
               // } else {
               //   return a_recipe.recipeOutputs.some(
               //     output =>
@@ -134,6 +150,8 @@
           let matching_output = recipe?.recipeOutputs?.find(
             output => output.resourceConformsTo.name == input.resourceConformsTo.name
           )
+
+          // delete revisionId from matching output
           if (matching_output) {
             delete matching_output.revisionId;
           }
@@ -150,9 +168,8 @@
             )
             // delete revisionId from matching input
             if (matching_input) {
-            delete matching_input.revisionId;
+              delete matching_input.revisionId;
             }
-          // console.log("MATCHING INPUT 0", input, recipe, matching_input)
 
           matching_input = assignProviderReceiver(matching_input, agents)
 
@@ -370,12 +387,69 @@
   }
 
   function generateColumns(aggregatedCommitments: any[]): any[] {
-    let count = 0
+    // calculate how much of each resource exists per stage
+    let resourceInventory: any = {}
+    economicResources.forEach(it => {
+      let resourceComboId = it.conformsTo?.id.concat(it.stage?.id)
+      if (resourceComboId) {
+        let onhandQuantity = it.onhandQuantity?.hasNumericalValue
+        let existingQuantity = resourceInventory[resourceComboId]
+        resourceInventory[resourceComboId] = existingQuantity
+          ? existingQuantity + onhandQuantity
+          : onhandQuantity
+      }
+    })
+    console.log("resourceInventory", resourceInventory, economicResources)
+    
+    // subtract inventory from commitments
+    function subtractInventory(processes: any[]): any[] {
+      console.log("subtracting inventory", processes, resourceInventory)
+      return processes.map(process => {
+        return {
+          ...process,
+          committedInputs: process.committedInputs.map(input => {
+            let resourceComboId = input.resourceConformsTo?.id.concat(input.stage?.id)
+            let inventory = resourceInventory[resourceComboId]
+            if (inventory) {
+              let newQuantity = new Decimal(input.resourceQuantity.hasNumericalValue).sub(inventory)
+              console.log("found inventory", inventory, resourceComboId, newQuantity)
+              if (newQuantity.greaterThanOrEqualTo(0)) {
+                resourceInventory[resourceComboId] = newQuantity
+                return {
+                  ...input,
+                  resourceQuantity: {
+                    ...input.resourceQuantity,
+                    hasNumericalValue: newQuantity.toString()
+                  }
+                }
+              } else {
+                resourceInventory[resourceComboId] = 0
+                return {
+                  ...input,
+                  resourceQuantity: {
+                    ...input.resourceQuantity,
+                    hasNumericalValue: '0'
+                  }
+                }
+              }
+            } else {
+              return input
+            }
+          })
+        }
+      })
+    }
+
+    // create first column
     let previousProcesses = previousColumn(aggregatedCommitments)
+    
+    // plan backwards
+    let count = 0
     let allColumnsLocal: any[] = []
-    while (previousProcesses.length != 0 && count < 8) {
+    while (previousProcesses.length != 0 && count < 20) {
       count++
       allColumnsLocal = [previousProcesses, ...allColumnsLocal]
+      previousProcesses = subtractInventory(cloneDeep(previousProcesses))
       previousProcesses = previousColumn(
         previousProcesses
           .flatMap((it: any) => it.committedInputs)
@@ -383,6 +457,7 @@
             return [...acc, process]
           }, [])
       )
+      // previousProcesses = subtractInventory(previousProcesses)
     }
     return allColumnsLocal
   }
@@ -629,7 +704,7 @@ generate columns
                         cost {new Decimal(
                           commitment.resourceQuantity.hasNumericalValue
                         )
-                          .toFixed(2, Decimal.ROUND_HALF_UP)
+                          .toFixed(0, Decimal.ROUND_HALF_UP)
                           .toString()}
                         {commitment.resourceConformsTo.name}
                       </p>
@@ -674,7 +749,7 @@ generate columns
                           cost {new Decimal(
                             commitment.resourceQuantity.hasNumericalValue
                           )
-                            .toFixed(2, Decimal.ROUND_HALF_UP)
+                            .toFixed(0, Decimal.ROUND_HALF_UP)
                             .toString()}
                           {commitment.resourceConformsTo.name}
                         </p>
@@ -691,7 +766,9 @@ generate columns
 
     <div class="min-w-[250px]">
       <h2 class="text-center" style="margin-top: 45px; margin-bottom: 11px;">Total cost: ${
-        totalCost
+        new Decimal(totalCost)
+          .toFixed(0, Decimal.ROUND_HALF_UP)
+          .toString()
         
       }</h2>
       <h2 class="text-center text-xl font-semibold">Satisfy Requests</h2>

@@ -34,7 +34,7 @@ export async function importRecipeExchanges(data: any) {
     }
     console.log(recipeExchangeCreateParams)
     const res = await c.createRecipeExchange(recipeExchangeCreateParams)
-    await c.addHashChange(recipeExchange.id, res.data.createRecipeExchange.recipeExchange.id)
+    await c.addHashChange(recipeExchange.id, res.id)//res.data.createRecipeExchange.recipeExchange.id)
 
     let recipeFlows = [...recipeExchange.recipeClauses, ...recipeExchange.recipeReciprocalClauses]
     const recipeClausesLength = recipeExchange.recipeClauses.length
@@ -63,7 +63,7 @@ export async function importRecipeExchanges(data: any) {
       }
       console.log(recipeFlowCreateParams)
       const res2 = await c.createRecipeFlow(recipeFlowCreateParams)
-      await c.addHashChange(recipeFlow.id, res2.data.createRecipeFlow.recipeFlow.id)
+      await c.addHashChange(recipeFlow.id, res2.id) //.data.createRecipeFlow.recipeFlow.id)
     }
   }
 }
@@ -73,6 +73,10 @@ export async function importRecipes(data: any) {
   for (let i = 0; i < data.length; i++) {
     let recipe = data[i]
     console.log(recipe)
+
+    const foundProcessConformsToHashChange = hashChanges[recipe.processConformsToId]
+    console.log("foundProcessConformsToHashChange", recipe.processConformsToId, foundProcessConformsToHashChange, hashChanges)
+
     let recipeProcessCreateParams: RecipeProcessCreateParams = {
       name: recipe.name,
       note: recipe.note,
@@ -87,7 +91,7 @@ export async function importRecipes(data: any) {
     console.log(recipeProcessCreateParams)
     const res = await c.createRecipeProcess(recipeProcessCreateParams)
     console.log(res)
-    await c.addHashChange(data[i].id, res.data.createRecipeProcess.recipeProcess.id)
+    await c.addHashChange(data[i].id, res.id)//res.data.createRecipeProcess.recipeProcess.id)
     console.log("hash change rec process", hashChanges[data[i].id])
 
     let recipeFlows = [...recipe.recipeInputs, ...recipe.recipeOutputs]
@@ -111,13 +115,13 @@ export async function importRecipes(data: any) {
         state: recipeFlow.state,
       }
       if (j < recipeInputsLength) {
-        recipeFlowCreateParams.recipeInputOf = res.data.createRecipeProcess.recipeProcess.id
+        recipeFlowCreateParams.recipeInputOf = res.id //res.data.createRecipeProcess.recipeProcess.id
       } else {
-        recipeFlowCreateParams.recipeOutputOf = res.data.createRecipeProcess.recipeProcess.id
+        recipeFlowCreateParams.recipeOutputOf = res.id //res.data.createRecipeProcess.recipeProcess.id
       }
       console.log(recipeFlowCreateParams)
       const res2 = await c.createRecipeFlow(recipeFlowCreateParams)
-      await c.addHashChange(recipeFlow.id, res2.data.createRecipeFlow.recipeFlow.id)
+      await c.addHashChange(recipeFlow.id, res2.id) //.data.createRecipeFlow.recipeFlow.id)
     }
   }
 }
@@ -188,7 +192,7 @@ export async function importProposals(data: any) {
     // Create the proposal
     const proposalRes = await c.createProposal(proposal)
     // Add hash change
-    await c.addHashChange(data[i].id, proposalRes.data.createProposal.proposal.id)
+    await c.addHashChange(data[i].id, proposalRes.id)//.data.createProposal.proposal.id)
 
     if (intent) {
       // Create the intent
@@ -198,11 +202,12 @@ export async function importProposals(data: any) {
       const intentRes = await c.createIntent(intent)
       console.log("2", intentRes)
       // Add hash change
-      await c.addHashChange(intent.id, intentRes.data.createIntent.intent.id)
-      console.log("added hash change", intent.id, intentRes.data.createIntent.intent.id)
+      await c.addHashChange(intent.id, intentRes.id)//.data.createIntent.intent.id)
+      console.log("added hash change", intent.id, intentRes.id)//.data.createIntent.intent.id)
       // Create the proposed intent
-      console.log(false, intentRes.data.createIntent.intent.id, proposalRes.data.createProposal.proposal.id)
-      await c.createProposedIntent(false, proposalRes.data.createProposal.proposal.id, intentRes.data.createIntent.intent.id)
+      // console.log(false, intentRes.data.createIntent.intent.id, proposalRes.data.createProposal.proposal.id)
+      await c.createProposedIntent(false, proposalRes.id, intentRes.id)
+      // await c.createProposedIntent(false, proposalRes.data.createProposal.proposal.id, intentRes.data.createIntent.intent.id)
       console.log("created proposed intent")
     }
 
@@ -213,9 +218,10 @@ export async function importProposals(data: any) {
       const recipIntentRes = await c.createIntent(reciprocalIntent)
       console.log("4", recipIntentRes)
       // Add hash change
-      await c.addHashChange(reciprocalIntent.id, recipIntentRes.data.createIntent.intent.id)
+      await c.addHashChange(reciprocalIntent.id, recipIntentRes.id)//.data.createIntent.intent.id)
       // Create the reciprocal proposed intent
-      await c.createProposedIntent(true, proposalRes.data.createProposal.proposal.id, recipIntentRes.data.createIntent.intent.id)
+      await c.createProposedIntent(true, proposalRes.id, recipIntentRes.id)
+      // await c.createProposedIntent(true, proposalRes.data.createProposal.proposal.id, recipIntentRes.data.createIntent.intent.id)
     }    
   }
 }
@@ -224,6 +230,8 @@ export async function importResourceSpecifications(data: any) {
   console.log(data)
   for (let i = 0; i < data.length; i++) {
     const resourceSpecification = data[i]
+    const hashChangeOfDefaultUnit = hashChanges[resourceSpecification.defaultUnitOfResource.id]
+    console.log("hashChangeOfDefaultUnit", resourceSpecification.defaultUnitOfResource.id, hashChangeOfDefaultUnit, hashChanges)
     const resourceSpecificationCreateParams = {
       name: resourceSpecification.name,
       defaultUnitOfResource: hashChanges[resourceSpecification.defaultUnitOfResource.id] ? hashChanges[resourceSpecification.defaultUnitOfResource.id] : resourceSpecification.defaultUnitOfResource.id,
@@ -232,7 +240,7 @@ export async function importResourceSpecifications(data: any) {
     }
 
     const res = await c.createResourceSpecification(resourceSpecificationCreateParams)
-    const identifier = res.data.createResourceSpecification.resourceSpecification.id
+    const identifier = res.id//.data.createResourceSpecification.resourceSpecification.id
     await c.addHashChange(data[i].id, identifier)
     try {
       const selectedFacets = data[i].facets?.map((f: any) => hashChanges[f.id] ? hashChanges[f.id] : f.id)
@@ -263,7 +271,7 @@ export async function importProcessSpecifications(data: any) {
     }
     const res = await c.createProcessSpecification(process)
     console.log(res)
-    await c.addHashChange(data[i].id, res.data.createProcessSpecification.processSpecification.id)
+    await c.addHashChange(data[i].id, res.id)//.data.createProcessSpecification.processSpecification.id)
   }
 }
 
@@ -281,7 +289,8 @@ export async function importAgents(data: any) {
     console.log(agent)
 
     const res = await c.createAgent(agent)
-    const identifier = res.data.createOrganization.agent.id
+    // const identifier = res.data.createOrganization.agent.id
+    const identifier = res.id
     // for each facet in selectedFacets, associate the agent with the selected value
     for (let facet in facets) {
       if (facets[facet] == null) {
@@ -292,8 +301,8 @@ export async function importAgents(data: any) {
     }
 
     console.log(res)
-    console.log("adding hash change", data[i].id, res.data.createOrganization.agent.id)
-    c.addHashChange(data[i].id, res.data.createOrganization.agent.id)
+    console.log("adding hash change", data[i].id, identifier)
+    c.addHashChange(data[i].id, identifier)
   }
 }
 
@@ -306,7 +315,9 @@ export async function importUnits(data: any) {
       omUnitIdentifier: unit.omUnitIdentifier,
     }
     console.log('importUnit', unitCreateParams)
-    await c.createUnit(unitCreateParams)
+    const newUnit = await c.createUnit(unitCreateParams)
+    await c.addHashChange(unit.id, newUnit.id)
+    console.log("added hash change", unit.id, newUnit.id, hashChanges)
   }
 }
 
@@ -323,7 +334,7 @@ export async function importFacets(data: any) {
       // let g = await addFacetGroup(facetGroup)
       // console.log(g)
 
-      let facets = data[i].facets
+      let facets = data[i].facets || data[i].facetOptions
 
       for (let j = 0; j < facets.length; j++) {
         let facet: FacetParams = {
@@ -337,27 +348,27 @@ export async function importFacets(data: any) {
             note: facet.note,
             facetGroupId: facetGroupId
           })
-          console.log(facets[j].id, f.data.putFacet.facet.id)
+          console.log(facets[j].id, f.id)//.data.putFacet.facet.id)
           try {
-            await c.addHashChange(facets[j].id, f.data.putFacet.facet.id)
+            await c.addHashChange(facets[j].id, f.id)//.data.putFacet.facet.id)
           } catch (e) {
             console.log(e)
           }
 
           // add facet values
-          let facetValues = facets[j].values
+          let facetValues = facets[j].values || facets[j].facetValues
           for (let k = 0; k < facetValues.length; k++) {
             let facetValue = {
               value: facetValues[k].value,
               note: facetValues[k].note,
-              facetId: f.data.putFacet.facet.id
+              facetId: f.id//.data.putFacet.facet.id
             }
             console.log(facetValue)
             try {
               let fv = await c.createFacetValue(facetValue)
               console.log(fv)
               try {
-                await c.addHashChange(facetValues[k].id, fv.data.putFacetValue.facetValue.id)
+                await c.addHashChange(facetValues[k].id, fv.id)//.data.putFacetValue.facetValue.id)
               } catch (e) {
                 console.log(e)
               }
@@ -559,14 +570,14 @@ export async function importEconomicEvents(data: any) {
 
     let eventCreateParams: EconomicEventCreateParams = {
       action: event.action.id,
-      provider: hashChanges[event.providerId],// ? hashChanges[event.providerId] : event.providerId,
-      receiver: hashChanges[event.receiverId],// ? hashChanges[event.receiverId] : event.receiverId,
+      provider: hashChanges[event.providerId || event.provider?.id],// ? hashChanges[event.providerId] : event.providerId,
+      receiver: hashChanges[event.receiverId || event.receiver?.id],// ? hashChanges[event.receiverId] : event.receiverId,
       note: event.note,
       hasBeginning: event.hasBeginning ? event.hasBeginning : new Date().toISOString(),
       resourceConformsTo: hashChanges[event.resourceConformsTo.id],// ? hashChanges[event.resourceConformsTo.id] : event.resourceConformsTo.id,
       resourceQuantity: {
         hasNumericalValue: event.resourceQuantity?.hasNumericalValue,
-        hasUnit: units.find((u: any) => u.id.split(":")[0] === event.resourceQuantity?.hasUnitId.split(":")[0])?.id,
+        hasUnit: units.find((u: any) => u.id.split(":")[0] === event.resourceQuantity?.hasUnit?.id.split(":")[0])?.id,
       },
     }
 
@@ -591,14 +602,14 @@ export async function importEconomicEvents(data: any) {
       const res = await c.createEconomicEventWithResource(eventCreateParams, resourceCreateParams)
       createdResources.push(event.resourceInventoriedAs.id)
       console.log("created resource", event.resourceInventoriedAs)
-      createdEventId = res.data.createEconomicEvent.economicEvent.id
+      createdEventId = res.id//.data.createEconomicEvent.economicEvent.id
       await c.addHashChange(event.id, createdEventId)
       // await new Promise(resolve => setTimeout(resolve, 4000))
     } else {
       console.log("already added resource", event.resourceInventoriedAs)
       console.log('importEvent', eventCreateParams)
       const res = await c.createEconomicEvent(eventCreateParams)
-      createdEventId = res.data.createEconomicEvent.economicEvent.id
+      createdEventId = res.id//.data.createEconomicEvent.economicEvent.id
       await c.addHashChange(event.id, createdEventId)
       // await new Promise(resolve => setTimeout(resolve, 4000))
     }

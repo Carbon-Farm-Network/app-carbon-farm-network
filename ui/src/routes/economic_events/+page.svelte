@@ -2,7 +2,7 @@
     import type { EconomicEventCreateParams, Agent, Fulfillment, EconomicResource, EconomicResourceCreateParams }  from '@leosprograms/vf-graphql'
     import Header from "$lib/Header.svelte";
     import { onMount } from "svelte";
-    import { getAllEconomicEvents, getAllEconomicResources, getAllResourceSpecifications, getAllUnits } from "../../crud/fetch";
+    import { getAllAgents, getAllEconomicEvents, getAllEconomicResources, getAllFacetGroups, getAllResourceSpecifications, getAllUnits, getAllActions, getAllProcessSpecifications } from "../../crud/fetch";
     import { allEconomicEvents, allEconomicResources, allFulfillments, allAgents, allUnits, allResourceSpecifications } from "../../crud/store";
     import { importEconomicEvents } from '../../crud/import';
     import EconomicEventModal from './EconomicEventModal.svelte';
@@ -49,10 +49,18 @@
     onMount(async () => {
       loading = economicEvents.length === 0 || units.length === 0 || resourceSpecifications.length === 0;
       console.log(economicEvents.length, units.length, resourceSpecifications.length)
-      await getAllEconomicEvents();
-      await getAllEconomicResources();
+      
       await getAllUnits();
-      await getAllResourceSpecifications();
+      await getAllActions();
+      await getAllFacetGroups();
+      await getAllAgents();
+      const rspecs = await getAllResourceSpecifications();
+      console.log("resourceSpecifications", rspecs)
+      const ecrecs = await getAllEconomicResources();
+      console.log("economicResources", ecrecs)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const ecevs = await getAllEconomicEvents();
+      console.log("economicEvents", ecrecs, ecevs)
       loading = false;
     });
 
@@ -72,21 +80,27 @@
       let produce = economicEvent.action.label == "produce"
       let consume = economicEvent.action.label == "consume"
 
+      console.log(economicEventCreateInput, pickupFromOtherAgent, produce, consume, economicResources)
+
+      console.log("resourceConformsTo", economicEvent.resourceConformsTo.id)
       if (pickupFromOtherAgent || produce || consume) {
-        let matchingResource = economicResources.find(it => it.conformsTo.id == economicEvent.resourceConformsTo.id)
+        let matchingResource = economicResources.find(it => it.conformsTo?.id == economicEvent.resourceConformsTo.id)
+        console.log("matching resource", matchingResource)
         if (matchingResource) {
-          economicEvent.resourceInventoriedAs = matchingResource.id
+          economicEventCreateInput.resourceInventoriedAs = matchingResource.id
         }
       }
 
-      if (!economicEvent?.resourceInventoriedAs && ( pickupFromOtherAgent || produce ) ) {
+      console.log("inventoried as", economicEvent.resourceInventoriedAs)
+
+      if (!economicEventCreateInput?.resourceInventoriedAs && ( pickupFromOtherAgent || produce ) ) {
         console.log("add new economic event and resource", !economicEvent?.resourceInventoriedAs, event)
         let resourceSpecification = resourceSpecifications.find(it => it.id == economicEvent.resourceConformsTo.id)
         let newInventoriedResource: EconomicResourceCreateParams = {
           name: resourceSpecification?.name,
           image: resourceSpecification?.image,
           conformsTo: resourceSpecification?.id,
-          trackingIdentifier: crypto.randomUUID(),
+          trackingIdentifier: null,//crypto.randomUUID(),
         }
 
         const res = await createEconomicEventWithResource(economicEventCreateInput, newInventoriedResource)
@@ -131,7 +145,7 @@
         >Add an event</button>
     </div>
                
-    <Export dataName="Economic Events" fileName="cfn-economic-events" data={{"economicEvents": economicEvents, "fulfillments": fulfillments}} bind:importing bind:open={exportOpen}
+    <!-- <Export dataName="Economic Events" fileName="cfn-economic-events" data={{"economicEvents": economicEvents, "fulfillments": fulfillments}} bind:importing bind:open={exportOpen}
       on:import={async data => {
         console.log("importing", data.detail);
         await importEconomicEvents(data.detail);
@@ -139,7 +153,7 @@
         exportOpen = false;
         await getAllEconomicEvents();
       }} 
-    />
+    /> -->
   </div>
 <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

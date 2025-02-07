@@ -1,14 +1,29 @@
 <script lang="ts">
 import Header from "$lib/Header.svelte";
 import Loading from "$lib/Loading.svelte";
-import { getAllCommitments, getAllUnits, getAllAgreements } from "../../crud/fetch";
-import { allCommitments, allUnits, allAgreements } from "../../crud/store";
+import { getAllCommitments, getAllUnits, getAllAgreements, getAllActions, getAllAgents, getAllResourceSpecifications } from "../../crud/fetch";
+import { allCommitments, allUnits, allAgreements, allActions, allAgents, allResourceSpecifications } from "../../crud/store";
 import { onMount } from "svelte";
 
-// let units: any = [];
-// allUnits.subscribe(value => {
-//   units = value;
-// });
+let units: any = [];
+allUnits.subscribe(value => {
+  units = value;
+});
+
+let actions: any = [];
+allActions.subscribe(value => {
+  actions = value;
+});
+
+let agents: any = [];
+allAgents.subscribe(value => {
+  agents = value;
+});
+
+let resourceSpecifications: any = [];
+allResourceSpecifications.subscribe(value => {
+  resourceSpecifications = value;
+});
 
 let agreements: any = [];
 allAgreements.subscribe(value => {
@@ -25,6 +40,20 @@ let loading: boolean = false;
 onMount(async () => {
   loading = agreements.length === 0;
   console.log("loading", agreements.length, loading);
+
+  let functions = [
+    { array: actions, func: getAllActions },
+    { array: units, func: getAllUnits },
+    { array: agents, func: getAllAgents },
+    { array: resourceSpecifications, func: getAllResourceSpecifications },
+  ];
+
+  for (let item of functions) {
+    if (item.array.length === 0) {
+      await item.func();
+    }
+  }
+
   await getAllAgreements();
   console.log("agreements", agreements);
   loading = false;

@@ -5,13 +5,7 @@
   import gql from 'graphql-tag'
   import type { Unit, AgentConnection, UnitConnection, PlanUpdateParams, PlanCreateParams, CommitmentCreateParams, CommitmentUpdateParams, ProcessCreateParams, ProcessUpdateParams, Commitment } from '@leosprograms/vf-graphql'
   import { createEventDispatcher } from 'svelte';
-  import type { RelayConn } from '$lib/graphql/helpers'
-  import { flattenRelayConnection } from '$lib/graphql/helpers'
-  import { RESOURCE_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/resource_specification.fragments'
-  import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
-  import { AGENT_CORE_FIELDS, PERSON_CORE_FIELDS, ORGANIZATION_CORE_FIELDS } from '$lib/graphql/agent.fragments'
-  import type { ReadableQuery } from 'svelte-apollo'
-  import type { Create } from '@holochain/client'
+  import { createPlan, updatePlan, createProcess, updateProcess, createCommitment, updateCommitment, createAgreement, updateAgreement, deleteCommitment } from '../../crud/commit'
   import { goto } from '$app/navigation'
   
   export let open = false
@@ -43,108 +37,6 @@
     }
   }
 
-  const CREATE_PLAN = gql`
-    mutation($rs: PlanCreateParams!) {
-      res: createPlan(plan: $rs) {
-        plan {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-
-  const UPDATE_PLAN = gql`
-    mutation($rs: PlanUpdateParams!) {
-      res: updatePlan(plan: $rs) {
-        plan {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-
-  const CREATE_PROCESS = gql`
-    mutation($pc: ProcessCreateParams!) {
-      createProcess(process: $pc) {
-        process {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-
-  const UPDATE_PROCESS = gql`
-    mutation($pc: ProcessUpdateParams!) {
-      updateProcess(process: $pc) {
-        process {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-    
-  const CREATE_COMMITMENT = gql`
-    mutation($cm: CommitmentCreateParams!) {
-      createCommitment(commitment: $cm) {
-        commitment {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-
-  const UPDATE_COMMITMENT = gql`
-    mutation($cm: CommitmentUpdateParams!) {
-      updateCommitment(commitment: $cm) {
-        commitment {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-
-  const DELETE_COMMITMENT = gql`mutation($revisionId: ID!){
-    deleteCommitment(revisionId: $revisionId)
-  }`
-
-  const CREATE_AGREEMENT = gql`
-    mutation($ag: AgreementCreateParams!) {
-      createAgreement(agreement: $ag) {
-        agreement {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-
-  const UPDATE_AGREEMENT = gql`
-    mutation($ag: AgreementUpdateParams!) {
-      updateAgreement(agreement: $ag) {
-        agreement {
-          id
-          revisionId
-        }
-      }
-    }
-  `
-
-  let addPlan: any = mutation(CREATE_PLAN)
-  let updatePlan: any = mutation(UPDATE_PLAN)
-  let addProcess: any = mutation(CREATE_PROCESS)
-  let updateProcess: any = mutation(UPDATE_PROCESS)
-  let addCommitment: any = mutation(CREATE_COMMITMENT)
-  let updateCommitment: any = mutation(UPDATE_COMMITMENT)
-  let addAgreement: any = mutation(CREATE_AGREEMENT)
-  let updateAgreement: any = mutation(UPDATE_AGREEMENT)
-  let deleteCommitment: any = mutation(DELETE_COMMITMENT)
-
   async function saveProcess(process: any) {
     console.log(process)
     console.log(processSpecifications)
@@ -154,11 +46,7 @@
       plannedWithin: process.plannedWithin,
       basedOn: processSpecifications.find((rs) => rs.name === process.basedOn.name).id,
     }
-    let p = await addProcess({
-      variables: {
-        pc: processCreateParams
-      }
-    })
+    let p = await createProcess(processCreateParams)
     console.log(p)
     return p
   }
@@ -184,24 +72,17 @@
   async function addOrUpdatePlan(update: boolean) {
     if (update) {
       return await updatePlan({
-        variables: {
-          rs: {
-            revisionId: planObject.revisionId,
-            name: planObject.name,
-            note: planObject.note,
-          }
-        }
+        id: planObject.id,
+        revisionId: planObject.revisionId,
+        name: planObject.name,
+        note: planObject.note,
       })
     } else {
-      return await addPlan({
-        variables: {
-          rs: {
-            name: planObject.name,
-            created: new Date(Date.now()),
-            due: new Date(Date.now()),
-            note: planObject.note,
-          }
-        }
+      return await createPlan({
+        name: planObject.name ? planObject.name : `New Plan ${new Date(Date.now()).toLocaleString()}`,
+        created: new Date(Date.now()),
+        due: new Date(Date.now()),
+        note: planObject.note,
       })
     }   
   }
@@ -211,11 +92,11 @@
       console.log("update process")
       const x = await saveProcessUpdates(process)
       console.log(x)
-      return x.data.updateProcess.process.id
+      return x.id//.data.updateProcess.process.id
     } else {
       console.log("create process")
       const x = await saveProcess(process)
-      return x.data.createProcess.process.id
+      return x.id//.data.createProcess.process.id
     }
   }
 
@@ -280,12 +161,9 @@
       o.action = commitment.action.label
       console.log("adding commitment", o)
       try {
-        const res = await addCommitment({
-          variables: {
-            cm: o
-          }
-        })
+        const res = await createCommitment(o)
         console.log("added commitment", res)
+        return res
         // commitmentsSavedCount++
         // await new Promise(r => setTimeout(r, 100));
       } catch (e) {
@@ -303,11 +181,10 @@
       console.log("updating commitment", com)
       try {
         const res = await updateCommitment({
-          variables: {
             cm: com
-          }
         })
         console.log("updated commitment", res)
+        return res
       } catch (e) {
         console.log(e)
         error = e
@@ -317,6 +194,8 @@
 
   async function handleSubmit() {
     savingPlan = true;
+
+    // ================progress data================
     commitmentsToSaveCount = commitments.length
     for (const column of allColumns) {
       for (const process of column) {
@@ -325,27 +204,36 @@
       }
     }
     commitmentsSavedCount = 0
-    let p = await addOrUpdatePlan(editing)
-    // SAVE INDEPENDENT DEMANDS (commitments with no input or output)
-    console.log("about to save independent demands")
+
+    //================save plan object================
+    let p = await addOrUpdatePlan(false)//editing)
+    let memoryPlan = {
+      ...p,
+      independentDemands : [],
+      processes : [],
+      nonProcessCommitments: [],
+    }
+
+    //================save independent demands================
+    console.log("about to save independent demands", p)
     for (const c of commitments) {
-      console.log("saving c", c)
-      console.log("agents", agents)
       let o = {
         ...c,
         // provider is carbon farm network
         provider: agents.find((a) => a.classifiedAs[2] === "Network").id,
         // reciever is agent for request
-        plannedWithin: p.data.res.plan.id,
+        plannedWithin: p.id,//.data.res.plan.id,
         // references plan with independentDemandOf
-        independentDemandOf: p.data.res.plan.id,
+        independentDemandOf: p.id,//.data.res.plan.id,
         // action is transfer
         action: {
           label: "transfer"
         }
       }
       console.log("trying to add independent", o)
-      await saveOrUpdateCommitment(o)
+      const com = await saveOrUpdateCommitment(o)
+      memoryPlan.independentDemands.push(com)
+      memoryPlan.nonProcessCommitments.push(com)
       commitmentsSavedCount++
       // await new Promise(r => setTimeout(r, 1000));
 
@@ -356,7 +244,7 @@
     for (const column of allColumns) {
       for (const process of column) {
         console.log("process is ... ", process)
-        process.plannedWithin = p.data.res.plan.id
+        process.plannedWithin = p.id//.data.res.plan.id
         // save process
         // wait
         const processId = await saveOrUpdateProcess(process)
@@ -381,26 +269,24 @@
               name: ag.name,
               note: ag.note,
             }
-            const a = await addAgreement({
-              variables: {
+            const a = await createAgreement({
                 ag: agCreateParams
-              }
             })
             console.log("new agreement added", a)
-            agreementId = a.data.createAgreement.agreement.id
-            c.clauseOf = a.data.createAgreement.agreement.id
+            agreementId = a.id//.data.createAgreement.agreement.id
+            c.clauseOf = a.id//.data.createAgreement.agreement.id
 
             // save cost commitment
             const dollars = resourceSpecifications.find((rs) => rs.name === "USD")
             console.log("dollars", dollars)
             let payment: CommitmentCreateParams = {
-              clauseOf: a.data.createAgreement.agreement.id,
+              clauseOf: a.id,//.data.createAgreement.agreement.id,
               action: {
                 label: "transfer"
               },
               provider: c.receiver,
               receiver: c.provider,
-              plannedWithin: p.data.res.plan.id,
+              plannedWithin: p.id,//.data.res.plan.id,
               resourceConformsTo: dollars,
               resourceQuantity: {
                 hasNumericalValue: Number(c.agreement.commitment.resourceQuantity.hasNumericalValue),
@@ -455,7 +341,7 @@
 
           // save primary commitment
           // c.process = x.data.createProcess.process
-          c.plannedWithin = p.data.res.plan.id
+          c.plannedWithin = p.id//.data.res.plan.id
           // console.log(c.process)
           if (c.provider === undefined) {
             c.provider = c.receiver
@@ -539,11 +425,7 @@
     for (const c of commitmentsToDelete) {
       try {
         console.log("deleting commitment", c)
-        await deleteCommitment({
-          variables: {
-            revisionId: c
-          }
-        })
+        await deleteCommitment(c.revisionId)
       } catch (e) {
         console.log("could not delete commitment", e)
       }
@@ -551,9 +433,9 @@
 
     savingPlan = false;
     // goto(`/plans/update/${p.data.res.plan.id}`)
-    console.log("Go To Plan Update Page", encodeURIComponent(p.data.res.plan.id))
-    dispatch('saved', p.data.res.plan.id)
-    goto(`/plans/update/${encodeURIComponent(p.data.res.plan.id)}`)
+    console.log("Go To Plan Update Page", encodeURIComponent(p.id))//.data.res.plan.id))
+    dispatch('saved', p.id)
+    goto(`/plans/update/${encodeURIComponent(p.id)}`)
     open = false
     // dispatch('create', plan)
   }

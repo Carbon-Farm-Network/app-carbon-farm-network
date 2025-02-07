@@ -1,12 +1,12 @@
 import { Decimal } from 'decimal.js'
 
 export function matchingOffer(commitment: any, offers: any[]) {
-  console.log("looking for matching offer", commitment)
+  // console.log("looking for matching offer", commitment)
   return offers.find(offer => {
     return offer?.publishes?.find(
       intent => {
         const offerName = intent.publishes?.resourceConformsTo?.name
-        const correctProvider = commitment.providerId ? (intent.publishes?.provider?.id == commitment.providerId) : true
+        const correctProvider = commitment.providerId ? (intent.publishes?.providerId == commitment.providerId) : true
         const correctProviderRole = commitment.providerRole ? (intent.publishes?.provider?.classifiedAs[2] == commitment.providerRole) : true
         return offerName == commitment.resourceConformsTo.name && correctProvider && correctProviderRole
       }
@@ -29,6 +29,7 @@ export function makeAgreement(
     const reciprocal_intent = matching_offer.publishes.find(
       (intent: any) => intent.reciprocal
     )
+    console.log("reciprocal_intent", reciprocal_intent)
     const primary_intent = matching_offer.publishes.find(
       (intent: any) => !intent.reciprocal
     )

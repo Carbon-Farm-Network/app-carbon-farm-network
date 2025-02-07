@@ -7,11 +7,12 @@
   import type { Facet, FacetGroup } from "$lib/graphql/extension-schemas"
   import Header from "$lib/Header.svelte"
   import Loading from "$lib/Loading.svelte"
+  import SvgIcon from "$lib/SvgIcon.svelte"
   import Export from "$lib/Export.svelte"
   import { addHashChange } from "../../crud/commit"
-  import { getAllResourceSpecifications } from "../../crud/fetch"
+  import { getAllResourceSpecifications, getAllUnits } from "../../crud/fetch"
   import { deleteResourceSpecification } from "../../crud/commit"
-  import { allResourceSpecifications } from "../../crud/store"
+  import { allResourceSpecifications, allFacetGroups } from "../../crud/store"
 
   let modalOpen = false;
   let editing = false;
@@ -20,10 +21,12 @@
   let id = "";
   let currentResourceSpecification: any;
   let units: any[];
+  // let facets: Facet[] | undefined;
   let facets: Facet[] | undefined;
   let selectedFacets: any = {};
   let handleSubmit: any;
   let loading: boolean = false;
+  let fetching: boolean = false;
   let importing: boolean = false;
   let resourceSpecifications: any[]
 
@@ -34,6 +37,11 @@
         defaultUnitOfResourceId: rs.defaultUnitOfResource?.id
       }
     })
+  })
+
+  allFacetGroups.subscribe((value) => {
+    console.log("facet groups", value.find((g) => {return g.name == "Resource Specification"})?.facetOptions)
+    facets = value.find((g) => {return g.name == "Resource Specification"})?.facetOptions
   })
 
   // DELETE RESOURCE SPECIFICATION
@@ -50,11 +58,21 @@
     }
   }
 
+  async function refresh() {
+    fetching = true
+    // await getAllUnits()
+    await getAllResourceSpecifications()
+    fetching = false
+  }
+
   onMount(async () => {
     if (browser) {
       loading = resourceSpecifications.length == 0
-      await getAllResourceSpecifications()
-      loading = false
+      if (loading) {
+        // await getAllUnits()
+        await getAllResourceSpecifications()
+        loading = false
+      }
     }
   })
 
@@ -76,14 +94,29 @@
         The types of resources your network creates, uses, trades; types of work; currencies, tokens.
       </p> -->
     </div>
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => {modalOpen = true; editing = false; currentResourceSpecification = {}}}
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a resource specification</button>
     </div>
-    <Export bind:importing bind:open={exportOpen} dataName="list of Resource Specifications" fileName="cfn-resource-specifications" data={resourceSpecifications}
+    <!-- <Export bind:importing bind:open={exportOpen} dataName="list of Resource Specifications" fileName="cfn-resource-specifications" data={resourceSpecifications}
       on:import={async (event) => {
         for (let i = 0; i < event.detail.length; i++) {
           let newRS = await handleSubmit(event.detail[i])
@@ -94,7 +127,7 @@
         exportOpen = false
         return
       }}
-    />
+    /> -->
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -150,7 +183,7 @@
               > -->
               {#if facets}
               {#each facets as facet}
-              {@const facetValue = resourceSpecification.facets.findLast((f) => {return f.facet.id == facet.id})?.value}
+              {@const facetValue = resourceSpecification.facets?.findLast((f) => {return f.facetId == facet.id})?.value}
                 <th
                   scope="col"
                   class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
@@ -171,7 +204,7 @@
 
                   selectedFacets = {};
                   currentResourceSpecification.facets?.map((f) => {
-                    selectedFacets[f.facet.id] = f.id
+                    selectedFacets[f.facetId] = f.id
                   })
                  
                   }}  class="text-indigo-600 hover:text-indigo-900"

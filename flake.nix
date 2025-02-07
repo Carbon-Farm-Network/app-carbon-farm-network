@@ -27,7 +27,6 @@
           nodejs_20 # For UI development
           binaryen # For WASM optimisation
           pkgs.nodejs-18_x
-          nodePackages.pnpm
           # Add any other packages you need here
         ]);
 

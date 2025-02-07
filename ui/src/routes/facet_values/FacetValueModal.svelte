@@ -7,6 +7,8 @@
   export let currentValue: FacetValue;
   import { onMount, createEventDispatcher } from 'svelte';
   import gql from 'graphql-tag'
+  import { createFacetValue } from '../../crud/commit';
+
   let name = ''
   let description = ''
   let order = 0
@@ -24,32 +26,37 @@
 
   const dispatch = createEventDispatcher();
 
-  const CREATE_VALUE = gql`
-    mutation($facetValue: FacetValueParams!){
-      putFacetValue(facetValue: $facetValue) {
-        facetValue {
-          value
-          note
-          id
-          revisionId
-        }
-      }
-    }
-  `
-  let addValue: any = mutation(CREATE_VALUE)
+  // const CREATE_VALUE = gql`
+  //   mutation($facetValue: FacetValueParams!){
+  //     putFacetValue(facetValue: $facetValue) {
+  //       facetValue {
+  //         value
+  //         note
+  //         id
+  //         revisionId
+  //       }
+  //     }
+  //   }
+  // `
+  // let addValue: any = mutation(CREATE_VALUE)
 
   async function submit() {
     console.log(currentValue)
-    let f = await addValue({
-      variables: {
-        facetValue: {
-          value: currentValue.value,
-          note: currentValue.note,
-          facetId: currentValue.facetId,
-        }
-      }
+    await createFacetValue({
+      value: currentValue.value,
+      note: currentValue.note,
+      facetId: currentValue.facetId,
     })
-    console.log(f)
+    // let f = await addValue({
+    //   variables: {
+    //     facetValue: {
+    //       value: currentValue.value,
+    //       note: currentValue.note,
+    //       facetId: currentValue.facetId,
+    //     }
+    //   }
+    // })
+    // console.log(f)
     dispatch("submit")
     open = false
   }

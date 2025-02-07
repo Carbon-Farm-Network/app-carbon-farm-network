@@ -6,6 +6,7 @@
   import Header from "$lib/Header.svelte"
   import Loading from "$lib/Loading.svelte"
   import Export from "$lib/Export.svelte"
+  import SvgIcon from "$lib/SvgIcon.svelte"
   import { getAllProcessSpecifications } from "../../crud/fetch"
   import { deleteProcessSpecification } from "../../crud/commit"
   import { allProcessSpecifications } from "../../crud/store"
@@ -13,6 +14,7 @@
   let modalOpen: boolean = false;
   let exportOpen: boolean = false;
   let loading: boolean = false;
+  let fetching: boolean = false;
   let editing: boolean = false;
   let name = "";
   let id = "";
@@ -28,12 +30,20 @@
     }
   }
   
+  async function refresh() {
+    fetching = true
+    await getAllProcessSpecifications()
+    fetching = false
+  }
+
   // DELETE PROCESS SPECIFICATION ENDS
   onMount(async () => {
     if (browser) {
       loading = processSpecifications.length == 0
-      await getAllProcessSpecifications()
-      loading = false
+      if (loading) {
+        await getAllProcessSpecifications()
+        loading = false
+      }
     }
   })
 
@@ -65,14 +75,29 @@
         The types of resources your network creates, uses, trades; types of work; currencies, tokens.
       </p> -->
     </div>
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => {modalOpen = true; editing = false; currentProcessSpecification = {};}}
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a process specification</button>
     </div>
-    <Export bind:open={exportOpen} dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications}
+    <!-- <Export bind:open={exportOpen} dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications}
     on:import={async (event) => {
       for (let i = 0; i < event.detail.length; i++) {
         let newPS = await handleSubmit(event.detail[i])
@@ -80,7 +105,7 @@
       }
       exportOpen = false
     }}
-    />
+    /> -->
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

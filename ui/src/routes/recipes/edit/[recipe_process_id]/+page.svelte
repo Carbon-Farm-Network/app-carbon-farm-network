@@ -6,7 +6,7 @@
   import { onMount } from 'svelte'
   import { goto } from '$app/navigation'
   import { page } from '$app/stores';
-  import { allRecipes, allProcessSpecifications, allActions } from '../../../../crud/store'
+  import { allRecipes, allProcessSpecifications, allActions, allUnits, allResourceSpecifications } from '../../../../crud/store'
   import { getAllRecipes, getAllProcessSpecifications, getAllActions, getAllResourceSpecifications, getAllUnits } from '../../../../crud/fetch'
   import { deleteRecipeFlow } from '../../../../crud/commit'
   import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
@@ -14,6 +14,16 @@
   let recipes: any[] = []
   allRecipes.subscribe(value => {
     recipes = value
+  })
+
+  let units: any[] = []
+  allUnits.subscribe(value => {
+    units = value
+  })
+
+  let resourceSpecifications: any[] = []
+  allResourceSpecifications.subscribe(value => {
+    resourceSpecifications = value
   })
 
   let processSpecifications: any[] = []
@@ -61,11 +71,21 @@
   $: recipeProcess = recipes?.find(it => it.id === recipeProcessId)
 
   onMount(async () => {
-    await getAllRecipes()
-    await getAllActions()
-    await getAllProcessSpecifications()
-    await getAllResourceSpecifications()
-    await getAllUnits()
+    let functions = [
+      { array: units, func: getAllUnits },
+      { array: resourceSpecifications, func: getAllResourceSpecifications },
+      { array: actions, func: getAllActions },
+      { array: processSpecifications, func: getAllProcessSpecifications },
+      { array: recipes, func: getAllRecipes },
+    ];
+
+    for (let item of functions) {
+      if (item.array.length === 0) {
+        await item.func();
+      }
+    }
+
+    // await getAllRecipes()
     console.log('recipes', recipes)
     console.log('processSpecifications', processSpecifications)
   })
@@ -120,13 +140,15 @@
             </thead>
             <tbody class="bg-white">
               <!-- {#each offers as { proposed_intents }, index} -->
-              {#each recipeProcess ? recipeProcess?.recipeInputs.map(it => it.resourceConformsTo.name) : [] as inputName, index}
+              {#each recipeProcess ? recipeProcess?.recipeInputs : [] as recipeInput, index}
                 {@const thisRecipeFlow = recipeProcess.recipeInputs[index]}
                 <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                   <td
                     class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
                   >
-                    {inputName}
+                    {recipeInput.action?.id} 
+                    {recipeInput.resourceQuantity?.hasNumericalValue} 
+                    {recipeInput.resourceConformsTo.name}
                   </td>
                   <td
                     class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
@@ -136,6 +158,7 @@
                       on:click={async () => {
                         console.log('thisRecipeFlow', thisRecipeFlow)
                         currentRecipeFlow = {
+                          id: thisRecipeFlow.id,
                           revisionId: thisRecipeFlow.revisionId,
                           instructions: thisRecipeFlow.instructions,
                           note: thisRecipeFlow.note,
@@ -160,7 +183,7 @@
                       on:click={async () => {
                         let prompt = confirm('Are you sure you want to delete this input?')
                         if (prompt) {
-                          await deleteRecipeFlow(thisRecipeFlow?.revisionId)
+                          await deleteRecipeFlow(thisRecipeFlow?.id)
                           await getAllRecipes()
                         }
                       }}
@@ -193,6 +216,7 @@
         type="button"
         on:click={() => {
           currentRecipeProcess = {
+            id: recipeProcess.id,
             revisionId: recipeProcess.revisionId,
             name: recipeProcess.name,
             note: recipeProcess.note,
@@ -243,13 +267,15 @@
               </tr>
             </thead>
             <tbody class="bg-white">
-              {#each recipeProcess ? recipeProcess?.recipeOutputs.map(it => it.resourceConformsTo.name) : [] as outputName, index}
+              {#each recipeProcess ? recipeProcess?.recipeOutputs : [] as recipeOutput, index}
                 {@const thisRecipeFlow = recipeProcess.recipeOutputs[index]}
                 <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                   <td
                     class="whitespace-nowrap py-4 pl-3 pr-3 text-sm text-gray-500"
                   >
-                    {outputName}
+                    {thisRecipeFlow.action?.id} 
+                    {thisRecipeFlow.resourceQuantity?.hasNumericalValue} 
+                    {thisRecipeFlow.resourceConformsTo.name}
                   </td>
                   <td
                     class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
@@ -259,6 +285,7 @@
                       on:click={async () => {
                         console.log('thisRecipeFlow', thisRecipeFlow)
                         currentRecipeFlow = {
+                          id: thisRecipeFlow.id,
                           revisionId: thisRecipeFlow.revisionId,
                           instructions: thisRecipeFlow.instructions,
                           note: thisRecipeFlow.note,
@@ -282,7 +309,7 @@
                       on:click={async () => {
                         let prompt = confirm('Are you sure you want to delete this output?')
                         if (prompt) {
-                          await deleteRecipeFlow(thisRecipeFlow?.revisionId)
+                          await deleteRecipeFlow(thisRecipeFlow?.id)
                           await getAllRecipes()
                         }
                       }}

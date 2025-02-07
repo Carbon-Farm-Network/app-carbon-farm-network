@@ -5,10 +5,11 @@
   import Loading from '$lib/Loading.svelte';
   import { goto } from '$app/navigation'
   import { allRecipeExchanges } from '../../crud/store'
-  import { getAllRecipeExchanges } from '../../crud/fetch';
+  import { getAllRecipeExchanges, getAllProcessSpecifications, getAllResourceSpecifications } from '../../crud/fetch';
   import { deleteRecipeExchange, deleteRecipeFlow } from '../../crud/commit';
   import RecipeExchangeModal from './RecipeExchangeModal.svelte'
   import Export from '$lib/Export.svelte';
+  import SvgIcon from '$lib/SvgIcon.svelte';
 
   let recipeExchanges: any[] = []
   allRecipeExchanges.subscribe(value => {
@@ -24,12 +25,25 @@
   let currentRecipeExchange = {...newRecipeExchange};
 
   let loading: boolean = false
+  let fetching: boolean = false
+
+  async function refresh() {
+    fetching = true
+    await getAllProcessSpecifications()
+    await getAllResourceSpecifications()
+    await getAllRecipeExchanges()
+    fetching = false
+  }
 
   onMount(async () => {
     loading = recipeExchanges.length === 0
-    await getAllRecipeExchanges()
-    console.log("recipe exchanges", recipeExchanges)
-    loading = false
+    if (loading) {
+      await getAllProcessSpecifications()
+      await getAllResourceSpecifications()
+      await getAllRecipeExchanges()
+      console.log("recipe exchanges", recipeExchanges)
+      loading = false
+    }
   })
 </script>
 
@@ -51,7 +65,22 @@
         The goods or services you are offering within the network, now or generally.
       </p> -->
     </div>
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <!-- <button
         type="button"
         on:click={() => goto('/recipes/new')}
@@ -131,12 +160,12 @@
                       console.log('delete', recipe_exchange.id)
                       let recipeClauses = recipe_exchange.Clauses
                       let recipeReciprocalClauses = recipe_exchange.recipeReciprocalClauses
-                      await deleteRecipeExchange(recipe_exchange.revisionId)
+                      await deleteRecipeExchange(recipe_exchange.id)
                       for (let recipeInput of recipeClauses) {
-                        await deleteRecipeFlow(recipeInput.revisionId)
+                        await deleteRecipeFlow(recipeInput.id)
                       }
                       for (let recipeOutput of recipeReciprocalClauses) {
-                        await deleteRecipeFlow(recipeOutput.revisionId)
+                        await deleteRecipeFlow(recipeOutput.id)
                       }
                       await getAllRecipeExchanges()
                     }}

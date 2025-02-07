@@ -70,7 +70,8 @@
   export async function createAgentWrapped(agent: OrganizationCreateParams, facetsToAssociate: string[]) {
     try {
       const res = await createAgent(agent)
-      const identifier = res.data.createOrganization.agent.id
+      // const identifier = res.data.createOrganization.agent.id
+      const identifier = res.id
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in facetsToAssociate) {
         if (facetsToAssociate[facet] == null) {
@@ -80,8 +81,8 @@
         console.log("associate", res2)
       }
 
-      dispatch("submit");
       open = false;
+      dispatch("submit");
       console.log(res)
       return res
     } catch (error) {
@@ -95,9 +96,10 @@
     }
     let agent: OrganizationCreateParams = {
         name: currentAgent.name,
+        agentType: "Organization",
         image: currentAgent.imageUrl,
         note: currentAgent.note,
-        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role, currentAgent.iconUrl],
+        classifiedAs: [JSON.stringify(currentAgent.lat), JSON.stringify(currentAgent.long), currentAgent.role, currentAgent.iconUrl],
 
         // $: name, latitude, longitude, note, logo, type, role, certification;
     }
@@ -110,17 +112,19 @@
     }
     let agent: OrganizationUpdateParams = {
         name: currentAgent.name,
+        agentType: "Organization",
         image: currentAgent.imageUrl,
         note: currentAgent.note,
-        classifiedAs: [currentAgent.lat, currentAgent.long, currentAgent.role, currentAgent.iconUrl],
+        classifiedAs: [JSON.stringify(currentAgent.lat), JSON.stringify(currentAgent.long), currentAgent.role, currentAgent.iconUrl],
+        id: currentAgent.id,
         revisionId: currentAgent.revisionId
     }
     try {
       const res = await updateAgent(agent)
 
-      const identifier = res.data.updateOrganization.agent.id
+      const identifier = res.id//res.data.updateOrganization.agent.id
       // const identifier = currentAgent.id
-      console.log(identifier)
+      console.log("identifier for facet", identifier)
       // for each facet in selectedFacets, associate the agent with the selected value
       for (let facet in selectedFacets) {
         console.log(facet)
@@ -299,7 +303,7 @@
                 >
                 <div class="mt-2">
                   <input
-                    type="text"
+                    type="number"
                     name="latitude"
                     id="latitude"
                     autocomplete="latitude"
@@ -323,7 +327,7 @@
                 >
                 <div class="mt-2">
                   <input
-                    type="text"
+                    type="number"
                     name="longitude"
                     id="longitude"
                     autocomplete="longitude"
@@ -460,12 +464,12 @@
         </div>
 
         {#if facets && selectedFacets}
-        {#each facets as {id, name, values}}
+        {#each facets as {id, name, facetValues: values}}
           <div class="mt-4 text-left">
             <div>
               <label
                 for="type"
-                class="block text-sm font-medium leading-6 text-gray-900"
+                class="block text-sm font-medium leading-6 text-gray-900" 
                 >{name}</label
               >
               <select

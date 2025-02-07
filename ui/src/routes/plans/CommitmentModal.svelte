@@ -3,12 +3,14 @@
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   import type { AgentConnection, Agent, UnitConnection, Action } from '@leosprograms/vf-graphql'
+  import { cloneDeep } from "lodash"
 
   export let open = false
   export let commitmentModalColumn: number | undefined;
   export let commitmentModalProcess: number | undefined;
   export let commitmentModalSide: string | undefined;
   export let selectedCommitmentId: string | undefined
+  export let selectedCommitment: any;
   export let process: any[] | undefined;
   export let independentDemands: any[]
   export let nonProcessCommitments: any[]
@@ -44,8 +46,8 @@
   //   }
   // }
 
-  $: provider = selectedCommitment.providerId ? agents.find(a => a.id == selectedCommitment.providerId) : selectedCommitment.provider
-  $: receiver = selectedCommitment.receiverId ? agents.find(a => a.id == selectedCommitment.receiverId) : selectedCommitment.receiver
+  $: provider = selectedCommitment?.providerId ? agents.find(a => a?.id == selectedCommitment?.providerId) : selectedCommitment?.provider
+  $: receiver = selectedCommitment?.receiverId ? agents.find(a => a?.id == selectedCommitment?.receiverId) : selectedCommitment?.receiver
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
@@ -92,7 +94,7 @@
     finished: false
   }
   let newCommitment = Object.assign({}, newCommitmentTemplate)
-  let selectedCommitment = Object.assign({}, newCommitmentTemplate)
+  selectedCommitment = selectedCommitment || Object.assign({}, newCommitmentTemplate)
   $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide, selectedCommitment, selectedCommitmentId
 
   let previousSelectedCommitmentId: string | undefined;
@@ -101,26 +103,38 @@
       previousSelectedCommitmentId = selectedCommitmentId;
       if (process && selectedCommitmentId && commitmentModalColumn > -1) {
         try {
-          selectedCommitment = JSON.parse(JSON.stringify(process.find(it => it.id == selectedCommitmentId)));
-        } catch (e) {
-          try {
-            // look in clauseOf of process commitments
-            console.log("looking in clauseOf of", process, selectedCommitmentId)
-            let clauseOf = process?.find(it => it?.clauseOf?.commitments?.find(it => it.action.label == "transfer")?.id == selectedCommitmentId);
-            selectedCommitment = clauseOf?.clauseOf?.commitments?.find(it => it.action.label == "transfer");
-            console.log("selected commitment", selectedCommitment)
-          } catch (e) {
-            console.log(e)
+          selectedCommitment = cloneDeep(process.find(it => it.id == selectedCommitmentId));
+          console.log("selected commitment", selectedCommitment)
+
+          if (!selectedCommitment) {
+            try {
+              // look in clauseOf of process commitments
+              console.log("looking in clauseOf of", process, selectedCommitmentId)
+              let clauseOf = process?.find(it => it?.clauseOf?.commitments?.find(it => it.action.label == "transfer")?.id == selectedCommitmentId);
+              const foundPayment = clauseOf?.clauseOf?.commitments?.find(it => it.action.label == "transfer");
+              if (foundPayment) {
+                selectedCommitment = foundPayment
+                console.log("selected commitment", selectedCommitment)
+              } else {
+                selectedCommitment = cloneDeep(nonProcessCommitments.find(it => it.id == selectedCommitmentId));
+              }
+            } catch (e) {
+              console.log(e)
+            }
           }
+        } catch (e) {
+          console.log(e)
         }
 
+      } else if (selectedCommitment) {
+        selectedCommitment = selectedCommitment
       } else if (selectedCommitmentId && commitmentModalColumn == undefined) {
         console.log(independentDemands)
         try {
-          selectedCommitment = JSON.parse(JSON.stringify(independentDemands.find(it => it.id == selectedCommitmentId)));
+          selectedCommitment = cloneDeep(independentDemands.find(it => it.id == selectedCommitmentId));
         } catch (e) {
           try {
-            selectedCommitment = JSON.parse(JSON.stringify(nonProcessCommitments.find(it => it.id == selectedCommitmentId)));
+            selectedCommitment = cloneDeep(nonProcessCommitments.find(it => it.id == selectedCommitmentId));
           } catch (e) {
             console.log(e)
           }
@@ -186,7 +200,6 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Provider</label
                 >
-
                 {#if selectedCommitment?.id && provider}
                   <select
                     id="provider"
@@ -256,6 +269,7 @@
                       let id = e.target.value
                       console.log(id)
                       selectedCommitment.receiverId = id
+                      selectedCommitment.receiver.id = id
                     }}
                     >
                     {#each agents as agent}
@@ -272,6 +286,9 @@
                       let id = e.target.value
                       console.log(id)
                       newCommitment.receiverId = id
+                      newCommitment.receiver = agents.find((rs) => rs.id === id)
+                      selectedCommitment.receiverId = id
+                      selectedCommitment.receiver = agents.find((rs) => rs.id === id)
                       console.log(newCommitment)
                     }}
                     >
@@ -290,7 +307,6 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Resource specification</label
                 >
-                <!-- {JSON.stringify(selectedCommitment)} -->
                 {#if selectedCommitment?.id && selectedCommitment?.resourceConformsTo}
                   <p>{selectedCommitment?.resourceConformsTo.name}</p>
                 {:else if resourceSpecifications}
@@ -425,7 +441,7 @@
                   >Description</label
                 >
                 <div class="mt-2">
-                  {#if selectedCommitment.id}
+                  {#if selectedCommitment?.id}
                     <textarea
                       id="note"
                       name="note"
@@ -445,7 +461,7 @@
                 </div>
 
                 {#if !(selectedCommitment?.resourceConformsTo?.name == 'USD')} <!-- only show finished and save cost checkbox if resource is not USD -->
-                  {#if selectedCommitmentId}
+                  {#if selectedCommitmentId && selectedCommitment?.finished}
                     <div class="mt-4 flex items-center">
                       <input type="checkbox" id="finished" 
                         on:change={(e) => {
@@ -493,14 +509,8 @@
           type="button"
           class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
           on:click={() => {
-            // console.log(JSON.stringify(allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][0].provider.name))
-
-            // let allColumnsCopy = [...allColumns]
-            
-            // plan_created = true;
-
             if (selectedCommitment.clauseOf) {
-              selectedCommitment.clauseOf.commitments = selectedCommitment.clauseOf.commitments.map((c) => {
+              selectedCommitment.clauseOf.commitments = selectedCommitment.clauseOf?.commitments?.map((c) => {
                 return {
                   ...c,
                   provider: selectedCommitment.provider,
@@ -509,6 +519,7 @@
             }
 
             let updatedCommitment = {...selectedCommitment}
+            console.log("updated commitment", updatedCommitment)
             if (!selectedCommitment.providerId) {
               updatedCommitment.providerId = newCommitment.providerId
             }
@@ -534,20 +545,10 @@
             if (!selectedCommitment.note) {
               updatedCommitment.note = newCommitment.note
             }
-
-            if (commitmentModalColumn == undefined) {
-            //   let commitmentIndex = commitments.findIndex(
-            //    it => it.id == selectedCommitmentId
-            //   )
-            //   commitments[commitmentIndex] = selectedCommitment
-            //   commitments = commitments
-            // } else {
-            //   let commitmentIndex = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(
-            //    it => it.id == selectedCommitmentId
-            //   )
-            //   allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide][commitmentIndex] = {...updatedCommitment}
-            //   selectedCommitment = Object.assign({}, newCommitmentTemplate)
+            if (!selectedCommitment.finished) {
+              updatedCommitment.finished = newCommitment.finished
             }
+
             dispatch('submit', {
               column: commitmentModalColumn,
               process: commitmentModalProcess,
@@ -564,18 +565,6 @@
             type="button"
             class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             on:click={() => {
-              // if (commitmentModalColumn == undefined) {
-                // let commitmentIndex = commitments.findIndex(
-                // it => it.id == selectedCommitmentId
-                // )
-                // if (commitmentIndex != -1) {
-                //   commitments[commitmentIndex] = selectedCommitment
-                //   commitments = commitments
-                // } else {
-                //   commitments = [...commitments, newCommitment]
-                //   newCommitment = Object.assign({}, newCommitmentTemplate)
-                // }
-              // } else {
                 if (selectedStage) {
                   newCommitment['stage'] = selectedStage
                 }
@@ -591,12 +580,7 @@
                   useAs: 'new',
                   saveCost: saveCost
                 });
-              // }
 
-              // console.log(JSON.stringify(newCommitment))
-              // console.log(JSON.stringify(newCommitmentTemplate))
-              // newCommitment = {...newCommitmentTemplate}
-              // console.log(JSON.stringify(newCommitment))
               open = false
             }}
           >
@@ -605,7 +589,12 @@
           {/if}
           <button
             type="button"
-            on:click={() => (open = false)}
+            on:click={() => {
+              selectedCommitmentId = undefined
+              selectedCommitment = undefined
+              selectedStage = undefined
+              open = false
+            }}
             class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
             >Cancel</button
           >

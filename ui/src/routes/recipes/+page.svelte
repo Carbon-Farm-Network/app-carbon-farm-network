@@ -5,10 +5,11 @@
   import Loading from '$lib/Loading.svelte';
   import { goto } from '$app/navigation'
   import { allRecipes, allProcessSpecifications, allHashChanges } from '../../crud/store'
-  import { getAllProcessSpecifications, getAllRecipes, getAllHashChanges } from '../../crud/fetch';
+  import { getAllProcessSpecifications, getAllRecipes, getAllHashChanges, getAllResourceSpecifications } from '../../crud/fetch';
   import { deleteRecipeProcess, deleteRecipeFlow, addHashChange, createRecipeProcess, createRecipeFlow } from '../../crud/commit';
   import RecipeProcessModal from './RecipeProcessModal.svelte'
   import Export from '$lib/Export.svelte';
+  import SvgIcon from '$lib/SvgIcon.svelte';
 
   let hashChanges: any = {}
   allHashChanges.subscribe((res) => {
@@ -36,68 +37,27 @@
   };
   let currentRecipeProcess = {...newRecipeProcess};
 
-  async function importData(data: any) {
-    console.log('importing data', data)
-    for (let recipe of data) {
-      let recipeInputs = recipe.recipeInputs
-      let recipeOutputs = recipe.recipeOutputs
-      let recipeProcessRes = await createRecipeProcess(
-        {
-          name: recipe.name,
-          note: recipe.note,
-          processConformsTo: hashChanges[recipe.processConformsToId] ? hashChanges[recipe.processConformsToId] : recipe.processConformsToId,
-        }
-      )
-      console.log('recipeProcessRes', recipeProcessRes)
-      let recipeProcessId = recipeProcessRes.data.createRecipeProcess.recipeProcess.id
-      addHashChange(recipe.revisionId, recipeProcessId)
-      for (let recipeInput of recipeInputs) {
-        let recipeInputRes = await createRecipeFlow({
-          providerRole: recipeInput.providerRole,
-          receiverRole: recipeInput.receiverRole,
-          resourceConformsTo: hashChanges[recipeInput.resourceConformsTo.id] ? hashChanges[recipeInput.resourceConformsTo.id] : recipeInput.resourceConformsTo.id,
-          resourceQuantity: {
-            hasNumericalValue: recipeInput.resourceQuantity.hasNumericalValue,
-            hasUnit: hashChanges[recipeInput.resourceQuantity.hasUnit.id] ? hashChanges[recipeInput.resourceQuantity.hasUnit.id] : recipeInput.resourceQuantity.hasUnit.id,
-          },
-          recipeInputOf: recipeProcessId,
-          stage: hashChanges[recipeInput.stage.id] ? hashChanges[recipeInput.stage.id] : recipeInput.stage.id,
-          action: recipeInput.action.id,
-          instructions: recipeInput.instructions,
-          note: recipeInput.note,
-        })
-        addHashChange(recipeInput.revisionId, recipeInputRes.data.createRecipeFlow.recipeFlow.revisionId)
-      }
-      for (let recipeOutput of recipeOutputs) {
-        let recipeOutputRes = await createRecipeFlow({
-          providerRole: recipeOutput.providerRole,
-          receiverRole: recipeOutput.receiverRole,
-          resourceConformsTo: hashChanges[recipeOutput.resourceConformsTo.id] ? hashChanges[recipeOutput.resourceConformsTo.id] : recipeOutput.resourceConformsTo.id,
-          resourceQuantity: {
-            hasNumericalValue: recipeOutput.resourceQuantity.hasNumericalValue,
-            hasUnit: hashChanges[recipeOutput.resourceQuantity.hasUnit.id] ? hashChanges[recipeOutput.resourceQuantity.hasUnit.id] : recipeOutput.resourceQuantity.hasUnit.id,
-          },
-          recipeOutputOf: recipeProcessId,
-          stage: hashChanges[recipeOutput.stage.id] ? hashChanges[recipeOutput.stage.id] : recipeOutput.stage.id,
-          action: recipeOutput.action.id,
-          instructions: recipeOutput.instructions,
-          note: recipeOutput.note,
-        })
-        addHashChange(recipeOutput.revisionId, recipeOutputRes.data.createRecipeFlow.recipeFlow.revisionId)
-      }
-    }
-    await getAllRecipes()
-  }
-
   let loading: boolean = false
+  let fetching: boolean = false
+
+  async function refresh() {
+    fetching = true
+    await getAllProcessSpecifications()
+    await getAllResourceSpecifications()
+    await getAllRecipes()
+    fetching = false
+  }
 
   onMount(async () => {
     loading = recipes.length === 0 || processSpecifications.length === 0
-    await getAllProcessSpecifications()
-    await getAllRecipes()
-    console.log('recipes', recipes)
-    console.log('processSpecifications', processSpecifications)
-    loading = false
+    if (loading) {
+      await getAllProcessSpecifications()
+      await getAllResourceSpecifications()
+      await getAllRecipes()
+      console.log('recipes', recipes)
+      console.log('processSpecifications', processSpecifications)
+      loading = false
+    }
   })
 </script>
 
@@ -119,7 +79,22 @@
         The goods or services you are offering within the network, now or generally.
       </p> -->
     </div>
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <!-- <button
         type="button"
         on:click={() => goto('/recipes/new')}
@@ -135,14 +110,14 @@
         >Add a recipe</button
       >
     </div>
-    <Export dataName={"list of recipes"} fileName={"recipes"} data={recipes} 
+    <!-- <Export dataName={"list of recipes"} fileName={"recipes"} data={recipes} 
       bind:open={exportOpen}
       bind:importing
       on:import={async (event) => {
         await importData(event.detail)
         exportOpen = false;
       }}
-    />
+    /> -->
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -175,8 +150,11 @@
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
                   >
-                  {#each recipe_process.recipeInputs.map(it => it.resourceConformsTo.name) as inputName}
-                    {inputName}<br />
+                  {#each recipe_process.recipeInputs.map(it => it) as recipeInput}
+                    {recipeInput?.action?.id} 
+                    {recipeInput?.resourceQuantity?.hasNumericalValue} 
+                    {recipeInput?.resourceConformsTo?.name}
+                    <br />
                   {/each}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
@@ -184,8 +162,11 @@
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >
-                  {#each recipe_process.recipeOutputs.map(it => it.resourceConformsTo.name) as outputName}
-                    {outputName}<br />
+                  {#each recipe_process.recipeOutputs.map(it => it) as recipeOutput}
+                    {recipeOutput?.action?.id} 
+                    {recipeOutput?.resourceQuantity?.hasNumericalValue} 
+                    {recipeOutput?.resourceConformsTo?.name}
+                    <br />
                   {/each}
                 </td>
                 <td
@@ -206,12 +187,12 @@
                       console.log('delete', recipe_process.id)
                       let recipeInputs = recipe_process.recipeInputs
                       let recipeOutputs = recipe_process.recipeOutputs
-                      await deleteRecipeProcess(recipe_process.revisionId)
+                      await deleteRecipeProcess(recipe_process.id)
                       for (let recipeInput of recipeInputs) {
-                        await deleteRecipeFlow(recipeInput.revisionId)
+                        await deleteRecipeFlow(recipeInput.id)
                       }
                       for (let recipeOutput of recipeOutputs) {
-                        await deleteRecipeFlow(recipeOutput.revisionId)
+                        await deleteRecipeFlow(recipeOutput.id)
                       }
                       await getAllRecipes()
                     }}

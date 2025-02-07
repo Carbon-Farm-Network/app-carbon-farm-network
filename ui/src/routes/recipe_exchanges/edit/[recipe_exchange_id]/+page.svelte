@@ -6,7 +6,7 @@
   import { onMount } from 'svelte'
   import { goto } from '$app/navigation'
   import { page } from '$app/stores';
-  import { allRecipeExchanges, allProcessSpecifications, allActions } from '../../../../crud/store'
+  import { allRecipeExchanges, allProcessSpecifications, allActions, allUnits, allResourceSpecifications } from '../../../../crud/store'
   import { getAllRecipeExchanges, getAllProcessSpecifications, getAllActions, getAllResourceSpecifications, getAllUnits } from '../../../../crud/fetch'
   import { deleteRecipeFlow } from '../../../../crud/commit'
   import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
@@ -14,6 +14,16 @@
   let recipeExchanges: any[] = []
   allRecipeExchanges.subscribe(value => {
     recipeExchanges = value
+  })
+
+  let units: any[] = []
+  allUnits.subscribe(value => {
+    units = value
+  })
+
+  let resourceSpecifications: any[] = []
+  allResourceSpecifications.subscribe(value => {
+    resourceSpecifications = value
   })
 
   let processSpecifications: any[] = []
@@ -59,11 +69,20 @@
   $: recipeExchange = recipeExchanges?.find(it => it.id === recipeExchangeId)
 
   onMount(async () => {
-    await getAllRecipeExchanges()
-    await getAllActions()
-    await getAllResourceSpecifications()
-    await getAllProcessSpecifications()
-    await getAllUnits()
+    let functions = [
+      { array: units, func: getAllUnits },
+      { array: resourceSpecifications, func: getAllResourceSpecifications },
+      { array: actions, func: getAllActions },
+      { array: processSpecifications, func: getAllProcessSpecifications },
+      { array: recipeExchanges, func: getAllRecipeExchanges },
+    ];
+
+    for (let item of functions) {
+      if (item.array.length === 0) {
+        await item.func();
+      }
+    }
+    
     console.log('recipe exchanges', recipeExchanges)
   })
 </script>
@@ -134,6 +153,7 @@
                       on:click={async () => {
                         console.log('thisRecipeFlow', thisRecipeFlow)
                         currentRecipeFlow = {
+                          id: thisRecipeFlow.id,
                           revisionId: thisRecipeFlow.revisionId,
                           note: thisRecipeFlow.note,
                           providerRole: thisRecipeFlow.providerRole,
@@ -190,6 +210,7 @@
         type="button"
         on:click={() => {
           currentRecipeExchange = {
+            id: recipeExchange.id,
             revisionId: recipeExchange.revisionId,
             name: recipeExchange.name,
             note: recipeExchange.note,
@@ -255,6 +276,7 @@
                       on:click={async () => {
                         console.log('thisRecipeFlow', thisRecipeFlow)
                         currentRecipeFlow = {
+                          id: thisRecipeFlow.id,
                           revisionId: thisRecipeFlow.revisionId,
                           note: thisRecipeFlow.note,
                           action: thisRecipeFlow.action.id,
@@ -277,7 +299,7 @@
                       on:click={async () => {
                         let prompt = confirm('Are you sure you want to delete this output?')
                         if (prompt) {
-                          await deleteRecipeFlow(thisRecipeFlow?.revisionId)
+                          await deleteRecipeFlow(thisRecipeFlow?.id)
                           await getAllRecipeExchanges()
                         }
                       }}

@@ -1,7 +1,5 @@
 <script lang="ts">
   import { DateInput } from 'date-picker-svelte'
-  import { PROPOSAL_CORE_FIELDS, INTENT_CORE_FIELDS, PROPOSED_INTENT_CORE_FIELDS } from '$lib/graphql/proposal.fragments'
-  import { gql } from 'graphql-tag'
   import { clickOutside } from '../../utils'
   import { onMount } from 'svelte'
   import { mutation, query } from 'svelte-apollo'
@@ -24,6 +22,8 @@
   export let editing: boolean;
 
   let currency: string;
+  $: currencyFull = resourceSpecifications?.find((rs) => rs.name === "USD")
+  $: currency = currencyFull?.id
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -61,7 +61,7 @@
         note: "shearing end of May"
       }
       const res1 = await createProposal(proposal);
-      const res1ID: string = String(res1.data.createProposal.proposal.id)
+      const res1ID: string = String(res1.id)//.data.createProposal.proposal.id)
 
       // create intent
       const intent: IntentCreateParams = {
@@ -82,7 +82,7 @@
         intent.resourceQuantity.hasUnit = currentIntent.availableQuantity?.hasUnit
       }
       const res2 = await createIntent(intent)
-      const res2ID = res2.data.createIntent.intent.id
+      const res2ID = res2.id//.data.createIntent.intent.id
       console.log(res2);
 
       if (hashMap) {
@@ -96,13 +96,13 @@
         resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
         resourceQuantity: currentReciprocalIntent.resourceQuantity ? {
           ...parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure),
-          hasUnit: resourceSpecifications.find((rs) => rs.id === currentReciprocalIntent.resourceConformsTo)?.defaultUnitOfResource?.id
+          hasUnit: currencyFull?.defaultUnitOfResource?.id//resourceSpecifications.find((rs) => rs.id === currentReciprocalIntent.resourceConformsTo)?.defaultUnitOfResource?.id
         } : undefined,
       }
       console.log("((((", recipIntent, currentReciprocalIntent)
       const res3 = await createIntent(recipIntent)
       console.log(res3)
-      const res3ID: string = String(res3.data.createIntent.intent.id)
+      const res3ID: string = String(res3.id)//.data.createIntent.intent.id)
 
       if (hashMap) {
         addHashChange(recipIntent.id, res3ID)
@@ -133,9 +133,10 @@
     currentReciprocalIntent.resourceConformsTo = currency
     // console.log(currentProposal)
     let proposal = currentProposal
-    await updateProposal(proposal)
+    const updatedProposal = await updateProposal(proposal)
     // let intent = currentIntent
     let intent = {
+      id: currentIntent.id,
       revisionId: currentIntent.revisionId,
       action: currentIntent.action as string,
       resourceConformsTo: currentIntent.resourceConformsTo || undefined,
@@ -157,16 +158,19 @@
     console.log(res)
 
     let intent2 = {
+      id: currentReciprocalIntent.id,
       receiver: currentIntent.provider,
       revisionId: currentReciprocalIntent.revisionId,
       action: currentReciprocalIntent.action as string,
       resourceConformsTo: currentReciprocalIntent.resourceConformsTo,
+      availableQuantity: currentReciprocalIntent.availableQuantity ? parseFormValues(currentReciprocalIntent.availableQuantity as IMeasure) : undefined,
+      effortQuantity: currentReciprocalIntent.effortQuantity ? parseFormValues(currentReciprocalIntent.effortQuantity as IMeasure) : undefined,
+      // resourceQuantity: currentReciprocalIntent.resourceQuantity ? parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure) : undefined,
       resourceQuantity: currentReciprocalIntent.resourceQuantity ? {
         ...parseFormValues(currentReciprocalIntent.resourceQuantity as IMeasure),
-        hasUnit: resourceSpecifications.find((rs) => rs.id === currentReciprocalIntent.resourceConformsTo)?.defaultUnitOfResource?.id
+        hasUnit: currencyFull?.defaultUnitOfResource
       } : undefined,
     }
-    console.log("___", intent2, currentReciprocalIntent)
     const res2 = await updateIntent(intent2)
     dispatch("submit");
     console.log(res2)
@@ -179,7 +183,7 @@
   // })
 
   $: currentProposal, currentIntent, currentReciprocalIntent, currentProposedIntent, submitting, currency
-  $: isOfferValid = true && !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo; // && currentIntent.note;
+  $: isOfferValid = !submitting && currentProposal.hasBeginning && currentIntent && currentIntent.provider && currentIntent.resourceConformsTo && currentIntent.resourceQuantity?.hasNumericalValue && currency && currentIntent.availableQuantity?.hasUnit && currency
 </script>
 
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
