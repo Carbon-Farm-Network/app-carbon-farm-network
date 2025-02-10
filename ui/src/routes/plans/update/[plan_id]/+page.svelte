@@ -53,7 +53,9 @@
   let selectedStage: string | undefined = undefined;
   let recipes: any[] = []
   let planForwardModalOpen = false;
+  let carryOver: any = {}
   let forwardSuggestions: any = {}
+  let resourceInventory: any = {}
   let zoomLevel: string = "1";
   $: zoomLevel;
 
@@ -165,14 +167,18 @@
     let flattenedOutputs = column.map(it => it.committedOutputs).flat()
     // create list of all output resource specifications with summed quantities
     let outputsCombined = flattenedOutputs.reduce((acc, output) => {
-      if (acc[output.resourceConformsTo.id]) {
-        acc[output.resourceConformsTo.id] = new Decimal(output.resourceQuantity.hasNumericalValue).plus(new Decimal(acc[output.resourceConformsTo.id]))
-      } else {
-        acc[output.resourceConformsTo.id] = output.resourceQuantity.hasNumericalValue
-      }
+      acc[output.resourceConformsTo.id] = new Decimal(carryOver[column[0].basedOn.id]?.[output.resourceConformsTo.id]?.provided)
+
+      // TODO: decide if this is a better way of aggregating outputs, as opposed to using the pre-calculated carryOver.provided
+      // if (acc[output.resourceConformsTo.id]) {
+      //   acc[output.resourceConformsTo.id] = new Decimal(output.resourceQuantity.hasNumericalValue).plus(new Decimal(acc[output.resourceConformsTo.id]))
+      // } else {
+      //   acc[output.resourceConformsTo.id] = output.resourceQuantity.hasNumericalValue
+      // }
       
       return acc
     }, {})
+    // const totalForResource = new Decimal(carryOver[column[0].basedOn.id]?.[flattenedOutputs[0]?.resourceConformsTo.id]?.provided)
 
     let flattenedInputs = nextColumn.map(it => it.committedInputs).flat()
     let inputsCombined = flattenedInputs.reduce((acc, input) => {
@@ -464,8 +470,22 @@
 
   export async function buildPlan() {
     let lastSeenProcessSpecification: any = undefined;
-    let lastLastSeenProcessSpecification: any = undefined;
+    let finalLastSeenProcessSpecification: any = undefined;
     let lastColumn: any = []
+
+    resourceInventory = {}
+    economicResources.forEach(it => {
+      let resourceComboId = it.conformsTo?.id.concat(it.stage?.id)
+      if (resourceComboId) {
+        let onhandQuantity = it.onhandQuantity?.hasNumericalValue
+        let existingQuantity = resourceInventory[resourceComboId]
+        resourceInventory[resourceComboId] = existingQuantity
+          ? existingQuantity + onhandQuantity
+          : onhandQuantity
+      }
+    })
+
+    carryOver = {}
     requestsPerOffer = {}
     allColumns = []
 
@@ -492,12 +512,36 @@
           committedOutputs: [...process.committedOutputs].sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()),
         }
 
+        // make sure carryOver has a key for this process
+        if (!carryOver[process.basedOn.id]) { carryOver[process.basedOn.id] = {}; }
+        if (!carryOver[lastSeenProcessSpecification]) { carryOver[lastSeenProcessSpecification] = {}; }
+
         for (const commitment of process.committedOutputs) {
           await includeCommitment(commitment)
+          // add provided quantity to carryOver
+          if (process.basedOn.id) {
+            if (!carryOver[process.basedOn.id][commitment?.resourceConformsTo?.id]) {
+              const inventoryId = commitment?.resourceConformsTo?.id.concat(process.basedOn.id)
+              const inventoryProvided = resourceInventory[inventoryId] || 0
+              resourceInventory[inventoryId] -= inventoryProvided
+              carryOver[process.basedOn.id][commitment?.resourceConformsTo?.id] = {provided: inventoryProvided, received: 0, proSpec: processSpecifications.find(it => it.id == process.basedOn.id)?.name, rSpec: commitment?.resourceConformsTo?.name};
+            }
+            carryOver[process.basedOn.id][commitment?.resourceConformsTo?.id].provided += Number(commitment?.resourceQuantity?.hasNumericalValue)
+          }
         }
 
         for (const commitment of process.committedInputs) {
           await includeCommitment(commitment)
+          // add received quantity to carryOver
+          if (lastSeenProcessSpecification) {
+            if (!carryOver[lastSeenProcessSpecification][commitment?.resourceConformsTo?.id]) {
+              const inventoryId = commitment?.resourceConformsTo?.id.concat(lastSeenProcessSpecification)
+              const inventoryProvided = resourceInventory[inventoryId] || 0
+              resourceInventory[inventoryId] -= inventoryProvided
+              carryOver[lastSeenProcessSpecification][commitment?.resourceConformsTo?.id] = {provided: inventoryProvided, received: 0, proSpec: processSpecifications.find(it => it.id == lastSeenProcessSpecification)?.name , rSpec: commitment?.resourceConformsTo?.name};
+            }
+            carryOver[lastSeenProcessSpecification][commitment?.resourceConformsTo?.id].received += Number(commitment?.resourceQuantity?.hasNumericalValue)
+          }
         }
 
         // if this is a new process
@@ -513,12 +557,12 @@
           lastColumn.push(newProcess)
         }
 
-        if (process.basedOn.id !== lastLastSeenProcessSpecification) {
+        if (process.basedOn.id !== finalLastSeenProcessSpecification) {
           allColumns.push(lastColumn)
         } else {
           // console.log("SAME PROCESS", process.basedOn.name, lastSeenProcessSpecification)
         }
-        lastLastSeenProcessSpecification = process.basedOn.id
+        finalLastSeenProcessSpecification = process.basedOn.id
         loadingPlan = false;
         allColumns = [...allColumns]
       }
@@ -614,7 +658,7 @@
         { array: recipes, func: getAllRecipes },
         { array: offers, func: getAllProposals },
         { array: fulfillments, func: getFulfillments },
-        // { array: economicResources, func: getAllEconomicResources },
+        { array: economicResources, func: getAllEconomicResources },
       ];
 
       fetching = true
@@ -1177,8 +1221,7 @@ bind:open={economicEventModalOpen}
       <img class="mx-auto" height="80px" width="80px" src={image} alt="" />
       <h2 class="text-center text-xl font-semibold">{name}</h2>
       
-      {#each processes as { committedInputs, committedOutputs }, processIndex}
-
+      {#each processes as { committedInputs, committedOutputs, id: processId, basedOn: proSpec }, processIndex}        
         <!-- <div class="bg-gray-400 border border-gray-400 p-2"> -->
         <div class="border-gray-400 p-2" style="background-color: #BFBFBF;">
           <!-- Sub-columns -->
@@ -1381,31 +1424,6 @@ bind:open={economicEventModalOpen}
                         <EconomicEvent/>
                       </button>
                     {/if}
-                    <!-- <button
-                    style="margin-left: 20px;"
-                      on:click={async () => {
-                        // make commitment clauseOf null
-                        await updateCommitment({
-                          revisionId: revisionId,
-                          clauseOf: null
-                        })
-                      }}
-                    >
-                      ####
-                    </button>
-                    <button
-                    style="margin-left: 20px;"
-                      on:click={async () => {
-                        // make commitment clauseOf normal
-                        await updateCommitment({
-                          revisionId: revisionId,
-                          clauseOf: clauseOf.id
-                        })
-                      }}
-                    >
-                      ****
-                    </button> -->
-
                     </div>
                   </div>
 
@@ -1549,6 +1567,8 @@ bind:open={economicEventModalOpen}
 
                 {#each committedOutputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
                 {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
+                {@const carryOverInfo = carryOver[proSpec?.id]?.[resourceConformsTo?.id]}
+                {@const carryOverDiff = carryOverInfo?.received - carryOverInfo?.provided}
                 <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                     style="background-color: {color};
@@ -1566,7 +1586,6 @@ bind:open={economicEventModalOpen}
                       -->
                         <p>
                           {action.label}
-
                           <strong>
                             {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
                               {sumEconomicEventsFromFulfillments(fulfilledBy)}
@@ -1594,6 +1613,7 @@ bind:open={economicEventModalOpen}
                             {/if}
                           </strong>
                         </p>
+
                         <!--
                       <p>
                         {demand_driven_quantity?.hasNumericalValue}
@@ -1601,6 +1621,14 @@ bind:open={economicEventModalOpen}
                       </p>
                       -->
                       </div>
+                      
+                        <!-- If carryover, show how much is requested -->
+                        {#if carryOverDiff > 0}
+                          <p style="color: red;">
+                            {Math.abs(carryOverDiff)} {resourceQuantity?.hasUnit?.label} deficit
+                          </p>
+                        {/if}
+
                       <p>
                         from 
                         {#each agents as agent}
