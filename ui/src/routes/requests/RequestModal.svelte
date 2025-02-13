@@ -422,11 +422,12 @@
                 >
                 {#if units}
                 {#each units as unit}
-                  {#if unit.label === "pound"}
+                  <option value={unit.id}>{unit.label}</option>
+                  <!-- {#if unit.label === "pound"}
                     <option selected value={unit.id}>Pound</option>
                   {:else if unit.label === "one"}
                     <option value={unit.id}>Each</option>
-                  {/if}
+                  {/if} -->
                 {/each}
                 {/if}
                   <!-- <option selected>lb</option> -->

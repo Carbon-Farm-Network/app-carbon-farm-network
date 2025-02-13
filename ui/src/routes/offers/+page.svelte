@@ -320,7 +320,8 @@
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >{resourceQuantity.hasNumericalValue}
-                  {proposedReciprocalIntent?.publishes.resourceConformsTo?.name}
+                  {mainIntent?.publishes.resourceQuantity?.hasUnit?.label}
+                  <!-- {JSON.stringify(proposedReciprocalIntent?.publishes.resourceQuantity?.hasUnit)} -->
 
                   / {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
                   {resourceQuantity?.hasUnit?.label}

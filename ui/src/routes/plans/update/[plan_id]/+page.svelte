@@ -469,13 +469,15 @@
   }
 
   export async function buildPlan() {
+    let lastColumnProcSpec: any = undefined;
     let lastSeenProcessSpecification: any = undefined;
     let finalLastSeenProcessSpecification: any = undefined;
     let lastColumn: any = []
 
     resourceInventory = {}
     economicResources.forEach(it => {
-      let resourceComboId = it.conformsTo?.id.concat(it.stage?.id)
+      let resourceComboId = it.conformsTo?.id.concat("____").concat(it.stage?.id)
+      console.log("inventory id 0", resourceComboId)
       if (resourceComboId) {
         let onhandQuantity = it.onhandQuantity?.hasNumericalValue
         let existingQuantity = resourceInventory[resourceComboId]
@@ -514,17 +516,17 @@
 
         // make sure carryOver has a key for this process
         if (!carryOver[process.basedOn.id]) { carryOver[process.basedOn.id] = {}; }
-        if (!carryOver[lastSeenProcessSpecification]) { carryOver[lastSeenProcessSpecification] = {}; }
+        if (!carryOver[lastColumnProcSpec]) { carryOver[lastColumnProcSpec] = {}; }
 
         for (const commitment of process.committedOutputs) {
           await includeCommitment(commitment)
           // add provided quantity to carryOver
           if (process.basedOn.id) {
             if (!carryOver[process.basedOn.id][commitment?.resourceConformsTo?.id]) {
-              const inventoryId = commitment?.resourceConformsTo?.id.concat(process.basedOn.id)
+              const inventoryId = commitment?.resourceConformsTo?.id.concat("____").concat(process.basedOn.id)
               const inventoryProvided = resourceInventory[inventoryId] || 0
               resourceInventory[inventoryId] -= inventoryProvided
-              carryOver[process.basedOn.id][commitment?.resourceConformsTo?.id] = {provided: inventoryProvided, received: 0, proSpec: processSpecifications.find(it => it.id == process.basedOn.id)?.name, rSpec: commitment?.resourceConformsTo?.name};
+              carryOver[process.basedOn.id][commitment?.resourceConformsTo?.id] = {provided: inventoryProvided, fromInventory: inventoryProvided, received: 0, proSpec: processSpecifications.find(it => it.id == process.basedOn.id)?.name, rSpec: commitment?.resourceConformsTo?.name};
             }
             carryOver[process.basedOn.id][commitment?.resourceConformsTo?.id].provided += Number(commitment?.resourceQuantity?.hasNumericalValue)
           }
@@ -533,25 +535,33 @@
         for (const commitment of process.committedInputs) {
           await includeCommitment(commitment)
           // add received quantity to carryOver
-          if (lastSeenProcessSpecification) {
-            if (!carryOver[lastSeenProcessSpecification][commitment?.resourceConformsTo?.id]) {
-              const inventoryId = commitment?.resourceConformsTo?.id.concat(lastSeenProcessSpecification)
+          // const lastColumnProcSpec = lastColumn[0]?.basedOn?.id
+
+          if (process.basedOn.id !== lastSeenProcessSpecification) {
+            lastColumnProcSpec = lastSeenProcessSpecification
+          }
+
+          if (lastColumnProcSpec) {
+            if (!carryOver[lastColumnProcSpec][commitment?.resourceConformsTo?.id]) {
+              const inventoryId = commitment?.resourceConformsTo?.id.concat("____").concat(lastColumnProcSpec)
               const inventoryProvided = resourceInventory[inventoryId] || 0
               resourceInventory[inventoryId] -= inventoryProvided
-              carryOver[lastSeenProcessSpecification][commitment?.resourceConformsTo?.id] = {provided: inventoryProvided, received: 0, proSpec: processSpecifications.find(it => it.id == lastSeenProcessSpecification)?.name , rSpec: commitment?.resourceConformsTo?.name};
+              carryOver[lastColumnProcSpec][commitment?.resourceConformsTo?.id] = {provided: inventoryProvided, fromInventory: inventoryProvided, received: 0, proSpec: processSpecifications.find(it => it.id == lastColumnProcSpec)?.name , rSpec: commitment?.resourceConformsTo?.name};
             }
-            carryOver[lastSeenProcessSpecification][commitment?.resourceConformsTo?.id].received += Number(commitment?.resourceQuantity?.hasNumericalValue)
+
+            carryOver[lastColumnProcSpec][commitment?.resourceConformsTo?.id].received += Number(commitment?.resourceQuantity?.hasNumericalValue)
           }
         }
 
         // if this is a new process
         if (process.basedOn.id !== lastSeenProcessSpecification) {
           // add last column to allColumns and reset
-          if (lastColumn.length > 0) {
-            lastColumn = [newProcess]
-          } else {
-            lastColumn.push(newProcess)
-          }
+          // if (lastColumn.length > 0) {
+          //   lastColumn = [newProcess]
+          // } else {
+          //   lastColumn.push(newProcess)
+          // }
+          lastColumn = [newProcess]
           lastSeenProcessSpecification = process.basedOn.id
         } else {
           lastColumn.push(newProcess)
@@ -833,9 +843,9 @@ bind:open={economicEventModalOpen}
         if (previousCostAgreement) {
           console.log("deleting 1", previousCostAgreement.id)
           if (previousCostAgreement.id) { await deleteAgreement(previousCostAgreement.id) }
-          const commitmentId = previousCostAgreement.commitments?.find(it => it.action.label == "transfer")?.id
-          console.log("deleting 2", commitmentId)
-          if (commitmentId) { await deleteCommitment(commitmentId) }
+          const paymentId = previousCostAgreement.commitments?.find(it => it.id != event.detail.commitment.id)?.id
+          console.log("deleting 2", paymentId)
+          if (paymentId) { await deleteCommitment(paymentId) }
           
           previousCostAgreement.recipeReciprocalClauses = previousCostAgreement.commitments
         }
@@ -854,7 +864,7 @@ bind:open={economicEventModalOpen}
           }
         }
 
-        // add cost to commitment visually
+        // add cost to commitment
         console.log("new cost agreement", newCostAgreement)
         if (newCostAgreement) {
           event.detail.commitment.clauseOf = {commitments: [newCostAgreement.commitment]}
@@ -897,7 +907,7 @@ bind:open={economicEventModalOpen}
           let savedPaymentCommitment = await createCommitment(paymentCommitment)
         }
       } catch (e) {
-        console.log("Couldn't find cost", e)
+        console.log("Couldn't save cost", e)
       }
     }
     // =============================ON SAVE COST CHECKED ENDS=============================
@@ -1265,6 +1275,10 @@ bind:open={economicEventModalOpen}
 
                 {#each committedInputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf, meta }}
                   {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
+                  {@const prevProcSpec = allColumns[columnIndex - 1]?.[0]?.basedOn?.id}
+                  {@const carryOverInfo = carryOver[prevProcSpec]?.[resourceConformsTo?.id]}
+                  <!-- {JSON.stringify(prevProcSpec)} -->
+                   <!-- {JSON.stringify(processes.length)} -->
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                     style="background-color: {color};
@@ -1310,7 +1324,11 @@ bind:open={economicEventModalOpen}
                       </p>
                       -->
                     </div>
-                  
+                    {#if carryOverInfo?.fromInventory > 0}
+                      <p style="white-space: pre-wrap; word-wrap: break-word; color: green;">
+                        {carryOverInfo?.fromInventory} {resourceQuantity?.hasUnit?.label} in inventory
+                      </p>
+                    {/if}
                     <p>
                       from 
                       {#each agents as agent}
@@ -2238,7 +2256,7 @@ bind:open={economicEventModalOpen}
                     {primary?.publishes?.action?.label}
                     <strong>
                       {primary?.publishes?.resourceQuantity?.hasNumericalValue}
-                      {primary?.publishes?.availableQuantity?.hasUnit?.label}<br>
+                      {primary?.publishes?.resourceQuantity?.hasUnit?.label}<br>
                     </strong>
                     <!-- {#each units as unit}
                       {#if unit.id == primary?.publishes?.resourceQuantity?.hasUnitId}

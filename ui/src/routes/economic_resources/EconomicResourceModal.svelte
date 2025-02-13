@@ -34,6 +34,7 @@
         conformsTo: economicResource?.conformsTo?.id,
         name: economicResource?.name,
         primaryAccountable: economicResource?.primaryAccountable?.id,
+        stage: economicResource?.stage?.id,
         trackingIdentifier: trackingIdentifier ? trackingIdentifier : economicResource?.trackingIdentifier,
         updatedAt: new Date(Date.now())
       })

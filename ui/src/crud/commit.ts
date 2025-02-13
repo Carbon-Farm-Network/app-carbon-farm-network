@@ -506,7 +506,7 @@ export const updateCommitment = async (commitment: any) => {
     const agreementCommitmentLinks = await pull('get_rea_commitments_for_rea_agreement', decodeHashFromBase64(updatedCommitment.clauseOfId))
     const agreementCommitments = await realizeLinks('get_latest_rea_commitment', agreementCommitmentLinks)
     updatedCommitment.clauseOf.commitments = agreementCommitments
-    console.log("Update commitment", updatedCommitment)
+    console.log("Updated commitment", updatedCommitment)
   }
   return updatedCommitment
 

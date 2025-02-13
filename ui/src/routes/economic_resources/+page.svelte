@@ -149,8 +149,8 @@
             </tr>
           </thead>
           <tbody class="bg-white">
-            {#each economicResources as economicResource}
-              <tr>
+            {#each economicResources as economicResource, index}
+              <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
                 <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {economicResource?.name}
                 </td>

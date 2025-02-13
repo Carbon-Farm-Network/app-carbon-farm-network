@@ -147,9 +147,12 @@ export async function importProposals(data: any) {
         hasUnit: hashChanges[intent.resourceQuantity.hasUnit.id] ? hashChanges[intent.resourceQuantity.hasUnit.id] : intent.resourceQuantity.hasUnit.id,
         hasNumericalValue: intent.resourceQuantity.hasNumericalValue
       }
-      intent.availableQuantity.hasUnit = intent.availableQuantity = {
-        hasUnit: hashChanges[intent.availableQuantity.hasUnit.id] ? hashChanges[intent.availableQuantity.hasUnit.id] : intent.availableQuantity.hasUnit.id,
-        hasNumericalValue: intent.availableQuantity.hasNumericalValue
+
+      if (intent?.availableQuantity?.hasUnit) {
+        intent.availableQuantity.hasUnit = intent.availableQuantity = {
+          hasUnit: hashChanges[intent.availableQuantity.hasUnit.id] ? hashChanges[intent.availableQuantity.hasUnit.id] : intent.availableQuantity.hasUnit.id,
+          hasNumericalValue: intent.availableQuantity.hasNumericalValue
+        }
       }
     }
   

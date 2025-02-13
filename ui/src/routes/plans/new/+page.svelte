@@ -122,7 +122,7 @@
   // ===========================================
   const previousColumn = (column: any) => {
     return column
-      .reduce((acc: any, input: any) => {
+      ?.reduce((acc: any, input: any) => {
         if (input.resourceQuantity.hasNumericalValue > 0) {
           // find a recipe that outputs what the demand wants
           // console.log("input", input)
@@ -199,7 +199,7 @@
             matching_output?.action.label == 'dropoff' ||
             matching_output?.action.label == 'modify'
           ) {
-            const existing_process = acc.find(it => it.id == recipe.id)
+            const existing_process = acc?.find(it => it.id == recipe.id)
             if (existing_process) {
               const remaining_processes = acc.filter(it => it.id != existing_process.id)
               const existing_services = existing_process.committedOutputs.filter(
@@ -389,8 +389,8 @@
   function generateColumns(aggregatedCommitments: any[]): any[] {
     // calculate how much of each resource exists per stage
     let resourceInventory: any = {}
-    economicResources.forEach(it => {
-      let resourceComboId = it.conformsTo?.id.concat(it.stage?.id)
+    economicResources?.forEach(it => {
+      let resourceComboId = it.conformsTo?.id.concat('____').concat(it.stage?.id)
       if (resourceComboId) {
         let onhandQuantity = it.onhandQuantity?.hasNumericalValue
         let existingQuantity = resourceInventory[resourceComboId]
@@ -403,31 +403,38 @@
     
     // subtract inventory from commitments
     function subtractInventory(processes: any[]): any[] {
-      let process = processes[0]
-      console.log("subtracting inventory", processes, resourceInventory)
-      return [
-        {
-          ...process,
-          committedInputs: process.committedInputs.map((input: any) => {
-            const resourceComboId = input.resourceConformsTo?.id.concat(input.stage?.id)
-            const inventory = resourceInventory[resourceComboId] || new Decimal(0)
-            const newQuantity = new Decimal(input.resourceQuantity.hasNumericalValue).sub(inventory)
+      // console.log("subtracting inventory", processes, resourceInventory)
+      return processes.map((process: any) => {
+      return {
+        ...process,
+        committedInputs: process.committedInputs.map((input: any) => {
+        if (!input.stage?.id) {
+          return input
+        }
+        
+        // console.log("STAGE", input)
+        const resourceComboId = input.resourceConformsTo?.id.concat('____').concat(input.stage?.id)
+        // console.log("resourceComboId B", resourceComboId)
+        const inventory = resourceInventory[resourceComboId] || new Decimal(0)
+        // console.log("inventory", inventory.toString())
+        const newQuantity = Decimal.max(new Decimal(input.resourceQuantity?.hasNumericalValue).sub(inventory), new Decimal(0))
+        // console.log("new quantity", input.resourceConformsTo?.name, input.stage?.name, newQuantity.toString(), inventory.toString(), input.resourceQuantity?.hasNumericalValue)
+        // remove subtracted quantity from inventory as well
+        resourceInventory[resourceComboId] = Decimal.max(new Decimal(inventory).sub(input.resourceQuantity?.hasNumericalValue), new Decimal(0))
+        // console.log("subtracting inventory", resourceComboId, input.resourceConformsTo?.name, resourceInventory[resourceComboId]?.toString(), inventory, input.resourceQuantity?.hasNumericalValue, resourceInventory[resourceComboId]?.toString())
+        // console.log("updated inventory", resourceInventory[resourceComboId].toNumber(), newQuantity.toString())
 
-            resourceInventory[resourceComboId] = newQuantity.greaterThanOrEqualTo(0) ? newQuantity : new Decimal(0)
-            console.log("updated inventory", resourceInventory)
-            console.log("new quantity", newQuantity.toString(), newQuantity.greaterThanOrEqualTo(0), newQuantity.greaterThanOrEqualTo(0) ? newQuantity.toString() : '0')
-
-            return {
-            ...input,
-            resourceQuantity: {
-              ...input.resourceQuantity,
-              hasNumericalValue: newQuantity.greaterThanOrEqualTo(0) ? newQuantity.toString() : '0'
-            }
-            }
-          })
-        },
-        ...processes.slice(1)
-      ]
+        return {
+          ...input,
+          resourceQuantity: {
+          ...input.resourceQuantity,
+          hasNumericalValue: newQuantity.toString()
+          }
+        }
+        })
+        .filter((input: any) => input.resourceQuantity.hasNumericalValue > 0),
+      }
+      })
     }
 
     // create first column
@@ -440,7 +447,7 @@
       count++
       allColumnsLocal = [previousProcesses, ...allColumnsLocal]
       previousProcesses = subtractInventory(cloneDeep(previousProcesses))
-      console.log("subtracted inventory", previousProcesses)
+      console.log("subtracted inventory", previousProcesses[0]?.committedInputs)
       previousProcesses = previousColumn(
         previousProcesses
           .flatMap((it: any) => it.committedInputs)
