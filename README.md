@@ -87,7 +87,7 @@ This repository is organised via the utilisation of these tools:
 
 ## Legal
 
-Copyright 2023-2024 Leo Bensman, Raphael Megzari, pospi, Lynn Foster
+Copyright 2023-2025 Leo Bensman, Raphael Megzari, pospi, Lynn Foster
 
 This file is part of Carbon Farm Network.
 
