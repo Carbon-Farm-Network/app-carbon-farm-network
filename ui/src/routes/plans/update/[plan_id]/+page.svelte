@@ -15,11 +15,13 @@
   import { allActions, allAgents, allUnits, allResourceSpecifications, allFulfillments, allProcessSpecifications, allProposals, allEconomicResources, allEconomicEvents } from '../../../../crud/store'
   import Loading from '$lib/Loading.svelte'
   import PlanForwardModal from './PlanForwardModal.svelte'
+  import PlanBackwardModal from './PlanBackwardModal.svelte'
   import { matchingOffer, makeAgreement } from '../../=helper'
   import { getPlan } from '../../../../crud/fetch'
   import { fullPlans, removeProcessCommitmentFromPlan, addProcessCommitmentToPlan, addNonProcessCommitmentToPlan, removeNonProcessCommitmentFromPlan, allRecipes } from '../../../../crud/store'
   import { cloneDeep } from "lodash";
   import SvgIcon from '$lib/SvgIcon.svelte'
+  import Commitment from './Commitment.svelte'
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
@@ -53,8 +55,10 @@
   let selectedStage: string | undefined = undefined;
   let recipes: any[] = []
   let planForwardModalOpen = false;
+  let planBackwardModalOpen = false;
   let carryOver: any = {}
   let forwardSuggestions: any = {}
+  let backwardSuggestions: any = {}
   let resourceInventory: any = {}
   let zoomLevel: string = "1";
   $: zoomLevel;
@@ -160,11 +164,65 @@
     return decrementedInputs
   }
 
+  function calculateInputToOutputBackward(columnIndex: number) {
+    let column = cloneDeep(allColumns[columnIndex]);
+    let previousColumn = cloneDeep(allColumns[columnIndex - 1]);
+
+    let flattenedInputs = column.map(it => it.committedInputs).flat();
+    let inputsCombined = flattenedInputs.reduce((acc, input) => {
+        acc[input.resourceConformsTo.id] = new Decimal(carryOver[previousColumn[0].basedOn.id]?.[input.resourceConformsTo.id]?.received);
+        return acc;
+    }, {});
+
+    // remove non-process commitments from total received
+    let basedOnId = previousColumn[0].basedOn.id
+    let resourceSpecificationIds = allColumns[columnIndex - 1]?.map(it => it.committedOutputs.map(it => it.resourceConformsTo.id)).flat()
+    let thisStageNonProcessCommitments = nonProcessCommitments.filter(it => {return it.stageId == basedOnId && resourceSpecificationIds.includes(it.resourceConformsTo.id)})
+    for (let commitment of thisStageNonProcessCommitments) {
+      inputsCombined[commitment.resourceConformsTo.id] = new Decimal(inputsCombined[commitment.resourceConformsTo.id]).minus(new Decimal(commitment.resourceQuantity.hasNumericalValue))
+    }
+
+    let flattenedOutputs = previousColumn.map(it => it.committedOutputs).flat();
+
+    let outputsCombined = flattenedOutputs.reduce((acc, output) => {
+        if (acc[output.resourceConformsTo.id]) {
+            acc[output.resourceConformsTo.id] = new Decimal(output.resourceQuantity.hasNumericalValue).plus(new Decimal(acc[output.resourceConformsTo.id]));
+        } else {
+            acc[output.resourceConformsTo.id] = output.resourceQuantity.hasNumericalValue;
+        }
+
+        // find relevant inventory
+        let fromInventory = carryOver[previousColumn[0].basedOn.id]?.[output.resourceConformsTo.id]?.fromInventory;
+        // TODO: figure out why subtracting 1 is necessary
+        if (fromInventory > 0) {
+          fromInventory -= 1
+        }
+        acc[output.resourceConformsTo.id] = acc[output.resourceConformsTo.id] + fromInventory //new Decimal(acc[output.resourceConformsTo.id]).plus(new Decimal(fromInventory)).toNumber();
+        return acc;
+    }, {});
+
+    let suggestedOutputs = [];
+    for (let i = 0; i < previousColumn.length; i++) {
+        let process = previousColumn[i];
+        let outputs = cloneDeep(process.committedOutputs);
+        let newOutputs = outputs.map(it => {
+            let proportion = new Decimal(it.resourceQuantity.hasNumericalValue).dividedBy(new Decimal(outputsCombined[it.resourceConformsTo.id]));
+            let newValue = new Decimal(inputsCombined[it.resourceConformsTo.id]).times(new Decimal(proportion)).floor();
+            it.resourceQuantity.hasNumericalValue = newValue.toString();
+            return it;
+        });
+        suggestedOutputs.push(newOutputs);
+    }
+
+    return suggestedOutputs;
+  }
+
   function calculateOutputToInput(columnIndex: number) {
     let column = cloneDeep(allColumns[columnIndex])
     let nextColumn = cloneDeep(allColumns[columnIndex + 1])
 
     let flattenedOutputs = column.map(it => it.committedOutputs).flat()
+
     // create list of all output resource specifications with summed quantities
     let outputsCombined = flattenedOutputs.reduce((acc, output) => {
       acc[output.resourceConformsTo.id] = new Decimal(carryOver[column[0].basedOn.id]?.[output.resourceConformsTo.id]?.provided)
@@ -212,6 +270,83 @@
 
     return suggestedInputs
   }
+
+  function calculateOutputToInputBackward(columnIndex: number) {
+    // return []
+    console.log("hello 3");
+    let column = cloneDeep(allColumns[columnIndex]);
+    console.log(column);
+    
+    let suggestedInputs: any[] = [];
+    for (let i = 0; i < column.length; i++) {
+        let process = column[i];
+        let outputs = cloneDeep(process.committedOutputs);
+        let inputs = cloneDeep(process.committedInputs);
+        
+        console.log("outputs", outputs);
+        console.log("inputs", inputs);
+        console.log("recipes", recipes);
+        
+        const processSpecificationId = process.basedOn.id;
+        const allOutputResourceSpecificationIds = outputs.map(it => it.resourceConformsTo.id);
+        
+        const recipesWithMatchingProcessSpecification = recipes.filter(it => it.processConformsToId == processSpecificationId);
+        console.log("recipesWithMatchingProcessSpecification", recipesWithMatchingProcessSpecification);
+        
+        const recWithAllOutputRSpecs = recipesWithMatchingProcessSpecification.filter(it => {
+            const allRecipeOutputResourceSpecificationIds = it.recipeOutputs.map(it => it.resourceConformsTo.id);
+            return allOutputResourceSpecificationIds.every(id => allRecipeOutputResourceSpecificationIds.includes(id));
+        });
+        
+        let recipe = recWithAllOutputRSpecs[0];
+        console.log("recipe", recipe);
+        console.log("outputs", outputs);
+
+        let recipeCycles = 0;
+        let decrementedOutputs = [...outputs];
+        while (recipeCycles < 1000) {
+            let res = decrementWithRecipe(decrementedOutputs, recipe.recipeOutputs);
+            if (res) {
+                recipeCycles++;
+                decrementedOutputs = res;
+            } else {
+                break;
+            }
+        }
+        
+        let newInputs = cloneDeep(inputs);
+        let recipeInputs = recipe.recipeInputs;
+        for (let i = 0; i < recipeInputs.length; i++) {
+            let recipeInput = cloneDeep(recipeInputs[i]);
+            let input = newInputs.find(it => it.resourceConformsTo.id == recipeInput.resourceConformsTo.id);
+            if (input) {
+                console.log("input", input.resourceConformsTo.name, recipeInput.instructions);
+                if (recipeInput.instructions == "SumInputs") {
+                    let newValue = outputs.reduce((acc, it) => {
+                        return new Decimal(acc).plus(new Decimal(it.resourceQuantity.hasNumericalValue));
+                    }, 0);
+                    input.resourceQuantity.hasNumericalValue = newValue.floor().toString();
+                } else {
+                    let ratio = recipeInput.resourceQuantity?.hasNumericalValue / recipe.recipeOutputs.find(it => it.resourceConformsTo.id == input.resourceConformsTo.id)?.resourceQuantity?.hasNumericalValue;
+                    if (!ratio) { continue; }
+                    let newValue = new Decimal(outputs.find(it => it.resourceConformsTo.id == input.resourceConformsTo.id)?.resourceQuantity?.hasNumericalValue || 0).div(new Decimal(ratio));
+                    input.resourceQuantity.hasNumericalValue = newValue.floor().toString();
+                }
+            } else {
+                let newValue = new Decimal(recipeInput.resourceQuantity.hasNumericalValue).times(new Decimal(recipeCycles));
+                newInputs.push({
+                    resourceConformsTo: recipeInput.resourceConformsTo,
+                    resourceQuantity: { hasNumericalValue: newValue.floor().toString() }
+                });
+            }
+        }
+        
+        console.log('newInputs', newInputs);
+        suggestedInputs.push(newInputs);
+    }
+    return suggestedInputs;
+}
+
 
   function calculateInputToOutput(columnIndex: number) {
     console.log("hello 2")
@@ -583,6 +718,13 @@
       for (const commitment of plan.nonProcessCommitments.filter(it => {return it.stageId != "undefined"})) {
         // console.log("non process commitment", commitment)
         await includeCommitment(commitment)
+
+        // Add non-process commitments to carryOver
+        let basedOnId = commitment.stageId
+        if (carryOver[basedOnId]?.[commitment.resourceConformsTo?.id]?.provided) {
+          carryOver[basedOnId][commitment.resourceConformsTo?.id].provided += Number(commitment.resourceQuantity?.hasNumericalValue)
+        }
+
       }
 
       } catch (e) {
@@ -592,54 +734,63 @@
   }
 
   async function updateColumns(columnIndex: number, processIndex: number = 0, side: string = "committedInputs") {
-    fetching = true
-    // update every commitment in a column
-    let updatedColumn = {...cloneDeep(allColumns[columnIndex][processIndex][side])}
+    try {
+      fetching = true
+      // update every commitment in a column
+      let updatedColumn = {...cloneDeep(allColumns[columnIndex][processIndex][side])}
 
-    for (let i in updatedColumn) {
-      console.log("original commitment", updatedColumn[i], cloneDeep(updatedColumn[i].resourceQuantity?.hasUnit?.id))
+      for (let i in updatedColumn) {
+        if (!updatedColumn[i]?.id) {
+          continue
+        }
 
-      let commitment: CommitmentUpdateParams = {
-        id: updatedColumn[i].id,
-        revisionId: updatedColumn[i].revisionId,
-        agreedIn: updatedColumn[i].agreedIn,
-        // clauseOf: updatedColumn[i].clauseOf?.id,
-        action: updatedColumn[i].action?.id,
-        due: updatedColumn[i].due,
-        effortQuantity: updatedColumn[i].effortQuantity,
-        finished: updatedColumn[i].finished,
-        hasBeginning: updatedColumn[i].hasBeginning,
-        hasEnd: updatedColumn[i].hasEnd,
-        hasPointInTime: updatedColumn[i].hasPointInTime,
-        inScopeOf: updatedColumn[i].inScopeOf,
-        independentDemandOf: updatedColumn[i].independentDemandOf,
-        inputOf: updatedColumn[i].inputOf,
-        note: updatedColumn[i].note,
-        outputOf: updatedColumn[i].outputOf,
-        plannedWithin: updatedColumn[i].plannedWithin,
-        provider: updatedColumn[i].providerId,
-        receiver: updatedColumn[i].receiverId,
-        resourceClassifiedAs: updatedColumn[i].resourceClassifiedAs,
-        resourceConformsTo: updatedColumn[i].resourceConformsTo?.id,
-        resourceInventoriedAs: updatedColumn[i].resourceInventoriedAs,
-        resourceQuantity: {
-          hasNumericalValue: cloneDeep(Number(updatedColumn[i].resourceQuantity?.hasNumericalValue)),
-          hasUnit: {id: cloneDeep(updatedColumn[i].resourceQuantity?.hasUnit?.id)}
-        },
+        console.log("original commitment", updatedColumn[i], cloneDeep(updatedColumn[i].resourceQuantity?.hasUnit?.id))
+
+        let commitment: CommitmentUpdateParams = {
+          id: updatedColumn[i].id,
+          revisionId: updatedColumn[i].revisionId,
+          agreedIn: updatedColumn[i].agreedIn,
+          // clauseOf: updatedColumn[i].clauseOf?.id,
+          action: updatedColumn[i].action?.id,
+          due: updatedColumn[i].due,
+          effortQuantity: updatedColumn[i].effortQuantity,
+          finished: updatedColumn[i].finished,
+          hasBeginning: updatedColumn[i].hasBeginning,
+          hasEnd: updatedColumn[i].hasEnd,
+          hasPointInTime: updatedColumn[i].hasPointInTime,
+          inScopeOf: updatedColumn[i].inScopeOf,
+          independentDemandOf: updatedColumn[i].independentDemandOf,
+          inputOf: updatedColumn[i].inputOf,
+          note: updatedColumn[i].note,
+          outputOf: updatedColumn[i].outputOf,
+          plannedWithin: updatedColumn[i].plannedWithin,
+          provider: updatedColumn[i].providerId,
+          receiver: updatedColumn[i].receiverId,
+          resourceClassifiedAs: updatedColumn[i].resourceClassifiedAs,
+          resourceConformsTo: updatedColumn[i].resourceConformsTo?.id,
+          resourceInventoriedAs: updatedColumn[i].resourceInventoriedAs,
+          resourceQuantity: {
+            hasNumericalValue: cloneDeep(Number(updatedColumn[i].resourceQuantity?.hasNumericalValue)),
+            hasUnit: {id: cloneDeep(updatedColumn[i].resourceQuantity?.hasUnit?.id)}
+          },
+        }
+        
+        if (updatedColumn[i].clauseOfId) {
+          commitment["clauseOf"] = updatedColumn[i].clauseOfId
+        }
+
+        console.log("updating commitment from column", cloneDeep(commitment))
+        let updatedCommitment = await updateCommitment(commitment)
+        console.log("updated commitment", updatedCommitment)
+        updatedColumn[i] = updatedCommitment
       }
-      
-      if (updatedColumn[i].clauseOfId) {
-        commitment["clauseOf"] = updatedColumn[i].clauseOfId
-      }
 
-      console.log("updating commitment from column", cloneDeep(commitment))
-      let updatedCommitment = await updateCommitment(commitment)
-      console.log("updated commitment", updatedCommitment)
-      updatedColumn[i] = updatedCommitment
+      await getProcess(allColumns[columnIndex][processIndex].id)
+      fetching = false
+    } catch (e) {
+      fetching = false
+      console.log("error updating columns", e)
     }
-
-    await getProcess(allColumns[columnIndex][processIndex].id)
-    fetching = false
   }
 
   onMount(async () => {
@@ -764,6 +915,23 @@
 />
 {/if}
 
+{#if planBackwardModalOpen}
+<PlanBackwardModal
+  bind:open={planBackwardModalOpen}
+  {backwardSuggestions}
+  on:accept={async (event) => {
+    console.log(event)
+    for (let i = 0; i < backwardSuggestions.new.length; i++) {
+      allColumns[backwardSuggestions.columnIndex][i][backwardSuggestions.side] = backwardSuggestions.new[i]
+      console.log("start", i)
+      await updateColumns(backwardSuggestions.columnIndex, i, backwardSuggestions.side)
+      console.log("end", i)
+    }
+    fetching = false;
+  }}
+/>
+{/if}
+
 {#if plan}
 <PlanModal
   bind:open={planModalOpen} 
@@ -879,11 +1047,26 @@ bind:open={economicEventModalOpen}
           console.log("saved agreement", savedAgreement)
           console.log("cost commitment", newCostAgreement)
           // add agreement to commitment
-          let updateCommitmentInput = {
-            revisionId: event.detail.commitment.revisionId,
-            clauseOf: savedAgreement?.id
-          }
-          console.log("update commitment input", updateCommitmentInput)
+          // let updateCommitmentInput = {
+          //   revisionId: event.detail.commitment.revisionId,
+          //   clauseOf: savedAgreement?.id,
+          //   provider: event.detail.commitment.providerId,
+          //   receiver: event.detail.commitment.receiverId,
+          //   resourceConformsTo: dollars?.id,
+          //   resourceQuantity: {
+          //     hasNumericalValue: Number(event.detail.commitment.resourceQuantity.hasNumericalValue),
+          //     hasUnit: cloneDeep(event.detail.commitment.resourceQuantity.hasUnit)
+          //   },
+          //   finished: event.detail.commitment.finished,
+          //   note: event.detail.commitment.note,
+          //   stage: event.detail.commitment.stage,
+          //   action: event.detail.commitment.action.id,
+          //   plannedWithin: {id: planId},
+          //   inputOf: event.detail.commitment.inputOf,
+          //   outputOf: event.detail.commitment.outputOf,
+          //   hasBeginning: event.detail.commitment.hasBeginning,
+          // }
+          // console.log("update commitment input", updateCommitmentInput)
           // let x = await updateCommitment(updateCommitmentInput)
           // console.log(x)
           let c = event.detail.commitment;
@@ -928,6 +1111,7 @@ bind:open={economicEventModalOpen}
           stage: commitmentData.stage,
           note: commitmentData.note,
           finished: commitmentData.finished,
+          clauseOfId: commitmentData.clauseOfId,
           clauseOf: commitmentData.clauseOfId,
           provider: commitmentData.providerId,
           receiver: commitmentData.receiverId,
@@ -1239,6 +1423,25 @@ bind:open={economicEventModalOpen}
             <div>
               <div class="flex justify-center items-center w-full mb-2">
                 <div class="flex space-x-2">
+                  <!-- plan backward -->
+                  {#if processIndex == 0 && columnIndex > 0}
+                    <button
+                      title="Auto-fill the input commitments based on the output commitments"
+                      class="flex justify-center items-center"
+                      on:click={() => {
+                      backwardSuggestions = {
+                        side: "committedOutputs",
+                        columnIndex: columnIndex - 1,
+                        current: allColumns[columnIndex - 1]?.map(it => it.committedOutputs),
+                        new: calculateInputToOutputBackward(columnIndex)
+                      }
+                      planBackwardModalOpen = true
+                      }}
+                    >
+                      <SvgIcon icon=faBackward size=12/>
+                    </button>
+                  {/if}
+
                   <button
                     title="Add a new commitment to this process"
                     class="flex justify-center items-center"
@@ -1273,280 +1476,65 @@ bind:open={economicEventModalOpen}
                 </div>
               </div>
 
-                {#each committedInputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf, meta }}
-                  {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
-                  {@const prevProcSpec = allColumns[columnIndex - 1]?.[0]?.basedOn?.id}
-                  {@const carryOverInfo = carryOver[prevProcSpec]?.[resourceConformsTo?.id]}
-                  <!-- {JSON.stringify(prevProcSpec)} -->
-                   <!-- {JSON.stringify(processes.length)} -->
-                  <div
-                    class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-                    style="background-color: {color};
-                          border-radius: 0px 60px 60px 0px;
-                    ">
-                    <strong>{resourceConformsTo?.name}</strong>
-                    <div class="flex justify-between">
-                      <!--
-                      <p>
-                        {supply_driven_quantity?.hasNumericalValue}
-                        {supply_driven_quantity?.hasUnit?.label}
-                      </p>
-                      -->
-                      <p>
-                        {action.label}
-                        <!-- sum of all fulfilledby numericalvalues -->
-                         <!-- {JSON.stringify(fulfilledBy[0]?.fulfills)} -->
-                        <strong>
-                          {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-                            <!-- {sumEconomicEvents(fulfilledBy.map(it => it.id))} -->
-                            {sumEconomicEventsFromFulfillments(fulfilledBy)}
-                            {#each units as unit}
-                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                {unit.label}
-                              {/if}
-                            {/each}
-                          {:else}
-                            {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                            <!-- {resourceQuantity?.hasUnit?.label} -->
-                            {#each units as unit}
-                              {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                {unit.label}
-                              {/if}
-                            {/each}
-                          {/if}
-                        </strong>
-                      </p>
+              {#each committedInputs as commitment}
+                <Commitment 
+                  side="committedInputs"
+                  {commitment}
+                  {carryOver}
+                  {columnIndex}
+                  {processIndex}
+                  {allColumns}
+                  {processes}
+                  {planId}
+                  {agents}
+                  {economicResources}
+                  {units}
+                  {yellow}
+                  {agreementsToDelete}
+                  {commitmentsToDelete}
+                  {getProcess}
+                  {removeProcessCommitmentFromPlan}
+                  {deleteCommitment}
+                  {deleteAgreement}
+                  {sumEconomicEventsFromFulfillments}
+                  {updateColumns}
+                  {buildPlan}
+                  bind:fetching
+                  bind:commitmentModalOpen
+                  bind:commitmentModalProcess
+                  bind:commitmentModalColumn
+                  bind:commitmentModalSide
+                  bind:selectedCommitmentId
+                  bind:selectedProcessId
+                  bind:currentProcess
+                  bind:economicEventModalOpen
+                  bind:selectedCommitment
+                />
+              {/each}
 
-                      <!--
-                      <p>
-                        {demand_driven_quantity?.hasNumericalValue}
-                        {demand_driven_quantity?.hasUnit?.label}
-                      </p>
-                      -->
-                    </div>
-                    {#if carryOverInfo?.fromInventory > 0}
-                      <p style="white-space: pre-wrap; word-wrap: break-word; color: green;">
-                        {carryOverInfo?.fromInventory} {resourceQuantity?.hasUnit?.label} in inventory
-                      </p>
-                    {/if}
-                    <p>
-                      from 
-                      {#each agents as agent}
-                        {#if agent.id == providerId}
-                          {agent.name}
-                        {/if}
-                      {/each}
-                      <br />
-                      to 
-                      {#each agents as agent}
-                        {#if agent.id == receiverId}
-                          {agent.name}
-                        {/if}
-                      {/each}
-                      {#if fulfilledBy?.length > 0}
-                        {@const dedupedFulfilledBy = fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
-                        <br />
-                        Economic Events: {dedupedFulfilledBy?.length}
-                      {/if}
-                    </p>
-                    {#if false && fulfilledBy && fulfilledBy.length > 0}
-                      <p>
-                        fulfilled by: {fulfilledBy[0]}
-                        finished: {finished}
-                      </p>
-                    {/if}
-                    <div class="w-full flex justify-center">
-                    <div style="margin-right: 20px; margin-top: 4px;">
-                    <!-- <div style="margin-right: 30px; margin-top: 4px;"> -->
-                      <!-- button to move commitment up in arra -->
-                      <button on:click={() => {
-                        let index = allColumns[columnIndex][processIndex].committedInputs.findIndex(it => it.id == id)
-                        if (index > 0) {
-                          let temp = allColumns[columnIndex][processIndex].committedInputs[index]
-                          allColumns[columnIndex][processIndex].committedInputs[index] = allColumns[columnIndex][processIndex].committedInputs[index - 1]
-                          allColumns[columnIndex][processIndex].committedInputs[index - 1] = temp
-                        }
-                        updateColumns(columnIndex, processIndex, "committedInputs")
-                      }}>
-                        <img class="mx-auto" height="14px" width="14px" src="/arrow-up.svg" alt="" />
-                      </button>
-                      <!-- button to move down -->
-                      <button on:click={() => {
-                        let index = allColumns[columnIndex][processIndex].committedInputs.findIndex(it => it.id == id)
-                        if (index < allColumns[columnIndex][processIndex].committedInputs.length - 1) {
-                          let temp = allColumns[columnIndex][processIndex].committedInputs[index]
-                          allColumns[columnIndex][processIndex].committedInputs[index] = allColumns[columnIndex][processIndex].committedInputs[index + 1]
-                          allColumns[columnIndex][processIndex].committedInputs[index + 1] = temp
-                        }
-                        updateColumns(columnIndex, processIndex, "committedInputs")
-                      }}>
-                        <img class="mx-auto" height="14px" width="14px" src="/arrow-down.svg" alt="" />
-                      </button>
-
-                    </div>
-
-                    <div style="margin-right: 20px; margin-top: 1px">
-                    <button
-                      on:click={() => {
-                        commitmentModalProcess = processIndex
-                        commitmentModalColumn = columnIndex
-                        commitmentModalSide = "committedInputs"
-                        selectedCommitmentId = id
-                        selectedProcessId = processes[processIndex]?.id
-                        currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                        commitmentModalOpen = true
-                      }}
-                    >
-                      <Pencil/>
-                    </button>
-                    <button
-                      on:click={async () => {
-                        // visually remove commitment
-                        await removeProcessCommitmentFromPlan(planId, allColumns[columnIndex][processIndex].id, id)
-                        await buildPlan()
-                        
-                        // remove cost agreement if present
-                        let costAgreement = clauseOf
-                        console.log("clauseOf to delete", costAgreement, costAgreement != undefined)
-                        if (costAgreement != undefined) {
-                          console.log("deleting cost agreement", costAgreement)
-                          agreementsToDelete.push(costAgreement.revisionId)
-                          commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
-                          await deleteAgreement(costAgreement.revisionId)
-                          await deleteCommitment(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
-                        }
-                        // allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedInputs.filter(it => it.id != id)
-                        await deleteCommitment(revisionId)
-                        await getProcess(allColumns[columnIndex][processIndex].id)
-                      }}
-                    >
-                      <Trash />
-                    </button>
-                    </div>
-
-                    {#if true && revisionId}
-                      <button
-                        style="margin-top: -3px;"
-                        on:click={() => {
-                          commitmentModalProcess = processIndex
-                          commitmentModalColumn = columnIndex
-                          commitmentModalSide = "committedInputs"
-                          selectedCommitmentId = id
-                          console.log("selectedCommitmentId", selectedCommitmentId)
-                          selectedProcessId = processes[processIndex]?.id
-                          console.log("selectedProcessId", selectedProcessId)
-                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                          economicEventModalOpen = true
-                        }}
-                      >
-                        <EconomicEvent/>
-                      </button>
-                    {/if}
-                    </div>
-                  </div>
-
-                  {#if clauseOf}
-                  {@const clause = clauseOf?.commitments?.find(it => it.action.label == "transfer")}
-                    {#if clause}
-                    {@const costColor = clause?.finished ? "#c4fbc4" : (((clause?.fulfilledBy && clause?.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
-                    <div
-                      class="bg-white rounded-r-full border border-gray-400 py-1 pl-8 pr-2 text-xs"
-                      style="background-color: {costColor};
-                            border-radius: 60px 0 0 60px;
-                      "
-                      >
-                          <p>
-                            <strong>
-                              transfer
-                              {#if true && clause?.fulfilledBy && clause?.fulfilledBy.length > 0 && clause?.fulfilledBy[0].id}
-                                {new Decimal(
-                                  sumEconomicEventsFromFulfillments(clause?.fulfilledBy)
-                                )
-                                .toFixed(2, Decimal.ROUND_HALF_UP)
-                                .toString()}
-                              {:else}
-                                {new Decimal(
-                                  clause?.resourceQuantity.hasNumericalValue
-                                )
-                                .toFixed(0, Decimal.ROUND_HALF_UP)
-                                .toString()}
-                              {/if}
-                              {clause?.resourceConformsTo.name}
-                            </strong>
-                            <br>from {agents.find(it => it.id == clause?.providerId)?.name} 
-                            <br>to {agents.find(it => it.id == clause?.receiverId)?.name}
-                            {#if clause?.fulfilledBy?.length > 0}
-                            {@const dedupedFulfilledBy = clause?.fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
-                              <br />
-                              Economic Events: {dedupedFulfilledBy?.length}
-                            {/if}
-                          </p>
-                          <div style="display:flex;">
-                            <button
-                              style="margin-left: 12px;"
-                              on:click={() => {
-                                // commitmentModalProcess = processIndex
-                                // commitmentModalColumn = columnIndex
-                                // commitmentModalSide = "committedInputs"
-                                selectedCommitmentId = clause?.id
-                                // selectedProcessId = processes[processIndex]?.id
-                                // currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                                selectedCommitment = cloneDeep(clause)
-                                commitmentModalOpen = true
-                              }}
-                            >
-                              <Pencil />
-                            </button>
-                            <button
-                              on:click={async () => {
-                                // visually remove commitment
-                                // allColumns[columnIndex][processIndex].committedInputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
-                                await deleteCommitment(clause?.id)
-                                console.log("deleted commitment", clause?.id)
-                                await deleteAgreement(clauseOf?.id)
-                                console.log("deleted agreement", clauseOf?.id)
-                                // const updateC = {
-                                //   revisionId: revisionId, 
-                                //   clauseOf: null,
-                                //   plannedWithin: planId,
-                                //   inputOf: processes[processIndex]?.id
-                                // }
-                                // console.log("updateC", updateC)
-                                // let uc = await updateCommitment(updateC)
-                                // console.log("UC", uc)
-                                fetching = true
-                                await getProcess(allColumns[columnIndex][processIndex].id)
-                                fetching = false
-                              }}
-                            >
-                              <Trash />
-                            </button>
-                            <button
-                              style="margin-left: 20px;"
-                              on:click={() => {
-                                commitmentModalProcess = undefined//processIndex
-                                commitmentModalColumn = undefined//columnIndex
-                                commitmentModalSide = undefined//"committedInputs"
-                                selectedCommitmentId = clause?.id
-                                selectedProcessId = undefined//processes[processIndex]?.id
-                                currentProcess = undefined//[...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                                selectedCommitment = cloneDeep(clause)
-                                economicEventModalOpen = true
-                              }}
-                            >
-                              <EconomicEvent />
-                            </button>
-                          </div>
-
-                        </div>
-                      <!-- </div> -->
-                    {/if}
-                  {/if}
-                {/each}
               </div>
               <div>
                 <div class="flex justify-center items-center w-full mb-2">
                   <div class="flex space-x-2">
+                    <!-- plan backward -->
+                    {#if processIndex == 0 && columnIndex < allColumns.length}
+                      <button
+                        title="Auto-fill the input commitments based on the output commitments"
+                        class="flex justify-center items-center"
+                        on:click={() => {
+                        backwardSuggestions = {
+                          side: "committedInputs",
+                          columnIndex: columnIndex,
+                          current: allColumns[columnIndex].map(it => it.committedInputs),
+                          new: calculateOutputToInputBackward(columnIndex)
+                        }
+                        planBackwardModalOpen = true
+                        }}
+                      >
+                        <SvgIcon icon=faBackward size=12/>
+                      </button>
+                    {/if}
+
                     <button
                       title="Add a new commitment to this process"
                       class="flex justify-center items-center"
@@ -1563,7 +1551,7 @@ bind:open={economicEventModalOpen}
                       <PlusCircle />
                     </button>
 
-                    {#if processIndex == 0}
+                    {#if processIndex == 0 && columnIndex < allColumns.length - 1}
                       <button
                         title="Auto-fill the output commitments based on the input commitments"
                         class="flex justify-center items-center"
@@ -1583,280 +1571,42 @@ bind:open={economicEventModalOpen}
                   </div>
                 </div>
 
-                {#each committedOutputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
-                {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
-                {@const carryOverInfo = carryOver[proSpec?.id]?.[resourceConformsTo?.id]}
-                {@const carryOverDiff = carryOverInfo?.received - carryOverInfo?.provided}
-                <div
-                    class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
-                    style="background-color: {color};
-                          border-radius: 0 60px 60px 0;
-                    "
-                    >
-                    <div>
-                      <strong>{resourceConformsTo?.name}</strong>
-                      <div class="flex justify-between">
-                        <!--
-                      <p>
-                        {supply_driven_quantity?.hasNumericalValue}
-                        {supply_driven_quantity?.hasUnit?.label}
-                      </p>
-                      -->
-                        <p>
-                          {action.label}
-                          <strong>
-                            {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-                              {sumEconomicEventsFromFulfillments(fulfilledBy)}
-                              {#each units as unit}
-                                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                  {unit.label}
-                                {/if}
-                              {/each}
-                            {:else if yellowAmounts[id]}
-                              {yellowAmounts[id]}
-                              <!-- {resourceQuantity?.hasUnit?.label} -->
-                              {#each units as unit}
-                                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                  {unit.label}
-                                {/if}
-                              {/each}
-                            {:else}
-                              {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                              <!-- {resourceQuantity?.hasUnit?.label} -->
-                              {#each units as unit}
-                                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                                  {unit.label}
-                                {/if}
-                              {/each}
-                            {/if}
-                          </strong>
-                        </p>
-
-                        <!--
-                      <p>
-                        {demand_driven_quantity?.hasNumericalValue}
-                        {demand_driven_quantity?.hasUnit?.label}
-                      </p>
-                      -->
-                      </div>
-                      
-                        <!-- If carryover, show how much is requested -->
-                        {#if carryOverDiff > 0}
-                          <p style="color: red;">
-                            {Math.abs(carryOverDiff)} {resourceQuantity?.hasUnit?.label} deficit
-                          </p>
-                        {/if}
-
-                      <p>
-                        from 
-                        {#each agents as agent}
-                          {#if agent.id == providerId}
-                            {agent.name}
-                          {/if}
-                        {/each}
-                        <br />
-                        to 
-                        {#each agents as agent}
-                          {#if agent.id == receiverId}
-                            {agent.name}
-                          {/if}
-                        {/each}
-                        {#if fulfilledBy?.length > 0}
-                          {@const dedupedFulfilledBy = fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
-                          <br />
-                          Economic Events: {dedupedFulfilledBy?.length}
-                        {/if}
-                      </p>
-                      {#if false && clauseOf}
-                        {@const clause = clauseOf.commitments.find(it => it.action.label == "transfer")}
-                        {#if clause}
-                          <p>
-                            cost {new Decimal(
-                              clause?.resourceQuantity.hasNumericalValue
-                            )
-                              .toFixed(2, Decimal.ROUND_HALF_UP)
-                              .toString()}
-                            {clause?.resourceConformsTo.name}
-                          </p>
-                        {/if}
-                      {/if}
-                    </div>
-                    <!-- {#if editable} -->
-                    <div class="w-full flex justify-center">
-                      <div style="margin-right: 20px; margin-top: 4px;">
-                      <!-- <div style="margin-right: 30px; margin-top: 4px;"> -->
-                        <button on:click={() => {
-                          let index = allColumns[columnIndex][processIndex].committedOutputs.findIndex(it => it.id == id)
-                          if (index > 0) {
-                            let temp = allColumns[columnIndex][processIndex].committedOutputs[index]
-                            allColumns[columnIndex][processIndex].committedOutputs[index] = allColumns[columnIndex][processIndex].committedOutputs[index - 1]
-                            allColumns[columnIndex][processIndex].committedOutputs[index - 1] = temp
-                          }
-                          updateColumns(columnIndex, processIndex, "committedOutputs")
-                        }}>
-                          <img class="mx-auto" height="14px" width="14px" src="/arrow-up.svg" alt="" />
-                        </button>
-                        <button on:click={() => {
-                          let index = allColumns[columnIndex][processIndex].committedOutputs.findIndex(it => it.id == id)
-                          if (index < allColumns[columnIndex][processIndex].committedOutputs.length - 1) {
-                            let temp = allColumns[columnIndex][processIndex].committedOutputs[index]
-                            allColumns[columnIndex][processIndex].committedOutputs[index] = allColumns[columnIndex][processIndex].committedOutputs[index + 1]
-                            allColumns[columnIndex][processIndex].committedOutputs[index + 1] = temp
-                          }
-                          updateColumns(columnIndex, processIndex, "committedOutputs")
-                        }}>
-                          <img class="mx-auto" height="14px" width="14px" src="/arrow-down.svg" alt="" />
-                        </button>
-                      </div>
-
-                      <div style="margin-right: 20px; margin-top: 1px">
-                      <button
-                        on:click={() => {
-                          commitmentModalProcess = processIndex
-                          commitmentModalColumn = columnIndex
-                          commitmentModalSide = "committedOutputs"
-                          selectedCommitmentId = id
-                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                          commitmentModalOpen = true
-                        }}
-                      >
-                      <Pencil/>
-                    </button>
-                    <button
-                    on:click={async () => {
-                      // visually remove commitment
-                      await removeProcessCommitmentFromPlan(planId, allColumns[columnIndex][processIndex].id, id)
-                      await buildPlan()
-
-                      // remove cost agreement if present
-                      let costAgreement = clauseOf
-                      if (costAgreement) {
-                        agreementsToDelete.push(costAgreement.revisionId)
-                        commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
-                        // requestsPerOffer[costAgreement.providerId] = requestsPerOffer[costAgreement.providerId] - costAgreement.commitments.find(it => it.action.label == "transfer").resourceQuantity.hasNumericalValue
-                        // resetColumns()
-                        deleteAgreement(costAgreement.revisionId)
-                        deleteCommitment(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
-                      }
-                      // allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
-                      
-                      await deleteCommitment(revisionId)
-                      await getProcess(allColumns[columnIndex][processIndex].id)
-                    }}
-                      >
-                      <Trash />
-                    </button>
-                    </div>
-
-                    {#if revisionId}
-                      <button
-                        style="margin-top: -3px;"
-                        on:click={() => {
-                          commitmentModalProcess = processIndex
-                          commitmentModalColumn = columnIndex
-                          commitmentModalSide = "committedOutputs"
-                          selectedCommitmentId = id
-                          selectedProcessId = processes[processIndex]?.id
-                          currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                          economicEventModalOpen = true
-                        }}
-                      >
-                        <EconomicEvent/>
-                      </button>
-                    {/if}
-
-                    </div>
-
-                  </div>
-                  {#if clauseOf}
-                  {@const clause = clauseOf?.commitments?.find(it => it.action.label == "transfer")}
-                  {@const costColor = clause?.finished ? "#c4fbc4" : (((clause?.fulfilledBy && clause?.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
-                  <div
-                    class="bg-white rounded-r-full border border-gray-400 py-1 pl-8 pr-2 text-xs"
-                    style="background-color: {costColor};
-                          border-radius: 60px 0 0 60px;
-                    "
-                    >
-                      {#if clause}
-                        <!-- <hr class="my-2" /> -->
-                        <!-- <div style="display:flex;">
-                          <img class="mx-auto" height="30px" width="30px" src="/caret-left.svg" alt="" /> -->
-                          <div>
-                            <p>
-                              <strong>
-                                transfer 
-                                {#if true && clause?.fulfilledBy && clause?.fulfilledBy.length > 0 && clause?.fulfilledBy[0].id}
-                                  {new Decimal(
-                                    sumEconomicEventsFromFulfillments(clause?.fulfilledBy)
-                                  )
-                                  .toFixed(2, Decimal.ROUND_HALF_UP)
-                                  .toString()}
-                                {:else}
-                                  {new Decimal(
-                                    clause?.resourceQuantity.hasNumericalValue
-                                  )
-                                  .toFixed(0, Decimal.ROUND_HALF_UP)
-                                  .toString()}
-                                {/if}
-                                {clause?.resourceConformsTo.name}
-                              </strong>
-                              <br>from {agents.find(it => it.id == clause?.providerId)?.name} 
-                              <br>to {agents.find(it => it.id == clause?.receiverId)?.name}
-                              {#if clause?.fulfilledBy?.length > 0}
-                              {@const dedupedFulfilledBy = clause?.fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
-                                <br />
-                                Economic Events: {dedupedFulfilledBy?.length}
-                              {/if}
-                            </p>
-                            <div style="display:flex;">
-                              <button
-                                style="margin-left: 12px;"
-                                on:click={() => {
-                                  commitmentModalProcess = processIndex
-                                  commitmentModalColumn = columnIndex
-                                  commitmentModalSide = "committedOutputs"
-                                  selectedCommitmentId = clause?.id
-                                  selectedProcessId = processes[processIndex]?.id
-                                  currentProcess = [...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                                  commitmentModalOpen = true
-                                }}
-                              >
-                                <Pencil />
-                              </button>
-                              <button
-                                on:click={async () => {
-                                  // visually remove commitment
-                                  // allColumns[columnIndex][processIndex].committedOutputs = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
-                                  await deleteCommitment(clause?.revisionId)
-                                  await deleteAgreement(clauseOf.revisionId)
-                                  await getProcess(allColumns[columnIndex][processIndex].id)
-                                }}
-                              >
-                                <Trash />
-                              </button>
-                              <button
-                                style="margin-left: 20px;"
-                                on:click={() => {
-                                  commitmentModalProcess = undefined//processIndex
-                                  commitmentModalColumn = undefined//columnIndex
-                                  commitmentModalSide = undefined//"committedOutputs"
-                                  selectedCommitmentId = clause?.id
-                                  selectedCommitment = cloneDeep(clause)
-                                  selectedProcessId = undefined//processes[processIndex]?.id
-                                  currentProcess = undefined//[...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                                  economicEventModalOpen = true
-                                }}
-                              >
-                                <EconomicEvent />
-                              </button>
-                            </div>
-
-                          </div>
-                        <!-- </div> -->
-                      {/if}
-                    </div>
-                  {/if}
+                {#each committedOutputs as commitment}
+                <Commitment 
+                  side="committedOutputs"
+                  {commitment}
+                  {carryOver}
+                  {columnIndex}
+                  {processIndex}
+                  {allColumns}
+                  {processes}
+                  {planId}
+                  {agents}
+                  {economicResources}
+                  {units}
+                  {yellow}
+                  {agreementsToDelete}
+                  {commitmentsToDelete}
+                  {getProcess}
+                  {removeProcessCommitmentFromPlan}
+                  {deleteCommitment}
+                  {deleteAgreement}
+                  {sumEconomicEventsFromFulfillments}
+                  {updateColumns}
+                  {buildPlan}
+                  bind:fetching
+                  bind:commitmentModalOpen
+                  bind:commitmentModalProcess
+                  bind:commitmentModalColumn
+                  bind:commitmentModalSide
+                  bind:selectedCommitmentId
+                  bind:selectedProcessId
+                  bind:currentProcess
+                  bind:economicEventModalOpen
+                  bind:selectedCommitment
+                />
                 {/each}
+
               </div>
             </div>
           </div>
@@ -1896,7 +1646,44 @@ bind:open={economicEventModalOpen}
               <!-- Sub-columns -->
               <!-- <div class="grid grid-cols-2 gap-2"> -->
                 <!-- {#each nonProcessCommitments as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }} -->
-                {#each nonProcessCommitments.filter(it => {return it.stageId == prevColumnBasedOnId && resourceSpecificationIds.includes(it.resourceConformsTo.id)}) as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
+                {#each nonProcessCommitments.filter(it => {return it.stageId == prevColumnBasedOnId && resourceSpecificationIds.includes(it.resourceConformsTo.id)}) as commitment}
+                  <Commitment
+                    side=""
+                    {commitment}
+                    {carryOver}
+                    {columnIndex}
+                    processIndex={undefined}
+                    {allColumns}
+                    {processes}
+                    {planId}
+                    {agents}
+                    {economicResources}
+                    {units}
+                    {yellow}
+                    {agreementsToDelete}
+                    {commitmentsToDelete}
+                    {getProcess}
+                    {removeProcessCommitmentFromPlan}
+                    {deleteCommitment}
+                    {deleteAgreement}
+                    {sumEconomicEventsFromFulfillments}
+                    {updateColumns}
+                    {buildPlan}
+                    bind:fetching
+                    bind:commitmentModalOpen
+                    bind:commitmentModalProcess
+                    bind:commitmentModalColumn
+                    bind:commitmentModalSide
+                    bind:selectedCommitmentId
+                    bind:selectedProcessId
+                    bind:currentProcess
+                    bind:economicEventModalOpen
+                    bind:selectedCommitment
+                  />
+                {/each}
+
+                <!-- {#each nonProcessCommitments.filter(it => {return it.stageId == prevColumnBasedOnId && resourceSpecificationIds.includes(it.resourceConformsTo.id)}) as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }} -->
+                {#each [] as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf }}
                 {@const color = finished ? "#c4fbc4" : (((fulfilledBy && fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
                   <div
                     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"

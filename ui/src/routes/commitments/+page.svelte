@@ -1,6 +1,7 @@
 <script lang="ts">
 import Header from "$lib/Header.svelte";
 import Loading from "$lib/Loading.svelte";
+import AgreementModal from "./AgreementModal.svelte";
 import { getAllCommitments, getAllUnits, getAllAgreements, getAllActions, getAllAgents, getAllResourceSpecifications } from "../../crud/fetch";
 import { allCommitments, allUnits, allAgreements, allActions, allAgents, allResourceSpecifications } from "../../crud/store";
 import { onMount } from "svelte";
@@ -36,6 +37,7 @@ allAgreements.subscribe(value => {
 // });
 
 let loading: boolean = false;
+let agreementModalOpen: boolean = false;
 
 onMount(async () => {
   loading = agreements.length === 0;
@@ -61,6 +63,7 @@ onMount(async () => {
 </script>
 
 <Header title="Exchanges" description="The exchanges in a network." />
+<AgreementModal bind:open={agreementModalOpen}/>
 
 {#if loading}
   <Loading />
@@ -71,15 +74,15 @@ onMount(async () => {
       <div class="sm:flex-auto">
       </div>
       <!-- add economic event with modal -->
-      <!-- <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
         <button
           type="button"
           on:click={() => {
-            // modalOpen = true;
+            agreementModalOpen = true;
           }}
           class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >Add a commitment</button>
-      </div> -->
+          >Add an exchange</button>
+      </div>
     </div>
     <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -149,10 +152,11 @@ onMount(async () => {
                     <tr class="bg-gray-100">
                       <!-- PRIMARY COMMITMENT -->
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {agreement?.commitments?.length}
                         {commitment?.action?.label}
                       </td>
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {commitment?.resourceQuantity?.hasNumericalValue}
+                        {commitment?.resourceQuantity?.hasNumericalValue.toFixed(2).replace(/\.?00+$/, '')}
                         <!-- {units.find(unit => unit.id === commitment.resourceQuantity.hasUnitId)?.label} -->
                       </td>
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -172,7 +176,7 @@ onMount(async () => {
                         {reciprocal?.action?.label}
                       </td>
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {reciprocal?.resourceQuantity?.hasNumericalValue}
+                        {reciprocal?.resourceQuantity?.hasNumericalValue.toFixed(2).replace(/\.?00+$/, '')}
                         <!-- {units.find(unit => unit.id === reciprocal.resourceQuantity.hasUnitId)?.label} -->
                       </td>
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
