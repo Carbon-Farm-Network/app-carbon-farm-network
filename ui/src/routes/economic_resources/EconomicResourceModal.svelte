@@ -39,6 +39,19 @@
         updatedAt: new Date(Date.now())
       })
     }
+    
+    function checkKey(e) {
+      if (e.key === "Escape") {
+        open = false
+      }
+    }
+
+    onMount(() => {
+      window.addEventListener('keydown', checkKey)
+      return () => {
+        window.removeEventListener('keydown', checkKey)
+      }
+    })
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div

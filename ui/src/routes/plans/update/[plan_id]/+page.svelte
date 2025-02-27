@@ -193,10 +193,10 @@
 
         // find relevant inventory
         let fromInventory = carryOver[previousColumn[0].basedOn.id]?.[output.resourceConformsTo.id]?.fromInventory;
-        // TODO: figure out why subtracting 1 is necessary
-        if (fromInventory > 0) {
-          fromInventory -= 1
-        }
+        // TODO: figure out why subtracting 1 is sometimes necessary
+        // if (fromInventory > 0) {
+        //   fromInventory -= 1
+        // }
         acc[output.resourceConformsTo.id] = acc[output.resourceConformsTo.id] + fromInventory //new Decimal(acc[output.resourceConformsTo.id]).plus(new Decimal(fromInventory)).toNumber();
         return acc;
     }, {});

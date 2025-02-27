@@ -186,9 +186,9 @@
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Date</th
                 >
-              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+              <!-- <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                 <span class="sr-only">Edit</span>
-              </th>
+              </th> -->
             </tr>
           </thead>
           <tbody class="bg-white">

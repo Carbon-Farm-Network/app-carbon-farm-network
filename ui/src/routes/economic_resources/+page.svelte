@@ -166,14 +166,15 @@
                   {economicResource?.note ? economicResource?.note : "-"}
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {economicResource?.trackingIdentifier}
+                  {economicResource?.trackingIdentifier ? economicResource?.trackingIdentifier : "-"}
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
 
                   <button type="button" on:click={() => {
                     selectedEconomicResource = economicResource;
                     modalOpen = true;
-                    }}  class="text-indigo-600 hover:text-indigo-900"
+                    }}  
+                    class="text-indigo-600 hover:text-indigo-900"
                     >Edit<span class="sr-only">, Lindsay Walton</span></button>
                 </td>
               </tr>

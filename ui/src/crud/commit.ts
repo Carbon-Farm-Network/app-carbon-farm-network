@@ -88,27 +88,39 @@ async function create(entry_type: string, params: any) {
   let convertedTimestamps = changeAllTimestampsToNumbers(changedQuantities)
   // console.log('convertedTimestamps', convertedTimestamps)
   let snakecaseParams = camelToSnake(convertedTimestamps)
+  let removeUndefined = removeNullAndUndefinedFields(snakecaseParams)
   // console.log('snakecaseParams', snakecaseParams)
   // let weClient = WeaveClient.connect(appletServices);
-  delete snakecaseParams.id
-  delete snakecaseParams.revision_id
-  console.log('final params', snakecaseParams)
+  delete removeUndefined.id
+  delete removeUndefined.revision_id
+  console.log('final params', removeUndefined)
   const res = await client0.callZome({
     cap_secret: null,
     role_name: 'hrea',
     zome_name: 'hrea',
     fn_name: `create_${entry_type}`,
-    payload: snakecaseParams,
+    payload: removeUndefined,
   })
   return formatResItem( res, res.signed_action.hashed.hash )
 }
 
-async function removeNullAndUndefinedFields(obj: any) {
+function removeNullAndUndefinedFields(obj: any) {
   for (let key in obj) {
     if (obj[key] == null) {
       delete obj[key]
     } else if (typeof obj[key] === 'object') {
       removeNullAndUndefinedFields(obj[key])
+    }
+  }
+  return obj;
+}
+
+function deleteFieldsEndingIn_id(obj: any) {
+  for (let key in obj) {
+    if (key.endsWith('_id')) {
+      delete obj[key]
+    } else if (typeof obj[key] === 'object') {
+      deleteFieldsEndingIn_id(obj[key])
     }
   }
   return obj;
@@ -124,13 +136,15 @@ async function update(entry_type: string, params: any) {
   const originalId = snakecaseParams.id
   delete snakecaseParams.id
   delete snakecaseParams.revision_id
-  console.log('snakecaseParams', snakecaseParams)
+  let removeUndefined = removeNullAndUndefinedFields(snakecaseParams)
+  let remove_id = deleteFieldsEndingIn_id(removeUndefined)
+  console.log('snakecaseParams', remove_id)
   params[`original_${entry_type}_id`] = params.id
   console.log(params)
   const updateObj = {
     [`original_${entry_type}_hash`]: decodeHashFromBase64(params.id),
     [`previous_${entry_type}_hash`]: decodeHashFromBase64(params.revisionId),
-    [`updated_${entry_type}`]: snakecaseParams
+    [`updated_${entry_type}`]: remove_id
   }
   console.log('final params', updateObj)
   const res = await client0.callZome({
