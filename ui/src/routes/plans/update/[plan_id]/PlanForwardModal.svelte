@@ -95,7 +95,9 @@
                       <div>
                       {commitment.resourceConformsTo?.name}
                       </div>
-                      <div>
+                      <div
+                        class:notice-change={commitment.resourceQuantity?.hasNumericalValue != suggestion.resourceQuantity?.hasNumericalValue}
+                      >
                       {commitment.resourceQuantity?.hasNumericalValue} 
                       {units.find(u => u.id == commitment.resourceQuantity?.hasUnitId)?.symbol}
                        ➜
@@ -131,3 +133,9 @@
         </div>
         </div>
     </div>
+
+  <style>
+    .notice-change {
+      color: brown;
+    }
+  </style>

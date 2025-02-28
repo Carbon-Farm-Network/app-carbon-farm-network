@@ -30,15 +30,17 @@
   let actions: Action[] = []
   let resourceSpecifications: ResourceSpecification[] = []
   let processSpecifications: any[] = []
-  let commitmentModalProcess: number | undefined;
-  let commitmentModalColumn: number | undefined;
-  let commitmentModalSide: string | undefined;
   let requests: Proposal[] = [];
   let offers: Proposal[] = [];
   let proposalsList: Proposal[] = []
-  let currentProcess: any[];
+  let currentProcess: any[] | undefined = undefined;
   let exportOpen: boolean = false;
   let importing: boolean = false;
+  let commitmentModalProcess: number | undefined = undefined;
+  let commitmentModalColumn: number | undefined = undefined;
+  let commitmentModalSide: string | undefined = "";
+  let selectedCommitment: string | undefined = undefined;
+  let selectedCommitmentId: string | undefined = undefined;
   let createPlan: PlanCreateParams = {
     name: '',
     note: '',
@@ -461,7 +463,6 @@
 
   let planModalOpen = false
   let commitmentModalOpen = false
-  let selectedCommitmentId: string | undefined = undefined
 
   let totalCost: Decimal = new Decimal(0);
   $: if (allColumns) {
@@ -497,18 +498,21 @@ generate columns
   editing={false}
 />
 
+{#if commitmentModalOpen}
 <CommitmentModal
   bind:open={commitmentModalOpen}
   {selectedCommitmentId}
+  {selectedCommitment}
   {commitmentModalProcess}
   {commitmentModalColumn}
   {commitmentModalSide}
-  independentDemands={commitments}
-  {agents}
-  {resourceSpecifications}
   {units}
   {actions}
+  {agents}
+  {resourceSpecifications}
   process = {currentProcess}
+
+  
   on:submit={(event) => {
     if (event.detail.useAs == "update") {
       if (event.detail.column == undefined) {
@@ -551,6 +555,7 @@ generate columns
     commitmentModalSide = undefined
   }}
 />
+{/if}
 
 <!-- custom header introduced to enable planning to be more inline with the beginning of the page -->
 <div class="custom-background" style="height: 15vh; margin-bottom: 6px">
@@ -776,8 +781,12 @@ generate columns
             <button
               class="flex justify-center items-center w-full mb-2"
               on:click={() => {
-                commitmentModalOpen = true
+                commitmentModalProcess = undefined
+                commitmentModalColumn = undefined
                 selectedCommitmentId = undefined
+                commitmentModalSide = ""
+                commitmentModalOpen = true
+                selectedCommitment = undefined
               }}
             >
               <PlusCircle />
@@ -864,8 +873,12 @@ generate columns
                 <div class="w-full flex justify-center">
                   <button
                     on:click={() => {
+                      commitmentModalProcess = undefined
+                      commitmentModalColumn = undefined
+                      commitmentModalSide = ""
                       selectedCommitmentId = id
                       commitmentModalOpen = true
+                      selectedCommitment = cloneDeep(c)
                     }}
                   >
                     <Pencil />

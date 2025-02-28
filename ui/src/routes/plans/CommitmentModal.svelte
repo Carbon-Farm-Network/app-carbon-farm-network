@@ -4,6 +4,7 @@
   import { createEventDispatcher } from 'svelte';
   import type { AgentConnection, Agent, UnitConnection, Action } from '@leosprograms/vf-graphql'
   import { cloneDeep } from "lodash"
+  import { stringify } from 'postcss'
 
   export let open = false
   export let commitmentModalColumn: number | undefined;
@@ -52,8 +53,10 @@
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
       e.preventDefault()
-      // selectedCommitmentId = undefined
-      // previousSelectedCommitmentId = undefined
+      selectedCommitmentId = undefined
+      previousSelectedCommitmentId = undefined
+      selectedCommitment = undefined
+      selectedStage = undefined
       open = false
     }
   }
@@ -97,7 +100,7 @@
   selectedCommitment = selectedCommitment || Object.assign({}, newCommitmentTemplate)
   $: commitmentModalColumn, commitmentModalProcess, commitmentModalSide, selectedCommitment, selectedCommitmentId
 
-  let previousSelectedCommitmentId: string | undefined;
+  let previousSelectedCommitmentId: string | undefined = undefined;
   $: {
     if (selectedCommitmentId !== previousSelectedCommitmentId) {
       previousSelectedCommitmentId = selectedCommitmentId;
@@ -200,6 +203,7 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Provider</label
                 >
+                <!-- {JSON.stringify(selectedCommitment)} -->
                 {#if selectedCommitment?.id && provider}
                   <select
                     id="provider"
@@ -591,6 +595,7 @@
             type="button"
             on:click={() => {
               selectedCommitmentId = undefined
+              previousSelectedCommitmentId = undefined
               selectedCommitment = undefined
               selectedStage = undefined
               open = false

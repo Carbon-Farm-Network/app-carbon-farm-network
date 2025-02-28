@@ -207,7 +207,12 @@
         let outputs = cloneDeep(process.committedOutputs);
         let newOutputs = outputs.map((it: any) => {
             let proportion = new Decimal(it.resourceQuantity.hasNumericalValue).dividedBy(new Decimal(outputsCombined[it.resourceConformsTo.id] || 1));
-            let newValue = new Decimal(inputsCombined[it.resourceConformsTo.id] || 0).times(new Decimal(proportion)).floor();
+            let newValue;
+            if (inputsCombined[it.resourceConformsTo.id]) {
+              newValue = new Decimal(inputsCombined[it.resourceConformsTo.id] || 0).times(new Decimal(proportion)).floor();
+            } else {
+              newValue = it?.resourceQuantity?.hasNumericalValue
+            }
             it.resourceQuantity.hasNumericalValue = newValue.toString();
             return it;
         });
