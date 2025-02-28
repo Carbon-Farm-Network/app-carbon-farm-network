@@ -142,6 +142,7 @@
               <!-- {#each offers as { proposed_intents }, index} -->
               {#each recipeProcess ? recipeProcess?.recipeInputs : [] as recipeInput, index}
                 {@const thisRecipeFlow = recipeProcess.recipeInputs[index]}
+
                 <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                   <td
                     class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
@@ -153,13 +154,14 @@
                   <td
                     class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
                   >
+
                     <button
                       type="button"
                       on:click={async () => {
                         console.log('thisRecipeFlow', thisRecipeFlow)
                         currentRecipeFlow = {
                           id: thisRecipeFlow.id,
-                          revisionId: thisRecipeFlow.revisionId,
+                          revisionId: thisRecipeFlow.revisionId || thisRecipeFlow.id,
                           instructions: thisRecipeFlow.instructions,
                           note: thisRecipeFlow.note,
                           action: thisRecipeFlow.action?.id,

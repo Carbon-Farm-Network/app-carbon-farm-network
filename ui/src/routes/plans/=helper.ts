@@ -20,16 +20,16 @@ export function makeAgreement(
   offers: any[],
   agents: any[] | undefined
 ): undefined | any {
-  console.log("reciprocal_clause", recipe)
+  // console.log("reciprocal_clause", recipe)
   const reciprocal_clause = recipe?.recipeReciprocalClauses?.[0]
   const matching_offer = matchingOffer(commitment, offers)
 
   if (matching_offer) {
-    console.log("matching offer", matching_offer)
+    // console.log("matching offer", matching_offer)
     const reciprocal_intent = matching_offer.publishes.find(
       (intent: any) => intent.reciprocal
     )
-    console.log("reciprocal_intent", reciprocal_intent)
+    // console.log("reciprocal_intent", reciprocal_intent)
     const primary_intent = matching_offer.publishes.find(
       (intent: any) => !intent.reciprocal
     )

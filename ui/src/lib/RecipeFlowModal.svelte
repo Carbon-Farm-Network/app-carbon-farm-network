@@ -162,7 +162,16 @@
                   }}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
-                <datalist id="roleSuggestions">
+                <datalist id="roleSuggestions"
+                  on:input={(e) => {
+                    const input = e.target;
+                    if (input instanceof HTMLInputElement) {
+                      recipeFlow.providerRole = input.value;
+                      //@ts-ignore
+                      // currentAgent.imageUrl = roleImages[role] || 'profile.png'
+                    }
+                  }}
+                >
                   {#each roles as role (role)}
                   <option value={role}>{role}</option>
                   {/each}
@@ -206,7 +215,16 @@
                   }}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
-                <datalist id="roleSuggestions">
+                <datalist id="roleSuggestions"
+                  on:input={(e) => {
+                    const input = e.target;
+                    if (input instanceof HTMLInputElement) {
+                      recipeFlow.receiverRole = input.value;
+                      //@ts-ignore
+                      // currentAgent.imageUrl = roleImages[role] || 'profile.png'
+                    }
+                  }}
+                >
                   {#each roles as role (role)}
                   <option value={role}>{role}</option>
                   {/each}

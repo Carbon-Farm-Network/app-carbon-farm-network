@@ -187,7 +187,7 @@
         <div>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
-              {#if selectedCommitmentId}
+              {#if selectedCommitmentId || selectedCommitment?.revisionId}
                 Edit commitment
               {:else}
                 Add commitment
@@ -504,7 +504,7 @@
           </div>
         </div>
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-          {#if selectedCommitmentId}
+          {#if selectedCommitmentId || selectedCommitment?.revisionId}
           <button
           type="button"
           class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"

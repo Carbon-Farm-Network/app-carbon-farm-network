@@ -111,13 +111,13 @@
         -->
     </div>
     {#if carryOverInfo?.fromInventory > 0 && side == "committedInputs"}
-        <p style="white-space: pre-wrap; word-wrap: break-word; color: green; font-weight: bold;">
+        <p style="white-space: pre-wrap; word-wrap: break-word; color: green; font-weight: bold; background-color: #e0ffe0; padding: 2px 4px; border-radius: 4px; display: inline-block;">
         {carryOverInfo?.fromInventory} {resourceQuantity?.hasUnit?.label} in inventory
         </p>
     {/if}
 
     {#if side == "committedOutputs" && deficit > 0}
-        <p style="white-space: pre-wrap; word-wrap: break-word; color: red; font-weight: bold;">
+        <p style="white-space: pre-wrap; word-wrap: break-word; color: red; font-weight: bold; background-color: #ffe0e0; padding: 2px 4px; border-radius: 4px; display: inline-block;">
             {deficit} {resourceQuantity?.hasUnit?.label} deficit
         </p>
     {/if}

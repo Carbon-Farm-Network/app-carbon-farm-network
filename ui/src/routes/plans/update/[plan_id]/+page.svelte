@@ -205,9 +205,9 @@
     for (let i = 0; i < previousColumn.length; i++) {
         let process = previousColumn[i];
         let outputs = cloneDeep(process.committedOutputs);
-        let newOutputs = outputs.map(it => {
-            let proportion = new Decimal(it.resourceQuantity.hasNumericalValue).dividedBy(new Decimal(outputsCombined[it.resourceConformsTo.id]));
-            let newValue = new Decimal(inputsCombined[it.resourceConformsTo.id]).times(new Decimal(proportion)).floor();
+        let newOutputs = outputs.map((it: any) => {
+            let proportion = new Decimal(it.resourceQuantity.hasNumericalValue).dividedBy(new Decimal(outputsCombined[it.resourceConformsTo.id] || 1));
+            let newValue = new Decimal(inputsCombined[it.resourceConformsTo.id] || 0).times(new Decimal(proportion)).floor();
             it.resourceQuantity.hasNumericalValue = newValue.toString();
             return it;
         });
@@ -460,6 +460,7 @@
 
   async function includeCommitment(commitment: Commitment) {
     try {
+      commitment = cloneDeep(commitment)
       // if primary intent, add to requestsPerOffer
       if (commitment.clauseOf) {
         // console.log("&&& commitment", commitment)
@@ -473,9 +474,13 @@
           if (!requestsPerOffer[primary_intent.id]) {
             requestsPerOffer[primary_intent.id] = {}
           }
-          
-          // if (commitment.action.label == "pickup") {
-            requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
+
+          // if already included, skip
+          if (requestsPerOffer[primary_intent.id][commitment.id]) {
+            return
+          }
+
+          requestsPerOffer[primary_intent.id][commitment.id] = new Decimal(commitment.resourceQuantity.hasNumericalValue)
           // }
         }
       }
@@ -612,7 +617,6 @@
     resourceInventory = {}
     economicResources.forEach(it => {
       let resourceComboId = it.conformsTo?.id.concat("____").concat(it.stage?.id)
-      console.log("inventory id 0", resourceComboId)
       if (resourceComboId) {
         let onhandQuantity = it.onhandQuantity?.hasNumericalValue
         let existingQuantity = resourceInventory[resourceComboId]
@@ -1360,17 +1364,12 @@ bind:open={economicEventModalOpen}
                         {primary?.publishes?.availableQuantity?.hasUnit?.label} 
                       </strong>
                       available<br>
-                      <!-- {#each units as unit}
-                        {#if unit.id == primary?.publishes?.availableQuantity?.hasUnitId}
-                          {unit.label}
-                        {/if}
-                      {/each} 
-                       available<br>-->
-                      <span style="color: {(requestsTotal  > primary?.publishes?.availableQuantity?.hasNumericalValue) ? 'red' : ''
-                        }">
-                        {requestsTotal} requested<br>
-                        <!-- {requestsTotal} of {primary?.publishes?.availableQuantity?.hasNumericalValue} requested<br> -->
-                      </span>
+                      <div>
+                        <p class:red-label={requestsTotal  > primary?.publishes?.availableQuantity?.hasNumericalValue}>
+                          {requestsTotal} requested<br>
+                          <!-- {requestsTotal} of {primary?.publishes?.availableQuantity?.hasNumericalValue} requested<br> -->
+                        </p>
+                      </div>
                     {/if}
                     {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
                     {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} 
@@ -1426,7 +1425,7 @@ bind:open={economicEventModalOpen}
                   <!-- plan backward -->
                   {#if processIndex == 0 && columnIndex > 0}
                     <button
-                      title="Auto-fill the input commitments based on the output commitments"
+                      title="Auto-fill the previous output commitments based on the input commitments"
                       class="flex justify-center items-center"
                       on:click={() => {
                       backwardSuggestions = {
@@ -1553,7 +1552,7 @@ bind:open={economicEventModalOpen}
 
                     {#if processIndex == 0 && columnIndex < allColumns.length - 1}
                       <button
-                        title="Auto-fill the output commitments based on the input commitments"
+                        title="Auto-fill the next input commitments based on the output commitments"
                         class="flex justify-center items-center"
                         on:click={() => {
                         forwardSuggestions = {
@@ -1959,6 +1958,7 @@ bind:open={economicEventModalOpen}
                 selectedCommitmentId = undefined
                 commitmentModalSide = ""
                 commitmentModalOpen = true
+                selectedCommitment = undefined
               }}
             >
               <PlusCircle />
@@ -2004,6 +2004,7 @@ bind:open={economicEventModalOpen}
                       currentProcess = undefined
                       selectedCommitmentId = id
                       commitmentModalOpen = true
+                      selectedCommitment = cloneDeep(c)
                     }}
                   >
                     <Pencil />
@@ -2074,6 +2075,10 @@ bind:open={economicEventModalOpen}
 
 <style>
   /* Custom CSS */
+  .red-label {
+    white-space: pre-wrap; word-wrap: break-word; color: red; font-weight: bold; background-color: #ffe0e0; padding: 2px 4px; border-radius: 4px; display: inline-block;
+  }
+
   .custom-background {
     /* background-image: url('/heading3.png'); */
     background-image: url('/dsf.jpg');
