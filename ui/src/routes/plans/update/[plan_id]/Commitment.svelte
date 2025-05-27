@@ -71,7 +71,7 @@
             border-radius: 0px 60px 60px 0px;
     ">
     <strong>{resourceConformsTo?.name}</strong>
-    <div class="flex justify-between">
+    <div class="flex justify-between" style="flex-direction: column">
         <!--
         <p>
         {supply_driven_quantity?.hasNumericalValue}
@@ -85,7 +85,7 @@
         <strong>
             {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
             <!-- {sumEconomicEvents(fulfilledBy.map(it => it.id))} -->
-            {sumEconomicEventsFromFulfillments(fulfilledBy)}
+            {sumEconomicEventsFromFulfillments(fulfilledBy)} 
             {#each units as unit}
                 {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
                 {unit.label}
@@ -101,6 +101,20 @@
             {/each}
             {/if}
         </strong>
+        </p>
+
+        <p>
+            {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
+            planned
+            <strong>
+                {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                {#each units as unit}
+                    {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
+                        {unit.label}
+                    {/if}
+                {/each}
+            </strong>
+            {/if}
         </p>
 
         <!--

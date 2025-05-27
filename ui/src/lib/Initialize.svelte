@@ -52,7 +52,7 @@
         for (let i of r.has_recipe_input) {
           console.log(i)
           let rFlowInput = {
-            note: "asdf",
+            note: "",
             recipeInputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
             resourceConformsTo: resourceSpecifications.find(rs => rs.name === i.resourceConformsTo.name)?.id,
             action: actions.find(a => a.label === i.action.label.replaceAll("_", "-")).id,
@@ -74,7 +74,7 @@
         for (let o of r.has_recipe_output) {
           console.log(o)
           let rFlowOutput = {
-            note: "asdf",
+            note: "",
             recipeOutputOf: rProcRes.data?.createRecipeProcess.recipeProcess.id,
             resourceConformsTo: resourceSpecifications.find(rs => rs.name === o.resourceConformsTo.name)?.id,
             action: actions.find(a => a.label === o.action.label.replaceAll("_", "-")).id,

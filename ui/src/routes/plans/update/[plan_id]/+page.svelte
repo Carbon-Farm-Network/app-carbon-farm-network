@@ -984,8 +984,10 @@ bind:open={economicEventModalOpen}
 
     if (extractedEvent?.finished) {
       // actually save commitment
+      console.log("updating commitment", commitmentModalColumn)
       let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == extractedEvent.id)
       allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = extractedEvent
+      console.log("updating commitment as finished", allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment])
       await updateColumns(event.detail.column, event.detail.process, event.detail.side)
     }
 
@@ -1028,7 +1030,14 @@ bind:open={economicEventModalOpen}
         }
         
         console.log("making new cost agreement", event.detail.commitment, previousCostAgreement)
-        let newCostAgreement = makeAgreement(event.detail.commitment, previousCostAgreement, offers, agents)
+        let mockedCommitment = {
+          ...event.detail.commitment,
+          resourceQuantity: {
+            ...event.detail.commitment.resourceQuantity,
+            hasNumericalValue: event.detail.commitment.fulfilledBy?.length > 0 ? sumEconomicEventsFromFulfillments(event.detail.commitment.fulfilledBy) : event.detail.commitment.resourceQuantity.hasNumericalValue,
+          },
+        }
+        let newCostAgreement = makeAgreement(mockedCommitment, previousCostAgreement, offers, agents)
         console.log("new cost agreement"  , newCostAgreement)
 
         let primaryIntent = newCostAgreement?.commitment//primaryIntent

@@ -127,7 +127,7 @@
       ?.reduce((acc: any, input: any) => {
         if (input.resourceQuantity.hasNumericalValue > 0) {
           // find a recipe that outputs what the demand wants
-          // console.log("input", input)
+          console.log("input", input)
           const recipe = recipes
             .find(a_recipe => {
               // if (input.stage) {
@@ -913,7 +913,7 @@ generate columns
                   <p>
                     {primary?.publishes?.action?.label}
                     {primary?.publishes?.resourceQuantity?.hasNumericalValue}
-                    {primary?.publishes?.availableQuantity?.hasUnit?.label}
+                    {primary?.publishes?.resourceQuantity?.hasUnit?.label}
                   </p>
                   <p>to {primary?.publishes?.receiver?.name}</p>
                 </div>
