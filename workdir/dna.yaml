@@ -1,19 +1,21 @@
 ---
 manifest_version: "1"
-name: acfn
+name: migration
 integrity:
   network_seed: ~
   properties: ~
-  origin_time: 1681488895304766
+  origin_time: 1716135750268077
   zomes:
-    - name: rea_map_integrity
+    - name: migrate_integrity
       hash: ~
-      bundled: "../target/wasm32-unknown-unknown/release/rea_map_integrity.wasm"
+      bundled: "../target/wasm32-unknown-unknown/release/migrate_integrity.wasm"
       dependencies: ~
+      dylib: ~
 coordinator:
   zomes:
-    - name: rea_map
+    - name: migrate
       hash: ~
-      bundled: "../target/wasm32-unknown-unknown/release/rea_map.wasm"
+      bundled: "../target/wasm32-unknown-unknown/release/migrate.wasm"
       dependencies:
-        - name: rea_map_integrity
+        - name: migrate_integrity
+      dylib: ~

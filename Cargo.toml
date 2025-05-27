@@ -18,9 +18,3 @@ path = "dnas/migration/zomes/coordinator/migrate"
 
 [workspace.dependencies.migrate_integrity]
 path = "dnas/migration/zomes/integrity/migrate"
-
-[workspace.dependencies.rea_map]
-path = "dnas/acfn/zomes/coordinator/rea_map"
-
-[workspace.dependencies.rea_map_integrity]
-path = "dnas/acfn/zomes/integrity/rea_map"
