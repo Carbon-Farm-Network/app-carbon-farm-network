@@ -6,6 +6,12 @@ export const SIMPLIFIED_PLAN_RETURN_FIELDS = gql`
     revisionId
     name
     note
+    meta {
+      retrievedRevision {
+        id
+        time
+      }
+    }
   }
 `
 
@@ -16,6 +22,7 @@ export const COMMITMENT_RETURN_FIELDS = gql`
     hasBeginning
     action {
       id
+      symbol
       label
     }
     meta {
@@ -24,42 +31,67 @@ export const COMMITMENT_RETURN_FIELDS = gql`
         time
       }
     }
-    providerId
     provider {
       id
       name
     }
-    receiverId
+    receiver {
+      id
+      name
+    }
+    inputOf {
+      id
+      revisionId
+    }
+    outputOf {
+      id
+      revisionId
+    }
     resourceQuantity {
       hasNumericalValue
-      hasUnitId
+      hasUnit {
+        id
+        label
+        symbol
+      }
     }
     resourceConformsTo {
       id
       name
-      defaultUnitOfResourceId
+      defaultUnitOfResource {
+        id
+      }
+    }
+    stage {
+      id
+      name
     }
     fulfilledBy {
       fulfilledBy {
         id
         action {
           id
+          symbol
           label
         }
-        providerId
         provider {
           id
           name
         }
-        receiverId
         resourceConformsTo {
           id
           name
-          defaultUnitOfResourceId
+          defaultUnitOfResource {
+            id
+          }
         }
         resourceQuantity {
           hasNumericalValue
-          hasUnitId
+          hasUnit {
+            id
+            label
+            symbol
+          }
         }
         hasBeginning
       }
@@ -74,402 +106,35 @@ export const COMMITMENT_RETURN_FIELDS = gql`
         id
         revisionId
         finished
-        fulfilledBy {
-          id
-        }
-        action {
-          id
-          label
-        }
-        resourceConformsTo {
-          id
-          name
-          defaultUnitOfResourceId
-        }
-        resourceQuantity {
-          hasNumericalValue
-          hasUnitId
-        }
-      }
-    }
-  }
-`
-
-export const PROCESS_RETURN_FIELDS = gql`
-  fragment ProcessReturnFields on Process {
-    id
-    revisionId
-    name
-    plannedWithin {
-      id 
-    }
-    meta {
-      retrievedRevision {
-        id
-        time
-      }
-    }
-    basedOn {
-      id
-      name
-    }
-    committedInputs {
-      id
-      revisionId
-      hasBeginning
-      action {
-        id
-        label
-      }
-      meta {
-        retrievedRevision {
-          id
-          time
-        }
-      }
-      providerId
-      provider {
-        id
-        name
-      }
-      receiverId
-      resourceQuantity {
-        hasNumericalValue
-        hasUnitId
-      }
-      resourceConformsTo {
-        id
-        name
-        defaultUnitOfResourceId
-      }
-      fulfilledBy {
-        id
-      }
-      clauseOf {
-        id
-        name
-        note
-        revisionId
-        commitments {
-          id
-          revisionId
-          providerId
-          finished
-          fulfilledBy {
-            id
-          }
-          receiverId
-          hasBeginning
-          action {
-            id
-            label
-          }
-          resourceConformsTo {
-            id
-            name
-            defaultUnitOfResourceId
-          }
-          resourceQuantity {
-            hasNumericalValue
-            hasUnitId
-          }
-        }
-      }
-      finished
-    }
-    committedOutputs {
-      id
-      revisionId
-      hasBeginning
-      action {
-        id
-        label
-      }
-      meta {
-        retrievedRevision {
-          id
-          time
-        }
-      }
-      providerId
-      provider {
-        id
-        name
-      }
-      receiverId
-      resourceQuantity {
-        hasNumericalValue
-        hasUnitId
-      }
-      resourceConformsTo {
-        id
-        name
-        defaultUnitOfResourceId
-      }
-      fulfilledBy {
-        id
-      }
-      clauseOf {
-        id
-        name
-        note
-        revisionId
-        commitments {
-          finished
-          fulfilledBy {
-            id
-          }
-          id
-          revisionId
-          providerId
-          receiverId
-          hasBeginning
-          action {
-            id
-            label
-          }
-          resourceConformsTo {
-            id
-            name
-            defaultUnitOfResourceId
-          }
-          resourceQuantity {
-            hasNumericalValue
-            hasUnitId
-          }
-        }
-      }
-      finished
-    }
-  }
-`
-
-export const PLAN_RETURN_FIELDS = gql`
-  fragment PlanReturnFields on Plan {
-    id
-    revisionId
-    name
-    note
-    meta {
-      retrievedRevision {
-        id
-        time
-      }
-    }
-    independentDemands {
-      id
-      revisionId
-      action {
-        id
-        label
-      }
-      receiverId
-      resourceQuantity {
-        hasNumericalValue
-        hasUnitId
-      }
-      resourceConformsTo {
-        id
-        name
-        defaultUnitOfResourceId
-      }
-    }
-    nonProcessCommitments {
-      id
-      revisionId
-      stageId
-      action {
-        id
-        label
-      }
-      finished
-      fulfilledBy {
-        id
-      }
-      receiverId
-      providerId
-      resourceQuantity {
-        hasNumericalValue
-        hasUnitId
-      }
-      resourceConformsTo {
-        id
-        name
-        defaultUnitOfResourceId
-      }
-      clauseOf {
-        id
-        name
-        note
-        revisionId
-        commitments {
-          finished
-          fulfilledBy {
-            id
-          }
-          id
-          revisionId
-          providerId
-          receiverId
-          hasBeginning
-          action {
-            id
-            label
-          }
-          resourceConformsTo {
-            id
-            name
-            defaultUnitOfResourceId
-            resourceClassifiedAs
-          }
-          resourceQuantity {
-            hasNumericalValue
-            hasUnitId
-          }
-        }
-      }
-    }
-    processes {
-      id
-      revisionId
-      name
-      meta {
-        retrievedRevision {
-          id
-          time
-        }
-      }
-      basedOn {
-        id
-        name
-      }
-      committedInputs {
-        id
-        revisionId
-        hasBeginning
-        action {
-          id
-          label
-        }
-        meta {
-          retrievedRevision {
-            id
-            time
-          }
-        }
-        providerId
         provider {
           id
           name
         }
-        receiverId
-        resourceQuantity {
-          hasNumericalValue
-          hasUnitId
-        }
-        resourceConformsTo {
+        receiver {
           id
           name
-          defaultUnitOfResourceId
-          resourceClassifiedAs
         }
-        finished
         fulfilledBy {
           id
         }
-        clauseOf {
-          id
-          name
-          note
-          revisionId
-          commitments {
-            finished
-            fulfilledBy {
-              id
-            }
-            id
-            revisionId
-            providerId
-            receiverId
-            hasBeginning
-            action {
-              id
-              label
-            }
-            resourceConformsTo {
-              id
-              name
-              defaultUnitOfResourceId
-              resourceClassifiedAs
-            }
-            resourceQuantity {
-              hasNumericalValue
-              hasUnitId
-            }
-          }
-        }
-      }
-      committedOutputs {
-        id
-        revisionId
-        hasBeginning
         action {
           id
+          symbol
           label
-        }
-        meta {
-          retrievedRevision {
-            id
-            time
-          }
-        }
-        providerId
-        provider {
-          id
-          name
-        }
-        receiverId
-        resourceQuantity {
-          hasNumericalValue
-          hasUnitId
         }
         resourceConformsTo {
           id
           name
-          resourceClassifiedAs
-        }
-        finished
-        fulfilledBy {
-          id
-        }
-        clauseOf {
-          id
-          name
-          note
-          revisionId
-          commitments {
+          defaultUnitOfResource {
             id
-            revisionId
-            providerId
-            receiverId
-            hasBeginning
-            finished
-            fulfilledBy {
-              id
-            }
-            action {
-              id
-              label
-            }
-            resourceConformsTo {
-              id
-              name
-              defaultUnitOfResourceId
-            }
-            resourceQuantity {
-              hasNumericalValue
-              hasUnitId
-            }
+          }
+        }
+        resourceQuantity {
+          hasNumericalValue
+          hasUnit {
+            id
+            label
+            symbol
           }
         }
       }
@@ -482,57 +147,97 @@ export const NON_PROCESS_COMMITMENT_RETURN_FIELDS = gql`
     nonProcessCommitments {
       id
       revisionId
-      stageId
+      stage {
+        id
+      }
       action {
         id
+        symbol
         label
       }
       finished
       fulfilledBy {
         id
       }
-      receiverId
-      providerId
+      provider {
+        id
+      }
+      receiver {
+        id
+      }
       resourceQuantity {
         hasNumericalValue
-        hasUnitId
+        hasUnit {
+          id
+          label
+          symbol
+        }
       }
       resourceConformsTo {
         id
         name
-        defaultUnitOfResourceId
+        defaultUnitOfResource {
+          id
+        }
       }
       clauseOf {
         id
         name
         note
         revisionId
-        commitments {
-          finished
-          fulfilledBy {
-            id
-          }
-          id
-          revisionId
-          providerId
-          receiverId
-          hasBeginning
-          action {
-            id
-            label
-          }
-          resourceConformsTo {
-            id
-            name
-            defaultUnitOfResourceId
-            resourceClassifiedAs
-          }
-          resourceQuantity {
-            hasNumericalValue
-            hasUnitId
-          }
+        commitments(revisionId: String) {
+          ...CommitmentReturnFields
         }
       }
+    }
+  }
+`
+
+export const PROCESS_RETURN_FIELDS = gql`
+  ${COMMITMENT_RETURN_FIELDS}
+  fragment ProcessReturnFields on Process {
+    id
+    revisionId
+    name
+    plannedWithin {
+      id 
+      name
+    }
+    meta {
+      retrievedRevision {
+        id
+        time
+      }
+    }
+    basedOn {
+      id
+      name
+      image
+    }
+    committedInputs (revisionId: String) {
+      ...CommitmentReturnFields
+    }
+    committedOutputs(revisionId: String) {
+      ...CommitmentReturnFields
+    }
+  }
+`
+
+export const PLAN_RETURN_FIELDS = gql`
+  ${PROCESS_RETURN_FIELDS}
+  ${COMMITMENT_RETURN_FIELDS}
+  ${SIMPLIFIED_PLAN_RETURN_FIELDS}
+  ${NON_PROCESS_COMMITMENT_RETURN_FIELDS}
+  fragment PlanReturnFields on Plan {
+    ...SimplifiedPlanReturnFields
+    independentDemands(revisionId: String) {
+      ...CommitmentReturnFields
+    }
+    nonProcessCommitments(revisionId: String) {
+      ...CommitmentReturnFields
+    }
+    processes(revisionId: String) {
+      ...ProcessReturnFields
     }
   }
 `

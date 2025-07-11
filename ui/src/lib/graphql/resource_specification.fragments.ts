@@ -8,10 +8,6 @@ export const RESOURCE_SPECIFICATION_CORE_FIELDS = gql`
     image
     note
     resourceClassifiedAs
-    facets {
-      name
-      value
-    }
   }
 `
 

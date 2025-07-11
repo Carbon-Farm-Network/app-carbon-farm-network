@@ -7,8 +7,8 @@
   ],
   "scripts": {
     "postinstall1": "npm run download-hrea-obs && npm run download-hrea-specification && npm run download-hrea-agent && npm run download-hrea-planning && npm run download-hrea-proposal && npm run download-hrea-plan && npm run download-hrea-agreement && npm run download-facets",
-    "start": "AGENTS=1 npm run network",
-    "dev": "VITE_ADMIN_PORT=$(port) VITE_APP_PORT=$(port) SIGNAL_PORT=$(port) BOOTSTRAP_PORT=$(port) UI_PORT=8888 npm run x",
+    "start": "AGENTS=2 npm run network",
+    "dev": "VITE_ADMIN_PORT=52220 VITE_APP_PORT=52221 SIGNAL_PORT=52222 BOOTSTRAP_PORT=52223 UI_PORT=8888 npm run x",
     "x": "hc s clean &&  npm run build:happ && UI_PORT=8888 concurrently \"npm start -w ui\" \"npm run start:happ\" \"hc run-local-services -b $BOOTSTRAP_PORT -s $SIGNAL_PORT\"",
     "tool-dev": " UI_PORT=8888 npm run tool-devy",
     "tool-devy": "WASM_LOG=debug RUST_LOG='debug,wasmer_compiler_cranelift=debug,holochain::core::workflow=debug,holochain::conductor::entry_def_store=debug' RUST_BACKTRACE=1 GRAPHQL_DEBUG=3 concurrently \"npm start -w ui\" \"sleep 1 && weave --print-holochain-logs true --agent-idx 1 --dev-config we_dev/config.json\" \"sleep 10 && weave --agent-idx 2 --dev-config we_dev/config.json\"",
@@ -37,7 +37,8 @@
     "clean:build-cache": "rimraf .cargo; rimraf ui/.svelte-kit",
     "clean:build": "rimraf target; rm dnas/acfn/workdir/acfn.dna; rm workdir/acfn.happ",
     "clean": "npm run clean:build; npm run clean:build-cache; npm run clean:hrea-modules; npm run clean:modules",
-    "import-hrea-local": "cp ../hrea2/hREA/dnas/hrea/workdir/hrea.dna ./workdir/hrea.dna",
+    "import-hrea-local": "cp ../hREA/dnas/hrea/workdir/hrea.dna ./workdir/hrea.dna",
+    "import-hrea-local1": "cp ../hREA/dnas/hrea/workdir/hrea.dna ./workdir/hrea.dna",
     "import-hrea-local-2": "cp ../hREA/bundles/dna/hrea_combined/hrea_combined.dna ./workdir/hrea_combined.dna",
     "import-facets-local": "cp ../hc-facets/dnas/hc_facets/workdir/hc_facets.dna ./workdir/hc_facets.dna",
     "install-hrea-npm": "rm -rf node_modules && sh ./scripts/update-hrea-modules.sh"
@@ -49,7 +50,6 @@
     "@types/svelte-leafletjs": "^0.8.3",
     "concurrently": "^6.2.1",
     "rimraf": "^3.0.2",
-    "new-port-cli": "^1.0.0",
     "npm-check-updates": "17.1.0"
   },
   "engines": {

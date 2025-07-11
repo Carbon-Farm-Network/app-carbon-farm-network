@@ -2,7 +2,7 @@
     import { clickOutside } from '../../utils'
     import { onMount } from 'svelte'
     import { createEventDispatcher } from 'svelte';
-    import type { AgentConnection, Agent, UnitConnection, Action } from '@leosprograms/vf-graphql'
+    import type { AgentConnection, Agent, UnitConnection, Action } from '@valueflows/vf-graphql'
     import { allAgents, allUnits, allResourceSpecifications, allActions } from '../../crud/store';
     import { cloneDeep } from "lodash"
     export let open = false

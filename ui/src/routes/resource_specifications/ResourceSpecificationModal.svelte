@@ -1,23 +1,28 @@
 <script lang="ts">
   import { gql } from 'graphql-tag'
-  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@leosprograms/vf-graphql'
+  import type { RecordMeta, ResourceSpecification, ResourceSpecificationCreateParams, ResourceSpecificationUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { onMount } from 'svelte'
   import { allUnits } from '../../crud/store';
   import { getAllUnits } from '../../crud/fetch';
   import { createResourceSpecification, associateResourceSpecificationAndFacetValue, updateResourceSpecification } from '../../crud/commit';
+  import { query } from 'svelte-apollo';
+  import { GET_ALL_UNITS } from '../../crud/fetch';
+  
   const dispatch = createEventDispatcher();
   
   export let open = false;
   export let editing = false;
   export let currentResourceSpecification: any = {};
-  export let name = "";
-  export let units: any[];
+  // export let name = "";
+  // export let units: any[];
   export let facets: Facet[] | undefined;
   export let selectedFacets: any;
 
-  allUnits.subscribe(value => {units = value})
+  const unitsQuery = query(GET_ALL_UNITS)
+
+  // allUnits.subscribe(value => {units = value})
 
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -28,7 +33,7 @@
 
   onMount(async() => {
     // await getAllUnits()
-    console.log(currentResourceSpecification, units)
+    // console.log(currentResourceSpecification, units)
     window.addEventListener("keydown", checkKey);
   });
 
@@ -39,7 +44,7 @@
     // }
     let resource: ResourceSpecificationCreateParams = {
       name: currentResourceSpecification.name,
-      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
+      defaultUnitOfResource: currentResourceSpecification?.defaultUnitOfResource?.id || currentResourceSpecification.defaultUnitOfResource,
       // defaultUnitOfEffort: "Administrative work",
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.image,
@@ -74,11 +79,10 @@
 
     let resource: ResourceSpecificationUpdateParams = {
       name: currentResourceSpecification.name,
-      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResourceId,
+      defaultUnitOfResource: currentResourceSpecification.defaultUnitOfResource?.id || currentResourceSpecification.defaultUnitOfResource,
       // defaultUnitOfEffort: currentResourceSpecification.defaultUnitOfEffort,
       note: currentResourceSpecification.note,
       image: currentResourceSpecification.image,
-      id: currentResourceSpecification.id,
       revisionId: currentResourceSpecification.revisionId
     }
     try {
@@ -108,9 +112,9 @@
   onMount(async () => {
   })
 
-  $: editing, currentResourceSpecification, units; //, client;
+  $: editing, currentResourceSpecification; //, client;
 
-  $: isResourceSpecificationValid = true && currentResourceSpecification.name && currentResourceSpecification.defaultUnitOfResourceId; // && currentResourceSpecification.note && currentResourceSpecification.image;
+  $: isResourceSpecificationValid = true && currentResourceSpecification.name && currentResourceSpecification.defaultUnitOfResource; // && currentResourceSpecification.note && currentResourceSpecification.image;
 
 </script>
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -197,7 +201,7 @@
               </div>
             </div>
             
-            {#if units}
+            <!-- {@const units = $unitsQuery.loading ? [] : $unitsQuery.data ? $unitsQuery.data?.units?.edges.map((edge: any) => edge.node) : []} -->
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -208,15 +212,20 @@
                 <select
                   id="classifiedAs"
                   name="classifiedAs"
-                  bind:value={currentResourceSpecification.defaultUnitOfResourceId}
+                  value={currentResourceSpecification.defaultUnitOfResource?.id || currentResourceSpecification.defaultUnitOfResource}
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  on:click={e => {
-                    console.log(currentResourceSpecification.defaultUnitOfResourceId)
+                  on:change={e => {
+                    currentResourceSpecification.defaultUnitOfResource = e.target.value;
                   }}
                   >
-                  {#each units as unit}
-                    <option value={unit.id}>{unit.label}</option>
-                  {/each}
+                  {#if !$unitsQuery.loading}
+                    {@const units = $unitsQuery.loading ? [] : $unitsQuery.data?.units?.edges.map((u) => {
+                      return u.node
+                    }) || []}
+                    {#each units as unit}
+                      <option value={unit.id}>{unit.label}</option>
+                    {/each}
+                  {/if}
                 </select>
 
                 <!-- <select
@@ -229,7 +238,6 @@
                 </select> -->
               </div>
             </div>
-            {/if}
 
             <!-- <div class="mt-4 text-left">
               <div>

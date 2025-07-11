@@ -9,7 +9,7 @@
   import { allRecipeExchanges, allProcessSpecifications, allActions, allUnits, allResourceSpecifications } from '../../../../crud/store'
   import { getAllRecipeExchanges, getAllProcessSpecifications, getAllActions, getAllResourceSpecifications, getAllUnits } from '../../../../crud/fetch'
   import { deleteRecipeFlow } from '../../../../crud/commit'
-  import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
+  import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@valueflows/vf-graphql'
 
   let recipeExchanges: any[] = []
   allRecipeExchanges.subscribe(value => {

@@ -3,11 +3,11 @@
   import { allActions, allResourceSpecifications, allUnits, allRoles } from '../crud/store';
   import { createRecipeFlow, updateRecipeFlow } from '../crud/commit';
   import { onMount } from 'svelte';
-  import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
+  import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@valueflows/vf-graphql'
   import { getAllRecipes } from '../crud/fetch';
   import { json } from '@sveltejs/kit'
   import { get } from 'svelte/store'
-  import { RecipeFlow } from '@leosprograms/vf-graphql';
+  import { RecipeFlow } from '@valueflows/vf-graphql';
   import { createEventDispatcher } from 'svelte';
 
   // public CustomElement attributes

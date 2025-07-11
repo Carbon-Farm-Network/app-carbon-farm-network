@@ -6,6 +6,7 @@ export const FULFILLMENT_CORE_FIELDS = gql`
     revisionId
     action {
       id
+      symbol
       label
     }
     providerId

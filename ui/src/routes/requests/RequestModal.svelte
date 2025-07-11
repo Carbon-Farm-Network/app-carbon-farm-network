@@ -2,9 +2,11 @@
   import { clickOutside } from '../../utils'
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
-  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification, IMeasure } from '@leosprograms/vf-graphql'
-  import { createProposal, updateProposal, createIntent, updateIntent, createProposedIntent } from '../../crud/commit'
+  import type { Agent, ProposalCreateParams, Intent, IntentCreateParams, IntentUpdateParams, ResourceSpecification, IMeasure } from '@valueflows/vf-graphql'
+  import { createProposal, updateProposal, createIntent, updateIntent } from '../../crud/commit'
   import { browser } from '$app/environment'
+  import { GET_ALL_AGENTS, GET_ALL_UNITS, GET_ALL_RESOURCE_SPECIFICATIONS } from '../../crud/fetch';
+  import { query } from 'svelte-apollo';
 
   // public CustomElement attributes
   export let open = false;
@@ -18,6 +20,10 @@
   export let currentReciprocalIntent: IntentUpdateParams;
   export let currentProposedIntent: any;
   export let editing: boolean;
+
+  const agentsQuery = query(GET_ALL_AGENTS);
+  const unitsQuery = query(GET_ALL_UNITS);
+  const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
   
   function checkKey(e: any) {
     if (e.key === "Escape" && !e.shiftKey) {
@@ -102,16 +108,11 @@
   function parseFormValues(val: IMeasure) {
     if (val.hasNumericalValue || val.hasNumericalValue === "0") val.hasNumericalValue = parseFloat(val.hasNumericalValue)
     // also add hasUnit
-    if (val.hasUnit) val.hasUnit = val.hasUnit
+    if (val.hasUnit) val.hasUnit = val.hasUnit?.id || val.hasUnit; // ensure hasUnit is a string
     return val
   }
 
   export async function createRequest(proposal: any, localIntent: any, localReciprocalIntent: any) {
-    
-    console.log(proposal)
-    const res1 = await createProposal(proposal)
-    const res1ID: string = String(res1.id)//.data.createProposal.proposal.id)
-
     // create intent
     const intent: IntentCreateParams = {
       action: localIntent.action as string,
@@ -131,7 +132,7 @@
       intent.resourceQuantity.hasUnit = localIntent.resourceQuantity?.hasUnit
     }
     const res2 = await createIntent(intent);
-    const res2ID = res2.id//.data.createIntent.intent.id
+    const res2ID = res2.data.createIntent.intent.id
     console.log(res2);
 
     // create reciprocal intent
@@ -143,22 +144,16 @@
     }
     console.info(recipIntent)
     const res3 = await createIntent(recipIntent)
-    const res3ID: string = String(res3.id)//.data.createIntent.intent.id)
+    const res3ID: string = String(res3.data.createIntent.intent.id)
     console.log(res3);
 
 
-    let reciprocal: boolean = false
-    let publishedIn = res1ID
-    let publishes = res2ID
-
-    const res4 = await createProposedIntent(reciprocal, publishedIn,  publishes)
-    console.log(res4)
-
-    reciprocal = true
-    publishes = res3ID
-
-    const res5 = await createProposedIntent(reciprocal, publishedIn, publishes)
-    console.log(res5)
+    console.log(proposal)
+    proposal.publishes = res2ID
+    proposal.reciprocal = res3ID
+    delete proposal.id
+    const res1 = await createProposal(proposal)
+    console.log("created proposal", res1)
   }
 
   async function handleSubmit() {
@@ -195,13 +190,8 @@
 
   async function handleUpdate() {
     submitting = true;
-    console.log("currentProposal", currentProposal)
-    let proposal = currentProposal
-    await updateProposal(proposal)
-    // let intent = currentIntent
     console.log("currentIntent", currentIntent)
     let intent = {
-      id: currentIntent.id,
       revisionId: currentIntent.revisionId,
       action: currentIntent.action as string,
       resourceConformsTo: currentIntent.resourceConformsTo || undefined,
@@ -217,14 +207,13 @@
       availableQuantity: currentIntent.availableQuantity ? parseFormValues(currentIntent.availableQuantity as IMeasure) : undefined,
       effortQuantity: currentIntent.effortQuantity ? parseFormValues(currentIntent.effortQuantity as IMeasure) : undefined,
     }
-    if (intent.resourceQuantity) {
-      intent.resourceQuantity.hasUnit = {id: currentIntent.resourceQuantity?.hasUnit}
-    }
+    // if (intent.resourceQuantity) {
+    //   intent.resourceQuantity.hasUnit = {id: currentIntent.resourceQuantity?.hasUnit}
+    // }
     const res = await updateIntent(intent)
     console.log(res)
 
     let intent2 = {
-      id: currentReciprocalIntent.id,
       revisionId: currentReciprocalIntent.revisionId,
       receiver: currentIntent.provider,
       provider: currentIntent.receiver,
@@ -234,11 +223,18 @@
       availableQuantity: currentReciprocalIntent.availableQuantity ? parseFormValues(currentReciprocalIntent.availableQuantity as IMeasure) : undefined,
       effortQuantity: currentReciprocalIntent.effortQuantity ? parseFormValues(currentReciprocalIntent.effortQuantity as IMeasure) : undefined,
     }
-    if (intent2.resourceQuantity) {
-      intent2.resourceQuantity.hasUnit = {id: intent2.availableQuantity?.hasUnit}
-    }
+    // if (intent2.resourceQuantity) {
+    //   intent2.resourceQuantity.hasUnit = {id: intent2.availableQuantity?.hasUnit}
+    // }
     console.log(intent2)
     const res2 = await updateIntent(intent2)
+
+    console.log("currentProposal", currentProposal)
+    let proposal = currentProposal
+    proposal.hasBeginning = new Date(proposal.hasBeginning).getTime()
+    delete proposal.id
+    await updateProposal(proposal)
+
     dispatch("submit");
     console.log(res2)
     submitting = false;
@@ -315,10 +311,13 @@
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   bind:value={currentIntent.receiver}
                 >
-                {#if agents}
-                {#each agents as agent}
-                  <option selected value={agent.id}>{agent.name}</option>
-                {/each}
+                {#if agentsQuery}
+                  {@const agents = $agentsQuery.loading ? [] : $agentsQuery.data?.agents?.edges.map((a) => {
+                    return a.node
+                  }) || []}
+                  {#each agents as agent}
+                    <option selected value={agent.id}>{agent.name}</option>
+                  {/each}
                 {/if}
                   <!-- <option selected>Lazy Acre Alpacca</option>
                   <option>Woodland meadow farm</option> -->
@@ -326,7 +325,10 @@
               </div>
             </div>
 
-            {#if resourceSpecifications}
+            {#if resourceSpecificationsQuery}
+            {@const resourceSpecifications = $resourceSpecificationsQuery.loading ? [] : $resourceSpecificationsQuery.data?.resourceSpecifications?.edges.map((rs) => {
+              return rs.node
+            }) || []}
             <div class="mt-4 text-left">
               <div>
                 <label
@@ -372,6 +374,7 @@
                   {#if currentIntent.resourceQuantity}
                   <input
                     type="number"
+                    step="any"
                     name="name"
                     id="name"
                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -420,15 +423,18 @@
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   bind:value={currentIntent.resourceQuantity.hasUnit}
                 >
-                {#if units}
-                {#each units as unit}
-                  <option value={unit.id}>{unit.label}</option>
-                  <!-- {#if unit.label === "pound"}
-                    <option selected value={unit.id}>Pound</option>
-                  {:else if unit.label === "one"}
-                    <option value={unit.id}>Each</option>
-                  {/if} -->
-                {/each}
+                {#if unitsQuery}
+                  {@const units = $unitsQuery.loading ? [] : $unitsQuery.data?.units?.edges.map((u) => {
+                    return u.node
+                  }) || []}
+                  {#each units as unit}
+                    <option value={unit.id}>{unit.label}</option>
+                    <!-- {#if unit.label === "pound"}
+                      <option selected value={unit.id}>Pound</option>
+                    {:else if unit.label === "one"}
+                      <option value={unit.id}>Each</option>
+                    {/if} -->
+                  {/each}
                 {/if}
                   <!-- <option selected>lb</option> -->
                 </select>

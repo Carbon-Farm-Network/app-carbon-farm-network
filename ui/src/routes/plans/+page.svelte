@@ -4,23 +4,23 @@
   import { onMount } from 'svelte'
   import { deletePlan, deleteProcess, deleteAgreement, deleteCommitment, deleteEconomicEvent } from '../../crud/commit'
   import { getAllPlans, getPlan } from '../../crud/fetch'
-  import { plansList, fullPlans } from '../../crud/store';
+  // import { plansList, fullPlans } from '../../crud/store';
+  import { GET_PLANS } from '../../crud/fetch'
+  import { query } from 'svelte-apollo'
   import Loading from '$lib/Loading.svelte'
   import SvgIcon from '$lib/SvgIcon.svelte'
 
-  let plans: any[];
-  plansList.subscribe(value => {
-    plans = value
-  })
+  const plansQuery = query(GET_PLANS)
 
-  let allFullPlans: any = {}
-  fullPlans.subscribe(value => {
-    allFullPlans = value
+  let plans: any[];
+  plansQuery.subscribe(value => {
+    plans = value.data?.plans.edges.map(edge => edge.node).reverse()
+    || []
   })
 
   let exportOpen = false
   let importing = false
-  let loading = false
+  $: loading = plansQuery.loading;
   let fetching = false
   let deleting = false
 
@@ -28,15 +28,15 @@
     let areYouSure = await confirm("Are you sure you want to delete this plan?")
     if (areYouSure == true) {
       deleting = true
-      let fullPlan = allFullPlans[id]
-      if (!fullPlan) {
-        await getPlan(id)
-        fullPlan = allFullPlans[id]
-      }
-      if (!fullPlan) {
-        console.error('no full plan found')
-        return
-      }
+      // let fullPlan = allFullPlans[id]
+      // if (!fullPlan) {
+      //   await getPlan(id)
+      //   fullPlan = allFullPlans[id]
+      // }
+      // if (!fullPlan) {
+      //   console.error('no full plan found')
+      //   return
+      // }
       console.log('fullPlan', fullPlan)
       for (let process of fullPlan.processes) {
         const processCommitments = [...process.committedInputs, ...process.committedOutputs]
@@ -138,12 +138,13 @@
   }
 
   onMount(async () => {
-    loading = plans.length == 0
-    if (loading) {
-      await getAllPlans()
-      loading = false
-      console.log('plans', plans)
-    }
+    plansQuery.refetch()
+    // loading = plans.length == 0
+    // if (loading) {
+    //   await getAllPlans()
+    //   loading = false
+    //   console.log('plans', plans)
+    // }
   })
 
 

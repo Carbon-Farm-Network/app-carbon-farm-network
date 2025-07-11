@@ -1,10 +1,11 @@
 import type { CommitmentCreateParams, PlanCreateParams, ProcessCreateParams,  Process, AgentCreateParams, 
-  ProcessSpecificationCreateParams, AgreementCreateParams, EconomicEventCreateParams, FulfillmentCreateParams, Fulfillment, RecipeProcessCreateParams, RecipeFlowCreateParams, RecipeExchangeCreateParams } from "@leosprograms/vf-graphql"
-import type { FacetParams, FacetGroupParams } from "$lib/graphql/extension-schemas"
+  ProcessSpecificationCreateParams, AgreementCreateParams, EconomicEventCreateParams, FulfillmentCreateParams, Fulfillment, RecipeProcessCreateParams, RecipeFlowCreateParams, RecipeExchangeCreateParams } from "@valueflows/vf-graphql"
+// import type { FacetParams, FacetGroupParams } from "$lib/graphql/extension-schemas"
 // import { addHashChange, createCommitment, createAgreement, createPlan, createProcess, createEconomicEvent, 
 //   createEconomicEventWithResource, createFulfillment, createUnit, createFacetGroup, createFacet, 
 //   createFacetValue, createAgent, associateAgentWithValue, associateResourceSpecificationAndFacetValue,
 //   createProcessSpecification } from "./commit"
+import { removeNullAndUndefined, removeFieldsEndingWithId } from "./shared"
 import * as c from "./commit"
 import { allHashChanges, allProcessSpecifications, allUnits } from "./store"
 
@@ -14,15 +15,15 @@ allHashChanges.subscribe(value => {
   hashChanges = value
 })
 
-let processSpecifications: any = []
-allProcessSpecifications.subscribe(value => {
-  processSpecifications = value
-})
+// let processSpecifications: any = []
+// allProcessSpecifications.subscribe(value => {
+//   processSpecifications = value
+// })
 
-let units: any = []
-allUnits.subscribe(value => {
-  units = value
-})
+// let units: any = []
+// allUnits.subscribe(value => {
+//   units = value
+// })
 
 export async function importRecipeExchanges(data: any) {
   for (let i = 0; i < data.length; i++) {
@@ -34,7 +35,7 @@ export async function importRecipeExchanges(data: any) {
     }
     console.log(recipeExchangeCreateParams)
     const res = await c.createRecipeExchange(recipeExchangeCreateParams)
-    await c.addHashChange(recipeExchange.id, res.id)//res.data.createRecipeExchange.recipeExchange.id)
+    await c.addHashChange(recipeExchange.id, res.data.createRecipeExchange.recipeExchange.id)
 
     let recipeFlows = [...recipeExchange.recipeClauses, ...recipeExchange.recipeReciprocalClauses]
     const recipeClausesLength = recipeExchange.recipeClauses.length
@@ -63,7 +64,7 @@ export async function importRecipeExchanges(data: any) {
       }
       console.log(recipeFlowCreateParams)
       const res2 = await c.createRecipeFlow(recipeFlowCreateParams)
-      await c.addHashChange(recipeFlow.id, res2.id) //.data.createRecipeFlow.recipeFlow.id)
+      await c.addHashChange(recipeFlow.id, res2.data.createRecipeFlow.recipeFlow.id)
     }
   }
 }
@@ -91,7 +92,7 @@ export async function importRecipes(data: any) {
     console.log(recipeProcessCreateParams)
     const res = await c.createRecipeProcess(recipeProcessCreateParams)
     console.log(res)
-    await c.addHashChange(data[i].id, res.id)//res.data.createRecipeProcess.recipeProcess.id)
+    await c.addHashChange(data[i].id, res.data.createRecipeProcess.recipeProcess.id)
     console.log("hash change rec process", hashChanges[data[i].id])
 
     let recipeFlows = [...recipe.recipeInputs, ...recipe.recipeOutputs]
@@ -115,21 +116,28 @@ export async function importRecipes(data: any) {
         state: recipeFlow.state,
       }
       if (j < recipeInputsLength) {
-        recipeFlowCreateParams.recipeInputOf = res.id //res.data.createRecipeProcess.recipeProcess.id
+        recipeFlowCreateParams.recipeInputOf = res.data.createRecipeProcess.recipeProcess.id
       } else {
-        recipeFlowCreateParams.recipeOutputOf = res.id //res.data.createRecipeProcess.recipeProcess.id
+        recipeFlowCreateParams.recipeOutputOf = res.data.createRecipeProcess.recipeProcess.id
       }
       console.log(recipeFlowCreateParams)
       const res2 = await c.createRecipeFlow(recipeFlowCreateParams)
-      await c.addHashChange(recipeFlow.id, res2.id) //.data.createRecipeFlow.recipeFlow.id)
+      await c.addHashChange(recipeFlow.id, res2.data.createRecipeFlow.recipeFlow.id)
     }
   }
 }
 
-export async function importProposals(data: any) {
-  console.log(data)
+export async function importProposals(data: any, dollars?: any) {
+  console.log("proposals import data", data)
+
+  // Get dollars resource
+  // const allResourceSpecifications = await 
+
   for (let i = 0; i < data.length; i++) {
-    let intent = data[i]?.publishes?.find(({ reciprocal }) => !reciprocal)?.publishes
+    let intent = data[i]?.publishes?.find(({ reciprocal }) => !reciprocal)?.publishes//?.[0]
+
+    // let intent2 = data[i]?.publishes?.find(({ reciprocal }) => !reciprocal)?.publishes
+    // console.log("intent", intent2)
 
     if (intent) {
       // delete revisionId and typename from intent
@@ -138,6 +146,7 @@ export async function importProposals(data: any) {
       console.log(intent)
       if (!intent.resourceConformsTo) { console.log("Stopped import due to dependency data"); return }
       
+      console.log("intent", intent, hashChanges)
       // Assign the correct values to the intent
       intent.action = intent.action.id
       intent.resourceConformsTo = hashChanges[intent.resourceConformsTo.id] ? hashChanges[intent.resourceConformsTo.id] : intent.resourceConformsTo.id
@@ -157,7 +166,8 @@ export async function importProposals(data: any) {
     }
   
     // Assign the correct values to the reciprocal intent
-    let reciprocalIntent = data[i]?.publishes?.find(({ reciprocal }) => reciprocal)?.publishes
+    let reciprocalIntent = data[i]?.publishes?.find(({ reciprocal }) => !!reciprocal)?.publishes//?.[0]
+    console.log("00000000000000000000000))))))))))) reciprocalIntent", reciprocalIntent, data[i]?.publishes)
     if (reciprocalIntent) {
       // delete revisionId and typename from intent
       delete reciprocalIntent?.revisionId
@@ -171,9 +181,28 @@ export async function importProposals(data: any) {
         hasNumericalValue: reciprocalIntent.resourceQuantity.hasNumericalValue,
         hasUnit: hashChanges[reciprocalIntent.resourceQuantity?.hasUnit?.id] ? hashChanges[reciprocalIntent.resourceQuantity?.hasUnit?.id] : reciprocalIntent.resourceQuantity?.hasUnit?.id
       }
+
+      // If no resourceQuantity.hasUnit, set it to the unit of the availableQuantity
+      if (reciprocalIntent && reciprocalIntent.resourceQuantity && !reciprocalIntent.resourceQuantity.hasUnit && reciprocalIntent.availableQuantity && reciprocalIntent.availableQuantity.hasUnit) {
+        reciprocalIntent.resourceQuantity.hasUnit = reciprocalIntent.availableQuantity.hasUnit
+      }
+
+      // If still no resourceQuantity.hasUnit, set it to dollars
+      if (reciprocalIntent && reciprocalIntent.resourceQuantity && !reciprocalIntent.resourceQuantity.hasUnit) {
+        console.log("No resourceQuantity.hasUnit, setting to dollars", dollars)
+        reciprocalIntent.resourceQuantity.hasUnit = dollars?.defaultUnitOfResource?.id || null
+      }
+
+      // If no resourceConformsTo, set it to dollars
+      if (reciprocalIntent && !reciprocalIntent.resourceConformsTo) {
+        console.log("No resourceConformsTo, setting to dollars", dollars)
+        reciprocalIntent.resourceConformsTo = dollars?.id || null
+      }
+
       delete reciprocalIntent.revisionId
       delete reciprocalIntent.__typename
     }
+
 
     console.log("----")
     console.log(intent)
@@ -185,47 +214,84 @@ export async function importProposals(data: any) {
     }
 
     let proposal = {
-      hasBeginning: data[i].hasBeginning,
+      hasBeginning: new Date(data[i].hasBeginning).getTime(),
       unitBased: data[i].unitBased,
       note: data[i].note,
     }
 
     console.log(proposal)
     
-    // Create the proposal
-    const proposalRes = await c.createProposal(proposal)
-    // Add hash change
-    await c.addHashChange(data[i].id, proposalRes.id)//.data.createProposal.proposal.id)
+    // // Create the proposal
+    // const proposalRes = await c.createProposal(proposal)
+    // // Add hash change
+    // await c.addHashChange(data[i].id, proposalRes.id)//.data.createProposal.proposal.id)
 
     if (intent) {
       // Create the intent
       delete intent.note
-      console.log("1", intent)
+      console.log("intent params", intent)
       delete intent.id
-      const intentRes = await c.createIntent(intent)
-      console.log("2", intentRes)
+      for (const key in intent) {
+        if (intent[key] === null) {
+          delete intent[key];
+        }
+      }
+      for (const key of Object.keys(intent)) {
+        if (key.includes("Id")) {
+          delete intent[key];
+        } else if (intent[key] && typeof intent[key] === "object" && !Array.isArray(intent[key])) {
+          for (const subKey of Object.keys(intent[key])) {
+            if (subKey.includes("Id")) {
+              delete intent[key][subKey];
+            }
+          }
+        }
+      }
+
+      // hash changes
+      intent.receiver = hashChanges[intent.receiver] ? hashChanges[intent.receiver] : intent.receiver
+      intent.provider = hashChanges[intent.provider] ? hashChanges[intent.provider] : intent.provider
+      console.log("hash changes", hashChanges, hashChanges[intent.resourceConformsTo], intent.resourceConformsTo, hashChanges[intent.hasUnit], intent.hasUnit)
+      intent.resourceConformsTo = hashChanges[intent.resourceConformsTo] ? hashChanges[intent.resourceConformsTo] : intent.resourceConformsTo
+      intent.resourceQuantity.hasUnit = hashChanges[intent.resourceQuantity.hasUnit] ? hashChanges[intent.resourceQuantity.hasUnit] : intent.hasUnit
+
+      // If no resourceQuantity.hasUnit, set it to the unit of the availableQuantity
+      if (intent.availableQuantity && intent.availableQuantity.hasUnit && !intent.resourceQuantity.hasUnit) {
+        intent.resourceQuantity.hasUnit = intent.availableQuantity.hasUnit
+      }
+
+      console.log("intent prepared params", intent)
+      const intentRes = await c.createIntent(removeFieldsEndingWithId(removeNullAndUndefined(intent)))
+      console.log("intent res", intentRes)
       // Add hash change
-      await c.addHashChange(intent.id, intentRes.id)//.data.createIntent.intent.id)
-      console.log("added hash change", intent.id, intentRes.id)//.data.createIntent.intent.id)
+      await c.addHashChange(intent.id, intentRes.data.createIntent.intent.id)
+      console.log("added hash change", intent.id, intentRes.data.createIntent.intent.id)
       // Create the proposed intent
       // console.log(false, intentRes.data.createIntent.intent.id, proposalRes.data.createProposal.proposal.id)
-      await c.createProposedIntent(false, proposalRes.id, intentRes.id)
+      // await c.createProposedIntent(false, proposalRes.id, intentRes.id)
       // await c.createProposedIntent(false, proposalRes.data.createProposal.proposal.id, intentRes.data.createIntent.intent.id)
-      console.log("created proposed intent")
+      // console.log("created proposed intent")
+
+      proposal["publishes"] = [intentRes.data.createIntent.intent.id]
     }
 
     if (reciprocalIntent) {
       // Create the reciprocal intent
       console.log("3", reciprocalIntent)
       delete reciprocalIntent.id
-      const recipIntentRes = await c.createIntent(reciprocalIntent)
+      const recipIntentRes = await c.createIntent(removeFieldsEndingWithId(removeNullAndUndefined(reciprocalIntent)))
       console.log("4", recipIntentRes)
       // Add hash change
-      await c.addHashChange(reciprocalIntent.id, recipIntentRes.id)//.data.createIntent.intent.id)
+      await c.addHashChange(reciprocalIntent.id, recipIntentRes.data.createIntent.intent.id)
       // Create the reciprocal proposed intent
-      await c.createProposedIntent(true, proposalRes.id, recipIntentRes.id)
+      // await c.createProposedIntent(true, proposalRes.id, recipIntentRes.id)
       // await c.createProposedIntent(true, proposalRes.data.createProposal.proposal.id, recipIntentRes.data.createIntent.intent.id)
-    }    
+      proposal["reciprocal"] = [recipIntentRes.data.createIntent.intent.id]
+    }
+    // Create the proposal
+    const proposalRes = await c.createProposal(proposal)
+    // Add hash change
+    await c.addHashChange(data[i].id, proposalRes.id)//.data.createProposal.proposal.id)
   }
 }
 
@@ -288,7 +354,7 @@ export async function importAgents(data: any) {
       image: data[i].image,
       classifiedAs: data[i].classifiedAs,
     }
-    let facets = data[i].facets.map((f) => hashChanges[f.id])
+    let facets = data[i]?.facets?.map((f) => hashChanges[f.id])
     console.log(agent)
 
     const res = await c.createAgent(agent)
@@ -340,7 +406,8 @@ export async function importFacets(data: any) {
       let facets = data[i].facets || data[i].facetOptions
 
       for (let j = 0; j < facets.length; j++) {
-        let facet: FacetParams = {
+        // let facet: FacetParams = {
+        let facet: any = {
           name: facets[j].name,
           note: facets[j].note,
           facetGroupId: facetGroupId

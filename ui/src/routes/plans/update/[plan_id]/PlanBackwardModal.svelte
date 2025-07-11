@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { allUnits } from "../../../../crud/store";
+  // import { allUnits } from "../../../../crud/store";
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
 
@@ -9,10 +9,10 @@
 
   const dispatch = createEventDispatcher();
 
-  let units: any[] = [];
-  allUnits.subscribe((value) => {
-    units = value;
-  });
+  // let units: any[] = [];
+  // allUnits.subscribe((value) => {
+  //   units = value;
+  // });
 
   onMount(() => {
     window.addEventListener("keydown", (e) => {
@@ -99,10 +99,10 @@
                         class:notice-change={commitment.resourceQuantity?.hasNumericalValue != suggestion?.resourceQuantity?.hasNumericalValue}
                       >
                       {commitment.resourceQuantity?.hasNumericalValue} 
-                      {units.find(u => u.id == commitment.resourceQuantity?.hasUnitId)?.symbol}
+                      {commitment.resourceQuantity?.hasUnit?.symbol}
                        ➜
                       {suggestion?.resourceQuantity?.hasNumericalValue}
-                      {units.find(u => u.id == suggestion?.resourceQuantity?.hasUnitId)?.symbol}
+                      {suggestion?.resourceQuantity?.hasUnit?.symbol}
                       </div>
                     </div>
                   {/each}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import RequestModal from './RequestModal.svelte'
   import { onMount } from 'svelte'
-  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@leosprograms/vf-graphql'
+  import type { Unit, AgentConnection, Agent, Proposal, ProposalCreateParams, IntentCreateParams, IntentUpdateParams, UnitConnection, ResourceSpecification, ProposalConnection, ProposalUpdateParams, Intent } from '@valueflows/vf-graphql'
   import { browser } from '$app/environment'
   import { getAllProposals, getAllResourceSpecifications, getAllUnits, getAllAgents, getAllActions } from '../../crud/fetch'
   import { deleteProposal } from '../../crud/commit'
@@ -11,7 +11,10 @@
   import Error from "$lib/Error.svelte"
   import Loading from '$lib/Loading.svelte'
   import SvgIcon from '$lib/SvgIcon.svelte'
-  import { importProposals } from '../../crud/import'
+  import { GET_All_PROPOSALS } from '../../crud/fetch'
+  import { query } from 'svelte-apollo'
+  
+  const proposalsQuery = query(GET_All_PROPOSALS)
 
   // externally provided data
   let units: Unit[];
@@ -52,57 +55,57 @@
   }
   let currentProposedIntent: any = {};
 
-  allProposals.subscribe((res) => {
-    console.log("allProposals", res, res
-      .filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.receiver)
-    )
-    requestsList = res
-    .filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
-    .map((p) => {
-      return {
-        ...p,
-        publishes: p.publishes.map((i) => {
-          return {
-            ...i,
-            action: i.action,
-            atLocation: i.atLocation,
-            availableQuantity: i.availableQuantity,
-            effortQuantity: i.effortQuantity,
-            resourceQuantity: i.resourceQuantity,
-            inScopeOf: i.inScopeOf,
-            inputOf: i.inputOf,
-            outputOf: i.outputOf,
-            provider: i.provider,
-            receiver: i.receiver,
-            resourceConformsTo: i.resourceConformsTo,
-            resourceInventoriedAs: i.resourceInventoriedAs,
-          }
-        })
-      }
-    })
-  })
+  // allProposals.subscribe((res) => {
+  //   console.log("allProposals", res, res
+  //     .filter(it => it.publishes?.find(it => !it.reciprocal)?.[0]?.receiver)
+  //   )
+  //   requestsList = res
+  //   .filter(it => it.publishes?.find(it => it.reciprocal)?.[0]?.provider)
+    // .map((p) => {
+    //   return {
+    //     ...p,
+    //     publishes: p.publishes.map((i) => {
+    //       return {
+    //         ...i,
+    //         action: i.action,
+    //         atLocation: i.atLocation,
+    //         availableQuantity: i.availableQuantity,
+    //         effortQuantity: i.effortQuantity,
+    //         resourceQuantity: i.resourceQuantity,
+    //         inScopeOf: i.inScopeOf,
+    //         inputOf: i.inputOf,
+    //         outputOf: i.outputOf,
+    //         provider: i.provider,
+    //         receiver: i.receiver,
+    //         resourceConformsTo: i.resourceConformsTo,
+    //         resourceInventoriedAs: i.resourceInventoriedAs,
+    //       }
+    //     })
+    //   }
+    // })
+  // })
 
-  allResourceSpecifications.subscribe((res) => {
-    resourceSpecifications = res
-  })
+  // allResourceSpecifications.subscribe((res) => {
+  //   resourceSpecifications = res
+  // })
 
-  allUnits.subscribe((res) => {
-    units = res
-  })
+  // allUnits.subscribe((res) => {
+  //   units = res
+  // })
 
-  allAgents.subscribe((res) => {
-    agents = res.map((a) => {
-        return {
-          ...a,
-          "name": a.name,
-          "imageUrl": a.image,
-          "iconUrl": a.image,
-          "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
-          "role": a.classifiedAs[2],
-          "address": a.note,
-        }
-      })
-  })
+  // allAgents.subscribe((res) => {
+  //   agents = res.map((a) => {
+  //       return {
+  //         ...a,
+  //         "name": a.name,
+  //         "imageUrl": a.image,
+  //         "iconUrl": a.image,
+  //         "latLng": {lat: a.classifiedAs[0], lon: a.classifiedAs[1]},
+  //         "role": a.classifiedAs[2],
+  //         "address": a.note,
+  //       }
+  //     })
+  // })
 
   function makeEmptyIntent(): IntentUpdateParams {
     return {
@@ -130,7 +133,8 @@
 
   async function refresh() {
     fetching = true
-    await getAllProposals()
+    // await getAllProposals()
+    proposalsQuery.refetch()
     console.log("requests", requestsList)
     fetching = false
   }
@@ -139,7 +143,8 @@
     if (browser) {
       loading = requestsList.length == 0
       if (loading) {
-        await getAllProposals()
+        // await getAllProposals()
+        proposalsQuery.refetch()
         loading = false
       }
 
@@ -189,40 +194,40 @@
 
 
     {#if agents && resourceSpecifications && units}
-    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
-      <button
-        type="button"
-        on:click={() => {
-          currentProposal = {hasBeginning: new Date()};
-          currentIntent = makeEmptyIntent()
-          currentReciprocalIntent = _defaultReciprocalIntent
-          currentProposedIntent = {}
-          modalOpen = true
-          editing = false
-        }}
-        class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >Add a request</button
-      >
-    </div>
-    <!-- <Export dataName="list of requests" fileName="cfn-requests" 
-      data={requestsList} 
-      bind:open={exportOpen}
-      bind:importing
-      on:import={async (event) => {
-        // importData(event.detail)
-        await importProposals(event.detail)
-        await getAllProposals()
-        importing = false
-        exportOpen = false
-      }}
-      /> -->
+      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <button
+          type="button"
+          class="block rounded-md bg-gray-400 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >Loading data...</button
+        ></div>
     {:else}
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-      <button
-        type="button"
-        class="block rounded-md bg-gray-400 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >Loading data...</button
-      ></div>
+      <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
+        <button
+          type="button"
+          on:click={() => {
+            currentProposal = {hasBeginning: new Date()};
+            currentIntent = makeEmptyIntent()
+            currentReciprocalIntent = _defaultReciprocalIntent
+            currentProposedIntent = {}
+            modalOpen = true
+            editing = false
+          }}
+          class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >Add a request</button
+        >
+      </div>
+      <!-- <Export dataName="list of requests" fileName="cfn-requests" 
+        data={requestsList} 
+        bind:open={exportOpen}
+        bind:importing
+        on:import={async (event) => {
+          // importData(event.detail)
+          await importProposals(event.detail)
+          await getAllProposals()
+          importing = false
+          exportOpen = false
+        }}
+        /> -->
     {/if}
   </div>
   <div class="mt-8 flow-root">
@@ -253,111 +258,116 @@
           </thead>
           <tbody class="bg-white">
             <!-- {#each offers as { proposed_intents }, index} -->
-            {#each requestsList as p, index}
-              {@const mainIntent = p.publishes?.find(({ reciprocal }) => !reciprocal)}
-              {#if mainIntent && mainIntent.publishes.receiver?.name}
-              {@const proposedReciprocalIntent = p.publishes?.find(
-                ({ reciprocal }) => reciprocal
-              )}
-              {@const availableQuantity = mainIntent.publishes.availableQuantity}
-              {@const resourceQuantity = (proposedReciprocalIntent && proposedReciprocalIntent.publishes) ? proposedReciprocalIntent.publishes.resourceQuantity : {
-                ...currentReciprocalIntent.resourceQuantity,
-                hasUnit: null,  // previously 'each' in older VF (< 0.6) spec
-              }}
-              {#if mainIntent && resourceQuantity}
-              <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
-                  {mainIntent.publishes.receiver?.name}
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  {mainIntent.publishes.resourceConformsTo?.name}
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                  {mainIntent.publishes.resourceQuantity?.hasNumericalValue}
-                  {mainIntent.publishes.resourceQuantity?.hasUnit?.label}
-                  <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
-                </td>
-
-                <td
-                  class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
-                >
-                <button type="button" on:click={() => {
-                  currentProposal = {
-                    id: p.id,
-                    revisionId: p.revisionId,
-                    hasBeginning: p.hasBeginning,
-                    note: p.note
-                  };
-                  const mi = mainIntent.publishes
-                  currentIntent = {
-                    ...mi,
-                    action: mi.action?.id,
-                    atLocation: mi.atLocation?.id || currentReciprocalIntent.atLocation,
-                    availableQuantity: mi.availableQuantity ? {
-                      hasNumericalValue: mi.availableQuantity.hasNumericalValue,
-                      hasUnit: mi.availableQuantity.hasUnit?.id,
-                    } : undefined,
-                    effortQuantity: mi.effortQuantity ? {
-                      hasNumericalValue: mi.effortQuantity.hasNumericalValue,
-                      hasUnit: mi.effortQuantity.hasUnit?.id,
-                    } : undefined,
-                    resourceQuantity: mi.resourceQuantity ? {
-                      hasNumericalValue: mi.resourceQuantity.hasNumericalValue,
-                      hasUnit: mi.resourceQuantity.hasUnit?.id,
-                    } : undefined,
-                    inScopeOf: (mi.inScopeOf || []).map(s => s.id),
-                    inputOf: mi.inputOf?.id,
-                    outputOf: mi.outputOf?.id,
-                    provider: mi.provider?.id,
-                    receiver: mi.receiver?.id,
-                    resourceConformsTo: mi.resourceConformsTo?.id,
-                    resourceInventoriedAs: mi.resourceInventoriedAs?.id,
-                  }
-                  if (proposedReciprocalIntent) {
-                    const pi = proposedReciprocalIntent.publishes
-                    currentReciprocalIntent = {
-                      ...pi,
-                      action: pi.action?.id || currentReciprocalIntent.action,
-                      atLocation: pi.atLocation?.id || currentReciprocalIntent.atLocation,
-                      availableQuantity: pi.availableQuantity ? {
-                        hasNumericalValue: pi.availableQuantity.hasNumericalValue,
-                        hasUnit: pi.availableQuantity.hasUnit?.id,
-                      } : undefined,
-                      effortQuantity: pi.effortQuantity ? {
-                        hasNumericalValue: pi.effortQuantity.hasNumericalValue,
-                        hasUnit: pi.effortQuantity.hasUnit?.id,
-                      } : undefined,
-                      resourceQuantity: pi.resourceQuantity ? {
-                        hasNumericalValue: pi.resourceQuantity.hasNumericalValue,
-                        hasUnit: pi.resourceQuantity.hasUnit?.id,
-                      } : undefined,
-                      inScopeOf: (pi.inScopeOf || []).map(s => s.id),
-                      inputOf: pi.inputOf?.id,
-                      outputOf: pi.outputOf?.id,
-                      provider: pi.provider?.id,
-                      receiver: pi.receiver?.id,
-                      resourceConformsTo: pi.resourceConformsTo?.id,
-                      resourceInventoriedAs: pi.resourceInventoriedAs?.id,
-                    }
-                  }
-                  currentProposedIntent = {}
-
-                  modalOpen = true;
-                  editing = true;
-                }}  class="text-indigo-600 hover:text-indigo-900"
-                  >Edit<span class="sr-only">, Lindsay Walton</span></button
-                >
-                &nbsp;
-                <button type="button" on:click={() => {
-                  deleteAProposal(p.revisionId)
+            {#if $proposalsQuery.loading}
+              <tr><td colspan="6"><Loading /></td></tr>
+            {:else}
+              {@const requestsList = $proposalsQuery.data?.proposals.edges.map((edge) => edge.node) ?? []}
+              {#each requestsList as p, index}
+                {@const mainIntent = p.publishes[0]}
+                {#if mainIntent && mainIntent.receiver?.name}
+                {@const proposedReciprocalIntent = p.reciprocal[0]}
+                {@const availableQuantity = mainIntent.availableQuantity}
+                {@const resourceQuantity = (proposedReciprocalIntent && proposedReciprocalIntent.publishes) ? proposedReciprocalIntent.publishes.resourceQuantity : {
+                  ...currentReciprocalIntent.resourceQuantity,
+                  hasUnit: null,  // previously 'each' in older VF (< 0.6) spec
                 }}
-                class="text-indigo-600 hover:text-indigo-900">
-                Delete</button>
-                </td>
-              </tr>
-              {/if}
-              {/if}
-            {/each}
+                {#if mainIntent && resourceQuantity}
+                <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                    {mainIntent.receiver?.name}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {mainIntent.resourceConformsTo?.name}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {mainIntent.resourceQuantity?.hasNumericalValue}
+                    {mainIntent.resourceQuantity?.hasUnit?.label}
+                    <!-- :TODO: display associated label for default transaction currency loaded from `Unit` query API via `usdId` -->
+                  </td>
+
+                  <td
+                    class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+                  >
+                  <button type="button" on:click={() => {
+                    currentProposal = {
+                      id: p.id,
+                      revisionId: p.revisionId,
+                      hasBeginning: p.hasBeginning,
+                      note: p.note,
+                      publishes: p.publishes.map(i => i.id),
+                      reciprocal: p.reciprocal.map(i => i.id),
+                    };
+                    const mi = mainIntent
+                    currentIntent = {
+                      ...mi,
+                      action: mi.action?.id,
+                      atLocation: mi.atLocation?.id || currentReciprocalIntent.atLocation,
+                      availableQuantity: mi.availableQuantity ? {
+                        hasNumericalValue: mi.availableQuantity.hasNumericalValue,
+                        hasUnit: mi.availableQuantity.hasUnit?.id,
+                      } : undefined,
+                      effortQuantity: mi.effortQuantity ? {
+                        hasNumericalValue: mi.effortQuantity.hasNumericalValue,
+                        hasUnit: mi.effortQuantity.hasUnit?.id,
+                      } : undefined,
+                      resourceQuantity: mi.resourceQuantity ? {
+                        hasNumericalValue: mi.resourceQuantity.hasNumericalValue,
+                        hasUnit: mi.resourceQuantity.hasUnit?.id,
+                      } : undefined,
+                      inScopeOf: (mi.inScopeOf || []).map(s => s.id),
+                      inputOf: mi.inputOf?.id,
+                      outputOf: mi.outputOf?.id,
+                      provider: mi.provider?.id,
+                      receiver: mi.receiver?.id,
+                      resourceConformsTo: mi.resourceConformsTo?.id,
+                      resourceInventoriedAs: mi.resourceInventoriedAs?.id,
+                    }
+                    if (proposedReciprocalIntent) {
+                      const pi = proposedReciprocalIntent
+                      currentReciprocalIntent = {
+                        ...pi,
+                        action: pi.action?.id || currentReciprocalIntent.action,
+                        atLocation: pi.atLocation?.id || currentReciprocalIntent.atLocation,
+                        availableQuantity: pi.availableQuantity ? {
+                          hasNumericalValue: pi.availableQuantity.hasNumericalValue,
+                          hasUnit: pi.availableQuantity.hasUnit?.id,
+                        } : undefined,
+                        effortQuantity: pi.effortQuantity ? {
+                          hasNumericalValue: pi.effortQuantity.hasNumericalValue,
+                          hasUnit: pi.effortQuantity.hasUnit?.id,
+                        } : undefined,
+                        resourceQuantity: pi.resourceQuantity ? {
+                          hasNumericalValue: pi.resourceQuantity.hasNumericalValue,
+                          hasUnit: pi.resourceQuantity.hasUnit?.id,
+                        } : undefined,
+                        inScopeOf: (pi.inScopeOf || []).map(s => s.id),
+                        inputOf: pi.inputOf?.id,
+                        outputOf: pi.outputOf?.id,
+                        provider: pi.provider?.id,
+                        receiver: pi.receiver?.id,
+                        resourceConformsTo: pi.resourceConformsTo?.id,
+                        resourceInventoriedAs: pi.resourceInventoriedAs?.id,
+                      }
+                    }
+                    currentProposedIntent = {}
+
+                    modalOpen = true;
+                    editing = true;
+                  }}  class="text-indigo-600 hover:text-indigo-900"
+                    >Edit<span class="sr-only">, Lindsay Walton</span></button
+                  >
+                  &nbsp;
+                  <button type="button" on:click={() => {
+                    deleteAProposal(p.revisionId)
+                  }}
+                  class="text-indigo-600 hover:text-indigo-900">
+                  Delete</button>
+                  </td>
+                </tr>
+                {/if}
+                {/if}
+              {/each}
+            {/if}
           </tbody>
         </table>
       </div>

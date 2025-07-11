@@ -129,7 +129,7 @@
               <tr class={index % 2 == 0 ? 'bg-gray-100' : ''}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-3"
                   >
-                  {#each recipe_exchange.recipeClauses.map(it => it.resourceConformsTo.name) as inputName}
+                  {#each recipe_exchange.recipeClauses.map(it => it?.resourceConformsTo?.name) as inputName}
                     {inputName}<br />
                   {/each}
                 </td>
@@ -138,7 +138,7 @@
                 >
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                   >
-                  {#each recipe_exchange.recipeReciprocalClauses.map(it => it.resourceConformsTo.name) as outputName}
+                  {#each recipe_exchange.recipeReciprocalClauses.map(it => it?.resourceConformsTo?.name) as outputName}
                     {outputName}<br />
                   {/each}
                 </td>

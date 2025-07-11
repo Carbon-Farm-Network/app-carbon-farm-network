@@ -2,17 +2,18 @@
     import { Pencil, Trash, EconomicEvent } from '$lib/icons'
     import { Decimal } from 'decimal.js'
     import { cloneDeep } from 'lodash'
-    import { getPlan } from '../../../../crud/fetch'
+    // import { getPlan } from '../../../../crud/fetch'
 
+    export let getPlan;
     export let commitment;
     export let side;
     export let columnIndex;
     export let processIndex;
     export let allColumns;
     export let processes;
-    export let planId;
-    export let agents;
-    export let economicResources;
+    // export let planId;
+    // export let agents;
+    // export let economicResources;
     export let units;
     export let yellow;
     export let agreementsToDelete;
@@ -20,12 +21,11 @@
     export let fetching;
     export let carryOver;
     export let updateColumns;
-    export let removeProcessCommitmentFromPlan;
-    export let getProcess;
+    // export let getProcess;
     export let deleteCommitment;
     export let deleteAgreement;
-    export let buildPlan;
-    export let commitmentModalOpen;
+    // export let buildPlan;
+    export let commitmentModalOpen: boolean;
     export let commitmentModalProcess;
     export let commitmentModalColumn;
     export let commitmentModalSide;
@@ -35,12 +35,13 @@
     export let economicEventModalOpen;
     export let selectedCommitment;
     export let sumEconomicEventsFromFulfillments;
+
     // {#each committedInputs as { resourceConformsTo, providerId, resourceQuantity, action, receiverId, id, revisionId, agreement, fulfilledBy, finished, clauseOf, meta }}
     $: resourceConformsTo = commitment?.resourceConformsTo
-    $: providerId = commitment?.providerId
+    $: providerId = commitment?.provider.id
     $: resourceQuantity = commitment?.resourceQuantity
     $: action = commitment?.action
-    $: receiverId = commitment?.receiverId
+    $: receiverId = commitment?.receiver.id
     $: id = commitment?.id
     $: revisionId = commitment?.revisionId
     // $: agreement = commitment?.agreement
@@ -55,12 +56,13 @@
     $: outputCarryOverInfo = carryOver[thisProcSpec]?.[resourceConformsTo?.id]
     $: deficit = outputCarryOverInfo?.received - outputCarryOverInfo?.provided
     // $: dedupedFulfilledBy = fulfilledBy?.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)
-    $: costColor = clause?.finished ? "#c4fbc4" : (((clause?.fulfilledBy && clause?.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")
-    $: clause = clauseOf?.commitments?.find(it => it.action.label == "transfer" && it.receiverId == providerId)
+    // $: costColor = clause?.finished ? "#c4fbc4" : (((clause?.fulfilledBy && clause?.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")
+    // $: clause = clauseOf?.commitments?.find(it => it.action.label == "transfer")
     // $: pickupFromOtherAgent = action?.label == "pickup" && providerId != receiverId
     // $: produce = action.label == "produce"
     // $: consume = action.label == "consume"
     // $: matchingResource = economicResources.find(it => it.conformsTo?.id == resourceConformsTo?.id)
+    
 </script>
 
     <!-- {JSON.stringify(prevProcSpec)} -->
@@ -84,21 +86,12 @@
             <!-- {JSON.stringify(fulfilledBy[0]?.fulfills)} -->
         <strong>
             {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-            <!-- {sumEconomicEvents(fulfilledBy.map(it => it.id))} -->
-            {sumEconomicEventsFromFulfillments(fulfilledBy)} 
-            {#each units as unit}
-                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                {unit.label}
-                {/if}
-            {/each}
+                <!-- {sumEconomicEvents(fulfilledBy.map(it => it.id))} -->
+                {sumEconomicEventsFromFulfillments(fulfilledBy)} 
+                {resourceQuantity?.hasUnit?.label}
             {:else}
-            {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-            <!-- {resourceQuantity?.hasUnit?.label} -->
-            {#each units as unit}
-                {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                {unit.label}
-                {/if}
-            {/each}
+                {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                {resourceQuantity?.hasUnit?.label}
             {/if}
         </strong>
         </p>
@@ -137,18 +130,10 @@
     {/if}
     <p>
         from 
-        {#each agents as agent}
-        {#if agent.id == providerId}
-            {agent.name}
-        {/if}
-        {/each}
+        {commitment.provider?.name}
         <br />
         to 
-        {#each agents as agent}
-        {#if agent.id == receiverId}
-            {agent.name}
-        {/if}
-        {/each}
+        {commitment.receiver?.name}
         {#if fulfilledBy?.length > 0}
         {@const dedupedFulfilledBy = fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
         <br />
@@ -165,26 +150,27 @@
     <div style="margin-right: 20px; margin-top: 4px;">
     <!-- <div style="margin-right: 30px; margin-top: 4px;"> -->
         <!-- button to move commitment up in arra -->
-        <button on:click={() => {
+        <button on:click={async () => {
         let index = allColumns[columnIndex][processIndex][side].findIndex(it => it.id == id)
         if (index > 0) {
             let temp = allColumns[columnIndex][processIndex][side][index]
             allColumns[columnIndex][processIndex][side][index] = allColumns[columnIndex][processIndex][side][index - 1]
             allColumns[columnIndex][processIndex][side][index - 1] = temp
         }
-        updateColumns(columnIndex, processIndex, side)
+        console.log("allColumns", allColumns[columnIndex][processIndex][side])
+        await updateColumns(columnIndex, processIndex, side)
         }}>
         <img class="mx-auto" height="14px" width="14px" src="/arrow-up.svg" alt="" />
         </button>
         <!-- button to move down -->
-        <button on:click={() => {
+        <button on:click={async () => {
         let index = allColumns[columnIndex][processIndex][side].findIndex(it => it.id == id)
         if (index < allColumns[columnIndex][processIndex][side].length - 1) {
             let temp = allColumns[columnIndex][processIndex][side][index]
             allColumns[columnIndex][processIndex][side][index] = allColumns[columnIndex][processIndex][side][index + 1]
             allColumns[columnIndex][processIndex][side][index + 1] = temp
         }
-        updateColumns(columnIndex, processIndex, side)
+        await updateColumns(columnIndex, processIndex, side)
         }}>
         <img class="mx-auto" height="14px" width="14px" src="/arrow-down.svg" alt="" />
         </button>
@@ -213,12 +199,11 @@
         let costAgreement = clauseOf
         console.log("clauseOf to delete", costAgreement, costAgreement != undefined)
 
-        if (side == "") {
-            commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer" && it.receiverId == providerId).revisionId)
-        } else {
-            await removeProcessCommitmentFromPlan(planId, allColumns[columnIndex][processIndex].id, id)
-            await buildPlan()
-        }
+        // if (side == "") {
+        //     commitmentsToDelete.push(costAgreement.commitments.find(it => it.action.label == "transfer" && it.receiverId == providerId).revisionId)
+        // } else {
+        //     await buildPlan()
+        // }
         if (costAgreement != undefined) {
             console.log("deleting cost agreement", costAgreement)
             agreementsToDelete.push(costAgreement.revisionId)
@@ -227,13 +212,14 @@
             await deleteCommitment(costAgreement.commitments.find(it => it.action.label == "transfer").revisionId)
         }
         // allColumns[columnIndex][processIndex][side] = allColumns[columnIndex][processIndex][side].filter(it => it.id != id)
-        await deleteCommitment(revisionId)
-
-        if (side == "") {
-            await getPlan(planId)
-        } else {
-            await getProcess(allColumns[columnIndex][processIndex].id)
-        }
+        const deleteRes = await deleteCommitment(revisionId)
+        console.log("deleted commitment", deleteRes)
+        await getPlan()
+        // if (side == "") {
+        //     await getPlan(planId)
+        // } else {
+        //     await getProcess(allColumns[columnIndex][processIndex].id)
+        // }
         }}
     >
         <Trash />
@@ -279,9 +265,9 @@
     </div>
 
     {#if clauseOf}
-    <!-- {@const clause = clauseOf?.commitments?.find(it => it.action.label == "transfer")} -->
+    {@const clause = clauseOf?.commitments?.find(it => it.action.label == "transfer")}
     {#if clause}
-    <!-- {@const costColor = clause?.finished ? "#c4fbc4" : (((clause?.fulfilledBy && clause?.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")} -->
+    {@const costColor = clause?.finished ? "#c4fbc4" : (((clause?.fulfilledBy && clause?.fulfilledBy.length > 0) || yellow.includes(id)) ? "#fbfbb0" : "white")}
     <div
         class="bg-white rounded-r-full border border-gray-400 py-1 pl-8 pr-2 text-xs"
         style="background-color: {costColor};
@@ -304,10 +290,10 @@
                 .toFixed(0, Decimal.ROUND_HALF_UP)
                 .toString()}
                 {/if}
-                {clause?.resourceConformsTo.name}
+                {clause?.resourceConformsTo?.name}
             </strong>
-            <br>from {agents.find(it => it.id == clause?.providerId)?.name} 
-            <br>to {agents.find(it => it.id == clause?.receiverId)?.name}
+            <br>from {clause?.provider?.name} 
+            <br>to {clause?.receiver?.name}
             {#if clause?.fulfilledBy?.length > 0}
             {@const dedupedFulfilledBy = clause?.fulfilledBy.filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i)}
                 <br />
@@ -334,10 +320,12 @@
                 on:click={async () => {
                 // visually remove commitment
                 // allColumns[columnIndex][processIndex][side] = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
-                await deleteCommitment(clause?.id)
-                console.log("deleted commitment", clause?.id)
-                await deleteAgreement(clauseOf?.id)
-                console.log("deleted agreement", clauseOf?.id)
+                console.log("deleting agreement", clause?.revisionId)
+                const agreementDeleteRes = await deleteAgreement(clauseOf?.revisionId)
+                console.log("deleted agreement", agreementDeleteRes)
+                console.log("deleting commitment", clause?.revisionId)
+                const deleteRes = await deleteCommitment(clause?.revisionId)
+                console.log("deleted commitment", deleteRes)
                 // const updateC = {
                 //   revisionId: revisionId, 
                 //   clauseOf: null,
@@ -348,11 +336,12 @@
                 // let uc = await updateCommitment(updateC)
                 // console.log("UC", uc)
                 fetching = true
-                if (side == "") {
-                    await getPlan(planId)
-                } else {
-                    await getProcess(allColumns[columnIndex][processIndex].id)
-                }
+                await getPlan()
+                // if (side == "") {
+                //     await getPlan(planId)
+                // } else {
+                //     await getProcess(allColumns[columnIndex][processIndex].id)
+                // }
                 fetching = false
                 }}
             >

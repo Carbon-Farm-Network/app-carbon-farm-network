@@ -7,9 +7,12 @@
   import Loading from "$lib/Loading.svelte"
   import Export from "$lib/Export.svelte"
   import SvgIcon from "$lib/SvgIcon.svelte"
-  import { getAllProcessSpecifications } from "../../crud/fetch"
+  import { cloneDeep } from "lodash-es"
+  // import { getAllProcessSpecifications } from "../../crud/fetch"
   import { deleteProcessSpecification } from "../../crud/commit"
-  import { allProcessSpecifications } from "../../crud/store"
+  // import { allProcessSpecifications } from "../../crud/store"
+  import { GET_ALL_UNITS, GET_ALL_PROCESS_SPECIFICATIONS } from "../../crud/fetch"
+  import { query } from "svelte-apollo"
 
   let modalOpen: boolean = false;
   let exportOpen: boolean = false;
@@ -19,49 +22,55 @@
   let name = "";
   let id = "";
   let currentProcessSpecification: any;
-  let units: any[];
+  // let units: any[];
   let handleSubmit: any;
+
+  const processSpecificationsQuery = query(GET_ALL_PROCESS_SPECIFICATIONS)
+  // const unitsQuery = query(GET_ALL_UNITS)
   
   async function deleteAProcessSpec(revisionId: string) {
     let areYouSure = await confirm("Are you sure you want to delete this process specification?")
     if (areYouSure == true) {
       const res = await deleteProcessSpecification(revisionId)
-      await getAllProcessSpecifications()
+      // await getAllProcessSpecifications()
+      await processSpecificationsQuery.refetch()
     }
   }
   
   async function refresh() {
     fetching = true
-    await getAllProcessSpecifications()
+    // await getAllProcessSpecifications()
+    await processSpecificationsQuery.refetch()
     fetching = false
   }
 
   // DELETE PROCESS SPECIFICATION ENDS
   onMount(async () => {
     if (browser) {
-      loading = processSpecifications.length == 0
+      loading = $processSpecificationsQuery.loading
       if (loading) {
-        await getAllProcessSpecifications()
+        // await getAllProcessSpecifications()
+        await processSpecificationsQuery.refetch()
         loading = false
       }
     }
   })
 
   // reactive data bindings
-  let processSpecifications: any[]
-  allProcessSpecifications.subscribe((value) => {
-    processSpecifications = value
-    console.log("processSpecifications", processSpecifications)
-  })
+  // let processSpecifications: any[]
+  // allProcessSpecifications.subscribe((value) => {
+  //   processSpecifications = value
+  //   console.log("processSpecifications", processSpecifications)
+  // })
 
-  $: processSpecifications, modalOpen, editing, id, currentProcessSpecification, units, exportOpen;
+  $: modalOpen, editing, id, currentProcessSpecification, exportOpen;
 </script>
 
 <!-- <div style="height: 8vh"> -->
   <Header title="Process Specifications" description="The types of processes your network creates, uses, trades; types of work; currencies, tokens." />
 <!-- </div> -->
 <!-- <Units /> -->
-<ProcessSpecificationModal bind:handleSubmit bind:open={modalOpen} {name} {editing} {currentProcessSpecification} on:submit={getAllProcessSpecifications} />
+<ProcessSpecificationModal bind:handleSubmit bind:open={modalOpen} {name} {editing} {currentProcessSpecification} on:submit={refresh} />
 
 {#if loading}
   <Loading />
@@ -97,15 +106,6 @@
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add a process specification</button>
     </div>
-    <!-- <Export bind:open={exportOpen} dataName="list of Process Specifications" fileName="cfn-process-specifications" data={processSpecifications}
-    on:import={async (event) => {
-      for (let i = 0; i < event.detail.length; i++) {
-        let newPS = await handleSubmit(event.detail[i])
-        await addHashChange(event.detail[i].id, newPS.data.createProcessSpecification.processSpecification.id)
-      }
-      exportOpen = false
-    }}
-    /> -->
   </div>
   <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -130,7 +130,8 @@
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
-            {#if processSpecifications}
+            {#if !$processSpecificationsQuery.loading}
+            {@const processSpecifications = $processSpecificationsQuery.data?.processSpecifications.edges.map((edge) => edge.node).reverse() ?? []}
             {#each processSpecifications as processSpecification, index}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
@@ -146,7 +147,7 @@
               >
                 <button type="button" on:click={() => {
                   name = processSpecification.name; 
-                  currentProcessSpecification = processSpecification; 
+                  currentProcessSpecification = cloneDeep(processSpecification); 
                   editing=true; modalOpen = true
                  
                   }}  class="text-indigo-600 hover:text-indigo-900"

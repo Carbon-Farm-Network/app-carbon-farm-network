@@ -7,8 +7,8 @@ get_latest_version() {
 
 # Packages to update
 packages=(
-  "@leosprograms/graphql-client-holochain"
-  "@leosprograms/vf-graphql-holochain"
+  "@valueflows/graphql-client-holochain"
+  "@valueflows/vf-graphql-holochain"
 )
 
 # Path to the package.json file

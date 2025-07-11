@@ -8,7 +8,7 @@ Enter the nix shell by running this in the root folder of the repository, then i
 
 ```bash
 nix develop
-pnpm install
+npm install
 ```
 
 There is currently no published release for the [Holochain Facets](https://github.com/Carbon-Farm-Network/holochain-facets/) module. You will need to download and build it yourself:

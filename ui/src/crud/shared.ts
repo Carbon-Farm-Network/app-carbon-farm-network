@@ -233,3 +233,27 @@ export async function fetchSet(entry_type: string, entry_type_pluralized: string
   console.log("realized", realized)
   return realized
 }
+
+export function removeNullAndUndefined(obj: any) {
+  // remove null and undefined values from an object
+  for (const key in obj) {
+    if (obj[key] === null || obj[key] === undefined) {
+      delete obj[key]
+    } else if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      removeNullAndUndefined(obj[key])
+    }
+  }
+  return obj
+}
+
+export function removeFieldsEndingWithId(obj: any) {
+  // remove fields ending with 'Id' from an object
+  for (const key in obj) {
+    if (key.endsWith('Id')) {
+      delete obj[key]
+    } else if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      removeFieldsEndingWithId(obj[key])
+    }
+  }
+  return obj
+}

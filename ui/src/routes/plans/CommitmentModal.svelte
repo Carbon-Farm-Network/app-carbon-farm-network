@@ -2,9 +2,10 @@
   import { clickOutside } from '../../utils'
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
-  import type { AgentConnection, Agent, UnitConnection, Action } from '@leosprograms/vf-graphql'
+  import type { AgentConnection, Agent, UnitConnection, Action } from '@valueflows/vf-graphql'
   import { cloneDeep } from "lodash"
-  import { stringify } from 'postcss'
+  import { GET_ALL_AGENTS, GET_ALL_UNITS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_All_ACTIONS } from '../../crud/fetch';
+  import { query } from 'svelte-apollo';
 
   export let open = false
   export let commitmentModalColumn: number | undefined;
@@ -39,16 +40,37 @@
     filteredActions = actions.filter((a) => a.label == 'transfer')
   }
 
-  // $: if (selectedCommitment) {
-  //   if (selectedCommitment.clauseOf && selectedCommitment.clauseOf.commitments.length > 0) {
-  //     saveCost = true
-  //   } else {
-  //     saveCost = false
-  //   }
-  // }
+  const agentsQuery = query(GET_ALL_AGENTS);
+  const unitsQuery = query(GET_ALL_UNITS);
+  const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
+  const actionsQuery = query(GET_All_ACTIONS);
 
-  $: provider = selectedCommitment?.providerId ? agents.find(a => a?.id == selectedCommitment?.providerId) : selectedCommitment?.provider
-  $: receiver = selectedCommitment?.receiverId ? agents.find(a => a?.id == selectedCommitment?.receiverId) : selectedCommitment?.receiver
+  agentsQuery.subscribe((result) => {
+    if (result.data) {
+      agents = result.data.agents.edges.map(edge => edge.node);
+    }
+  });
+  unitsQuery.subscribe((result) => {
+    if (result.data) {
+      units = result.data.units.edges.map(edge => edge.node);
+    }
+  });
+  resourceSpecificationsQuery.subscribe((result) => {
+    if (result.data) {
+      resourceSpecifications = result.data.resourceSpecifications.edges.map(edge => edge.node);
+    }
+  });
+  actionsQuery.subscribe((result) => {
+    if (result.data) {
+      console.log("actions", result)
+      actions = result.data.actions
+    }
+  });
+  $: if (open) {
+    agentsQuery.refetch();
+    unitsQuery.refetch();
+    resourceSpecificationsQuery.refetch();
+  }
 
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
@@ -63,35 +85,36 @@
 
   onMount(async() => {
     window.addEventListener('keydown', checkKey)
-    // await fetchUnits();
-    // await fetchAgents();
-    // await fetchResourceSpecifications();
   })
 
   // let selectedCommitment: any;
   let newCommitmentTemplate = {
-    id: undefined,
     resourceConformsTo: {
       name: '',
       defaultUnitOfResource: {
+        id: '',
         label: ''
       }
     },
-    action: {label: ''},
+    action: {
+      id: '',
+      label: ''
+    },
     resourceQuantity: {
       hasNumericalValue: 0,
-      hasUnitId: ''
+      hasUnit: {
+        id: '',
+        label: ''
+      }
     },
-    receiverId: '',
-    providerId: '',
-    // receiver: {
-    //   id: '',
-    //   name: ''
-    // },
-    // provider: {
-    //   id: '',
-    //   name: ''
-    // },
+    receiver: {
+      id: '',
+      name: ''
+    },
+    provider: {
+      id: '',
+      name: ''
+    },
     note: '',
     fulfilledBy: [],
     finished: false
@@ -149,6 +172,11 @@
     }
   }
 
+
+  async function handleFormSubmit(event: Event) {
+    event.preventDefault();
+  }
+
 </script>
 
 
@@ -188,6 +216,7 @@
         use:clickOutside
       >
         <div>
+          <form on:submit={handleFormSubmit}>
           <div class="mt-3 text-center sm:mt-5">
             <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
               {#if selectedCommitmentId || selectedCommitment?.revisionId}
@@ -204,25 +233,12 @@
                   >Provider</label
                 >
                 <!-- {JSON.stringify(selectedCommitment)} -->
-                {#if selectedCommitment?.id && provider}
+                {#if selectedCommitment?.id}
                   <select
                     id="provider"
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={provider?.id}
-                    on:change={(e) => {
-                      let id = e.target.value
-                      selectedCommitment.providerId = id
-                      selectedCommitment.provider.id = id
-                      // let selectedAgent = agents.find((rs) => rs.id === id)
-                      // console.log(selectedAgent.name)
-                      // if (selectedCommitment.provider) {
-                      //   selectedCommitment.provider = selectedAgent
-                      // } else {
-                      //   console.log(selectedCommitment.provider)
-                      // }
-                    }}
-
+                      bind:value={selectedCommitment.provider.id}
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
@@ -235,18 +251,7 @@
                     id="provider"
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={""}
-                    on:change={(e) => {
-                      let id = e.target.value
-                      console.log(id)
-                      newCommitment.providerId = id
-                      // let selectedAgent = agents.find((rs) => rs.id === id)
-                      // if (newCommitment.providerId) {
-                      //   newCommitment.providerId = selectedAgent.id
-                      // } else {
-                      //   console.log(newCommitment.providerId)
-                      // }
-                    }}
+                    bind:value={newCommitment.provider.id}
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
@@ -263,18 +268,12 @@
                   class="block text-sm font-medium leading-6 text-gray-900"
                   >Receiver</label
                 >
-                {#if selectedCommitment?.id && receiver}
+                {#if selectedCommitment?.id}
                   <select
                     id="receiver"
                     name="receiver"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={receiver?.id}
-                    on:change={(e) => {
-                      let id = e.target.value
-                      console.log(id)
-                      selectedCommitment.receiverId = id
-                      selectedCommitment.receiver.id = id
-                    }}
+                    bind:value={selectedCommitment.receiver.id}
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
@@ -285,16 +284,7 @@
                     id="receiver"
                     name="receiver"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={newCommitment.receiverId}
-                    on:change={(e) => {
-                      let id = e.target.value
-                      console.log(id)
-                      newCommitment.receiverId = id
-                      newCommitment.receiver = agents.find((rs) => rs.id === id)
-                      selectedCommitment.receiverId = id
-                      selectedCommitment.receiver = agents.find((rs) => rs.id === id)
-                      console.log(newCommitment)
-                    }}
+                    bind:value={newCommitment.receiver.id}
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
@@ -320,16 +310,7 @@
                     id="defaultUnitOfResource"
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    value={newCommitment.resourceConformsTo.id}
-                      on:change={(e) => {
-                        console.log(e.target.value)
-                        const rspec = resourceSpecifications.find((rs) => rs.id === e.target.value)
-                        newCommitment.defaultUnitOfResourceId = rspec.defaultUnitOfResource.id
-                        newCommitment.resourceConformsTo = rspec
-                        selectedCommitment.resourceConformsTo = rspec
-                        selectedCommitment.defaultUnitOfResourceId = rspec.defaultUnitOfResource.id
-                        console.log(newCommitment)
-                      }}
+                    bind:value={newCommitment.resourceConformsTo.id}
                     >
                     {#each resourceSpecifications as rs}
                       <option value={rs.id}>{rs.name}</option>
@@ -355,11 +336,6 @@
                     name="action"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.action.id}
-                    on:change={(e) => {
-                      const action = actions.find((a) => a.id === e.target.value)
-                      console.log(action)
-                      newCommitment.action = action
-                    }}
                   >
                   {#if filteredActions}
                     {#each filteredActions as action}
@@ -415,17 +391,13 @@
                 >
                 {#if selectedCommitment?.id && selectedCommitment?.resourceQuantity}
                   <!-- <p>{selectedCommitment?.resourceQuantity.hasUnit.label}</p> -->
-                  {#each units as unit}
-                    {#if unit.id == selectedCommitment?.resourceQuantity?.hasUnitId}
-                      {unit.label}
-                    {/if}
-                  {/each}
+                  {selectedCommitment?.resourceQuantity.hasUnit.label}
                 {:else}
                   <select
                     id="unit"
                     name="unit"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    bind:value={newCommitment.resourceQuantity.hasUnitId}
+                    bind:value={newCommitment.resourceQuantity.hasUnit.id}
                   >
                     {#if units}
                       {#each units as unit}
@@ -506,6 +478,7 @@
               </div>
             </div>
           </div>
+        </form>
         </div>
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           {#if selectedCommitmentId || selectedCommitment?.revisionId}
@@ -524,21 +497,21 @@
 
             let updatedCommitment = {...selectedCommitment}
             console.log("updated commitment", updatedCommitment)
-            if (!selectedCommitment.providerId) {
-              updatedCommitment.providerId = newCommitment.providerId
+            if (!selectedCommitment.provider.id) {
+              updatedCommitment.provider = newCommitment.provider.id
             }
-            if (!selectedCommitment.provider) {
-              updatedCommitment.provider = newCommitment.provider
+            // if (!selectedCommitment.provider) {
+            //   updatedCommitment.provider = newCommitment.provider
+            // }
+            if (!selectedCommitment.receiver.id) {
+              updatedCommitment.receiver = newCommitment.receiver.id
             }
-            if (!selectedCommitment.receiverId) {
-              updatedCommitment.receiverId = newCommitment.receiverId
-            }
-            if (!selectedCommitment.receiver) {
-              updatedCommitment.receiver = newCommitment.receiver
-            }
+            // if (!selectedCommitment.receiver) {
+            //   updatedCommitment.receiver = newCommitment.receiver
+            // }
             if (!selectedCommitment.resourceConformsTo) {
               updatedCommitment.resourceConformsTo = newCommitment.resourceConformsTo
-              updatedCommitment.defaultUnitOfResourceId = newCommitment.resourceConformsTo.defaultUnitOfResource.id
+              updatedCommitment.defaultUnitOfResource = newCommitment.resourceConformsTo.defaultUnitOfResource.id
             }
             if (!selectedCommitment.resourceQuantity) {
               updatedCommitment.resourceQuantity = newCommitment.resourceQuantity

@@ -26,6 +26,7 @@ export const AGREEMENT_CORE_FIELDS = gql`
           }
           action {
             id
+            symbol
             label
           }
           resourceConformsTo {

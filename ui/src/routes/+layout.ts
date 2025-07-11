@@ -5,6 +5,9 @@ import { appletServices } from '../../we';
 import { onMount } from 'svelte';
 import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
 import { setClient, setClientHC } from "../crud/store"
+import { createHolochainSchema } from '@leosprograms/vf-graphql-holochain';
+import { SchemaLink } from '@apollo/client/link/schema';
+import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 
 const appId = 'acfn'
 const ENV_CONNECTION_URI = process.env.REACT_APP_HC_CONN_URL as string || ''
@@ -68,7 +71,7 @@ export async function load() {
         console.log("no admin port")
       }
        
-      // pull DNA config separately in order to bind to CFN-specific extension Cells\
+      // pull DNA config separately in order to bind to CFN-specific extension Cells
       let adminConn = await AdminWebsocket.connect({url: new URL(`ws://localhost:${adminPort}`), defaultTimeout: 999999999})
       let tokenResp = await adminConn.issueAppAuthenticationToken({
         installed_app_id: appId,
@@ -77,8 +80,38 @@ export async function load() {
 
       const conn = await AppWebsocket.connect({url: new URL(url), token: token})
       setClientHC(conn)
+
+      const cache = new InMemoryCache({
+        typePolicies: {
+          Commitment: {
+            keyFields: ['revisionId'],
+          },
+          Process: {
+            keyFields: ['revisionId'],
+          },
+        },
+      });
+      const apolloClient = new ApolloClient({
+        cache
+      });
+      setClient(apolloClient);
+
+      const schema = createHolochainSchema(
+        {
+          appWebSocket: conn,
+          roleName: 'hrea'
+        }
+      );
+
+      apolloClient.setLink(
+        new SchemaLink(
+          { schema }
+        )
+      );
+
       return {
-        client: conn,
+        // client: conn,
+        client: apolloClient,
       }
   } catch (e) {
     console.error("Holochain connection error", e)

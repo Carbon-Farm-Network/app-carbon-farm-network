@@ -1,6 +1,6 @@
 <script lang="ts">
   import { gql } from 'graphql-tag'
-  import type { RecordMeta, ProcessSpecification, ProcessSpecificationCreateParams, ProcessSpecificationUpdateParams } from '@leosprograms/vf-graphql'
+  import type { RecordMeta, ProcessSpecification, ProcessSpecificationCreateParams, ProcessSpecificationUpdateParams } from '@valueflows/vf-graphql'
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte'
   import { createProcessSpecification, updateProcessSpecification } from '../../crud/commit';
@@ -45,7 +45,6 @@
       name: currentProcessSpecification.name,
       note: currentProcessSpecification.note,
       image: currentProcessSpecification.image,
-      id: currentProcessSpecification.id,
       revisionId: currentProcessSpecification.revisionId
     }
     try {
@@ -189,7 +188,6 @@
                     type="text"
                     name="image"
                     id="image"
-                    autocomplete="longitude"
                     placeholder="https://www.example.com/logo.png"
                     bind:value={currentProcessSpecification.image}
                     on:input={e => {

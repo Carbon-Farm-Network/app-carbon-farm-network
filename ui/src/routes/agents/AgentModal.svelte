@@ -11,10 +11,11 @@
   export let selectedFacets: string[];
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte'
-  import type { OrganizationCreateParams, OrganizationUpdateParams } from '@leosprograms/vf-graphql'
+  import type { OrganizationCreateParams, OrganizationUpdateParams } from '@valueflows/vf-graphql'
   import type { Facet } from "$lib/graphql/extension-schemas"
   import { createAgent, updateAgent, associateAgentWithValue } from '../../crud/commit'
   import { allRoles } from '../../crud/store';
+  import { decodeHashFromBase64 } from '@holochain/client'
 
   let roles: any = allRoles
   allRoles.subscribe(value => {
@@ -96,7 +97,6 @@
     }
     let agent: OrganizationCreateParams = {
         name: currentAgent.name,
-        agentType: "Organization",
         image: currentAgent.imageUrl,
         note: currentAgent.note,
         classifiedAs: [JSON.stringify(currentAgent.lat), JSON.stringify(currentAgent.long), currentAgent.role, currentAgent.iconUrl],
@@ -112,11 +112,9 @@
     }
     let agent: OrganizationUpdateParams = {
         name: currentAgent.name,
-        agentType: "Organization",
         image: currentAgent.imageUrl,
         note: currentAgent.note,
         classifiedAs: [JSON.stringify(currentAgent.lat), JSON.stringify(currentAgent.long), currentAgent.role, currentAgent.iconUrl],
-        id: currentAgent.id,
         revisionId: currentAgent.revisionId
     }
     try {

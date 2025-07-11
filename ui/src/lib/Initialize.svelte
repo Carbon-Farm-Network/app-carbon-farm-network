@@ -5,7 +5,7 @@
   import { onMount } from 'svelte'
   import { goto } from '$app/navigation';
   import type { ReadableQuery } from 'svelte-apollo'
-  import type { Unit, UnitConnection } from '@leosprograms/vf-graphql'
+  import type { Unit, UnitConnection } from '@valueflows/vf-graphql'
   import recipes from '$lib/data/recipes-with-exchanges.json'
   import { createRecipeProcess, createRecipeExchange, createRecipeFlow, createFacetGroup } from '../crud/commit';
   import { getAllFacetGroups, getAllProcessSpecifications, getAllResourceSpecifications, getAllActions, getAllUnits } from '../crud/fetch';

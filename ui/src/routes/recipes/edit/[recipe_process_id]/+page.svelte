@@ -9,7 +9,7 @@
   import { allRecipes, allProcessSpecifications, allActions, allUnits, allResourceSpecifications } from '../../../../crud/store'
   import { getAllRecipes, getAllProcessSpecifications, getAllActions, getAllResourceSpecifications, getAllUnits } from '../../../../crud/fetch'
   import { deleteRecipeFlow } from '../../../../crud/commit'
-  import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@leosprograms/vf-graphql'
+  import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@valueflows/vf-graphql'
 
   let recipes: any[] = []
   allRecipes.subscribe(value => {
@@ -207,7 +207,7 @@
       class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
     >
       <h5 class="mb-2 text-md font-bold tracking-tight text-gray-900 dark:text-white">
-        {processSpecifications.find(it => it.id === recipeProcess?.processConformsToId)?.name}
+        {processSpecifications.find(it => it.id === recipeProcess?.processConformsTo.id)?.name}
       </h5>
 
       <h6 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -222,7 +222,7 @@
             revisionId: recipeProcess.revisionId,
             name: recipeProcess.name,
             note: recipeProcess.note,
-            processConformsTo: recipeProcess.processConformsToId
+            processConformsTo: recipeProcess.processConformsTo.id
           }
           recipeProcessModalOpen = true
         }}

@@ -3,9 +3,10 @@
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   import { cloneDeep } from "lodash"
-  import { ensure } from '../../crud/fetch';
+  import { GET_ALL_AGENTS } from '../../crud/fetch'
   import { allProcessSpecifications, allAgents } from '../../crud/store';
   import actions from '$lib/data/actions.json'
+  import { query } from "svelte-apollo";
 
   export let open = false
   export let raiseOnly = false
@@ -20,10 +21,12 @@
   export let resourceSpecifications: any[];
   export let units: any[];
 
+  const agentsQuery = query(GET_ALL_AGENTS);
+
   let agents: any[] = [];
-  allAgents.subscribe(value => {
-    agents = value;
-  });
+  agentsQuery.subscribe((res) => {
+    agents = res.data?.agents?.edges?.map(edge => edge.node) || [];
+  })
   
   const dispatch = createEventDispatcher();
   
@@ -76,7 +79,8 @@
 
   onMount(async() => {
     window.addEventListener('keydown', checkKey)
-    await ensure(['processSpecification', 'agent', 'resourceSpecification'])
+    agentsQuery.refetch()
+    // await ensure(['processSpecification', 'agent', 'resourceSpecification'])
     if (raiseOnly) {
       //@ts-ignore
       newEvent.action = actions.find(it => it == "raise")
@@ -380,12 +384,12 @@
                         class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                       >
                       {#if selectedEvent?.id && selectedEvent?.resourceQuantity}
-                        <!-- <p>{selectedEvent?.resourceQuantity.hasUnit.label}</p> -->
-                        {#each units as unit}
+                        <p>{selectedEvent?.resourceQuantity.hasUnit.label}</p>
+                        <!-- {#each units as unit}
                           {#if unit.id == selectedEvent?.resourceQuantity?.hasUnitId}
                             {unit.label}
                           {/if}
-                        {/each}
+                        {/each} -->
                       {:else}
                         <select
                           id="unit"

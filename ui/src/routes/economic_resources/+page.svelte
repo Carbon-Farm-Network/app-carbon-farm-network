@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { EconomicResource, Agent }  from '@leosprograms/vf-graphql'
+    import type { EconomicResource, Agent }  from '@valueflows/vf-graphql'
     import Header from "$lib/Header.svelte";
     import EconomicResourceModal from "./EconomicResourceModal.svelte";
     import { onMount } from "svelte";

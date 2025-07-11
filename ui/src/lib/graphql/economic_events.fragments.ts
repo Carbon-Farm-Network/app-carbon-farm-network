@@ -5,6 +5,7 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
     id
     action {
         id
+        symbol
         label
     }
     inputOfId

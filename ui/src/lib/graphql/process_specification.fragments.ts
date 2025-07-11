@@ -7,5 +7,10 @@ export const PROCESS_SPECIFICATION_CORE_FIELDS = gql`
     name
     image
     note
+    basedOn {
+      id
+      name
+      image
+    }
   }
 `

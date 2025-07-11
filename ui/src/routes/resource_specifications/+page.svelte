@@ -10,9 +10,9 @@
   import SvgIcon from "$lib/SvgIcon.svelte"
   import Export from "$lib/Export.svelte"
   import { addHashChange } from "../../crud/commit"
-  import { getAllResourceSpecifications, getAllUnits } from "../../crud/fetch"
   import { deleteResourceSpecification } from "../../crud/commit"
   import { allResourceSpecifications, allFacetGroups } from "../../crud/store"
+  import { GET_ALL_RESOURCE_SPECIFICATIONS, readFacetOfValue } from "../../crud/fetch"
 
   let modalOpen = false;
   let editing = false;
@@ -30,14 +30,16 @@
   let importing: boolean = false;
   let resourceSpecifications: any[]
 
-  allResourceSpecifications.subscribe((value) => {
-    resourceSpecifications = value.map((rs) => {
-      return {
-        ...rs,
-        defaultUnitOfResourceId: rs.defaultUnitOfResource?.id
-      }
-    })
-  })
+  const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
+  // allResourceSpecifications.subscribe((value) => {
+  //   resourceSpecifications = value.map((rs) => {
+  //     return {
+  //       ...rs,
+  //       defaultUnitOfResourceId: rs.defaultUnitOfResource?.id
+  //     }
+  //   })
+  // })
 
   allFacetGroups.subscribe((value) => {
     console.log("facet groups", value.find((g) => {return g.name == "Resource Specification"})?.facetOptions)
@@ -54,33 +56,36 @@
     let areYouSure = await confirm("Are you sure you want to delete this resource specification?")
     if (areYouSure == true) {
       const res = await deleteResourceSpecification(revisionId)
-      getAllResourceSpecifications()
+      // getAllResourceSpecifications()
+      resourceSpecificationsQuery.refetch()
     }
   }
 
   async function refresh() {
     fetching = true
     // await getAllUnits()
-    await getAllResourceSpecifications()
+    // await getAllResourceSpecifications()
+    resourceSpecificationsQuery.refetch()
     fetching = false
   }
 
   onMount(async () => {
     if (browser) {
-      loading = resourceSpecifications.length == 0
+      loading = $resourceSpecificationsQuery.loading
       if (loading) {
         // await getAllUnits()
-        await getAllResourceSpecifications()
+        // await getAllResourceSpecifications()
+        resourceSpecificationsQuery.refetch()
         loading = false
       }
     }
   })
 
-  $: resourceSpecifications, modalOpen, editing, id, currentResourceSpecification, units, handleSubmit
+  $: modalOpen, editing, id, currentResourceSpecification, units, handleSubmit
 </script>
 
 <Header title="Resource Specifications" description="The types of resources your network creates, uses, trades; types of work; currencies, tokens." />
-<ResourceSpecificationModal bind:handleSubmit bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={getAllResourceSpecifications} />
+<ResourceSpecificationModal bind:handleSubmit bind:open={modalOpen} {units} {facets} {name} {editing} {currentResourceSpecification} {selectedFacets} on:submit={refresh} />
 
 {#if loading}
 <Loading />
@@ -167,7 +172,9 @@
           </thead>
           <tbody class="bg-white">
             <!-- Odd row -->
-            {#if resourceSpecifications}
+            {#if resourceSpecificationsQuery}
+            {@const resourceSpecifications = $resourceSpecificationsQuery.data?.resourceSpecifications?.edges?.map(
+              (edge) => edge.node).reverse() || []}
             {#each resourceSpecifications as resourceSpecification, index}
             <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
               <td
@@ -176,13 +183,25 @@
               >
               <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >
-                {resourceSpecification.defaultUnitOfResource?.label || ''}</td
+                {resourceSpecification?.defaultUnitOfResource?.label || ''}</td
               >
               <!-- <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
                 >{resourceSpecification.defaultUnitOfEffort || ''}</td
               > -->
-              {#if facets}
-              {#each facets as facet}
+              {#if facets && resourceSpecification.id}
+                {#await readFacetOfValue(resourceSpecification.id) then facetValues}
+                  {#if facets?.length}
+                    <th
+                      scope="col"
+                      class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
+                      >
+                        {facetValues[facetValues.length - 1]?.value || '-'}
+                    </th>
+                  {/if}
+                {:catch error}
+                  <span class="text-red-500">{JSON.stringify(error)}</span>
+                {/await}   
+              <!-- {#each facets as facet}
               {@const facetValue = resourceSpecification.facets?.findLast((f) => {return f.facetId == facet.id})?.value}
                 <th
                   scope="col"
@@ -192,7 +211,7 @@
                     {facetValue}                    
                   {/if}
               </th>
-              {/each}
+              {/each} -->
               {/if}
               <td
                 class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"

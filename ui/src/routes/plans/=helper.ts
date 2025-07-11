@@ -1,3 +1,4 @@
+import { Proposal, RecipeExchange, Agent } from '@valueflows/vf-graphql'
 import { Decimal } from 'decimal.js'
 
 export function matchingOffer(commitment: any, offers: any[]) {
@@ -5,9 +6,9 @@ export function matchingOffer(commitment: any, offers: any[]) {
   return offers.find(offer => {
     return offer?.publishes?.find(
       intent => {
-        const offerName = intent.publishes?.resourceConformsTo?.name
-        const correctProvider = commitment.providerId ? (intent.publishes?.providerId == commitment.providerId) : true
-        const correctProviderRole = commitment.providerRole ? (intent.publishes?.provider?.classifiedAs[2] == commitment.providerRole) : true
+        const offerName = intent?.resourceConformsTo?.name
+        const correctProvider = commitment.provider?.id ? (intent?.provider?.id == commitment.provider?.id) : true
+        const correctProviderRole = commitment.providerRole ? (intent?.provider?.classifiedAs[2] == commitment.providerRole) : true
         return offerName == commitment.resourceConformsTo.name && correctProvider && correctProviderRole
       }
     )
@@ -26,26 +27,24 @@ export function makeAgreement(
 
   if (matching_offer) {
     // console.log("matching offer", matching_offer)
-    const reciprocal_intent = matching_offer.publishes.find(
-      (intent: any) => intent.reciprocal
-    )
+    const reciprocal_intent = matching_offer.reciprocal[0]
     // console.log("reciprocal_intent", reciprocal_intent)
-    const primary_intent = matching_offer.publishes.find(
-      (intent: any) => !intent.reciprocal
-    )
-    const unit_size = primary_intent.publishes.resourceQuantity.hasNumericalValue
+    const primary_intent = matching_offer.publishes[0]
+    const unit_size = primary_intent.resourceQuantity.hasNumericalValue
     const fits_into_request: number = Math.ceil(commitment.resourceQuantity.hasNumericalValue / unit_size)
+    // console.log("making agreement", reciprocal_intent.resourceConformsTo.name, fits_into_request, commitment.resourceQuantity.hasNumericalValue, unit_size)
     return {
       name: recipe?.name,
       note: recipe?.note,
       commitment: {
-        action: reciprocal_intent.publishes.action,
-        provider: primary_intent.publishes.provider,
-        stage: reciprocal_intent.publishes.stage,
-        resourceConformsTo: reciprocal_intent.publishes.resourceConformsTo,
+        action: reciprocal_intent.action,
+        provider: reciprocal_intent.provider,
+        receiver: reciprocal_intent.receiver,
+        stage: reciprocal_intent.stage,
+        resourceConformsTo: reciprocal_intent.resourceConformsTo,
         resourceQuantity: {
-          ...reciprocal_intent.publishes.resourceQuantity,
-          hasNumericalValue: fits_into_request * reciprocal_intent.publishes.resourceQuantity.hasNumericalValue
+          ...reciprocal_intent.resourceQuantity,
+          hasNumericalValue: fits_into_request * reciprocal_intent.resourceQuantity.hasNumericalValue
         }
       }
     }
@@ -123,6 +122,7 @@ export function findExchange(
   based_on_name: string | undefined,
   recipeExchanges: any[]
 ): undefined | { name: string; note: string } {
+  console.log("findExchange", commitment, based_on_name, recipeExchanges)
   return recipeExchanges
   .find(a_recipe => {
     if (based_on_name) {
@@ -171,21 +171,21 @@ export type Process = {
   committedInputs: any[]
 }
 
-export function createAgreements(process: Process, recipeExchanges, offers, agents): Process {
+export function createAgreements(process: Process, recipeExchanges: RecipeExchange[], offers: Proposal[], agents: Agent[]): Process {
   return {
     ...process,
     committedOutputs: process.committedOutputs.map(output => {
       const output_exchange = findExchange(output, process.basedOn.name, recipeExchanges)
-      console.log("output_exchange", output_exchange, "process", process.basedOn)
+      // console.log("output_exchange", output_exchange, "process", process.basedOn)
       // if (output_exchange) {
-        console.log("maybe making agreement 1", output_exchange)
+        // console.log("maybe making agreement 1", output_exchange)
         const output_agreement = makeAgreement(output, output_exchange, offers, agents)
         console.log('output_agreement', output_agreement)
         if (output_agreement?.commitment?.provider && !output.provider) {
           output.provider = output_agreement.commitment.provider
         }
         if (output_agreement) {
-          console.log("actually making agreement 1", output, output_agreement)
+          // console.log("actually making agreement 1", output, output_agreement)
           return {
             ...output,
             // provider: output_agreement.commitment.provider,
@@ -202,7 +202,7 @@ export function createAgreements(process: Process, recipeExchanges, offers, agen
       // if (input_exchange) {
         // console.log("maybe making agreement 2", input_exchange)
         const input_agreement = makeAgreement(input, input_exchange, offers, agents)
-        console.log('input_agreement', input_agreement)
+        // console.log('input_agreement', input_agreement)
         if (input_agreement?.commitment?.provider && !input.provider) {
           input.provider = input_agreement.commitment.provider
         }
@@ -210,7 +210,7 @@ export function createAgreements(process: Process, recipeExchanges, offers, agen
           // console.log("actually making agreement 2", input, input_agreement)
           return {
             ...input,
-            // provider: input_agreement.commitment.provider,
+            provider: input_agreement.commitment.receiver,
             agreement: input_agreement
           }
         }
@@ -220,17 +220,17 @@ export function createAgreements(process: Process, recipeExchanges, offers, agen
   }
 }
 
-export function createCommitments(requests: { publishes: { proposedIntent: { intent: any }[] }[] }[]): any[] {
+export function createCommitments(requests: Proposal[]) {
   return requests.flatMap(request =>
-    request.publishes.filter(it => !it.reciprocal).map(proposed_intent => ({
-      ...proposed_intent.publishes,
-      action: {
-        label: 'transfer',
-      },
-      satisfies: proposed_intent.id,
+    request.publishes = [{
+      ...request.publishes[0],
+      // action: {
+      //   label: 'transfer',
+      // },
+      // satisfies: proposed_intent.id,
       id: crypto.randomUUID(),
-      revisionId: undefined,
-    }))
+      // revisionId: undefined,
+    }]
   )
 }
 
@@ -252,6 +252,7 @@ export type Demand = {
 export function aggregateCommitments(commitments: Commitment[]): Demand[] {
   return Object.values(
     commitments.reduce((acc, commitment) => {
+      // console.log("aggregating commitment", commitment)
       if (acc[commitment.resourceConformsTo.name]) {
         let existing = acc[commitment.resourceConformsTo.name]
         acc[commitment.resourceConformsTo.name] = {

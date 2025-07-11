@@ -9,6 +9,11 @@
     import { get } from 'svelte/store';
     import JSZip from 'jszip';
     import { saveAs } from 'file-saver';
+    import { GET_ALL_RESOURCE_SPECIFICATIONS } from '../../crud/fetch';
+    import { query } from 'svelte-apollo';
+    
+    const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
+    $: dollars = resourceSpecificationsQuery.loading ? null : resourceSpecificationsQuery.data?.resourceSpecifications.edges.find(edge => edge.node.name === 'USD')?.node;
     
     let importing = false;
     let exporting = false;
@@ -31,6 +36,12 @@
         {name: 'Recipe Exchanges', store: allRecipeExchanges},
         {name: 'Plans', store: fullPlans},
     ]
+
+    let hashChanges: any = {}
+        allHashChanges.subscribe(value => {
+        delete value.undefined
+        hashChanges = value
+    })
 
     let selectedExportTypes = exportTypes.map(exportType => exportType.name);
 
@@ -180,6 +191,7 @@
             const fileData = await zip.files[relativePath].async("string");
             const parsedData = JSON.parse(fileData);
             console.log("+++", parsedData);
+            console.log("+++ relativePath", relativePath);
             switch (relativePath) {
             case 'facets.json':
                 if (importFiles.includes('facets.json')) {
@@ -209,12 +221,14 @@
                 if (importFiles.includes('resourceSpecifications.json')) {
                     status = 'Importing resource specifications...';
                     await importResourceSpecifications(parsedData);
+                    resourceSpecificationsQuery.refetch();
                 }
                 break;
             case 'proposals.json':
                 if (importFiles.includes('proposals.json')) {
                     status = 'Importing proposals...';
-                    await importProposals(parsedData);
+                    console.log("dollars", dollars);
+                    await importProposals(parsedData, dollars);
                 }
                 break;
             case 'recipes.json':
@@ -247,6 +261,8 @@
 
     onMount(async () => {
         await getAllHashChanges();
+        resourceSpecificationsQuery.refetch();
+        console.log('Hash changes loaded');
     })
 </script>
 

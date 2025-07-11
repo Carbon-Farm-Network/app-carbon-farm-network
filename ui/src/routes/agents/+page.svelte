@@ -3,14 +3,28 @@
   import { onMount } from 'svelte'
   import type { Facet, FacetGroup, FacetParams, FacetValueParams } from "$lib/graphql/extension-schemas"
   import { deleteAgent, addHashChange } from '../../crud/commit'
-  import { getAllFacetGroups, getAllAgents } from '../../crud/fetch'
+  import { GET_ALL_AGENTS, readFacetOfValue, getAllFacetGroups, getAllAgents } from '../../crud/fetch'
   import { allHashChanges } from "../../crud/store"
-  import { allAgents } from '../../crud/store'
+  import { allRoles } from '../../crud/store';
+  import { setClient, query, mutation } from "svelte-apollo";
   import Header from "$lib/Header.svelte"
   import Export from "$lib/Export.svelte"
   import Error from "$lib/Error.svelte"
   import Loading from "$lib/Loading.svelte"
   import SvgIcon from "$lib/SvgIcon.svelte"
+
+  const agentsQuery = query(GET_ALL_AGENTS);
+
+  agentsQuery.subscribe((res) => {
+    let uniqueRoles = new Set();
+    res.data?.agents?.edges.forEach((a) => {
+      if (a?.node.classifiedAs && a?.node.classifiedAs[2]) {
+        uniqueRoles.add(a?.node.classifiedAs[2]);
+      }
+    })
+    const rolesArray = Array.from(uniqueRoles);
+    allRoles.update(v => rolesArray);
+  })
 
   let error: any;
   let modalOpen = false;
@@ -18,7 +32,7 @@
   let name = "";
   let id = "";
   let currentAgent: any;
-  let agents: any[]
+  // let agents: any[]
   let facets: Facet[] | undefined;
   let selectedFacets: any = {};
   let createAgentWrapped: any;
@@ -31,22 +45,22 @@
     hashChanges = res
   })
 
-  allAgents.subscribe((res) => {
-    console.log("agents change", res)
-    agents = res.map((a) => {
-      return {
-        ...a,
-        "name": a.name,
-        "imageUrl": a.image,
-        "iconUrl": a.classifiedAs[3],// ? a.classifiedAs[3] : a.image,
-        "lat": JSON.parse(a.classifiedAs[0]),
-        "long": JSON.parse(a.classifiedAs[1]),
-        "role": a.classifiedAs[2],
-        "address": a.note,
-        "facets": a.facets
-      }
-    })
-  })
+  // allAgents.subscribe((res) => {
+  //   console.log("agents change", res)
+  //   agents = res.map((a) => {
+  //     return {
+  //       ...a,
+  //       "name": a.name,
+  //       "imageUrl": a.image,
+  //       "iconUrl": a.classifiedAs[3],// ? a.classifiedAs[3] : a.image,
+  //       "lat": JSON.parse(a.classifiedAs[0]),
+  //       "long": JSON.parse(a.classifiedAs[1]),
+  //       "role": a.classifiedAs[2],
+  //       "address": a.note,
+  //       "facets": a.facets
+  //     }
+  //   })
+  // })
 
   async function fetchFacets() {
     let res = await getAllFacetGroups()
@@ -63,63 +77,69 @@
       // const res = await deleteAgent({ variables: { revisionId } })
       const res = await deleteAgent(revisionId)
       console.log(res)
-      getAllAgents()
+      // getAllAgents()
+      agentsQuery.refetch()
     }
   }
 
-  async function importData(data: any) {
-    try {
+  // async function importData(data: any) {
+  //   try {
 
-      console.log("importing data", data)
-      for (let i = 0; i < data.length; i++) {
-        let agent: AgentCreateParams = {
-          name: data[i].name,
-          note: data[i].note,
-          image: data[i].image,
-          classifiedAs: data[i].classifiedAs,
-        }
-        let facets = data[i].facetOptions.map((f) => hashChanges[f.id])
-        console.log(agent)
-        let res = await createAgentWrapped(agent, facets)
-        console.log(res)
-        console.log("adding hash change", data[i].id, res.data.createOrganization.agent.id)
-        addHashChange(data[i].id, res.data.createOrganization.agent.id)
-      }
-      await getAllAgents()
-      importing = false;
-      exportOpen = false;
-    } catch (e) {
-      error = e
-      console.log(e)
-      importing = false;
-      exportOpen = false;
-    }
-  }
+  //     console.log("importing data", data)
+  //     for (let i = 0; i < data.length; i++) {
+  //       let agent: AgentCreateParams = {
+  //         name: data[i].name,
+  //         note: data[i].note,
+  //         image: data[i].image,
+  //         classifiedAs: data[i].classifiedAs,
+  //       }
+  //       let facets = data[i].facetOptions.map((f) => hashChanges[f.id])
+  //       console.log(agent)
+  //       let res = await createAgentWrapped(agent, facets)
+  //       console.log(res)
+  //       console.log("adding hash change", data[i].id, res.data.createOrganization.agent.id)
+  //       addHashChange(data[i].id, res.data.createOrganization.agent.id)
+  //     }
+  //     // await getAllAgents()
+  //     agents.refetch()
+  //     importing = false;
+  //     exportOpen = false;
+  //   } catch (e) {
+  //     error = e
+  //     console.log(e)
+  //     importing = false;
+  //     exportOpen = false;
+  //   }
+  // }
 
   async function refresh() {
     fetching = true
-    await getAllAgents();
+    // await getAllAgents();
+    agentsQuery.refetch();
     await fetchFacets();
     fetching = false
   }
 
   onMount(async () => {
-    loading = agents.length == 0 || facets == undefined;
+    loading = $agentsQuery?.data?.agents?.edges?.length == 0 || facets == undefined;
     if (loading) {
-      await getAllAgents();
+      // await getAllAgents();
+      agentsQuery.refetch();
       await fetchFacets();
       loading = false;
     }
   })
 
   // reactive data bindings
-  $: agents, modalOpen, editing, id, currentAgent, selectedFacets;
+  // $: agents, modalOpen, editing, id, currentAgent, selectedFacets;
+  $: modalOpen, editing, id, currentAgent, selectedFacets;
 </script>
 
 <!-- <div style="height: 8vh"> -->
   <Header title="Agents" description="A list of all the people, organizations and ecological agents related to the network." />
 <!-- </div> -->
-<AgentModal bind:createAgentWrapped bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={getAllAgents} />
+<!-- <AgentModal bind:createAgentWrapped bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={getAllAgents} /> -->
+<AgentModal bind:createAgentWrapped bind:open={modalOpen} {name} {facets} {currentAgent} {editing} {selectedFacets} on:submit={refresh} />
 
 <Error {error} />
 
@@ -206,49 +226,78 @@
               hi
               {agent.name}
             {/each} -->
-            {#if agents}
-            {#each agents as agent, index}
-            <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
-              <td
-                class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
-                >{agent.name}</td
-              >
-              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
-                >{agent.role}</td
-              >
-              {#if facets}
-              {#each facets as facet}
-              <!-- {@const facetValue = agent.facets.findLast((f) => {return f.facetId == facet.id})?.value} -->
-              {@const facetValue = agent.facets.findLast((f) => {return f.facetId == facet.id})?.value}
-                <th
-                  scope="col"
-                  class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
+            {#if agentsQuery}
+              {@const agentsData = $agentsQuery.loading ? [] : $agentsQuery.data?.agents?.edges.map((a) => {
+                return {
+                  ...a.node,
+                  "name": a.node.name,
+                  "imageUrl": a.node.image,
+                  "iconUrl": a.node.classifiedAs[3],
+                  "lat": JSON.parse(a.node.classifiedAs[0]),
+                  "long": JSON.parse(a.node.classifiedAs[1]),
+                  "role": a.node.classifiedAs[2],
+                  "address": a.node.note,
+                  "facets": a.node.facets
+                }
+              }).reverse() || []}
+              {#each agentsData as agent, index}
+                <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
+                  <td
+                    class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3"
+                    >{agent.name}</td
                   >
-                  {#if facetValue && facetValue != 'undefined'}
-                    {facetValue}
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+                    >{agent.role}</td
+                  >
+                  {#if facets && agent.id}
+                  <!-- {JSON.stringify(facets)} -->
+                  {#await readFacetOfValue(agent.id) then facetValues}
+                    {#if facets?.length}
+                      <th
+                        scope="col"
+                        class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
+                        >
+                          {facetValues[facetValues.length - 1]?.value || '-'}
+                      </th>
+                    {/if}
+                  {:catch error}
+                    <span class="text-red-500">{JSON.stringify(error)}</span>
+                  {/await}                  
+                  <!-- {#each facets as facet}
+                  {@const facetValue = agent.facets.findLast((f) => {return f.facetId == facet.id})?.value}
+                    <th
+                      scope="col"
+                      class="px-3 py-3.5 text-left text-sm font-medium text-gray-900"
+                      >
+                      {#if facetValue && facetValue != 'undefined'}
+                        {facetValue}
+                      {/if}
+                    </th>
+                  {/each} -->
                   {/if}
-              </th>
+                  <td
+                    class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
+                  >
+                    <button type="button" on:click={async () => {
+                      name = agent.name; id = agent.id; currentAgent = agent; editing = true; modalOpen = true;
+                      selectedFacets = {};
+                      const facets = await readFacetOfValue(agent.id);
+                      console.log("facets", facets)
+                      facets?.forEach((f) => {
+                        console.log("facet", f)
+                        selectedFacets[f.facetId] = f.id;
+                      });
+                      console.log("selected facets for agent", selectedFacets)
+                      }}  class="text-indigo-600 hover:text-indigo-900"
+                      >Edit<span class="sr-only">, Lindsay Walton</span></button
+                    > &nbsp; 
+                    <button type="button" on:click={() => {
+                      deleteAnAgent(agent.revisionId)
+                      }}  class="text-indigo-600 hover:text-indigo-900"
+                      >Delete<span class="sr-only">, Lindsay Walton</span></button>
+                  </td>
+                </tr>
               {/each}
-              {/if}
-              <td
-                class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3"
-              >
-                <button type="button" on:click={() => {
-                  name = agent.name; id = agent.id; currentAgent = agent; editing = true; modalOpen = true;
-                  selectedFacets = {};
-                  agent.facets.map((f) => {
-                    selectedFacets[f.facetId] = f.id
-                  })
-                  }}  class="text-indigo-600 hover:text-indigo-900"
-                  >Edit<span class="sr-only">, Lindsay Walton</span></button
-                > &nbsp; 
-                <button type="button" on:click={() => {
-                  deleteAnAgent(agent.revisionId)
-                  }}  class="text-indigo-600 hover:text-indigo-900"
-                  >Delete<span class="sr-only">, Lindsay Walton</span></button>
-              </td>
-            </tr>
-            {/each}
             {/if}
 
             <!-- More people... -->

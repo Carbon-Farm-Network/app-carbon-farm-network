@@ -3,7 +3,7 @@
     import { onMount } from 'svelte'
     import { createEventDispatcher } from 'svelte';
     import { updateEconomicResource } from '../../crud/commit'
-    import type { EconomicResource, ProcessSpecification } from '@leosprograms/vf-graphql';
+    import type { EconomicResource, ProcessSpecification } from '@valueflows/vf-graphql';
 
     const dispatch = createEventDispatcher();
 

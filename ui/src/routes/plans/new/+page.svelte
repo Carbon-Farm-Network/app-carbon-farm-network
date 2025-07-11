@@ -6,9 +6,7 @@
   import { Trash, Pencil, PlusCircle } from '$lib/icons'
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
-  import type { Unit, Action, Agent, Proposal, ResourceSpecification, PlanCreateParams } from '@leosprograms/vf-graphql'
-  import { allActions, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications, allProposals } from '../../../crud/store'
-  import { getAllActions, getAllAgents, getAllHashChanges, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits, getAllEconomicResources } from '../../../crud/fetch'
+  import type { Unit, Action, Agent, Proposal, ResourceSpecification, PlanCreateParams, Intent, RecipeProcess, RecipeFlow } from '@valueflows/vf-graphql'
   import { dragscroll } from '@svelte-put/dragscroll';
   import { allHashChanges, allRecipes, allRecipeExchanges, allEconomicResources } from '../../../crud/store'
   import Export from '$lib/Export.svelte'
@@ -16,13 +14,32 @@
   import { createCommitments, makeAgreement, findExchange, assignProviderReceiver, createAgreements, aggregateCommitments, type Process, type Commitment, type Demand } from '../=helper'
   import { importPlan } from '../../../crud/import'
   import { goto } from '$app/navigation'
+  import { GET_ALL_RECIPES, GET_ALL_RECIPE_EXCHANGES, GET_ALL_ECONOMIC_RESOURCES, GET_All_PROPOSALS, GET_ALL_AGENTS } from '../../../crud/fetch'
+  import { query } from 'svelte-apollo'
 
+  const recipesQuery = query(GET_ALL_RECIPES)
+  const agentsQuery = query(GET_ALL_AGENTS)
+
+  const columnLimit = 20
   let recipes: any[] = []
-  allRecipes.subscribe((res) => {recipes = res})
+  recipesQuery.subscribe((res) => {
+    recipes = res.data?.recipeProcesses.edges?.map(e => e.node) || []})
+  const recipeExchangeQuery = query(GET_ALL_RECIPE_EXCHANGES)
   let recipeExchanges: any[] = []
-  allRecipeExchanges.subscribe((res) => {recipeExchanges = res})
+  recipeExchangeQuery.subscribe((res) => {recipeExchanges = res.data?.recipeExchanges.edges?.map(e => e.node) || []})
+  const allEconomicResourcesQuery = query(GET_ALL_ECONOMIC_RESOURCES)
   let economicResources: any[] = []
-  allEconomicResources.subscribe((res) => {economicResources = res})
+  allEconomicResourcesQuery.subscribe((res) => {economicResources = res.data?.economicResources.edges?.map(e => e.node) || []})
+
+  const allProposalsQuery = query(GET_All_PROPOSALS)
+  let allProposals: Proposal[] = []
+  let offers: Proposal[] = []
+  let requests: Proposal[] = []
+  allProposalsQuery.subscribe((res) => {
+    allProposals = res.data?.proposals?.edges?.map(e => e.node) || []
+    offers = allProposals.filter(it => it.publishes[0].provider != undefined)
+    requests = allProposals.filter(it => it.reciprocal[0].provider != undefined)
+  })
 
   let hashChanges: any = {}
   let agents: Agent[] = []
@@ -30,8 +47,8 @@
   let actions: Action[] = []
   let resourceSpecifications: ResourceSpecification[] = []
   let processSpecifications: any[] = []
-  let requests: Proposal[] = [];
-  let offers: Proposal[] = [];
+  // let requests: Proposal[] = [];
+  // let offers: Proposal[] = [];
   let proposalsList: Proposal[] = []
   let currentProcess: any[] | undefined = undefined;
   let exportOpen: boolean = false;
@@ -48,417 +65,348 @@
 
   $: currentProcess, actions;
 
-  allAgents.subscribe((res) => {
-    agents = res.map((a) => {
-      return {
-        ...a,
-        "name": a.name,
-        "imageUrl": a.image,
-        "iconUrl": a.image,
-        "lat": a.classifiedAs[0],
-        "long": a.classifiedAs[1],
-        "role": a.classifiedAs[2],
-        "address": a.note,
-        "facets": a.facets
-      }
-    })
-  })
-
-  allHashChanges.subscribe((res) => {hashChanges = res})
-  allActions.subscribe((res) => {actions = res})
-  allUnits.subscribe((res) => {units = res})
-  allResourceSpecifications.subscribe((res) => {resourceSpecifications = res})
-  allProcessSpecifications.subscribe((res) => {processSpecifications = res})
-
-  allProposals.subscribe((res) => {
-    console.log('proposals', res)
-    if (!res.length || res.length == 0) return
-    let dedupedRes = res.map(it => {
-       //dedupe .publishes
-      let publishes = it.publishes
-      let deduped = publishes.reduce((acc, current) => {
-        const x = acc.find(item => item.id === current.id);
-        if (!x) {
-          return acc.concat([current]);
-        } else {
-          return acc;
-        }
-      }, []);
-      return {
-        ...it,
-        publishes: deduped
-      }
-    })
-    requests = dedupedRes.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.provider)
-    offers = dedupedRes.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
-    proposalsList = dedupedRes
+  agentsQuery.subscribe((res) => {
+    const edges = res.data?.agents?.edges ?? [];
+    agents = edges.map((e: any) => ({
+      ...e.node,
+      name: e.node.name,
+      imageUrl: e.node.image,
+      iconUrl: e.node.image,
+      lat: e.node.classifiedAs?.[0],
+      long: e.node.classifiedAs?.[1],
+      role: e.node.classifiedAs?.[2],
+      address: e.node.note,
+      facets: e.node.facets
+    })) || [];
   })
 
   onMount(async () => {
     if (browser) {
+      allEconomicResourcesQuery.refetch()
+      recipesQuery.refetch()
+      recipeExchangeQuery.refetch()
+      agentsQuery.refetch()
 
-      let functions = [
-        { array: actions, func: getAllActions },
-        { array: hashChanges, func: getAllHashChanges },
-        { array: agents, func: getAllAgents },
-        { array: units, func: getAllUnits },
-        { array: resourceSpecifications, func: getAllResourceSpecifications },
-        { array: processSpecifications, func: getAllProcessSpecifications },
-        { array: proposalsList, func: getAllProposals },
-        { array: recipeExchanges, func: getAllRecipeExchanges },
-        { array: recipes, func: getAllRecipes },
-        { array: economicResources, func: getAllEconomicResources }
-      ];
-
-      for (let item of functions) {
-        if (item.array.length === 0) {
-          await item.func();
-        }
-      }
-
-      console.log(resourceSpecifications, proposalsList)
+      console.log("loaded", allEconomicResources, recipes, recipeExchanges)
     }
   })
 
+  // ============================ NEW CODE ============================
 
-  // ===========================================
-  const previousColumn = (column: any) => {
-    return column
-      ?.reduce((acc: any, input: any) => {
-        if (input.resourceQuantity.hasNumericalValue > 0) {
-          // find a recipe that outputs what the demand wants
-          console.log("input", input)
-          const recipe = recipes
-            .find(a_recipe => {
-              // if (input.stage) {
-                return a_recipe?.recipeOutputs?.some(
-                  output =>
-                    output.resourceConformsTo?.name == input.resourceConformsTo?.name &&
-                    a_recipe.processConformsToId == processSpecifications.find(it => it.name == input.stage?.name)?.id
-                  )
-              // } else {
-              //   return a_recipe.recipeOutputs.some(
-              //     output =>
-              //       output.resourceConformsTo?.name == input.resourceConformsTo?.name
-              //   )
-              // }
-            })
-          // console.log("found recipes", recipe, acc)
-          // if there is no recipe we just continue
-          if (!recipe) {
-            return acc
-          }
-          // find the output that matches the demand
-          let matching_output = recipe?.recipeOutputs?.find(
-            output => output.resourceConformsTo.name == input.resourceConformsTo.name
-          )
+  /**
+ * Generates backward-chained process plans from initial commitments.
+ * It recursively finds recipes to fulfill each input, subtracts existing inventory,
+ * and builds process columns until no unmet demand remains or a column limit is reached.
+ */
 
-          // delete revisionId from matching output
-          if (matching_output) {
-            delete matching_output.revisionId;
-          }
-          // find the multiplier to make the demand required
-          // TODO round up not down like it is now
-          // console.log(recipe, matching_output?.resourceQuantity?.hasNumericalValue)
-          const multiplier = new Decimal(
-            input.resourceQuantity.hasNumericalValue || '1'
-          ).div(new Decimal(matching_output?.resourceQuantity?.hasNumericalValue))
+// ===================== Core Planning Logic =====================
 
-            let matching_input = recipe?.recipeInputs?.find(
-            an_input =>
-              an_input.resourceConformsTo.name == input.resourceConformsTo.name
-            )
-            // delete revisionId from matching input
-            if (matching_input) {
-              delete matching_input.revisionId;
-            }
+/**
+ * Backward chains processes from unmet input demand.
+ */
+function previousColumn(column: any[]): Process[] {
+  return column
+    ?.reduce((acc: any[], input: Intent) => {
+      if (input.resourceQuantity?.hasNumericalValue <= 0) return acc;
 
-          matching_input = assignProviderReceiver(matching_input, agents)
+      const recipe = findMatchingRecipe(input);
+      if (!recipe) return acc;
 
-          matching_input = Object.assign({}, matching_input, {
-            resourceQuantity: {
-              ...matching_input?.resourceQuantity,
-              hasNumericalValue: multiplier
-                .toDecimalPlaces(0, Decimal.ROUND_UP)
-                .toString()
-            }
-          })
+      const matchingOutput = findRecipeOutput(recipe, input);
+      const matchingInput = findRecipeInput(recipe, input);
+      if (!matchingOutput || !matchingInput) return acc;
 
-          matching_output = assignProviderReceiver(matching_output, agents)
-          matching_output = Object.assign({}, matching_output, {
-            resourceQuantity: {
-              ...matching_output?.resourceQuantity,
-              hasNumericalValue: new Decimal(
-                input.resourceQuantity.hasNumericalValue
-              )
-                .toDecimalPlaces(0, Decimal.ROUND_UP)
-                .toString()
-            }
-          })
+      const multiplier = calculateMultiplier(input, matchingOutput);
 
-          let committedOutputs, committedInputs, new_output, new_input
-          if (
-            matching_output?.action.label == 'dropoff' ||
-            matching_output?.action.label == 'modify'
-          ) {
-            const existing_process = acc?.find(it => it.id == recipe.id)
-            if (existing_process) {
-              const remaining_processes = acc.filter(it => it.id != existing_process.id)
-              const existing_services = existing_process.committedOutputs.filter(
-                output => output.action.label != 'dropoff' && output.action.label != 'modify'
-              )
-              // console.log("EXISTING SERVICES", existing_services, existing_process.committedOutputs)
-              const existing_output = existing_process.committedOutputs.find(
-                output => output.id == matching_output.id
-              )
-              if (existing_output) {
-                new_output = {
-                  ...existing_output,
-                  resourceQuantity: {
-                    ...existing_output.resourceQuantity,
-                    hasNumericalValue: new Decimal(
-                      existing_output.resourceQuantity.hasNumericalValue
-                    ).add(matching_output.resourceQuantity.hasNumericalValue)
-                  }
-                }
-              } else {
-                new_output = matching_output
-              }
+      const scaledInput = scaleInput(matchingInput, multiplier);
+      const scaledOutput = scaleOutput(input, matchingOutput);
 
-              const existing_input = existing_process.committedInputs.find(
-                input => input.id == matching_input.id
-              )
-              if (existing_input) {
-                new_input = {
-                  ...existing_input,
-                  resourceQuantity: {
-                    ...existing_input.resourceQuantity,
-                    hasNumericalValue: new Decimal(
-                      existing_input.resourceQuantity.hasNumericalValue
-                    ).add(matching_input.resourceQuantity.hasNumericalValue)
-                  }
-                }
-              } else {
-                new_input = matching_input
-              }
-              const non_service_non_matching_outputs = existing_process.committedOutputs.filter(
-                previous_output =>
-                  previous_output.id != matching_output.id &&
-                  (previous_output.action.label == 'dropoff' ||
-                    previous_output.action.label == 'modify')
-              )
-              const non_matching_inputs = existing_process.committedInputs.filter(
-                previous_input => previous_input.id != matching_input?.id
-              )
-              const non_matching_independent_inputs = non_matching_inputs.filter(
-                it => it.independent
-              )
-              const non_matching_dependent_inputs = non_matching_inputs.filter(
-                it => !it.independent
-              )
-              return [
-                ...remaining_processes,
-                {
-                  ...existing_process,
-                  committedOutputs: [
-                    ...non_service_non_matching_outputs,
-                    new_output,
-                    ...existing_services
-                  ],
-                  committedInputs: [
-                    ...non_matching_dependent_inputs,
-                    new_input,
-                    ...non_matching_independent_inputs
-                  ]
-                }
-              ]
-            } else {
-                const services = recipe?.recipeOutputs
-                .filter(output => output.action.label != 'dropoff' && output.action.label != 'modify')
-                .map(service => {
-                  const { revisionId, ...rest } = service;
-                  return assignProviderReceiver(rest, agents);
-                })
-              const non_matching_inputs = recipe?.recipeInputs
-                .filter(
-                  previous_input =>
-                  previous_input.id != matching_input?.id &&
-                  previous_input.action.label != 'pickup' &&
-                  previous_input.action.label != 'accept'
-                )
-                .map(it => {
-                  const { revisionId, ...rest } = it;
-                  return { ...rest, independent: true };
-                })
-              // console.log("MATCHING INPUT", matching_input, non_matching_inputs)
-              committedInputs = [matching_input, ...non_matching_inputs]
-              committedOutputs = [matching_output, ...services]
-            }
-          } else {
-            committedOutputs = [
-              matching_output,
-              ...recipe?.recipeOutputs
-              .filter(it => it.id != matching_output?.id)
-              .map(it => {
-                const { revisionId, ...rest } = it;
-                return { ...rest, editable: true };
-              })
-              .map(output => assignProviderReceiver(output, agents))
-            ]
-            committedInputs = recipe?.recipeInputs
-              ?.map(input => assignProviderReceiver(input, agents))
-              .map(input => {
-              console.log("INPUT0", input)
-              const { revisionId, ...rest } = input;
-              return Object.assign({}, rest, {
-                resourceQuantity: {
-                ...input.resourceQuantity,
-                hasNumericalValue: new Decimal(
-                  input.resourceQuantity.hasNumericalValue
-                )
-                  .mul(multiplier)
-                  .toDecimalPlaces(0, Decimal.ROUND_UP)
-                  .toString()
-                }
-              })
-              })
-          }
-          // console.log("RECIPE", recipe)
-          return [
-            ...acc,
-            {
-              id: recipe.id,
-              name: recipe.name,
-              basedOn: processSpecifications.find(it => it.id == recipe.processConformsToId),
-              committedOutputs,
-              committedInputs
-            }
-          ]
-        }
-      }, [])
-      .map(process => runInstructions(process))
-      .map((process: Process) => {
-        // console.log("PROCESS1 ", process)
-        return createAgreements(process, recipeExchanges, offers, agents)
-      })
-  }
+      const process = buildProcess(recipe, scaledInput, scaledOutput, acc);
+      return [...acc.filter(p => p.id !== process.id), process];
+    }, [])
+    .map(runInstructions)
+    .map(p => createAgreements(p, recipeExchanges, offers, agents));
+}
 
-  function runInstructions(process: Process): Process {
-    return {
-      ...process,
-      committedOutputs: process.committedOutputs.map(output => {
-        if (output.instructions == 'SumOutputs') {
-          const other_outputs = process.committedOutputs.filter(it => it.id != output.id)
-          const sum = other_outputs.reduce(
-            (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
-            new Decimal(0)
-          )
-          return {
-            ...output,
-            resourceQuantity: {
-              ...output.resourceQuantity,
-              hasNumericalValue: sum.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
-            }
-          }
-        } else if (output.instructions == 'SumInputs') {
-          const sum = process.committedInputs.reduce(
-            (acc, output) => acc.add(output.resourceQuantity.hasNumericalValue),
-            new Decimal(0)
-          )
-          return {
-            ...output,
-            resourceQuantity: {
-              ...output.resourceQuantity,
-              hasNumericalValue: sum.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
-            }
-          }
-        }
-        return output
-      }),
-      // TODO in the future inputs will have instructions too
-      committedInputs: process.committedInputs
+/**
+ * Calculates input and output quantities based on a recipe and aggregates them into a process.
+ */
+function buildProcess(recipe: RecipeProcess, input: Commitment, output: Commitment, existingProcesses: Process[]): Process {
+  const existing = existingProcesses.find(p => p.id === recipe.id);
+  const services = getServiceOutputs(recipe);
+  const additionalInputs = getNonMatchingInputs(recipe, input);
+
+  if (isSimpleDropoffOrModify(output)) {
+    if (existing) {
+      const merged = mergeIntoExistingProcess(existing, input, output, services, additionalInputs);
+      return merged;
     }
+    return createNewProcess(recipe, [input, ...additionalInputs], [output, ...services]);
   }
+
+  const scaledInputs = scaleInputs(recipe, calculateMultiplier(input, output));
+  const additionalOutputs = getEditableOutputs(recipe, output);
+  return createNewProcess(recipe, scaledInputs, [output, ...additionalOutputs]);
+}
+
+/**
+ * Applies instructions like SumInputs or SumOutputs to the process outputs.
+ */
+function runInstructions(process: Process): Process {
+  return {
+    ...process,
+    committedOutputs: process.committedOutputs.map(output => {
+      const sum = output.instructions === 'SumOutputs'
+        ? sumOutputs(process, output)
+        : output.instructions === 'SumInputs'
+        ? sumInputs(process)
+        : null;
+
+      return sum
+        ? {
+            ...output,
+            resourceQuantity: {
+              ...output.resourceQuantity,
+              hasNumericalValue: sum.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
+            }
+          }
+        : output;
+    }),
+  };
+}
+
+// ===================== Planning Loop =====================
+
+/**
+ * Rebuilds the full plan columns, subtracting inventory at each stage and chaining processes.
+ */
+function generateColumns(aggregatedCommitments: any[]): any[] {
+  const resourceInventory = computeInitialInventory(economicResources);
+  let previousProcesses = previousColumn(aggregatedCommitments);
+  console.log("initial previousProcesses", previousProcesses);
+  let columns: any[] = [];
+  let count = 0;
+
+  while (previousProcesses.length && count++ < columnLimit) {
+    columns = [previousProcesses, ...columns];
+    previousProcesses = subtractInventory(cloneDeep(previousProcesses), resourceInventory);
+    previousProcesses = previousColumn(flattenInputs(previousProcesses));
+  }
+
+  return columns;
+}
+
+/**
+ * Subtracts existing inventory from process input quantities.
+ */
+function subtractInventory(processes: Process[], inventory: Record<string, Decimal>): any[] {
+  return processes.map(process => ({
+    ...process,
+    committedInputs: process.committedInputs
+      .map(input => {
+        if (!input.stage?.id) return input;
+
+        const key = `${input.resourceConformsTo?.id}____${input.stage?.id}`;
+        const available = inventory[key] || new Decimal(0);
+        const needed = new Decimal(input.resourceQuantity.hasNumericalValue);
+        const used = Decimal.min(available, needed);
+
+        inventory[key] = Decimal.max(available.sub(used), 0);
+        return {
+          ...input,
+          resourceQuantity: {
+            ...input.resourceQuantity,
+            hasNumericalValue: needed.sub(used).toString()
+          }
+        };
+      })
+      .filter(i => new Decimal(i.resourceQuantity.hasNumericalValue).gt(0))
+  }));
+}
+
+// ===================== Utility Functions =====================
+
+function findMatchingRecipe(input: Intent) {
+  return recipes.find(recipe =>
+    recipe.recipeOutputs?.some((output: RecipeFlow) =>
+      output.resourceConformsTo?.id === input.resourceConformsTo?.id
+      && (recipe.processConformsTo?.name === input.stage?.name
+        || recipe.processConformsTo?.id === input.stage?.id)
+    )
+  );
+}
+
+function findAllMatchingRecipes(input: Intent) {
+  return recipes.filter(recipe =>
+    recipe.recipeOutputs?.some((output: RecipeFlow) =>
+      output.resourceConformsTo?.id === input.resourceConformsTo?.id
+    )
+  );
+}
+
+function findRecipeOutput(recipe: any, input: any) {
+  const match = recipe.recipeOutputs?.find(o => o.resourceConformsTo.name === input.resourceConformsTo.name);
+  if (match) delete match.revisionId;
+  return assignProviderReceiver(match, agents);
+}
+
+function findRecipeInput(recipe: any, input: any) {
+  const match = recipe.recipeInputs?.find(i => i.resourceConformsTo.name === input.resourceConformsTo.name);
+  if (match) delete match.revisionId;
+  return assignProviderReceiver(match, agents);
+}
+
+function calculateMultiplier(input: any, output: any) {
+  return new Decimal(input.resourceQuantity.hasNumericalValue || '1')
+    .div(new Decimal(output.resourceQuantity?.hasNumericalValue || '1'));
+}
+
+function scaleInput(input: any, multiplier: Decimal) {
+  return {
+    ...input,
+    resourceQuantity: {
+      ...input.resourceQuantity,
+      hasNumericalValue: multiplier.toDecimalPlaces(0, Decimal.ROUND_UP).toString()
+    }
+  };
+}
+
+function scaleOutput(input: any, output: any) {
+  return {
+    ...output,
+    resourceQuantity: {
+      ...output.resourceQuantity,
+      hasNumericalValue: new Decimal(input.resourceQuantity.hasNumericalValue)
+        .toDecimalPlaces(0, Decimal.ROUND_UP)
+        .toString()
+    }
+  };
+}
+
+function isSimpleDropoffOrModify(output: any) {
+  return ['dropoff', 'modify'].includes(output?.action?.label);
+}
+
+function getServiceOutputs(recipe: any) {
+  return recipe.recipeOutputs
+    .filter(o => !['dropoff', 'modify'].includes(o.action.label))
+    .map(o => assignProviderReceiver({ ...o, revisionId: undefined }, agents));
+}
+
+function getEditableOutputs(recipe: any, exclude: any) {
+  return recipe.recipeOutputs
+    .filter(o => o.id !== exclude.id)
+    .map(o => assignProviderReceiver({ ...o, revisionId: undefined, editable: true }, agents));
+}
+
+function getNonMatchingInputs(recipe: any, exclude: any) {
+  return recipe.recipeInputs
+    .filter(i =>
+      i.id !== exclude?.id &&
+      !['pickup', 'accept'].includes(i.action.label)
+    )
+    .map(i => ({ ...i, revisionId: undefined, independent: true }));
+}
+
+function scaleInputs(recipe: any, multiplier: Decimal) {
+  return recipe.recipeInputs.map(input => {
+    const { revisionId, ...rest } = assignProviderReceiver(input, agents);
+    return {
+      ...rest,
+      resourceQuantity: {
+        ...rest.resourceQuantity,
+        hasNumericalValue: new Decimal(rest.resourceQuantity.hasNumericalValue)
+          .mul(multiplier)
+          .toDecimalPlaces(0, Decimal.ROUND_UP)
+          .toString()
+      }
+    };
+  });
+}
+
+function flattenInputs(processes: any[]): any[] {
+  return processes.flatMap(p => p.committedInputs);
+}
+
+function computeInitialInventory(resources: any[]) {
+  const inventory: Record<string, Decimal> = {};
+  resources?.forEach(r => {
+    const key = `${r.conformsTo?.id}____${r.stage?.id}`;
+    const qty = new Decimal(r.onhandQuantity?.hasNumericalValue || 0);
+    inventory[key] = (inventory[key] || new Decimal(0)).add(qty);
+  });
+  return inventory;
+}
+
+function sumOutputs(process: Process, target: any) {
+  return process.committedOutputs
+    .filter(o => o.id !== target.id)
+    .reduce((acc, o) => acc.add(o.resourceQuantity.hasNumericalValue), new Decimal(0));
+}
+
+function sumInputs(process: Process) {
+  return process.committedInputs
+    .reduce((acc, i) => acc.add(i.resourceQuantity.hasNumericalValue), new Decimal(0));
+}
+
+function createNewProcess(recipe: any, inputs: any[], outputs: any[]): Process {
+  return {
+    id: recipe.id,
+    name: recipe.name,
+    basedOn: recipe.processConformsTo,
+    committedInputs: inputs,
+    committedOutputs: outputs
+  };
+}
+
+function mergeIntoExistingProcess(existing: Process, input: any, output: any, services: any[], extras: any[]): Process {
+  const newInput = mergeOrAppend(existing.committedInputs, input, 'independent');
+  const newOutput = mergeOrAppend(existing.committedOutputs, output);
+  // console.log("new output", newOutput, existing?.committedOutputs)
+  console.log("multiple services? ", services.length, newOutput)
+
+  return {
+    ...existing,
+    // committedInputs: [...newInput, ...extras],
+    // committedOutputs: [...newOutput, ...services]
+    committedInputs: newInput,
+    committedOutputs: newOutput
+  };
+}
+
+function mergeOrAppend(existingItems: any[], newItem: any, independentKey?: string) {
+  const existing = existingItems.find(i => i.resourceConformsTo?.id === newItem.resourceConformsTo?.id);
+  console.log("--found existing item--", newItem?.resourceConformsTo?.name, existing, existingItems, newItem);
+  if (existing && independentKey !== 'independent') {
+    const merged = {
+      ...existing,
+      resourceQuantity: {
+        ...existing.resourceQuantity,
+        hasNumericalValue: new Decimal(existing.resourceQuantity.hasNumericalValue)
+          .add(new Decimal(newItem.resourceQuantity.hasNumericalValue))
+          .toString()
+      }
+    };
+    return [merged];
+  }
+  if (independentKey === 'independent') {
+    console.log("independent item", newItem?.resourceConformsTo?.name);
+  }
+  return [
+    ...existingItems,
+    newItem
+  ];
+}
+
+
+  // ============================ ENDS NEW CODE ============================
 
   let commitments: Commitment[] = []
   let plan_created = false
   let allColumns: any = [];
   $: aggregatedCommitments = aggregateCommitments(commitments)
   $: if (!plan_created) {
-    allColumns = generateColumns(aggregatedCommitments, recipes, agents);
-  }
-
-  function generateColumns(aggregatedCommitments: any[]): any[] {
-    // calculate how much of each resource exists per stage
-    let resourceInventory: any = {}
-    economicResources?.forEach(it => {
-      let resourceComboId = it.conformsTo?.id.concat('____').concat(it.stage?.id)
-      if (resourceComboId) {
-        let onhandQuantity = it.onhandQuantity?.hasNumericalValue
-        let existingQuantity = resourceInventory[resourceComboId]
-        resourceInventory[resourceComboId] = existingQuantity
-          ? existingQuantity + onhandQuantity
-          : onhandQuantity
-      }
-    })
-    console.log("resourceInventory", resourceInventory, economicResources)
-    
-    // subtract inventory from commitments
-    function subtractInventory(processes: any[]): any[] {
-      // console.log("subtracting inventory", processes, resourceInventory)
-      return processes.map((process: any) => {
-      return {
-        ...process,
-        committedInputs: process.committedInputs.map((input: any) => {
-        if (!input.stage?.id) {
-          return input
-        }
-        
-        // console.log("STAGE", input)
-        const resourceComboId = input.resourceConformsTo?.id.concat('____').concat(input.stage?.id)
-        // console.log("resourceComboId B", resourceComboId)
-        const inventory = resourceInventory[resourceComboId] || new Decimal(0)
-        // console.log("inventory", inventory.toString())
-        const newQuantity = Decimal.max(new Decimal(input.resourceQuantity?.hasNumericalValue).sub(inventory), new Decimal(0))
-        // console.log("new quantity", input.resourceConformsTo?.name, input.stage?.name, newQuantity.toString(), inventory.toString(), input.resourceQuantity?.hasNumericalValue)
-        // remove subtracted quantity from inventory as well
-        resourceInventory[resourceComboId] = Decimal.max(new Decimal(inventory).sub(input.resourceQuantity?.hasNumericalValue), new Decimal(0))
-        // console.log("subtracting inventory", resourceComboId, input.resourceConformsTo?.name, resourceInventory[resourceComboId]?.toString(), inventory, input.resourceQuantity?.hasNumericalValue, resourceInventory[resourceComboId]?.toString())
-        // console.log("updated inventory", resourceInventory[resourceComboId].toNumber(), newQuantity.toString())
-
-        return {
-          ...input,
-          resourceQuantity: {
-          ...input.resourceQuantity,
-          hasNumericalValue: newQuantity.toString()
-          }
-        }
-        })
-        .filter((input: any) => input.resourceQuantity.hasNumericalValue > 0),
-      }
-      })
-    }
-
-    // create first column
-    let previousProcesses = previousColumn(aggregatedCommitments)
-    
-    // plan backwards
-    let count = 0
-    let allColumnsLocal: any[] = []
-    while (previousProcesses.length != 0 && count < 20) {
-      count++
-      allColumnsLocal = [previousProcesses, ...allColumnsLocal]
-      previousProcesses = subtractInventory(cloneDeep(previousProcesses))
-      console.log("subtracted inventory", previousProcesses[0]?.committedInputs)
-      previousProcesses = previousColumn(
-        previousProcesses
-          .flatMap((it: any) => it.committedInputs)
-          .reduce((acc: any[], process: any) => {
-            return [...acc, process]
-          }, [])
-      )
-    }
-    return allColumnsLocal
+    allColumns = generateColumns(aggregatedCommitments);
   }
 
   let planModalOpen = false
@@ -522,12 +470,16 @@ generate columns
         // check if provider changed, and if so, update the cost
         let updatedCommitment = {
           ...event.detail.commitment,
-          receiver: event.detail.commitment.receiverId ? agents.find(it => it.id == event.detail.commitment.receiverId) : undefined
+          receiver: event.detail.commitment.receiver.id ? agents.find(it => it.id == event.detail.commitment.receiver.id) : undefined
         }
         
         let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].basedOn.name, recipeExchanges)
         let agreement = makeAgreement(event.detail.commitment, exchange, offers, agents)
         updatedCommitment.agreement = agreement
+        if (agreement) {
+          updatedCommitment.provider = agents.find(it => it.id == agreement.commitment.receiver.id)
+          console.log("commitment provider", updatedCommitment.provider)
+        }
 
         console.log("done...", updatedCommitment)
         let commitmentIndex = allColumns[event.detail.column][event.detail.process][event.detail.side].findIndex(it => it.id == event.detail.commitment.id)
@@ -543,7 +495,11 @@ generate columns
         let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].basedOn.name, recipeExchanges)
         let agreement = makeAgreement(event.detail.commitment, exchange, offers, agents)
         event.detail.commitment.agreement = agreement
-        event.detail.commitment.receiver = agents.find(it => it.id == event.detail.commitment.receiverId)
+        event.detail.commitment.receiver = agents.find(it => it.id == event.detail.commitment.receiver.id)
+        if (agreement) {
+          event.detail.commitment.provider = agents.find(it => it.id == agreement.commitment.receiver.id)
+          console.log("commitment provider", event.detail.commitment.provider)
+        }
         allColumns[event.detail.column][event.detail.process][event.detail.side].push(event.detail.commitment)
       }
     }
@@ -590,28 +546,15 @@ generate columns
             .map(it => {
               return {
                 ...it,
-                receiverId: agents.find(agent => agent.id == hashChanges[it.receiverId]),
-                // resourceConformsTo: resourceSpecifications.find(spec => spec.id == hashChanges[it.resourceConformsTo.id]),
               }
             })
             allColumns = event.detail.allColumns
-            // change the providerId to the new hash in each column
             allColumns = allColumns.map(column => {
               return column.map(process => {
                 return {
                   ...process,
-                  committedInputs: process.committedInputs.map(it => {
-                    return {
-                      ...it,
-                      providerId: hashChanges[it.providerId]
-                    }
-                  }),
-                  committedOutputs: process.committedOutputs.map(it => {
-                    return {
-                      ...it,
-                      providerId: hashChanges[it.providerId]
-                    }
-                  })
+                  committedInputs: cloneDeep(process.committedInputs),
+                  committedOutputs: cloneDeep(process.committedOutputs)
                 }
               })
             })
@@ -625,30 +568,30 @@ generate columns
         <!-- Sub-columns -->
         <div class="">
           <div>
-            {#each proposalsList as { publishes }}
-              {@const reciprocal = publishes?.find(it => it.reciprocal)}
-              {@const primary = publishes?.find(it => !it.reciprocal)}
-              {#if primary?.publishes?.provider}
+            {#each offers as proposal}
+              {@const reciprocal = proposal.reciprocal?.[0]}
+              {@const primary = proposal.publishes?.[0]}
+              {#if primary?.provider}
               <div
               class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
               >
-                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
-                  {#if primary?.publishes?.availableQuantity}
+                  <p>{primary?.resourceConformsTo?.name}</p>
+                  {#if primary?.availableQuantity}
                     <p>
-                      {#if primary?.publishes?.availableQuantity?.hasNumericalValue && primary?.publishes?.availableQuantity?.hasNumericalValue > 0}
-                        {primary?.publishes?.availableQuantity?.hasNumericalValue}
-                        {primary?.publishes?.availableQuantity?.hasUnit?.label} available<br>
+                      {#if primary?.availableQuantity?.hasNumericalValue && primary?.availableQuantity?.hasNumericalValue > 0}
+                        {primary?.availableQuantity?.hasNumericalValue}
+                        {primary?.availableQuantity?.hasUnit?.label} available<br>
                       {/if}
-                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue} {primary?.publishes?.resourceQuantity?.hasUnit?.label}
+                      {reciprocal?.resourceQuantity?.hasNumericalValue}
+                      {reciprocal?.resourceConformsTo?.name} per {primary?.resourceQuantity?.hasNumericalValue} {primary?.resourceQuantity?.hasUnit?.label}
                     </p>
                   {:else}
                     <p>
-                      {reciprocal?.publishes?.resourceQuantity?.hasNumericalValue}
-                      {reciprocal?.publishes?.resourceConformsTo?.name} per {primary?.publishes?.resourceQuantity?.hasNumericalValue}  {primary?.publishes?.resourceQuantity?.hasUnit?.label}
+                      {reciprocal?.resourceQuantity?.hasNumericalValue}
+                      {reciprocal?.resourceConformsTo?.name} per {primary?.resourceQuantity?.hasNumericalValue}  {primary?.resourceQuantity?.hasUnit?.label}
                     </p>
                   {/if}
-                  <p>from {primary?.publishes?.provider?.name}</p>
+                  <p>from {primary?.provider?.name}</p>
                 </div>
               {/if}
             {/each}
@@ -795,7 +738,9 @@ generate columns
               <div class="flex justify-center my-4">
                 <button
                   type="button"
-                  on:click={() => (commitments = createCommitments(requests))}
+                  on:click={() => {
+                    commitments = createCommitments(requests)
+                  }}
                   class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >Create from requests</button
                 >
@@ -807,12 +752,12 @@ generate columns
                     .map(it => {
                       return {
                         ...it,
-                        receiverId: agents.find(agent => agent.id == hashChanges[it.receiverId]),
+                        receiver.id: agents.find(agent => agent.id == hashChanges[it.receiver.id]),
                         // resourceConformsTo: resourceSpecifications.find(spec => spec.id == hashChanges[it.resourceConformsTo.id]),
                       }
                     })
                     allColumns = event.detail.allColumns
-                    // change the providerId to the new hash in each column
+                    // change the provider.id to the new hash in each column
                     allColumns = allColumns.map(column => {
                       return column.map(process => {
                         return {
@@ -820,13 +765,13 @@ generate columns
                           committedInputs: process.committedInputs.map(it => {
                             return {
                               ...it,
-                              providerId: hashChanges[it.providerId]
+                              provider.id: hashChanges[it.provider.id]
                             }
                           }),
                           committedOutputs: process.committedOutputs.map(it => {
                             return {
                               ...it,
-                              providerId: hashChanges[it.providerId]
+                              provider.id: hashChanges[it.provider.id]
                             }
                           })
                         }
@@ -850,8 +795,8 @@ generate columns
             {#each commitments as c}
               {@const resourceConformsTo = c.resourceConformsTo}
               {@const resourceQuantity = c.resourceQuantity}
-              {@const receiver = c.receiverId ? agents.find(it => it.id == c.receiverId) : c.receiver}
-              {@const provider = c.providerId ? agents.find(it => it.id == c.providerId) : c.provider}
+              {@const receiver = c.receiver}
+              <!-- {@const provider = c.provider} -->
               {@const id = c.id}
               {@const action = c.action}
               <div
@@ -902,20 +847,19 @@ generate columns
         <!-- Sub-columns -->
         <div class="">
           <div>
-            {#each proposalsList as { publishes }}
-              {@const reciprocal = publishes.find(it => it.reciprocal)}
-              {@const primary = publishes.find(it => !it.reciprocal)}
-              {#if primary?.publishes?.receiver}
+            {#each requests as req}
+              {@const primary = req.publishes[0]}
+              {#if primary?.receiver}
                 <div
                   class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
                 >
-                  <p>{primary?.publishes?.resourceConformsTo?.name}</p>
+                  <p>{primary?.resourceConformsTo?.name}</p>
                   <p>
-                    {primary?.publishes?.action?.label}
-                    {primary?.publishes?.resourceQuantity?.hasNumericalValue}
-                    {primary?.publishes?.resourceQuantity?.hasUnit?.label}
+                    {primary?.action?.label}
+                    {primary?.resourceQuantity?.hasNumericalValue}
+                    {primary?.resourceQuantity?.hasUnit?.label}
                   </p>
-                  <p>to {primary?.publishes?.receiver?.name}</p>
+                  <p>to {primary?.receiver?.name}</p>
                 </div>
               {/if}
             {/each}

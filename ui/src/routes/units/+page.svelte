@@ -5,15 +5,17 @@ import UnitModal from "./UnitModal.svelte";
 import Loading from "$lib/Loading.svelte";
 import Export from "$lib/Export.svelte";
 import SvgIcon from "$lib/SvgIcon.svelte";
-import type { Unit } from "@leosprograms/vf-graphql";
-import { getAllUnits } from "../../crud/fetch";
-import { allUnits } from "../../crud/store";
-  import { importUnits } from "../../crud/import"
+import type { Unit } from "@valueflows/vf-graphql";
+import { GET_ALL_UNITS } from "../../crud/fetch";
+import { query } from "svelte-apollo";
+// import { getAllUnits } from "../../crud/fetch";
+// import { allUnits } from "../../crud/store";
+// import { importUnits } from "../../crud/import"
 
-let units: Unit[] = [];
-allUnits.subscribe(value => {
-    units = value;
-});
+// let units: Unit[] = [];
+// allUnits.subscribe(value => {
+//     units = value;
+// });
 
 let selectedUnit: Unit | undefined = undefined;
 let modalOpen = false;
@@ -22,18 +24,22 @@ let fetching = false;
 let editing = false;
 let exportOpen = false;
 let importing = false;
-$: selectedUnit, modalOpen, units;
+$: selectedUnit, modalOpen;
+
+const unitsQuery = query(GET_ALL_UNITS);
 
 async function refresh() {
     fetching = true
-    await getAllUnits()
+    // await getAllUnits()
+    await unitsQuery.refetch()
     fetching = false
   }
 
 onMount(async () => {
-    let loading = units.length === 0;
+    let loading = $unitsQuery.loading;
     if (loading) {
-        await getAllUnits();
+        // await getAllUnits();
+        await unitsQuery.refetch();
         loading = false;
     }
 });
@@ -44,6 +50,7 @@ onMount(async () => {
 <UnitModal bind:open={modalOpen} unit={selectedUnit} bind:editing on:close={() => modalOpen = false} 
     on:submit={() => {
         modalOpen = false;
+        refresh();
     }} />
 
 {#if loading}
@@ -120,6 +127,10 @@ onMount(async () => {
                     </tr>
                 </thead>
                 <tbody>
+                  {#if $unitsQuery.loading}
+                    <span>Loading...</span>
+                  {:else}
+                    {@const units = $unitsQuery.data?.units.edges.map((edge) => edge.node).reverse() ?? []}
                     {#each units as unit, index}
                     <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
                         <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">{unit.label}</td>
@@ -139,6 +150,7 @@ onMount(async () => {
                         </td>
                     </tr>
                     {/each}
+                  {/if}
                 </tbody>
             </table>
             </div>
