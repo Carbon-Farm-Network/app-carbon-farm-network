@@ -3,7 +3,8 @@ import type { AgentConnection, Agent, Organization, ProcessSpecificationCreatePa
   EconomicEvent, RecipeProcessCreateParams, RecipeFlowCreateParams, RecipeFlowUpdateParams, 
   IntentCreateParams,
   CommitmentCreateParams,
-  CommitmentUpdateParams} from '@valueflows/vf-graphql'
+  CommitmentUpdateParams,
+  EconomicEventCreateParams} from '@valueflows/vf-graphql'
 import { setActions, clientStored, clientHC, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, 
   setHashChanges, setEconomicEvents, setEconomicResources, addToHashChanges, addAUnit, 
   updateAUnit} from './store'
@@ -504,6 +505,7 @@ const UPDATE_INTENT = gql`
 ${INTENT_CORE_FIELDS},
 mutation($intent: IntentUpdateParams!){
   updateIntent(intent: $intent) {
+
     intent {
       ...IntentCoreFields
     }
@@ -516,6 +518,38 @@ mutation($revisionId: ID!){
   deleteIntent(revisionId: $revisionId)
 }
 `
+
+function savePrep(obj: any) {
+  // remove id
+  delete obj.id;
+  delete obj.__typename
+  delete obj.meta
+  for (const key in obj) {
+    // delete any fields that end in "Id"
+    if (key.endsWith('Id')) {
+      delete obj[key];
+    }
+    // delete any undefined or null fields
+    if (obj[key] === undefined || obj[key] === null) {
+      delete obj[key];
+    }
+    // convert nested id fields into just id strings
+    if (obj[key] && typeof obj[key] === 'object' && obj[key].id) {
+      obj[key] = obj[key].id;
+    }
+    // also check second level for id
+    if (obj[key] && typeof obj[key] === 'object') {
+      for (const subKey in obj[key]) {
+        if (obj[key][subKey] && typeof obj[key][subKey] === 'object' && obj[key][subKey].id) {
+          obj[key][subKey] = obj[key][subKey].id;
+        }
+      }
+      delete obj[key].meta; // remove meta if exists
+      delete obj[key].__typename; // remove __typename if exists
+    }
+  }
+  return obj;
+}
 
 export const createUnit = async (unit: any) => {
   const res = await client.mutate({
@@ -746,7 +780,12 @@ export const deleteAgent = async (revisionId: string) => {
   })
 }
 
-export const createEconomicEvent = async (event: any) => {
+export const createEconomicEvent = async (event: EconomicEventCreateParams) => {
+  delete event.revisionId
+  delete event.clauseOf
+  delete event.fulfilledBy
+  event = savePrep(event);
+  console.log('createEconomicEvent', event)
   const res = await client.mutate({
     mutation: CREATE_ECONOMIC_EVENT,
     variables: {
@@ -766,7 +805,12 @@ export const deleteEconomicEvent = async (revisionId: string) => {
   })
 }
 
-export const createEconomicEventWithResource = async (event: any, newInventoriedResource: any) => {
+export const createEconomicEventWithResource = async (event: EconomicEventCreateParams, newInventoriedResource: any) => {
+  delete event.revisionId
+  delete event.clauseOf
+  delete event.fulfilledBy
+  event = savePrep(event);
+  console.log('createEconomicEventWithResource', event, newInventoriedResource)
   const res = await client.mutate({
     mutation: CREATE_ECONOMIC_EVENT_WITH_RESOURCE,
     variables: {
