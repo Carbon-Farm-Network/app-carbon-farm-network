@@ -9,12 +9,9 @@ roles:
       deferred: false
     dna:
       bundled: "./hrea.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      installed_hash: ~
+      properties: ~
+      uuid: ~
+      version: ~
       clone_limit: 0
   - name: hrea_facets_0
     provisioning:
@@ -22,12 +19,9 @@ roles:
       deferred: false
     dna:
       bundled: "./hc_facets.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      installed_hash: ~
+      properties: ~
+      uuid: ~
+      version: ~
       clone_limit: 0
   - name: migration
     provisioning:
@@ -35,10 +29,7 @@ roles:
       deferred: false
     dna:
       bundled: "../dnas/migration/workdir/migration.dna"
-      modifiers:
-        network_seed: ~
-        properties: ~
-        origin_time: ~
-        quantum_time: ~
-      installed_hash: ~
+      properties: ~
+      uuid: ~
+      version: ~
       clone_limit: 0

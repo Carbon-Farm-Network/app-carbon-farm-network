@@ -8,7 +8,7 @@ import type { AgentConnection, Agent, Organization, ProcessSpecificationCreatePa
 import { setActions, clientStored, clientHC, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, 
   setHashChanges, setEconomicEvents, setEconomicResources, addToHashChanges, addAUnit, 
   updateAUnit} from './store'
-import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL} from '@theweave/api';
 import { appletServices } from '../../we';
 import type { EntryHash } from '@holochain/client';
 import { getAllHashChanges } from './fetch'
@@ -35,7 +35,7 @@ clientHC.subscribe(value => {
 
 export async function addHashChange(original: string, newHash: string) {
   if (original == undefined || newHash == undefined) { return; }
-  if (isWeContext()) {
+  if (isWeaveContext()) {
       let weClient = await WeaveClient.connect(appletServices);
       await weClient.renderInfo.appletClient.callZome({
           cap_secret: null,
@@ -519,7 +519,8 @@ mutation($revisionId: ID!){
 }
 `
 
-function savePrep(obj: any) {
+function savePrep(obj: any, update = false) {
+  const revisionId = obj.revisionId;
   // remove id
   delete obj.id;
   delete obj.__typename
@@ -547,6 +548,9 @@ function savePrep(obj: any) {
       delete obj[key].meta; // remove meta if exists
       delete obj[key].__typename; // remove __typename if exists
     }
+  }
+  if (update) {
+    obj.revisionId = revisionId; // keep revisionId for updates
   }
   return obj;
 }
@@ -1042,6 +1046,7 @@ export const createRecipeFlow = async (recipeFlow: RecipeFlowCreateParams) => {
 }
 
 export const updateRecipeFlow = async (recipeFlow: RecipeFlowUpdateParams) => {
+  recipeFlow = savePrep(recipeFlow, true);
   console.log('updateRecipeFlow', recipeFlow)
   const res = await client.mutate({
     mutation: UPDATE_RECIPE_FLOW,

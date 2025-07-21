@@ -14,7 +14,7 @@ import { RECIPE_RETURN_FIELDS, RECIPE_EXCHANGE_RETURN_FIELDS } from '$lib/graphq
 import { addToFullPlans, setActions, clientStored, clientHC, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setRecipes, setRecipeExchanges, 
   setHashChanges, setEconomicEvents, setEconomicResources, setFacetGroups, setFacetValues, setFacets, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan, setPlansList, 
   allFacets} from './store'
-import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL} from '@theweave/api';
 import { appletServices } from '../../we';
 import { decode } from '@msgpack/msgpack';
 import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client'
@@ -37,7 +37,7 @@ type HashChange = {
 }
 
 export async function getAllHashChanges() {
-  if (isWeContext()) {
+  if (isWeaveContext()) {
       let weClient = await WeaveClient.connect(appletServices);
       let res = await weClient.renderInfo.appletClient.callZome({
           cap_secret: null,
@@ -323,23 +323,23 @@ query {
 }
 `
 
-export const GET_FULFILLMENTS = gql`
-${FULFILLMENT_CORE_FIELDS}
-query {
-  fulfillments(last: 100000) {
-    pageInfo {
-      startCursor
-      endCursor
-    }
-    edges {
-      cursor
-      node {
-        ...FulfillmentCoreFields
-      }
-    }
-  }
-}
-`
+// export const GET_FULFILLMENTS = gql`
+// ${FULFILLMENT_CORE_FIELDS}
+// query {
+//   fulfillments(last: 100000) {
+//     pageInfo {
+//       startCursor
+//       endCursor
+//     }
+//     edges {
+//       cursor
+//       node {
+//         ...FulfillmentCoreFields
+//       }
+//     }
+//   }
+// }
+// `
 
 export const GET_ALL_RECIPES = gql`
 ${RECIPE_RETURN_FIELDS}
@@ -532,7 +532,7 @@ export const getAllEconomicResources = async () => {
   //   return id.replace(/-/g, "+").replace(/_/g, "/");
   // }
 
-  // if (isWeContext()) {
+  // if (isWeaveContext()) {
   //   let weClient = await WeaveClient.connect(appletServices);
   //   let res = await weClient.renderInfo.appletClient.callZome({
   //       cap_secret: null,

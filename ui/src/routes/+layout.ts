@@ -3,9 +3,9 @@ import { error } from '@sveltejs/kit'
 import { AppWebsocket, AdminWebsocket } from '@holochain/client'
 import { appletServices } from '../../we';
 import { onMount } from 'svelte';
-import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL} from '@theweave/api';
 import { setClient, setClientHC } from "../crud/store"
-import { createHolochainSchema } from '@leosprograms/vf-graphql-holochain';
+import { createHolochainSchema } from '@valueflows/vf-graphql-holochain';
 import { SchemaLink } from '@apollo/client/link/schema';
 import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 
@@ -42,7 +42,7 @@ export async function load() {
     }
   }
   try {
-    if (isWeContext()) {
+    if (isWeaveContext()) {
       weClient = await WeaveClient.connect(appletServices);
       await setClientHC(weClient.renderInfo.appletClient)
       return {

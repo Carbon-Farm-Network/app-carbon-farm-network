@@ -13,13 +13,13 @@
     "format": "prettier --plugin-search-dir . --write ."
   },
   "dependencies": {
-    "@holochain/client": "^0.18.0-dev.13",
-    "@lightningrodlabs/we-applet": "^0.17.1",
+    "@holochain/client": "^0.19.1",
+    "@theweave/api": "^0.5.1",
     "@msgpack/msgpack": "^2.7.2",
     "@tailwindcss/forms": "^0.5.3",
     "@vaadin/date-time-picker": "^23.3.13",
     "@valueflows/vf-graphql": "^0.9.1-alpha.4",
-    "@leosprograms/vf-graphql-holochain": "^0.0.3-alpha.20",
+    "@valueflows/vf-graphql-holochain": "^0.0.4-alpha.1",
     "lodash": "^4.17.21",
     "date-picker-svelte": "^2.4.3",
     "dayjs": "^1.11.9",

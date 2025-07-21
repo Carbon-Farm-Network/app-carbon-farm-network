@@ -4,7 +4,6 @@ name: migration
 integrity:
   network_seed: ~
   properties: ~
-  origin_time: 1716135750268077
   zomes:
     - name: migrate_integrity
       hash: ~

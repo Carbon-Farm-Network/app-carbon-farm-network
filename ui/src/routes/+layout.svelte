@@ -1,7 +1,7 @@
 <script lang="ts">
 import { browser } from '$app/environment'
 import { setClient } from 'svelte-apollo'
-import { isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { isWeaveContext, initializeHotReload, type WAL} from '@theweave/api';
 import { getAllHashChanges } from '../crud/fetch';
 import { allHashChanges } from '../crud/store';
 
@@ -14,7 +14,7 @@ import Nav from '$lib/Nav.svelte'
 /** @type {import('./$types').LayoutData} */
 export let data: any;
 if (browser) {
-  if (isWeContext()) {
+  if (isWeaveContext()) {
     setClient(data.client)
     getAllHashChanges()
   }

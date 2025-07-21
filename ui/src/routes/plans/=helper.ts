@@ -1,15 +1,16 @@
 import { Proposal, RecipeExchange, Agent } from '@valueflows/vf-graphql'
+import { Intent } from '@valueflows/vf-graphql'
 import { Decimal } from 'decimal.js'
 
 export function matchingOffer(commitment: any, offers: any[]) {
-  // console.log("looking for matching offer", commitment)
+  console.log("looking for matching offer", commitment, offers)
   return offers.find(offer => {
     return offer?.publishes?.find(
-      intent => {
-        const offerName = intent?.resourceConformsTo?.name
+      (intent: Intent) => {
+        const offerId = intent?.resourceConformsTo?.id
         const correctProvider = commitment.provider?.id ? (intent?.provider?.id == commitment.provider?.id) : true
         const correctProviderRole = commitment.providerRole ? (intent?.provider?.classifiedAs[2] == commitment.providerRole) : true
-        return offerName == commitment.resourceConformsTo.name && correctProvider && correctProviderRole
+        return offerId == commitment.resourceConformsTo?.id && correctProvider && correctProviderRole
       }
     )
   })
@@ -22,8 +23,11 @@ export function makeAgreement(
   agents: any[] | undefined
 ): undefined | any {
   // console.log("reciprocal_clause", recipe)
+  console.log("makeAgreement", commitment, recipe, offers, agents)
   const reciprocal_clause = recipe?.recipeReciprocalClauses?.[0]
   const matching_offer = matchingOffer(commitment, offers)
+
+  console.log("matching offer", matching_offer)
 
   if (matching_offer) {
     // console.log("matching offer", matching_offer)

@@ -1,6 +1,6 @@
 import { setActions, clientStored, setAgents, updateAnAgent, setUnits, setResourceSpecifications, setProcessSpecifications, setProposals, setHashChanges, setEconomicEvents, setEconomicResources } from './crud/store'
 // import { mutation, query } from 'svelte-apollo'
-import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL} from '@theweave/api';
 import { appletServices } from '../we';
 import { decode } from '@msgpack/msgpack';
 
@@ -11,7 +11,7 @@ import { decode } from '@msgpack/msgpack';
 // }
 
 // export async function getAllHashChanges() {
-//   if (isWeContext()) {
+//   if (isWeaveContext()) {
 //       let weClient = await WeaveClient.connect(appletServices);
 //       let res = await weClient.renderInfo.appletClient.callZome({
 //           cap_secret: null,
@@ -31,7 +31,7 @@ import { decode } from '@msgpack/msgpack';
 // }
 
 // export async function addHashChange(original: string, newHash: string) {
-//   if (isWeContext()) {
+//   if (isWeaveContext()) {
 //       let weClient = await WeClient.connect(appletServices);
 //       await weClient.renderInfo.appletClient.callZome({
 //           cap_secret: null,

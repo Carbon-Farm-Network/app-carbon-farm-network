@@ -3,64 +3,57 @@
     import Header from "$lib/Header.svelte";
     import { onMount } from "svelte";
     import { getAllAgents, getAllEconomicEvents, getAllEconomicResources, getAllFacetGroups, getAllResourceSpecifications, getAllUnits, getAllActions, getAllProcessSpecifications } from "../../crud/fetch";
-    import { allEconomicEvents, allEconomicResources, allFulfillments, allAgents, allUnits, allResourceSpecifications } from "../../crud/store";
     import { importEconomicEvents } from '../../crud/import';
     import EconomicEventModal from './EconomicEventModal.svelte';
     import Export from '$lib/Export.svelte';
     import { createEconomicEvent, createEconomicEventWithResource } from '../../crud/commit'
+    import { GET_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES } from '../../crud/fetch';
     import EconomicEvent from '$lib/icons/EconomicEvent.svelte'
     import Loading from '$lib/Loading.svelte';
+    import SvgIcon from '$lib/SvgIcon.svelte';
+    import { query } from 'svelte-apollo';
 
-    let economicEvents: EconomicEvent[] = [];
-    allEconomicEvents.subscribe(value => {
-        economicEvents = value;
-    });
+    const economicEventsQuery = query(GET_ECONOMIC_EVENTS);
+    const economicResourcesQuery = query(GET_ALL_ECONOMIC_RESOURCES);
 
     let economicResources: EconomicResource[] = [];
-    allEconomicResources.subscribe(value => {
-        economicResources = value;
-    });
-
-    let fulfillments: Fulfillment[] = [];
-    allFulfillments.subscribe(value => {
-        fulfillments = value;
-    });
-
-    let agents: Agent[] = [];
-    allAgents.subscribe(value => {
-        agents = value;
-    });
-    
-    let units: any[] = [];
-    allUnits.subscribe(value => {
-        units = value;
-    });
-
-    let resourceSpecifications: any[] = [];
-    allResourceSpecifications.subscribe(value => {
-        resourceSpecifications = value;
+    economicResourcesQuery.subscribe(res => {
+      economicResources = res?.data?.economicResources.edges.map(edge => edge.node) || [];
+      console.log('economicResources', economicResources);
     });
 
     let exportOpen = false;
     let loading: boolean = false;
+    let fetching: boolean = false;
     let importing = false;
     let modalOpen = false;
 
+    async function refresh() {
+      fetching = true;
+      console.log("Economic events refetched", $economicEventsQuery.data);
+      economicEventsQuery.refetch();
+      economicResourcesQuery.refetch();
+      fetching = false;
+    }
+
     onMount(async () => {
-      loading = economicEvents.length === 0 || units.length === 0 || resourceSpecifications.length === 0;
-      console.log(economicEvents.length, units.length, resourceSpecifications.length)
+      loading = $economicEventsQuery.loading;
+      economicEventsQuery.refetch();
+      economicResourcesQuery.refetch();
+      // loading = economicEvents.length === 0 || units.length === 0 || resourceSpecifications.length === 0;
+      // console.log(economicEvents.length, units.length, resourceSpecifications.length)
       
-      await getAllUnits();
-      await getAllActions();
-      await getAllFacetGroups();
-      await getAllAgents();
-      const rspecs = await getAllResourceSpecifications();
-      console.log("resourceSpecifications", rspecs)
-      const ecrecs = await getAllEconomicResources();
-      console.log("economicResources", ecrecs)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const ecevs = await getAllEconomicEvents();
-      console.log("economicEvents", ecrecs, ecevs)
+      // await getAllUnits();
+      // await getAllActions();
+      // await getAllFacetGroups();
+      // await getAllAgents();
+      // const rspecs = await getAllResourceSpecifications();
+      // console.log("resourceSpecifications", rspecs)
+      // const ecrecs = await getAllEconomicResources();
+      // console.log("economicResources", ecrecs)
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+      // const ecevs = await getAllEconomicEvents();
+      // console.log("economicEvents", ecrecs, ecevs)
       loading = false;
     });
 
@@ -68,15 +61,18 @@
       console.log("economicEvent", economicEvent);
       let economicEventCreateInput: EconomicEventCreateParams = {
         action: economicEvent.action.label,
-        provider: economicEvent.providerId,
-        receiver: economicEvent.receiverId,
-        resourceQuantity: { hasNumericalValue: economicEvent.resourceQuantity.hasNumericalValue, hasUnit: economicEvent.resourceQuantity.hasUnitId },
+        provider: economicEvent.provider?.id || economicEvent.providerId,
+        receiver: economicEvent.receiver?.id || economicEvent.receiverId,
+        resourceQuantity: { 
+          hasNumericalValue: economicEvent.resourceQuantity.hasNumericalValue, 
+          hasUnit: economicEvent.resourceQuantity.hasUnit?.id || economicEvent.resourceQuantity.hasUnitId
+        },
         resourceConformsTo: economicEvent.resourceConformsTo.id,
         hasPointInTime: new Date(),
         hasBeginning: new Date(),
       }
 
-      let pickupFromOtherAgent = economicEvent.action.label == "pickup" && economicEvent.providerId != economicEvent.receiverId
+      let pickupFromOtherAgent = economicEvent.action.label == "pickup" && (economicEvent.provider?.id != economicEvent.receiver?.id || economicEvent.providerId != economicEvent.receiverId);
       let produce = economicEvent.action.label == "produce"
       let consume = economicEvent.action.label == "consume"
 
@@ -95,7 +91,7 @@
 
       if (!economicEventCreateInput?.resourceInventoriedAs && ( pickupFromOtherAgent || produce ) ) {
         console.log("add new economic event and resource", !economicEvent?.resourceInventoriedAs, event)
-        let resourceSpecification = resourceSpecifications.find(it => it.id == economicEvent.resourceConformsTo.id)
+        let resourceSpecification = economicEvent.resourceConformsTo
         let newInventoriedResource: EconomicResourceCreateParams = {
           name: resourceSpecification?.name,
           image: resourceSpecification?.image,
@@ -112,14 +108,16 @@
       }
       // console.log("economicEventCreateInput", economicEventCreateInput);
       // await createEconomicEvent(economicEventCreateInput);
-      await getAllEconomicEvents();
+      // await getAllEconomicEvents();
+      await economicEventsQuery.refetch();
+      await economicResourcesQuery.refetch();
       // modalOpen = false;
     }
 </script>
 
 <Header title="Economic events" description="The economic events in a network." />
     
-<EconomicEventModal bind:open={modalOpen} agents={agents} resourceSpecifications={resourceSpecifications} units={units}
+<EconomicEventModal bind:open={modalOpen}
   on:submit={async (e) => {
     console.log("raw", e)
     saveEconomicEvent(e.detail.event);
@@ -134,8 +132,22 @@
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
     </div>
+    <!-- refresh button -->
+    <div class="mt-4 sm:ml-4 sm:mt-0 sm:flex-none">
+      <button
+      type="button"
+      disabled={fetching}
+      on:click={refresh}
+      class="flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        <span class="flex items-center" class:animate-spin={fetching}>
+          <SvgIcon icon="faRefresh" color="#fff" />
+        </span>
+      </button>
+    </div>
+      
     <!-- add economic event with modal -->
-    <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => {
@@ -192,27 +204,32 @@
             </tr>
           </thead>
           <tbody class="bg-white">
-            {#each economicEvents as economicEvent, index}
-              <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
-                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {agents.find(agent => agent.id === economicEvent.providerId)?.name}
-                </td>
-                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {agents.find(agent => agent.id === economicEvent.receiverId)?.name}
-                </td>
-                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {economicEvent.action?.label}
-                </td>
-                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {economicEvent.resourceQuantity?.hasNumericalValue} 
-                    {units.find(unit => unit.id === economicEvent.resourceQuantity?.hasUnitId)?.label}
-                    {economicEvent?.resourceConformsTo?.name}
-                </td>
-                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(economicEvent?.hasBeginning).toLocaleDateString()}
-                </td>
-              </tr>
-            {/each}
+            {#if $economicEventsQuery.loading}
+              <span>Loading...</span>
+            {:else}
+              {@const economicEvents = $economicEventsQuery.data?.economicEvents.edges.map((edge) => edge.node).reverse() ?? []}
+              {#each economicEvents as economicEvent, index}
+                <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
+                  <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {economicEvent.provider?.name}
+                  </td>
+                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {economicEvent.receiver?.name}
+                  </td>
+                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {economicEvent.action?.label}
+                  </td>
+                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {economicEvent.resourceQuantity?.hasNumericalValue} 
+                      {economicEvent.resourceQuantity?.hasUnit?.label}
+                      {economicEvent?.resourceConformsTo?.name}
+                  </td>
+                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(economicEvent?.hasBeginning).toLocaleDateString()}
+                  </td>
+                </tr>
+              {/each}
+            {/if}
             </tbody>
         </table>
         </div>

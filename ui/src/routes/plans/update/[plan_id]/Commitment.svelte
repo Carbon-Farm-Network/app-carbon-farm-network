@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Pencil, Trash, EconomicEvent } from '$lib/icons'
+  import { json } from '@sveltejs/kit'
     import { Decimal } from 'decimal.js'
     import { cloneDeep } from 'lodash'
     // import { getPlan } from '../../../../crud/fetch'
@@ -64,7 +65,6 @@
     // $: matchingResource = economicResources.find(it => it.conformsTo?.id == resourceConformsTo?.id)
     
 </script>
-
     <!-- {JSON.stringify(prevProcSpec)} -->
     <!-- {JSON.stringify(processes.length)} -->
     <div
@@ -73,32 +73,11 @@
             border-radius: 0px 60px 60px 0px;
     ">
     <strong>{resourceConformsTo?.name}</strong>
-    <div class="flex justify-between" style="flex-direction: column">
-        <!--
-        <p>
-        {supply_driven_quantity?.hasNumericalValue}
-        {supply_driven_quantity?.hasUnit?.label}
-        </p>
-        -->
-        <p>
-        {action.label}
-        <!-- sum of all fulfilledby numericalvalues -->
-            <!-- {JSON.stringify(fulfilledBy[0]?.fulfills)} -->
-        <strong>
-            {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-                <!-- {sumEconomicEvents(fulfilledBy.map(it => it.id))} -->
-                {sumEconomicEventsFromFulfillments(fulfilledBy)} 
-                {resourceQuantity?.hasUnit?.label}
-            {:else}
-                {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                {resourceQuantity?.hasUnit?.label}
-            {/if}
-        </strong>
-        </p>
 
+    <div class="flex justify-between" style="flex-direction: column">
         <p>
             {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-            planned
+            {action.label}
             <strong>
                 {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
                 {#each units as unit}
@@ -110,12 +89,18 @@
             {/if}
         </p>
 
-        <!--
         <p>
-        {demand_driven_quantity?.hasNumericalValue}
-        {demand_driven_quantity?.hasUnit?.label}
+            events
+            <strong>
+                {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
+                    {sumEconomicEventsFromFulfillments(fulfilledBy)} 
+                    {resourceQuantity?.hasUnit?.label}
+                {:else}
+                    {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
+                    {resourceQuantity?.hasUnit?.label}
+                {/if}
+            </strong>
         </p>
-        -->
     </div>
     {#if carryOverInfo?.fromInventory > 0 && side == "committedInputs"}
         <p style="white-space: pre-wrap; word-wrap: break-word; color: green; font-weight: bold; background-color: #e0ffe0; padding: 2px 4px; border-radius: 4px; display: inline-block;">

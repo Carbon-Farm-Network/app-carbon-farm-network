@@ -1,4 +1,4 @@
-import type { AppletHash, AppletServices, AttachableInfo, HrlWithContext, WeServices } from '@lightningrodlabs/we-applet';
+import type { AppletHash, AppletServices, AttachableInfo, HrlWithContext, WeServices } from '@theweave/api';
 import { getMyDna, hrlWithContextToB64 } from './util';
 import type { AppAgentClient, RoleName, ZomeName } from '@holochain/client';
 

@@ -5,37 +5,41 @@
     import { onMount } from "svelte";
     import { getAllEconomicResources, getAllProcessSpecifications, getAllUnits } from "../../crud/fetch";
     import { updateEconomicResource, createEconomicEventWithResource } from '../../crud/commit';
-    import { allEconomicResources, allAgents, allUnits, allResourceSpecifications, allProcessSpecifications } from "../../crud/store";
+    import { GET_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES } from '../../crud/fetch';
     import EconomicEventModal from '../economic_events/EconomicEventModal.svelte';
     import Loading from '$lib/Loading.svelte';
     import { cloneDeep } from 'lodash';
+    import { query } from 'svelte-apollo';
+
+    const economicResourcesQuery = query(GET_ALL_ECONOMIC_RESOURCES);
 
     let loading: boolean = false;
 
     let economicResources: EconomicResource[] = [];
-    allEconomicResources.subscribe(value => {
-        economicResources = value;
+    economicResourcesQuery.subscribe(value => {
+        economicResources = value.data?.economicResources?.edges.map(edge => edge.node) || [];
+        console.log('economicResources', economicResources);
     });
 
-    let agents: Agent[] = [];
-    allAgents.subscribe(value => {
-        agents = value;
-    });
+    // let agents: Agent[] = [];
+    // allAgents.subscribe(value => {
+    //     agents = value;
+    // });
     
-    let units: any[] = [];
-    allUnits.subscribe(value => {
-        units = value;
-    });
+    // let units: any[] = [];
+    // allUnits.subscribe(value => {
+    //     units = value;
+    // });
 
-    let resourceSpecifications: any[] = [];
-    allResourceSpecifications.subscribe(value => {
-        resourceSpecifications = value;
-    });
+    // let resourceSpecifications: any[] = [];
+    // allResourceSpecifications.subscribe(value => {
+    //     resourceSpecifications = value;
+    // });
 
-    let processSpecifications: any[] = [];
-    allProcessSpecifications.subscribe(value => {
-        processSpecifications = value;
-    });
+    // let processSpecifications: any[] = [];
+    // allProcessSpecifications.subscribe(value => {
+    //     processSpecifications = value;
+    // });
 
     let modalOpen = false;
     let economicEventModalOpen = false;
@@ -43,18 +47,18 @@
     $: selectedEconomicResource;
 
     onMount(async () => {
-      loading = economicResources.length === 0 || units.length === 0 || processSpecifications.length === 0;
-      await getAllEconomicResources();
+      loading = true;
+      await economicResourcesQuery.refetch()
       console.log('economicResources', economicResources);
-      await getAllProcessSpecifications();
-      await getAllUnits();
+      // await getAllProcessSpecifications();
+      // await getAllUnits();
       loading = false;
     });
 </script>
 
 <Header title="Economic resources" description="The economic resources in a network." />
 
-<EconomicResourceModal bind:open={modalOpen} economicResource={selectedEconomicResource} {units} {processSpecifications}
+<EconomicResourceModal bind:open={modalOpen} economicResource={selectedEconomicResource}
   on:submit={async (e) => {
     selectedEconomicResource = null;
     modalOpen = false;
@@ -68,7 +72,7 @@
   }}
 />
 
-<EconomicEventModal bind:open={economicEventModalOpen} agents={agents} resourceSpecifications={resourceSpecifications} units={units} raiseOnly={true}
+<EconomicEventModal bind:open={economicEventModalOpen} raiseOnly={true}
   on:submit={async (e) => {
     console.log("raw", e)
     let event = cloneDeep(e.detail.event);

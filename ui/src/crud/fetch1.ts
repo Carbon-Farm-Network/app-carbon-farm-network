@@ -2,7 +2,7 @@ import { addToFullPlans, setActions, clientStored, clientHC, setAgents, updateAn
   setHashChanges, setEconomicEvents, setEconomicResources, updateProcessInPlan, setFulfillments, setCommitments, setAgreements, addNonProcessCommitmentsToPlan, setPlansList, setFacetGroups,
   allFacets} from './store'
 import * as s from './store'
-import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL} from '@theweave/api';
 import { appletServices } from '../../we';
 import { decode, encode } from '@msgpack/msgpack';
 import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client'
@@ -45,7 +45,7 @@ const plurals = {
 }
 
 export async function getAllHashChanges() {
-  if (isWeContext()) {
+  if (isWeaveContext()) {
       let weClient = await WeaveClient.connect(appletServices);
       let res = await weClient.renderInfo.appletClient.callZome({
           cap_secret: null,

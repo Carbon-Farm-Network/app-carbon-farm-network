@@ -3,7 +3,7 @@
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   import { cloneDeep } from "lodash"
-  import { GET_ALL_AGENTS } from '../../crud/fetch'
+  import { GET_ALL_AGENTS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_UNITS } from '../../crud/fetch'
   import { allProcessSpecifications, allAgents } from '../../crud/store';
   import actions from '$lib/data/actions.json'
   import { query } from "svelte-apollo";
@@ -18,14 +18,24 @@
   export let process: any[];
   export let independentDemands: any[]
   export let nonProcessCommitments: any[]
-  export let resourceSpecifications: any[];
-  export let units: any[];
 
   const agentsQuery = query(GET_ALL_AGENTS);
+  const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
+  const unitsQuery = query(GET_ALL_UNITS);
 
   let agents: any[] = [];
   agentsQuery.subscribe((res) => {
     agents = res.data?.agents?.edges?.map(edge => edge.node) || [];
+  })
+
+  let resourceSpecifications: any[] = [];
+  resourceSpecificationsQuery.subscribe((res) => {
+    resourceSpecifications = res.data?.resourceSpecifications?.edges?.map(edge => edge.node) || [];
+  })
+
+  let units: any[] = [];
+  unitsQuery.subscribe((res) => {
+    units = res.data?.units?.edges?.map(edge => edge.node) || [];
   })
   
   const dispatch = createEventDispatcher();
@@ -189,6 +199,7 @@
                               console.log(selectedEvent.provider)
                               selectedEvent.providerId = selectedAgent.id
                             }
+                            console.log(selectedEvent)
                           }}
 
                           >
@@ -201,7 +212,7 @@
                           id="provider"
                           name="provider"
                           class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          value={""}
+                          value={newEvent.providerId}
                           on:change={(e) => {
                             let id = e.target.value
                             console.log(id)
@@ -212,6 +223,7 @@
                             } else {
                               console.log(newEvent.provider)
                             }
+                            console.log(newEvent)
                           }}
                           >
                           {#each agents as agent}
@@ -246,6 +258,13 @@
                             let id = e.target.value
                             console.log(id)
                             selectedEvent.receiverId = id
+                            let selectedAgent = agents.find((rs) => rs.id === id)
+                            if (selectedEvent.receiver) {
+                              selectedEvent.receiver = selectedAgent
+                            } else if (selectedEvent.receiverId) {
+                              console.log(selectedEvent.receiver)
+                              selectedEvent.receiverId = selectedAgent.id
+                            }
                           }}
                           >
                           {#each agents as agent}
@@ -623,18 +642,17 @@
             class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
             disabled={!isValid}
             on:click={() => {
-                console.log(newEvent)
-                dispatch('submit', {
-                  column: commitmentModalColumn,
-                  process: commitmentModalProcess,
-                  side: commitmentModalSide,
-                  resource: newInventoriedResource,
-                  event: {
-                    ...newEvent,
-                    id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-                  },
-                  useAs: 'new'
-                });
+              console.log(newEvent)
+              dispatch('submit', {
+                column: commitmentModalColumn,
+                process: commitmentModalProcess,
+                side: commitmentModalSide,
+                resource: newInventoriedResource,
+                event: {
+                  ...newEvent,
+                },
+                useAs: 'new'
+              });
               open = false
             }}
           >

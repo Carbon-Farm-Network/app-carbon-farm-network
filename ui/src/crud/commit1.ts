@@ -6,7 +6,7 @@ import { setActions, clientStored, clientHC, setAgents, updateAnAgent, setUnits,
   updateAUnit, removeAnAgreement, addAnAgreement,
   addAnAgent,
   removeAnAgent} from './store'
-import { WeaveClient, isWeContext, initializeHotReload, type WAL} from '@lightningrodlabs/we-applet';
+import { WeaveClient, isWeaveContext, initializeHotReload, type WAL} from '@theweave/api';
 import { appletServices } from '../../we';
 import { getAllHashChanges } from './fetch'
 import type { ProcessCreateParams } from '@valueflows/vf-graphql';
@@ -26,7 +26,7 @@ clientHC.subscribe(value => {
 
 export async function addHashChange(original: string, newHash: string) {
   if (original == undefined || newHash == undefined) { return; }
-  if (isWeContext()) {
+  if (isWeaveContext()) {
       let weClient = await WeaveClient.connect(appletServices);
       await weClient.renderInfo.appletClient.callZome({
           cap_secret: null,

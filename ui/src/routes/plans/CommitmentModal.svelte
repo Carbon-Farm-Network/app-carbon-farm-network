@@ -90,6 +90,7 @@
   // let selectedCommitment: any;
   let newCommitmentTemplate = {
     resourceConformsTo: {
+      id: '',
       name: '',
       defaultUnitOfResource: {
         id: '',

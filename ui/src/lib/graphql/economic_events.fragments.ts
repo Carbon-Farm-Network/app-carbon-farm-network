@@ -3,18 +3,35 @@ import { gql } from 'graphql-tag'
 export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
   fragment EconomicEventReturnFields on EconomicEvent {
     id
+    revisionId
     action {
-        id
-        symbol
-        label
+      id
+      symbol
+      label
     }
-    inputOfId
-    outputOfId
-    providerId
-    receiverId
+    inputOf {
+      id
+      revisionId
+    }
+    outputOf {
+      id
+      revisionId
+    }
+    provider {
+      id
+      name
+    }
+    receiver {
+      id
+      name
+    }
     resourceQuantity {
         hasNumericalValue
-        hasUnitId
+        hasUnit {
+          id
+          label
+          symbol
+        }
     }
     hasBeginning
     resourceInventoriedAs {
@@ -29,7 +46,12 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
     resourceConformsTo {
         id
         name
-        defaultUnitOfResourceId
+        image
+        defaultUnitOfResource {
+          id
+          label
+          symbol
+        }
     }
   }
 `

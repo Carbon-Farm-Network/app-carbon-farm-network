@@ -67,34 +67,32 @@ export const COMMITMENT_RETURN_FIELDS = gql`
       name
     }
     fulfilledBy {
-      fulfilledBy {
+      id
+      action {
         id
-        action {
-          id
-          symbol
-          label
-        }
-        provider {
-          id
-          name
-        }
-        resourceConformsTo {
-          id
-          name
-          defaultUnitOfResource {
-            id
-          }
-        }
-        resourceQuantity {
-          hasNumericalValue
-          hasUnit {
-            id
-            label
-            symbol
-          }
-        }
-        hasBeginning
+        symbol
+        label
       }
+      provider {
+        id
+        name
+      }
+      resourceConformsTo {
+        id
+        name
+        defaultUnitOfResource {
+          id
+        }
+      }
+      resourceQuantity {
+        hasNumericalValue
+        hasUnit {
+          id
+          label
+          symbol
+        }
+      }
+      hasBeginning
     }
     finished
     clauseOf {
@@ -116,6 +114,31 @@ export const COMMITMENT_RETURN_FIELDS = gql`
         }
         fulfilledBy {
           id
+          action {
+            id
+            symbol
+            label
+          }
+          provider {
+            id
+            name
+          }
+          resourceConformsTo {
+            id
+            name
+            defaultUnitOfResource {
+              id
+            }
+          }
+          resourceQuantity {
+            hasNumericalValue
+            hasUnit {
+              id
+              label
+              symbol
+            }
+          }
+          hasBeginning
         }
         action {
           id
