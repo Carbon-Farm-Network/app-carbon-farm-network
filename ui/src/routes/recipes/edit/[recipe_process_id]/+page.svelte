@@ -6,34 +6,43 @@
   import { onMount } from 'svelte'
   import { goto } from '$app/navigation'
   import { page } from '$app/stores';
-  import { allRecipes, allProcessSpecifications, allActions, allUnits, allResourceSpecifications } from '../../../../crud/store'
-  import { getAllRecipes, getAllProcessSpecifications, getAllActions, getAllResourceSpecifications, getAllUnits } from '../../../../crud/fetch'
+  // import { allRecipes, allProcessSpecifications, allActions, allUnits, allResourceSpecifications } from '../../../../crud/store'
+  // import { getAllRecipes, getAllProcessSpecifications, getAllActions, getAllResourceSpecifications, getAllUnits } from '../../../../crud/fetch'
+  import { GET_ALL_RECIPES, GET_ALL_UNITS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_PROCESS_SPECIFICATIONS, GET_ALL_ACTIONS } from '../../../../crud/fetch'
+  import { query } from 'svelte-apollo'
   import { deleteRecipeFlow } from '../../../../crud/commit'
   import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@valueflows/vf-graphql'
 
+  const allRecipes = query(GET_ALL_RECIPES)
+  const allUnits = query(GET_ALL_UNITS)
+  const allResourceSpecifications = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  const allProcessSpecifications = query(GET_ALL_PROCESS_SPECIFICATIONS)
+  const allActions = query(GET_ALL_ACTIONS)
+
   let recipes: any[] = []
   allRecipes.subscribe(value => {
-    recipes = value
+    recipes = value.data?.recipeProcesses?.edges.map(edge => edge.node).reverse() || []
+    console.log('recipes 1', recipes)
   })
 
   let units: any[] = []
   allUnits.subscribe(value => {
-    units = value
+    units = value.data?.units?.edges.map(edge => edge.node) || []
   })
 
   let resourceSpecifications: any[] = []
   allResourceSpecifications.subscribe(value => {
-    resourceSpecifications = value
+    resourceSpecifications = value.data?.resourceSpecifications?.edges.map(edge => edge.node) || []
   })
 
   let processSpecifications: any[] = []
   allProcessSpecifications.subscribe(value => {
-    processSpecifications = value
+    processSpecifications = value.data?.processSpecifications?.edges.map(edge => edge.node) || []
   })
 
   let actions: any[] = []
   allActions.subscribe(value => {
-    actions = value
+    actions = value.data?.actions || []
   })
 
   let recipeProcessId = ''
@@ -70,22 +79,16 @@
 
   $: recipeProcess = recipes?.find(it => it.id === recipeProcessId)
 
+  async function refresh() {
+    await allRecipes.refetch()
+    await allProcessSpecifications.refetch()
+    await allActions.refetch()
+    await allResourceSpecifications.refetch()
+    await allUnits.refetch()
+  }
+
   onMount(async () => {
-    let functions = [
-      { array: units, func: getAllUnits },
-      { array: resourceSpecifications, func: getAllResourceSpecifications },
-      { array: actions, func: getAllActions },
-      { array: processSpecifications, func: getAllProcessSpecifications },
-      { array: recipes, func: getAllRecipes },
-    ];
-
-    for (let item of functions) {
-      if (item.array.length === 0) {
-        await item.func();
-      }
-    }
-
-    // await getAllRecipes()
+    await refresh()
     console.log('recipes', recipes)
     console.log('processSpecifications', processSpecifications)
   })
@@ -96,7 +99,7 @@
 <!-- </div> -->
 
 <RecipeProcessModal bind:open={recipeProcessModalOpen} recipeProcess={currentRecipeProcess} {processSpecifications} />
-<RecipeFlowModal bind:open={recipeFlowModalOpen} recipeFlow={currentRecipeFlow} {processSpecifications} on:save={(e) => getAllRecipes()} />
+<RecipeFlowModal bind:open={recipeFlowModalOpen} recipeFlow={currentRecipeFlow} {processSpecifications} on:save={(e) => refresh()} />
 <div class="grid grid-cols-3 gap-3">
   <div class="p-12">
     <div class="sm:flex sm:items-center">
@@ -186,7 +189,7 @@
                         let prompt = confirm('Are you sure you want to delete this input?')
                         if (prompt) {
                           await deleteRecipeFlow(thisRecipeFlow?.id)
-                          await getAllRecipes()
+                          await refresh()
                         }
                       }}
                     >
@@ -207,7 +210,7 @@
       class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
     >
       <h5 class="mb-2 text-md font-bold tracking-tight text-gray-900 dark:text-white">
-        {processSpecifications.find(it => it.id === recipeProcess?.processConformsTo.id)?.name}
+        {recipeProcess?.processConformsTo?.name}
       </h5>
 
       <h6 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">

@@ -3,10 +3,11 @@
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte';
   import { cloneDeep } from "lodash"
-  import { GET_ALL_AGENTS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_UNITS } from '../../crud/fetch'
-  import { allProcessSpecifications, allAgents } from '../../crud/store';
+  import { GET_ALL_AGENTS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_UNITS, GET_ALL_PROCESS_SPECIFICATIONS } from '../../crud/fetch'
+  import { Commitment } from '@valueflows/vf-graphql';
   import actions from '$lib/data/actions.json'
   import { query } from "svelte-apollo";
+  import { json } from '@sveltejs/kit'
 
   export let open = false
   export let raiseOnly = false
@@ -15,12 +16,14 @@
   export let commitmentModalSide: string | undefined;
   export let selectedCommitmentId: string | undefined
   export let selectedCommitment: any;
+  export let combinationOptions: { name: string; id: string, provider: string, receiver: string, quantity: number }[] = [];
   export let process: any[];
   export let independentDemands: any[]
   export let nonProcessCommitments: any[]
 
   const agentsQuery = query(GET_ALL_AGENTS);
   const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
+  const processSpecificationsQuery = query(GET_ALL_PROCESS_SPECIFICATIONS);
   const unitsQuery = query(GET_ALL_UNITS);
 
   let agents: any[] = [];
@@ -33,6 +36,11 @@
     resourceSpecifications = res.data?.resourceSpecifications?.edges?.map(edge => edge.node) || [];
   })
 
+  let processSpecifications: any[] = [];
+  processSpecificationsQuery.subscribe((res) => {
+    processSpecifications = res.data?.processSpecifications?.edges?.map(edge => edge.node) || [];
+  })
+
   let units: any[] = [];
   unitsQuery.subscribe((res) => {
     units = res.data?.units?.edges?.map(edge => edge.node) || [];
@@ -40,8 +48,16 @@
   
   const dispatch = createEventDispatcher();
   
-  let name = ''
-  let note = ''
+  let selectedCombinations: Object[] = [];
+  // Add selected commitment to selectedCombinations if it is not already there
+  $: if (selectedCommitmentId) {
+    if (!selectedCombinations.some(c => c.id === selectedCommitmentId)) {
+      const selectedCombination = combinationOptions.find(c => c.id === selectedCommitmentId);
+      if (selectedCombination) {
+        selectedCombinations = [...selectedCombinations, selectedCombination];
+      }
+    }
+  }
   
   function checkKey(e: any) {
     if (e.key === 'Escape' && !e.shiftKey) {
@@ -84,8 +100,14 @@
   $: provider = selectedEvent?.providerId ? agents.find(a => a.id == selectedEvent?.providerId) : selectedEvent?.provider
   $: receiver = selectedEvent?.receiverId ? agents.find(a => a.id == selectedEvent?.receiverId) : selectedEvent?.receiver
   $: resourceSectionIsValid = newInventoriedResource.name && newInventoriedResource.stage
-  $: eventSectionIsValid = newEvent?.providerId && newEvent?.receiverId && newEvent?.resourceConformsTo && newEvent?.action && newEvent?.resourceQuantity?.hasNumericalValue && newEvent?.resourceQuantity?.hasUnitId
-  $: isValid = eventSectionIsValid && (!raiseOnly || resourceSectionIsValid)
+  $: selectedEventSectionIsValid = selectedEvent?.provider?.id && selectedEvent?.receiver?.id && selectedEvent?.resourceConformsTo && selectedEvent?.action && selectedEvent?.resourceQuantity?.hasNumericalValue && selectedEvent?.resourceQuantity?.hasUnit?.id
+  $: newEeventSectionIsValid = newEvent?.providerId && newEvent?.receiverId && newEvent?.resourceConformsTo && newEvent?.action && newEvent?.resourceQuantity?.hasNumericalValue && newEvent?.resourceQuantity?.hasUnitId
+  $: isValid = (selectedEventSectionIsValid || newEeventSectionIsValid) && (!raiseOnly || resourceSectionIsValid) && (selectedCombinations.length > 0 || !selectedCommitmentId)
+
+  $: if (newEvent) {
+    console.log("newEvent", newEvent)
+    console.log("provider", provider)
+  }
 
   onMount(async() => {
     window.addEventListener('keydown', checkKey)
@@ -176,6 +198,53 @@
             <!-- <div id="outer" class="mt-4 grid grid-cols-2 gap-4"> -->
              <div id="outer" >
               <div id="left">
+                {#if combinationOptions?.length > 1}
+                  <div class="mt-4 text-left">
+                    <div>
+                      <!-- list of combinationOptions, multiple selectable for selectedCombinations -->
+                      <label
+                        for="combinationOptions"
+                        class="block text-sm font-medium leading-6 text-gray-900"
+                        >Combine events from {combinationOptions[0]?.provider} to {combinationOptions[0]?.receiver}?</label
+                      >
+                        <div class="mt-2">
+                          <ul class="mt-2">
+                            {#each combinationOptions as option}
+                              <li class="flex items-center mb-2">
+                                <input
+                                  type="checkbox"
+                                  id={"combination-" + option.id}
+                                  value={option.id}
+                                  checked={selectedCombinations.some(c => c.id === option.id)}
+                                  disabled={option.id === selectedCommitmentId}
+                                  on:change={(e) => {
+                                    if (option.id === selectedCommitmentId) {
+                                      e.target.checked = true
+                                      return; // prevent self from being unchecked
+                                    }
+                                    if (e.target.checked) {
+                                      const selected = combinationOptions.find(o => o.id === option.id);
+                                      if (selected && !selectedCombinations.some(c => c.id === option.id)) {
+                                        selectedCombinations = [...selectedCombinations, selected];
+                                      }
+                                    } else {
+                                      selectedCombinations = selectedCombinations.filter(c => c.id !== option.id);
+                                    }
+                                    // update quantity of selectedEvent
+                                    selectedEvent.resourceQuantity.hasNumericalValue = selectedCombinations.reduce((sum, c) => sum + (c.quantity || 0), 0);
+                                    console.log("selectedCombinations", selectedCombinations, selectedEvent.resourceQuantity.hasNumericalValue);
+                                    
+                                  }}
+                                  class="mr-2"
+                                />
+                                <label for={"combination-" + option.id} class="text-gray-900">{option.name}</label>
+                              </li>
+                            {/each}
+                          </ul>
+                        </div>
+                    </div>
+                  </div>
+                  {/if}
                   <div class="mt-4 text-left">
                     <div>
                       <label
@@ -188,7 +257,7 @@
                           id="provider"
                           name="provider"
                           class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          value={selectedEvent.providerId}
+                          value={provider?.id}
                           on:change={(e) => {
                             let id = e.target.value
                             let selectedAgent = agents.find((rs) => rs.id === id)
@@ -203,6 +272,7 @@
                           }}
 
                           >
+                          <option value=""></option>
                           {#each agents as agent}
                             <option value={agent.id}>{agent.name}</option>
                           {/each}
@@ -226,6 +296,7 @@
                             console.log(newEvent)
                           }}
                           >
+                          <option value=""></option>
                           {#each agents as agent}
                             <option value={agent.id}>{agent.name}</option>
                           {/each}
@@ -241,13 +312,8 @@
                         class="block text-sm font-medium leading-6 text-gray-900"
                         >Receiver</label
                       >
-                      {#if selectedEvent?.id && selectedEvent.receiverId}
-                        <!-- <p>{selectedEvent.receiver.name}</p> -->
-                        {#each agents as agent}
-                          {#if agent.id == selectedEvent.receiverId}
-                            {agent.name}
-                          {/if}
-                        {/each}
+                      {#if selectedEvent?.id && selectedEvent.receiver?.id}
+                        <p>{selectedEvent.receiver.name}</p>
                       {:else if selectedEvent?.id && agents}
                         <select
                           id="receiver"
@@ -267,6 +333,7 @@
                             }
                           }}
                           >
+                          <option value=""></option>
                           {#each agents as agent}
                             <option value={agent.id}>{agent.name}</option>
                           {/each}
@@ -289,6 +356,7 @@
                             }
                           }}
                           >
+                          <option value=""></option>
                           {#each agents as agent}
                             <option value={agent.id}>{agent.name}</option>
                           {/each}
@@ -311,19 +379,23 @@
                           id="defaultUnitOfResource"
                           name="defaultUnitOfResource"
                           class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          value={newEvent.resourceConformsTo.name}
+                          value={newEvent.resourceConformsTo.id}
                             on:change={(e) => {
                               console.log(e.target.value)
-                              const rspec = resourceSpecifications.find((rs) => rs.name === e.target.value)
-                              newEvent.resourceConformsTo.defaultUnitOfResource = rspec.defaultUnitOfResource
+                              const rspec = resourceSpecifications.find((rs) => rs.id === e.target.value)
+                              newEvent.resourceConformsTo = {
+                                ...newEvent.resourceConformsTo,
+                                defaultUnitOfResource: rspec.defaultUnitOfResource,
+                              }
                               newEvent.resourceConformsTo = rspec
                               newInventoriedResource.name = rspec.name
                               newInventoriedResource.conformsTo = rspec
                               newInventoriedResource.image = rspec.image
+                              console.log("newEvent.resourceConformsTo", newEvent.resourceConformsTo)
                             }}
                           >
                           {#each resourceSpecifications as rs}
-                            <option value={rs.name}>{rs.name}</option>
+                            <option value={rs.id}>{rs.name}</option>
                           {/each}
                         </select>
                       {/if}
@@ -367,31 +439,31 @@
                       <div class="relative mt-2 rounded-md shadow-sm w-5/6">
                       {#if selectedEvent?.resourceQuantity}
                         <input
-                        type="number"
-                        name="quantity"
-                        id="quantity"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        placeholder=""
-                        value={selectedEvent.resourceQuantity
-                          .hasNumericalValue}
-                          on:change={(e) => {
-                            selectedEvent.resourceQuantity.hasNumericalValue = Number(e.target.value)
-                          }}
-                        required
-                        aria-invalid="true"
-                        aria-describedby="name-error"
+                          type="number"
+                          name="quantity"
+                          id="quantity"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                          placeholder=""
+                          value={selectedEvent.resourceQuantity
+                            .hasNumericalValue}
+                            on:change={(e) => {
+                              selectedEvent.resourceQuantity.hasNumericalValue = Number(e.target.value)
+                            }}
+                          required
+                          aria-invalid="true"
+                          aria-describedby="name-error"
                         />
                       {:else}
                         <input
-                        type="number"
-                        name="quantity"
-                        id="quantity"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        placeholder=""
-                        bind:value={newEvent.resourceQuantity.hasNumericalValue}
-                        required
-                        aria-invalid="true"
-                        aria-describedby="name-error"
+                          type="number"
+                          name="quantity"
+                          id="quantity"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                          placeholder=""
+                          bind:value={newEvent.resourceQuantity.hasNumericalValue}
+                          required
+                          aria-invalid="true"
+                          aria-describedby="name-error"
                         />
                       {/if}
                       </div>
@@ -404,11 +476,6 @@
                       >
                       {#if selectedEvent?.id && selectedEvent?.resourceQuantity}
                         <p>{selectedEvent?.resourceQuantity.hasUnit.label}</p>
-                        <!-- {#each units as unit}
-                          {#if unit.id == selectedEvent?.resourceQuantity?.hasUnitId}
-                            {unit.label}
-                          {/if}
-                        {/each} -->
                       {:else}
                         <select
                           id="unit"
@@ -441,7 +508,10 @@
                             name="note"
                             rows="3"
                             class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            bind:value={selectedEvent.note}
+                            value={selectedEvent.note || ''}
+                            on:input={(e) => {
+                              selectedEvent.note = e.target.value
+                            }}
                           />
                         {:else}
                           <textarea
@@ -540,7 +610,7 @@
                                 newInventoriedResource.stage = e.target.value
                               }}
                               >
-                              {#each $allProcessSpecifications as pSpec}
+                              {#each processSpecifications as pSpec}
                                 <option value={pSpec?.id}>{pSpec?.name}</option>
                               {/each}
                             </select>
@@ -596,46 +666,49 @@
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           {#if selectedCommitmentId}
           <button
-          type="button"
-          class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-          on:click={() => {
-            console.log("selected commitment", selectedEvent)
-            let newEvent = {...selectedEvent}
-            if (!selectedEvent.provider) {
-              newEvent.provider = newEvent.provider
-            }
-            if (!selectedEvent.providerId) {
-              newEvent.providerId = newEvent.providerId
-            }
-            if (!selectedEvent.receiver) {
-              newEvent.receiver = newEvent.receiver
-            }
-            if (!selectedEvent.resourceConformsTo) {
-              newEvent.resourceConformsTo = newEvent.resourceConformsTo
-            }
-            if (!selectedEvent.resourceQuantity) {
-              newEvent.resourceQuantity = newEvent.resourceQuantity
-            }
-            if (!selectedEvent.action) {
-              newEvent.action = newEvent.action
-            }
-            if (!selectedEvent.note) {
-              newEvent.note = newEvent.note
-            }
+            type="button"
+            class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+            disabled={!isValid}
+            on:click={() => {
+              console.log("selected commitment", selectedEvent)
+              let newEvent = {...selectedEvent}
+              if (!selectedEvent.provider) {
+                newEvent.provider = newEvent.provider
+              }
+              if (!selectedEvent.providerId) {
+                newEvent.providerId = newEvent.providerId
+              }
+              if (!selectedEvent.receiver) {
+                newEvent.receiver = newEvent.receiver
+              }
+              if (!selectedEvent.resourceConformsTo) {
+                newEvent.resourceConformsTo = newEvent.resourceConformsTo
+              }
+              if (!selectedEvent.resourceQuantity) {
+                newEvent.resourceQuantity = newEvent.resourceQuantity
+              }
+              if (!selectedEvent.action) {
+                newEvent.action = newEvent.action
+              }
+              if (!selectedEvent.note) {
+                newEvent.note = newEvent.note
+              }
 
-            // newEvent.finished = selectedEvent.finished
-            console.log("selected commitment2 ", selectedEvent)
+              // newEvent.finished = selectedEvent.finished
+              console.log("selected commitment2 ", selectedEvent)
 
-            dispatch('submit', {
-              column: commitmentModalColumn,
-              process: commitmentModalProcess,
-              side: commitmentModalSide,
-              event: newEvent,
-              useAs: 'update'
-            });
-            open = false;
-          }}
-          >Add Event</button>
+              dispatch('submit', {
+                column: commitmentModalColumn,
+                process: commitmentModalProcess,
+                side: commitmentModalSide,
+                event: newEvent,
+                fulfills: selectedCombinations.map(c => c.id),
+                useAs: 'update'
+              });
+              open = false;
+            }}
+          >Add Events
+        </button>
           {:else}
           <button
             type="button"
@@ -651,6 +724,7 @@
                 event: {
                   ...newEvent,
                 },
+                fulfills: selectedCombinations.map(c => c.id),
                 useAs: 'new'
               });
               open = false
@@ -670,3 +744,11 @@
     </div>
   </div>
 </div>
+
+
+<style>
+  input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    color: #d1d5db;
+  }
+</style>

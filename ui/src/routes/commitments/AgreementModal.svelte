@@ -2,13 +2,41 @@
     import { clickOutside } from '../../utils'
     import { onMount } from 'svelte'
     import { createEventDispatcher } from 'svelte';
-    import type { AgentConnection, Agent, UnitConnection, Action } from '@valueflows/vf-graphql'
-    import { allAgents, allUnits, allResourceSpecifications, allActions } from '../../crud/store';
     import { cloneDeep } from "lodash"
+    import { GET_ALL_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES, GET_ALL_UNITS, GET_ALL_ACTIONS, GET_ALL_AGENTS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_AGREEMENTS } from '../../crud/fetch';
+    import { query } from 'svelte-apollo';
+
     export let open = false
     export let agreement: any;
     export let commitment: any;
     export let reciprocalCommitment: any;
+
+    const agreementsQuery = query(GET_ALL_AGREEMENTS);
+    const unitsQuery = query(GET_ALL_UNITS);
+    const actionsQuery = query(GET_ALL_ACTIONS);
+    const agentsQuery = query(GET_ALL_AGENTS);
+    const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
+
+    let units: any = [];
+    unitsQuery.subscribe(value => {
+    units = value.data?.units?.edges.map(edge => edge.node) || [];
+    });
+
+    let actions: any = [];
+    actionsQuery.subscribe(value => {
+    actions = value.data?.actions || [];
+    console.log('actions', value)
+    });
+
+    let agents: any = [];
+    agentsQuery.subscribe(value => {
+    agents = value.data?.agents?.edges.map(edge => edge.node) || [];
+    });
+
+    let resourceSpecifications: any = [];
+    resourceSpecificationsQuery.subscribe(value => {
+    resourceSpecifications = value.data?.resourceSpecifications?.edges.map(edge => edge.node) || [];
+    });
 
     const dispatch = createEventDispatcher()
 
@@ -174,7 +202,7 @@
                                         }}
                                     >
                                         <option value={undefined}></option>
-                                        {#each $allAgents as agent}
+                                        {#each agents as agent}
                                             <option value={agent.id}>{agent.name}</option>
                                         {/each}
                                     </select>
@@ -196,11 +224,11 @@
                                         on:change={(e) => {
                                             commitment.resourceConformsTo.id = e.target.value
                                             // change unit
-                                            commitment.resourceQuantity.hasUnit.id = $allResourceSpecifications.find(rs => rs.id === e.target.value).defaultUnitOfResource.id
+                                            commitment.resourceQuantity.hasUnit.id = resourceSpecifications.find(rs => rs.id === e.target.value).defaultUnitOfResource.id
                                         }}
                                     >
                                         <option value={undefined}></option>
-                                        {#each $allResourceSpecifications as resourceSpecification}
+                                        {#each resourceSpecifications as resourceSpecification}
                                             <option value={resourceSpecification.id}>{resourceSpecification.name}</option>
                                         {/each}
                                     </select>
@@ -223,7 +251,7 @@
                                         }}
                                     >
                                         <option value={undefined}></option>
-                                        {#each $allActions as action}
+                                        {#each actions as action}
                                             <option value={action.id}>{action.label}</option>
                                         {/each}
                                     </select>
@@ -270,7 +298,7 @@
                                         }}
                                     >
                                         <option value={undefined}></option>
-                                        {#each $allUnits as unit}
+                                        {#each units as unit}
                                             <option value={unit.id}>{unit.label}</option>
                                         {/each}
                                     </select>
@@ -300,7 +328,7 @@
                                 }}
                             >
                                 <option value={undefined}></option>
-                                {#each $allAgents as agent}
+                                {#each agents as agent}
                                     <option value={agent.id}>{agent.name}</option>
                                 {/each}
                             </select>
@@ -322,11 +350,11 @@
                                 on:change={(e) => {
                                     reciprocalCommitment.resourceConformsTo.id = e.target.value
                                     // change unit
-                                    reciprocalCommitment.resourceQuantity.hasUnit.id = $allResourceSpecifications.find(rs => rs.id === e.target.value).defaultUnitOfResource.id
+                                    reciprocalCommitment.resourceQuantity.hasUnit.id = resourceSpecifications.find(rs => rs.id === e.target.value).defaultUnitOfResource.id
                                 }}
                             >
                                 <option value={undefined}></option>
-                                {#each $allResourceSpecifications as resourceSpecification}
+                                {#each resourceSpecifications as resourceSpecification}
                                     <option value={resourceSpecification.id}>{resourceSpecification.name}</option>
                                 {/each}
                             </select>
@@ -349,7 +377,7 @@
                                 }}
                             >
                                 <option value={undefined}></option>
-                                {#each $allActions as action}
+                                {#each actions as action}
                                     <option value={action.id}>{action.label}</option>
                                 {/each}
                             </select>
@@ -397,7 +425,7 @@
                                 }}
                             >
                                 <option value={undefined}></option>
-                                {#each $allUnits as unit}
+                                {#each units as unit}
                                     <option value={unit.id}>{unit.label}</option>
                                 {/each}
                             </select>

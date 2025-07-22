@@ -11,7 +11,7 @@
   import Export from "$lib/Export.svelte"
   import { dragscroll } from '@svelte-put/dragscroll';
   // import { getAllActions, getAllAgents, getAllProcessSpecifications, getAllEconomicEvents, getAllProposals, getAllResourceSpecifications, getAllUnits, getAllEconomicResources, getProcess, getAllRecipes } from '../../../../crud/fetch'
-  import { createEconomicEvent, createFulfillment, createEconomicEventWithResource, updateCommitment, createCommitment, createAgreement, deleteCommitment, deleteAgreement } from '../../../../crud/commit'
+  import { createEconomicEvent, createEconomicEventWithResource, updateCommitment, createCommitment, createAgreement, deleteCommitment, deleteAgreement } from '../../../../crud/commit'
   // import { allActions, allAgents, allUnits, allResourceSpecifications, allFulfillments, allProcessSpecifications, allProposals, allEconomicResources, allEconomicEvents } from '../../../../crud/store'
   import Loading from '$lib/Loading.svelte'
   import PlanForwardModal from './PlanForwardModal.svelte'
@@ -53,6 +53,7 @@
   let requestsPerOffer: { [key: string]: any } = {}
   // let requests: Proposal[] = [];
   // let offers: Proposal[] = [];
+  let combinationOptions: { name: string; id: string }[] = [];
   let proposalsList: Proposal[] = []
   let plan: any;
   let loadingPlan: boolean = true;
@@ -1050,13 +1051,14 @@ bind:open={economicEventModalOpen}
   {agents}
   {resourceSpecifications}
   {processSpecifications}
+  {combinationOptions}
   process = {currentProcess}
   bind:independentDemands={independentDemands}
   bind:nonProcessCommitments
   on:submit={async (event) => {
     let extractedEvent = event.detail.event
     console.log("economic event: ", extractedEvent)
-    await saveEconomicEvent(extractedEvent, selectedProcessId, commitmentModalSide, [selectedCommitmentId])
+    await saveEconomicEvent(extractedEvent, selectedProcessId, commitmentModalSide, event.detail.fulfills)
 
     if (extractedEvent?.finished) {
       // actually save commitment
@@ -1586,6 +1588,7 @@ bind:open={economicEventModalOpen}
                   {deleteAgreement}
                   {sumEconomicEventsFromFulfillments}
                   {updateColumns}
+                  bind:combinationOptions
                   bind:fetching
                   bind:commitmentModalOpen
                   bind:commitmentModalProcess
@@ -1676,6 +1679,7 @@ bind:open={economicEventModalOpen}
                   {deleteAgreement}
                   {sumEconomicEventsFromFulfillments}
                   {updateColumns}
+                  bind:combinationOptions
                   bind:fetching
                   bind:commitmentModalOpen
                   bind:commitmentModalProcess
@@ -1746,6 +1750,7 @@ bind:open={economicEventModalOpen}
                     {deleteAgreement}
                     {sumEconomicEventsFromFulfillments}
                     {updateColumns}
+                    bind:combinationOptions
                     bind:fetching
                     bind:commitmentModalOpen
                     bind:commitmentModalProcess

@@ -807,11 +807,7 @@ generate columns
                   <p>
                     {action.label}
                     {resourceQuantity?.hasNumericalValue}
-                    {#each units as unit}
-                      {#if unit.id == resourceConformsTo?.defaultUnitOfResource?.id || unit.id == resourceConformsTo?.defaultUnitOfResourceId}
-                        {unit.label}
-                      {/if}
-                    {/each}
+                    {resourceQuantity?.hasUnit?.label}
                   </p>
                   <p>to {receiver?.name}</p>
                 </div>

@@ -3,7 +3,6 @@ import { Intent } from '@valueflows/vf-graphql'
 import { Decimal } from 'decimal.js'
 
 export function matchingOffer(commitment: any, offers: any[]) {
-  console.log("looking for matching offer", commitment, offers)
   return offers.find(offer => {
     return offer?.publishes?.find(
       (intent: Intent) => {
@@ -23,11 +22,8 @@ export function makeAgreement(
   agents: any[] | undefined
 ): undefined | any {
   // console.log("reciprocal_clause", recipe)
-  console.log("makeAgreement", commitment, recipe, offers, agents)
   const reciprocal_clause = recipe?.recipeReciprocalClauses?.[0]
   const matching_offer = matchingOffer(commitment, offers)
-
-  console.log("matching offer", matching_offer)
 
   if (matching_offer) {
     // console.log("matching offer", matching_offer)

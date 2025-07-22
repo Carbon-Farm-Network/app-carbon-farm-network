@@ -12,6 +12,7 @@
     export let processIndex;
     export let allColumns;
     export let processes;
+    export let combinationOptions: { name: string; id: string; provider: string; receiver: string; quantity: number }[] = [];
     // export let planId;
     // export let agents;
     // export let economicResources;
@@ -76,31 +77,22 @@
 
     <div class="flex justify-between" style="flex-direction: column">
         <p>
-            {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
             {action.label}
             <strong>
                 {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                {#each units as unit}
-                    {#if unit.id?.split(":")[0] == resourceQuantity.hasUnitId?.split(":")[0]}
-                        {unit.label}
-                    {/if}
-                {/each}
+                {resourceQuantity?.hasUnit?.label}
             </strong>
-            {/if}
         </p>
 
+        {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
         <p>
             events
             <strong>
-                {#if true && fulfilledBy && fulfilledBy.length > 0 && fulfilledBy[0].id}
-                    {sumEconomicEventsFromFulfillments(fulfilledBy)} 
-                    {resourceQuantity?.hasUnit?.label}
-                {:else}
-                    {new Decimal(resourceQuantity?.hasNumericalValue).toString()}
-                    {resourceQuantity?.hasUnit?.label}
-                {/if}
+                {sumEconomicEventsFromFulfillments(fulfilledBy)}
+                {resourceQuantity?.hasUnit?.label}
             </strong>
-        </p>
+            </p>
+        {/if}
     </div>
     {#if carryOverInfo?.fromInventory > 0 && side == "committedInputs"}
         <p style="white-space: pre-wrap; word-wrap: break-word; color: green; font-weight: bold; background-color: #e0ffe0; padding: 2px 4px; border-radius: 4px; display: inline-block;">
@@ -241,6 +233,34 @@
                 currentProcess = allColumns[commitmentModalColumn]?.[commitmentModalProcess]?.[commitmentModalSide] ? [...allColumns[commitmentModalColumn]?.[commitmentModalProcess]?.[commitmentModalSide]] : []
             }
             economicEventModalOpen = true
+
+            let similarCommitments = []
+            if (columnIndex && process[side]) {
+                similarCommitments = allColumns?.[columnIndex]?.map(process => process[side]).flat()
+                .filter(it => it.provider?.id == commitment.provider?.id && it.receiver?.id == commitment.receiver?.id && it.resourceConformsTo?.id == commitment.resourceConformsTo?.id)
+                console.log("similarCommitments", similarCommitments)
+            } else {
+                similarCommitments = [{
+                    id: commitment.id,
+                    resourceConformsTo: commitment.resourceConformsTo,
+                    provider: commitment.provider,
+                    receiver: commitment.receiver,
+                    resourceQuantity: commitment.resourceQuantity,
+                }]
+            }
+            let formattedSimilarCommitments = similarCommitments.map(it => {
+                const primaryCommitmentName = it?.resourceQuantity?.hasNumericalValue
+                + " " + it?.resourceConformsTo?.name
+                return {
+                    name: primaryCommitmentName,
+                    id: it?.id,
+                    provider: it?.provider?.name,
+                    receiver: it?.receiver?.name,
+                    quantity: it?.resourceQuantity?.hasNumericalValue,
+                }
+            })
+            console.log("formattedSimilarCommitments", formattedSimilarCommitments)
+            combinationOptions = formattedSimilarCommitments
         }}
         >
         <EconomicEvent/>
@@ -335,14 +355,43 @@
             <button
                 style="margin-left: 20px;"
                 on:click={() => {
-                commitmentModalProcess = undefined//processIndex
-                commitmentModalColumn = undefined//columnIndex
-                commitmentModalSide = undefined//side
-                selectedCommitmentId = clause?.id
-                selectedProcessId = undefined//processes[processIndex]?.id
-                currentProcess = undefined//[...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
-                selectedCommitment = cloneDeep(clause)
-                economicEventModalOpen = true
+                    commitmentModalProcess = undefined//processIndex
+                    commitmentModalColumn = undefined//columnIndex
+                    commitmentModalSide = undefined//side
+                    selectedCommitmentId = clause?.id
+                    selectedProcessId = undefined//processes[processIndex]?.id
+                    currentProcess = undefined//[...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
+                    selectedCommitment = cloneDeep(clause)
+
+                    let formattedSimilarCommitments = []
+                    if (columnIndex && process[side]) {
+                        const similarCommitments = allColumns?.[columnIndex]?.map(process => process[side]).flat()
+                        .filter(it => it.provider?.id == clause?.receiver?.id && it.receiver?.id == clause?.provider?.id)
+                        formattedSimilarCommitments = similarCommitments.map(it => {
+                            const recipCommitment = it.clauseOf?.commitments?.find(c => c.action.label == "transfer" && c.receiver.id == it.provider.id && c.provider.id == it.receiver.id && c.resourceConformsTo.id == clause.resourceConformsTo.id)
+                            const recipCommitmentName = recipCommitment?.resourceQuantity?.hasNumericalValue 
+                            + " " + recipCommitment?.resourceConformsTo?.name
+                            + " for " + it.resourceConformsTo?.name
+                            return {
+                                name: recipCommitmentName,
+                                id: recipCommitment?.id,
+                                provider: it?.receiver?.name,
+                                receiver: it?.provider?.name,
+                                quantity: recipCommitment?.resourceQuantity?.hasNumericalValue,
+                            }
+                        })
+                    } else {
+                        formattedSimilarCommitments = [{
+                            name: clause?.resourceQuantity?.hasNumericalValue + " " + clause?.resourceConformsTo?.name,
+                            id: clause?.id,
+                            provider: clause?.receiver?.name,
+                            receiver: clause?.provider?.name,
+                            quantity: clause?.resourceQuantity?.hasNumericalValue,
+                        }]
+                    }
+                    combinationOptions = formattedSimilarCommitments.filter(it => it.id)
+
+                    economicEventModalOpen = true
                 }}
             >
                 <EconomicEvent />

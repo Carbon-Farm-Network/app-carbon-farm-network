@@ -271,10 +271,6 @@ const CREATE_ECONOMIC_EVENT_WITH_RESOURCE = gql`
       economicEvent {
         id
       }
-      economicResource {
-        id
-        stageId
-      }
     }
   }
 `
@@ -284,7 +280,6 @@ const UPDATE_ECONOMIC_RESOURCE = gql`
     updateEconomicResource(resource: $resource) {
       economicResource {
         id
-        stageId
       }
     }
   }
@@ -543,6 +538,10 @@ function savePrep(obj: any, update = false) {
       for (const subKey in obj[key]) {
         if (obj[key][subKey] && typeof obj[key][subKey] === 'object' && obj[key][subKey].id) {
           obj[key][subKey] = obj[key][subKey].id;
+        } else if (obj[key][subKey] === undefined || obj[key][subKey] === null) {
+          delete obj[key][subKey]; // remove undefined or null subfields
+        } else if (subKey.endsWith('Id')) {
+          delete obj[key][subKey]; // remove subfields that end with 'Id'
         }
       }
       delete obj[key].meta; // remove meta if exists
@@ -556,6 +555,7 @@ function savePrep(obj: any, update = false) {
 }
 
 export const createUnit = async (unit: any) => {
+  unit = savePrep(unit);
   const res = await client.mutate({
     mutation: ADD_UNIT,
     variables: {
@@ -568,6 +568,7 @@ export const createUnit = async (unit: any) => {
 }
 
 export const updateUnit = async (unit: any) => {
+  unit = savePrep(unit, true);
   const res = await client.mutate({
     mutation: UPDATE_UNIT,
     variables: {
@@ -648,8 +649,7 @@ export const deleteFacetValue = async (revisionId: string) => {
 }
 
 export const createProcessSpecification = async (processSpecification: ProcessSpecificationCreateParams) => {
-  // delete processSpecification.image
-  // delete processSpecification.note
+  processSpecification = savePrep(processSpecification);
   console.log('createProcessSpecification', processSpecification)
   const res = await client.mutate({
     mutation: ADD_PROCESS_SPECIFICATION,
@@ -661,6 +661,7 @@ export const createProcessSpecification = async (processSpecification: ProcessSp
 };
 
 export const updateProcessSpecification = async (process: any) => {
+  process = savePrep(process, true);
   const res = await client.mutate({
     mutation: UPDATE_PROCESS_SPECIFICATION,
     variables: {
@@ -680,8 +681,7 @@ export const deleteProcessSpecification = async (revisionId: string) => {
 };
 
 export const createResourceSpecification = async (resource: any) => {
-  delete resource.id
-  delete resource.revisionId
+  resource = savePrep(resource);
   const res = await client.mutate({
     mutation: ADD_RESOURCE_SPECIFICATION,
     variables: {
@@ -715,6 +715,7 @@ export const associateResourceSpecificationAndFacetValue = async (identifier: st
 }
 
 export const updateResourceSpecification = async (resource: any) => {
+  resource = savePrep(resource, true);
   const res = await client.mutate({
     mutation: UPDATE_RESOURCE_SPECIFICATION,
     variables: {
@@ -734,6 +735,7 @@ export const deleteResourceSpecification = async (revisionId: string) => {
 };
 
 export const createAgent = async (agent: OrganizationCreateParams) => {
+  agent = savePrep(agent);
   const res = await client.mutate({
     mutation: ADD_AGENT,
     variables: {
@@ -744,6 +746,7 @@ export const createAgent = async (agent: OrganizationCreateParams) => {
 };
 
 export const updateAgent = async (agent: OrganizationUpdateParams) => {
+  agent = savePrep(agent, true);
   const res = await client.mutate({
     mutation: UPDATE_AGENT,
     variables: {
@@ -813,7 +816,13 @@ export const createEconomicEventWithResource = async (event: EconomicEventCreate
   delete event.revisionId
   delete event.clauseOf
   delete event.fulfilledBy
+  delete event.finished
+
+  // TODO: handle stage properly
+  delete newInventoriedResource.stage
+
   event = savePrep(event);
+  newInventoriedResource = savePrep(newInventoriedResource);
   console.log('createEconomicEventWithResource', event, newInventoriedResource)
   const res = await client.mutate({
     mutation: CREATE_ECONOMIC_EVENT_WITH_RESOURCE,
@@ -822,10 +831,21 @@ export const createEconomicEventWithResource = async (event: EconomicEventCreate
       newInventoriedResource
     }
   })
-  return res.data.createEconomicEvent.economicResource as EconomicResourceUpdateParams;
+  console.log("res", res)
+  return []
+  // return res.data.createEconomicEvent.economicEvent as EconomicEvent;
 }
 
 export const updateEconomicResource = async (resource: EconomicResourceUpdateParams) => {
+  resource = {
+    revisionId: resource.revisionId,
+    classifiedAs: resource.classifiedAs,
+    image: resource.image,
+    imageList: resource.imageList,
+    containedIn: resource.containedIn,
+    unitOfEffort: resource.unitOfEffort,
+    note: resource.note,
+  }
   console.log('updateEconomicResource', resource)
   const res = await client.mutate({
     mutation: UPDATE_ECONOMIC_RESOURCE,
@@ -833,24 +853,15 @@ export const updateEconomicResource = async (resource: EconomicResourceUpdatePar
       resource
     }
   })
+  console.log("==-=-=Updated economic resource=-=-==", res.data.updateEconomicResource.economicResource?.id)
   return res.data.updateEconomicResource.economicResource as EconomicResourceUpdateParams;
 }
 
-export const createFulfillment = async (fulfillment: any) => {
-  return await client.mutate({
-    mutation: CREATE_FULFILLMENT,
-    variables: {
-      fulfillment
-    }
-  })
-}
-
 export const updateCommitment = async (commitment: CommitmentUpdateParams) => {
+  commitment = savePrep(commitment, true);
+  delete commitment.fulfilledBy
+  delete commitment.action
   console.log("==-=-=Updating commitment=-=-==", commitment?.resourceConformsTo)
-  delete commitment.id
-  commitment.inputOf = commitment.inputOf?.id || commitment.inputOf
-  commitment.outputOf = commitment.outputOf?.id || commitment.outputOf
-
   const res = await client.mutate({
     mutation: UPDATE_COMMITMENT,
     variables: {
@@ -904,6 +915,7 @@ export const createCommitment = async (commitment: CommitmentCreateParams) => {
   if (commitment.action?.id) {
     commitment.action = commitment.action.id;
   }
+  commitment = savePrep(commitment);
   console.log("Attempting to create commitment", commitment)
   const res = await client.mutate({
     mutation: CREATE_COMMITMENT,
@@ -932,6 +944,7 @@ export const createCommitment = async (commitment: CommitmentCreateParams) => {
 }
 
 export const createAgreement = async (ag: any) => {
+  ag = savePrep(ag);
   let res = await client.mutate({
     mutation: CREATE_AGREEMENT,
     variables: {
@@ -964,6 +977,7 @@ export const deleteAgreement = async (revisionId: string) => {
 }
 
 export const updateAgreement = async (ag: any) => {
+  ag = savePrep(ag, true);
   let res = await client.mutate({
     mutation: UPDATE_AGREEMENT,
     variables: {
@@ -974,6 +988,7 @@ export const updateAgreement = async (ag: any) => {
 }
 
 export const createPlan = async (plan: any) => {
+  plan = savePrep(plan);
   console.log('createPlan', plan)
   const res = await client.mutate({
     mutation: CREATE_PLAN,
@@ -986,6 +1001,7 @@ export const createPlan = async (plan: any) => {
 }
 
 export const updatePlan = async (plan: any) => {
+  plan = savePrep(plan, true);
   return await client.mutate({
     mutation: UPDATE_PLAN,
     variables: {
@@ -1004,6 +1020,7 @@ export const deletePlan = async (revisionId: string) => {
 }
 
 export const createProcess = async (process: any) => {
+  process = savePrep(process);
   console.log('createProcess', process)
   const res = await client.mutate({
     mutation: CREATE_PROCESS,
@@ -1016,6 +1033,7 @@ export const createProcess = async (process: any) => {
 }
 
 export const updateProcess = async (process: any) => {
+  process = savePrep(process, true);
   return await client.mutate({
     mutation: UPDATE_PROCESS,
     variables: {
@@ -1034,6 +1052,7 @@ export const deleteProcess = async (revisionId: string) => {
 }
 
 export const createRecipeFlow = async (recipeFlow: RecipeFlowCreateParams) => {
+  recipeFlow = savePrep(recipeFlow);
   console.log('createRecipeFlow', recipeFlow)
   const res = await client.mutate({
     mutation: CREATE_RECIPE_FLOW,
@@ -1068,6 +1087,7 @@ export const deleteRecipeFlow = async (revisionId: string) => {
 }
 
 export const createRecipeProcess = async (recipeProcess: RecipeProcessCreateParams) => {
+  recipeProcess = savePrep(recipeProcess);
   console.log('createRecipeProcess', recipeProcess)
   return await client.mutate({
     mutation: CREATE_RECIPE_PROCESS,
@@ -1078,7 +1098,7 @@ export const createRecipeProcess = async (recipeProcess: RecipeProcessCreatePara
 }
 
 export const updateRecipeProcess = async (recipeProcess: any) => {
-  delete recipeProcess.id
+  recipeProcess = savePrep(recipeProcess, true);
   return await client.mutate({
     mutation: UPDATE_RECIPE_PROCESS,
     variables: {
@@ -1097,6 +1117,7 @@ export const deleteRecipeProcess = async (revisionId: string) => {
 }
 
 export const createRecipeExchange = async (recipeExchange: any) => {
+  recipeExchange = savePrep(recipeExchange);
   return await client.mutate({
     mutation: CREATE_RECIPE_EXCHANGE,
     variables: {
@@ -1106,6 +1127,7 @@ export const createRecipeExchange = async (recipeExchange: any) => {
 }
 
 export const updateRecipeExchange = async (recipeExchange: any) => {
+  recipeExchange = savePrep(recipeExchange, true);
   return await client.mutate({
     mutation: UPDATE_RECIPE_EXCHANGE,
     variables: {
@@ -1124,6 +1146,7 @@ export const deleteRecipeExchange = async (revisionId: string) => {
 }
 
 export const createProposal = async (proposal: any) => {
+  proposal = savePrep(proposal);
   console.log('createProposal', proposal)
   const res = await client.mutate({
     mutation: CREATE_PROPOSAL,
@@ -1136,6 +1159,9 @@ export const createProposal = async (proposal: any) => {
 }
 
 export const updateProposal = async (proposal: any) => {
+  proposal = savePrep(proposal, true);
+
+  console.log('updateProposal', proposal)
   return await client.mutate({
     mutation: UPDATE_PROPOSAL,
     variables: {
@@ -1154,6 +1180,7 @@ export const deleteProposal = async (revisionId: string) => {
 }
 
 export const createIntent = async (intent: IntentCreateParams) => {
+  intent = savePrep(intent);
   return await client.mutate({
     mutation: CREATE_INTENT,
     variables: {
@@ -1163,6 +1190,7 @@ export const createIntent = async (intent: IntentCreateParams) => {
 }
 
 export const updateIntent = async (intent: any) => {
+  intent = savePrep(intent, true);
   return await client.mutate({
     mutation: UPDATE_INTENT,
     variables: {

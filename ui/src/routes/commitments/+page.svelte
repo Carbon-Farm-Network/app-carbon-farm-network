@@ -5,33 +5,40 @@ import AgreementModal from "./AgreementModal.svelte";
 import SvgIcon from "$lib/SvgIcon.svelte";
 import { getAllCommitments, getAllUnits, getAllAgreements, getAllActions, getAllAgents, getAllResourceSpecifications } from "../../crud/fetch";
 import { createCommitment, createAgreement, updateCommitment, updateAgreement, deleteCommitment, deleteAgreement } from "../../crud/commit";
-import { allCommitments, allUnits, allAgreements, allActions, allAgents, allResourceSpecifications } from "../../crud/store";
 import { cloneDeep } from "lodash";
 import { onMount } from "svelte";
+import { GET_ALL_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES, GET_ALL_UNITS, GET_ALL_ACTIONS, GET_ALL_AGENTS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_AGREEMENTS } from '../../crud/fetch';
+import { query } from 'svelte-apollo';
+
+const agreementsQuery = query(GET_ALL_AGREEMENTS);
+const unitsQuery = query(GET_ALL_UNITS);
+const actionsQuery = query(GET_ALL_ACTIONS);
+const agentsQuery = query(GET_ALL_AGENTS);
+const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
 
 let units: any = [];
-allUnits.subscribe(value => {
-  units = value;
+unitsQuery.subscribe(value => {
+  units = value.data?.units?.edges.map(edge => edge.node) || [];
 });
 
 let actions: any = [];
-allActions.subscribe(value => {
-  actions = value;
+actionsQuery.subscribe(value => {
+  actions = value.data?.actions || [];
 });
 
 let agents: any = [];
-allAgents.subscribe(value => {
-  agents = value;
+agentsQuery.subscribe(value => {
+  agents = value.data?.agents?.edges.map(edge => edge.node) || [];
 });
 
 let resourceSpecifications: any = [];
-allResourceSpecifications.subscribe(value => {
-  resourceSpecifications = value;
+resourceSpecificationsQuery.subscribe(value => {
+  resourceSpecifications = value.data?.resourceSpecifications?.edges.map(edge => edge.node) || [];
 });
 
 let agreements: any = [];
-allAgreements.subscribe(value => {
-  agreements = value;
+agreementsQuery.subscribe(value => {
+  agreements = value.data?.agreements?.edges.map(edge => edge.node).reverse() || [];
 });
 
 // let commitments: Commitment[] = [];
@@ -48,30 +55,16 @@ let currentReciprocalCommitment: any;
 
 async function refresh() {
   fetching = true;
-  await getAllAgreements();
+  await unitsQuery.refetch();
+  await actionsQuery.refetch();
+  await agentsQuery.refetch();
+  await resourceSpecificationsQuery.refetch();
+  await agreementsQuery.refetch();
   fetching = false;
 }
 
 onMount(async () => {
-  loading = agreements.length === 0;
-  console.log("loading", agreements.length, loading);
-
-  let functions = [
-    { array: actions, func: getAllActions },
-    { array: units, func: getAllUnits },
-    { array: agents, func: getAllAgents },
-    { array: resourceSpecifications, func: getAllResourceSpecifications },
-  ];
-
-  for (let item of functions) {
-    if (item.array.length === 0) {
-      await item.func();
-    }
-  }
-
-  await getAllAgreements();
-  console.log("agreements", agreements);
-  loading = false;
+  refresh();
 });
 </script>
 

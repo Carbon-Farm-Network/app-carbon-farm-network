@@ -6,34 +6,40 @@
   import { onMount } from 'svelte'
   import { goto } from '$app/navigation'
   import { page } from '$app/stores';
-  import { allRecipeExchanges, allProcessSpecifications, allActions, allUnits, allResourceSpecifications } from '../../../../crud/store'
-  import { getAllRecipeExchanges, getAllProcessSpecifications, getAllActions, getAllResourceSpecifications, getAllUnits } from '../../../../crud/fetch'
+  import { GET_ALL_RECIPE_EXCHANGES, GET_ALL_UNITS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_PROCESS_SPECIFICATIONS, GET_ALL_ACTIONS } from '../../../../crud/fetch'
+  import { query } from 'svelte-apollo'
   import { deleteRecipeFlow } from '../../../../crud/commit'
   import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@valueflows/vf-graphql'
 
+  const allRecipeExchanges = query(GET_ALL_RECIPE_EXCHANGES)
+  const allUnits = query(GET_ALL_UNITS)
+  const allResourceSpecifications = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+  const allProcessSpecifications = query(GET_ALL_PROCESS_SPECIFICATIONS)
+  const allActions = query(GET_ALL_ACTIONS)
+
   let recipeExchanges: any[] = []
   allRecipeExchanges.subscribe(value => {
-    recipeExchanges = value
+    recipeExchanges = value.data?.recipeExchanges?.edges.map(edge => edge.node).reverse() || []
   })
 
   let units: any[] = []
   allUnits.subscribe(value => {
-    units = value
+    units = value.data?.units?.edges.map(edge => edge.node) || []
   })
 
   let resourceSpecifications: any[] = []
   allResourceSpecifications.subscribe(value => {
-    resourceSpecifications = value
+    resourceSpecifications = value.data?.resourceSpecifications?.edges.map(edge => edge.node) || []
   })
 
   let processSpecifications: any[] = []
   allProcessSpecifications.subscribe(value => {
-    processSpecifications = value
+    processSpecifications = value.data?.processSpecifications?.edges.map(edge => edge.node) || []
   })
 
   let actions: any[] = []
   allActions.subscribe(value => {
-    actions = value
+    actions = value.data?.actions || []
   })
 
   let recipeExchangeId = ''
@@ -68,21 +74,15 @@
 
   $: recipeExchange = recipeExchanges?.find(it => it.id === recipeExchangeId)
 
+  async function refresh() {
+    await allRecipeExchanges.refetch()
+    await allUnits.refetch()
+    await allResourceSpecifications.refetch()
+    await allProcessSpecifications.refetch()
+    await allActions.refetch()
+  }
   onMount(async () => {
-    let functions = [
-      { array: units, func: getAllUnits },
-      { array: resourceSpecifications, func: getAllResourceSpecifications },
-      { array: actions, func: getAllActions },
-      { array: processSpecifications, func: getAllProcessSpecifications },
-      { array: recipeExchanges, func: getAllRecipeExchanges },
-    ];
-
-    for (let item of functions) {
-      if (item.array.length === 0) {
-        await item.func();
-      }
-    }
-    
+    refresh()
     console.log('recipe exchanges', recipeExchanges)
   })
 </script>
@@ -92,7 +92,7 @@
 <!-- </div> -->
 
 <RecipeExchangeModal bind:open={recipeExchangeModalOpen} recipeExchange={currentRecipeExchange} />
-<RecipeFlowModal bind:open={recipeFlowModalOpen} recipeFlow={currentRecipeFlow} {processSpecifications} on:save={(e) => getAllRecipeExchanges()} />
+<RecipeFlowModal bind:open={recipeFlowModalOpen} recipeFlow={currentRecipeFlow} {processSpecifications} on:save={(e) => refresh()} />
 <div class="grid grid-cols-3 gap-3">
   <div class="p-12">
     <div class="sm:flex sm:items-center">
@@ -178,7 +178,7 @@
                         let prompt = confirm('Are you sure you want to delete this input?')
                         if (prompt) {
                           await deleteRecipeFlow(thisRecipeFlow?.revisionId)
-                          await getAllRecipeExchanges()
+                          await refresh()
                         }
                       }}
                     >

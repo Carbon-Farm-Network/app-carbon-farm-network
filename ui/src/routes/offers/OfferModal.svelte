@@ -195,7 +195,7 @@
 
     let proposal = currentProposal
     delete proposal.id
-    proposal.hasBeginning = new Date(proposal.hasBeginning).getTime()
+    proposal.hasBeginning = new Date(proposal.hasBeginning).getTime() * 1000
     proposal.publishes = [res.data.updateIntent.intent.id]
     proposal.reciprocal = [res2.data.updateIntent.intent.id]
     console.log("proposal before changes:", proposal)

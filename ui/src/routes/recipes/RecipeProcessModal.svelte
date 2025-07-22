@@ -1,9 +1,12 @@
 <script lang="ts">
   import { clickOutside } from '../../utils'
   import { onMount } from 'svelte';
-  import { createRecipeProcess, updateRecipeProcess } from '../../crud/commit'
-  import { getAllRecipes } from '../../crud/fetch'
   import { goto } from '$app/navigation'
+  import { createRecipeProcess, updateRecipeProcess } from '../../crud/commit'
+  import { getAllRecipes, GET_ALL_RECIPES } from '../../crud/fetch'
+  import { query } from 'svelte-apollo'
+
+  const allRecipes = query(GET_ALL_RECIPES)
 
   // public CustomElement attributes
   export let open = false
@@ -142,8 +145,8 @@
                 console.log("recipe process 1", recipeProcess)
                 const res = await updateRecipeProcess(recipeProcess)
                 console.log("recipe process 2", res)
+                allRecipes.refetch()
                 open = false
-                getAllRecipes()
               }}
             >
               Update
@@ -158,8 +161,7 @@
                 const res = await createRecipeProcess(recipeProcess)
                 console.log("recipe process 2", res)
                 open = false
-                // goto(`/recipes/edit/${encodeURIComponent(res.data.createRecipeProcess.recipeProcess.id)}`)
-                goto(`/recipes/edit/${encodeURIComponent(res.id)}`)
+                goto(`/recipes/edit/${encodeURIComponent(res.data.createRecipeProcess.recipeProcess.id)}`)
               }}
             >
               Create

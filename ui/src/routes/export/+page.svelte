@@ -2,17 +2,83 @@
     import { onMount } from 'svelte';
     import Header from '$lib/Header.svelte';
     import Loading from '$lib/Loading.svelte';
-    import { allFacets, allFacetValues, allFacetGroups, allActions, allUnits, allAgents, allProcessSpecifications, allProposals, allResourceSpecifications, allRecipes, allRecipeExchanges, fullPlans, allHashChanges } from '../../crud/store';
+    import { allFacetGroups, allHashChanges } from '../../crud/store';
+    // import { allFacets, allFacetValues, allFacetGroups, allActions, allUnits, allAgents, allProcessSpecifications, allProposals, allResourceSpecifications, allRecipes, allRecipeExchanges, fullPlans, allHashChanges } from '../../crud/store';
     import { getAllActions, getAllAgents, getAllAgreements, getAllFacetGroups, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits, getAllFullPlans, getAllHashChanges } from '../../crud/fetch';
     import { importUnits, importFacets, importAgents, importProcessSpecifications, importPlan, importResourceSpecifications, importProposals, importRecipes, importRecipeExchanges } from '../../crud/import';
     import { goto } from '$app/navigation';
     import { get } from 'svelte/store';
     import JSZip from 'jszip';
     import { saveAs } from 'file-saver';
-    import { GET_ALL_RESOURCE_SPECIFICATIONS } from '../../crud/fetch';
+    import { GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_AGENTS, 
+        GET_ALL_FULL_PLANS, GET_ALL_PROCESS_SPECIFICATIONS, GET_ALL_RECIPES, 
+        GET_ALL_RECIPE_EXCHANGES, GET_ALL_UNITS, GET_All_PROPOSALS, GET_ALL_ECONOMIC_EVENTS } from '../../crud/fetch';
     import { query } from 'svelte-apollo';
-    
+
+    async function waitForQuery(query: any) {
+        return new Promise(async (resolve) => {
+            query.subscribe(async value => {
+                if (!query.loading) {
+                    resolve(value);
+                }
+            });
+        });
+    }
+
+    let allUnits: any[] = [];
+    const unitsQuery = query(GET_ALL_UNITS);
+    unitsQuery.subscribe(value => {
+        allUnits = value.data?.units?.edges.map(edge => edge.node) || [];
+    });
+
+    let allAgents: any[] = [];
+    const agentsQuery = query(GET_ALL_AGENTS);
+    agentsQuery.subscribe(value => {
+        allAgents = value.data?.agents?.edges.map(edge => edge.node) || [];
+    });
+
+    let allProcessSpecifications: any[] = [];
+    const processSpecificationsQuery = query(GET_ALL_PROCESS_SPECIFICATIONS);
+    processSpecificationsQuery.subscribe(value => {
+        allProcessSpecifications = value.data?.processSpecifications?.edges.map(edge => edge.node) || [];
+    });
+
+    let allResourceSpecifications: any[] = [];
     const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
+    resourceSpecificationsQuery.subscribe(value => {
+        allResourceSpecifications = value.data?.resourceSpecifications?.edges.map(edge => edge.node) || [];
+    });
+
+    let allProposals: any[] = [];
+    const proposalsQuery = query(GET_All_PROPOSALS);
+    proposalsQuery.subscribe(value => {
+        allProposals = value.data?.proposals?.edges.map(edge => edge.node) || [];
+    });
+
+    let allRecipes: any[] = [];
+    const recipesQuery = query(GET_ALL_RECIPES);
+    recipesQuery.subscribe(value => {
+        allRecipes = value.data?.recipeProcesses?.edges.map(edge => edge.node) || [];
+    });
+
+    let allRecipeExchanges: any[] = [];
+    const recipeExchangesQuery = query(GET_ALL_RECIPE_EXCHANGES);
+    recipeExchangesQuery.subscribe(value => {
+        allRecipeExchanges = value.data?.recipeExchanges?.edges.map(edge => edge.node) || [];
+    });
+
+    let fullPlans: any[] = [];
+    const fullPlansQuery = query(GET_ALL_FULL_PLANS);
+    fullPlansQuery.subscribe(value => {
+        fullPlans = value.data?.plans?.edges.map(edge => edge.node) || [];
+    });
+
+    let allEvents: any[] = [];
+    const eventsQuery = query(GET_ALL_ECONOMIC_EVENTS);
+    eventsQuery.subscribe(value => {
+        allEvents = value.data?.economicEvents?.edges.map(edge => edge.node) || [];
+    });
+    
     $: dollars = resourceSpecificationsQuery.loading ? null : resourceSpecificationsQuery.data?.resourceSpecifications.edges.find(edge => edge.node.name === 'USD')?.node;
     
     let importing = false;
@@ -35,6 +101,7 @@
         {name: 'Recipes', store: allRecipes},
         {name: 'Recipe Exchanges', store: allRecipeExchanges},
         {name: 'Plans', store: fullPlans},
+        {name: 'Events', store: allEvents},
     ]
 
     let hashChanges: any = {}
@@ -67,8 +134,9 @@
         if (selectedExportTypes.includes('Units')) {
             status = 'Retrieving units...';
             try {
-                await getAllUnits();
-                zip.file('units.json', JSON.stringify(get(allUnits)));
+                await unitsQuery.refetch();
+                await waitForQuery(unitsQuery);
+                zip.file('units.json', JSON.stringify(allUnits));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -78,8 +146,9 @@
         if (selectedExportTypes.includes('Agents')) {
             status = 'Retrieving agents...';
             try {
-                await getAllAgents();
-                zip.file('agents.json', JSON.stringify(get(allAgents)));
+                await agentsQuery.refetch();
+                await waitForQuery(agentsQuery);
+                zip.file('agents.json', JSON.stringify(allAgents));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -89,8 +158,9 @@
         if (selectedExportTypes.includes('Process Specifications')) {
             status = 'Retrieving process specifications...';
             try {
-                await getAllProcessSpecifications();
-                zip.file('processSpecifications.json', JSON.stringify(get(allProcessSpecifications)));
+                await processSpecificationsQuery.refetch();
+                await waitForQuery(processSpecificationsQuery);
+                zip.file('processSpecifications.json', JSON.stringify(allProcessSpecifications));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -100,8 +170,9 @@
         if (selectedExportTypes.includes('Resource Specifications')) {
             status = 'Retrieving resource specifications...';
             try {
-                await getAllResourceSpecifications();
-                zip.file('resourceSpecifications.json', JSON.stringify(get(allResourceSpecifications)));
+                await resourceSpecificationsQuery.refetch();
+                await waitForQuery(resourceSpecificationsQuery);
+                zip.file('resourceSpecifications.json', JSON.stringify(allResourceSpecifications));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -111,8 +182,9 @@
         if (selectedExportTypes.includes('Offers & Requests')) {
             status = 'Retrieving proposals...';
             try {
-                await getAllProposals();
-                zip.file('proposals.json', JSON.stringify(get(allProposals)));
+                await proposalsQuery.refetch();
+                await waitForQuery(proposalsQuery);
+                zip.file('proposals.json', JSON.stringify(allProposals));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -122,8 +194,9 @@
         if (selectedExportTypes.includes('Recipes')) {
             status = 'Retrieving recipes...';
             try {
-                await getAllRecipes();
-                zip.file('recipes.json', JSON.stringify(get(allRecipes)));
+                await recipesQuery.refetch();
+                await waitForQuery(recipesQuery);
+                zip.file('recipes.json', JSON.stringify(allRecipes));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -133,8 +206,9 @@
         if (selectedExportTypes.includes('Recipe Exchanges')) {
             status = 'Retrieving recipe exchanges...';
             try {
-                await getAllRecipeExchanges();
-                zip.file('recipeExchanges.json', JSON.stringify(get(allRecipeExchanges)));
+                await recipeExchangesQuery.refetch();
+                await waitForQuery(recipeExchangesQuery);
+                zip.file('recipeExchanges.json', JSON.stringify(allRecipeExchanges));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);
@@ -144,8 +218,21 @@
         if (selectedExportTypes.includes('Plans')) {
             status = 'Retrieving plans...';
             try {
-                await getAllFullPlans();
-                zip.file('plans.json', JSON.stringify(get(fullPlans)));
+                await fullPlansQuery.refetch();
+                await waitForQuery(fullPlansQuery);
+                zip.file('plans.json', JSON.stringify(fullPlans));
+            } catch (e) {
+                console.error(e);
+                error = JSON.stringify(e);
+            }
+        }
+
+        if (selectedExportTypes.includes('Events')) {
+            status = 'Retrieving events...';
+            try {
+                await eventsQuery.refetch();
+                await waitForQuery(eventsQuery);
+                zip.file('economicEvents.json', JSON.stringify(allEvents));
             } catch (e) {
                 console.error(e);
                 error = JSON.stringify(e);

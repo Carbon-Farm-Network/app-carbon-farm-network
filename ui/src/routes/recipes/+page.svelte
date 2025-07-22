@@ -4,26 +4,24 @@
   import Header from '$lib/Header.svelte'
   import Loading from '$lib/Loading.svelte';
   import { goto } from '$app/navigation'
-  import { allRecipes, allProcessSpecifications, allHashChanges } from '../../crud/store'
-  import { getAllProcessSpecifications, getAllRecipes, getAllHashChanges, getAllResourceSpecifications } from '../../crud/fetch';
+  import { GET_ALL_RECIPES, GET_ALL_PROCESS_SPECIFICATIONS } from '../../crud/fetch';
+  import { query } from 'svelte-apollo';
   import { deleteRecipeProcess, deleteRecipeFlow, addHashChange, createRecipeProcess, createRecipeFlow } from '../../crud/commit';
   import RecipeProcessModal from './RecipeProcessModal.svelte'
   import Export from '$lib/Export.svelte';
   import SvgIcon from '$lib/SvgIcon.svelte';
 
-  let hashChanges: any = {}
-  allHashChanges.subscribe((res) => {
-    hashChanges = res
-  })
+  const allRecipes = query(GET_ALL_RECIPES)
+  const allProcessSpecifications = query(GET_ALL_PROCESS_SPECIFICATIONS)
 
   let recipes: any[] = []
   allRecipes.subscribe(value => {
-    recipes = value
+    recipes = value.data?.recipeProcesses?.edges.map(edge => edge.node).reverse() || []
   })
 
   let processSpecifications: any[] = []
   allProcessSpecifications.subscribe(value => {
-    processSpecifications = value
+    processSpecifications = value.data?.processSpecifications?.edges.map(edge => edge.node) || []
   })
 
   let recipeProcessModalOpen = false
@@ -42,18 +40,15 @@
 
   async function refresh() {
     fetching = true
-    await getAllProcessSpecifications()
-    await getAllResourceSpecifications()
-    await getAllRecipes()
+    await allRecipes.refetch()
+    await allProcessSpecifications.refetch()
     fetching = false
   }
 
   onMount(async () => {
     loading = recipes.length === 0 || processSpecifications.length === 0
     if (loading) {
-      await getAllProcessSpecifications()
-      await getAllResourceSpecifications()
-      await getAllRecipes()
+      await refresh()
       console.log('recipes', recipes)
       console.log('processSpecifications', processSpecifications)
       loading = false
@@ -194,7 +189,7 @@
                       for (let recipeOutput of recipeOutputs) {
                         await deleteRecipeFlow(recipeOutput.id)
                       }
-                      await getAllRecipes()
+                      await refresh()
                     }}
                   >
                     Delete</button

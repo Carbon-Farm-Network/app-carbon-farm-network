@@ -167,7 +167,7 @@ export async function importProposals(data: any, dollars?: any) {
   
     // Assign the correct values to the reciprocal intent
     let reciprocalIntent = data[i]?.publishes?.find(({ reciprocal }) => !!reciprocal)?.publishes//?.[0]
-    console.log("00000000000000000000000))))))))))) reciprocalIntent", reciprocalIntent, data[i]?.publishes)
+    console.log("reciprocalIntent", reciprocalIntent, data[i]?.publishes)
     if (reciprocalIntent) {
       // delete revisionId and typename from intent
       delete reciprocalIntent?.revisionId

@@ -7,17 +7,18 @@
     import EconomicEventModal from './EconomicEventModal.svelte';
     import Export from '$lib/Export.svelte';
     import { createEconomicEvent, createEconomicEventWithResource } from '../../crud/commit'
-    import { GET_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES } from '../../crud/fetch';
+    import { GET_ALL_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES } from '../../crud/fetch';
     import EconomicEvent from '$lib/icons/EconomicEvent.svelte'
     import Loading from '$lib/Loading.svelte';
     import SvgIcon from '$lib/SvgIcon.svelte';
     import { query } from 'svelte-apollo';
 
-    const economicEventsQuery = query(GET_ECONOMIC_EVENTS);
+    const economicEventsQuery = query(GET_ALL_ECONOMIC_EVENTS);
     const economicResourcesQuery = query(GET_ALL_ECONOMIC_RESOURCES);
 
     let economicResources: EconomicResource[] = [];
     economicResourcesQuery.subscribe(res => {
+      console.log('economicResourcesQuery', res);
       economicResources = res?.data?.economicResources.edges.map(edge => edge.node) || [];
       console.log('economicResources', economicResources);
     });
@@ -78,7 +79,7 @@
 
       console.log(economicEventCreateInput, pickupFromOtherAgent, produce, consume, economicResources)
 
-      console.log("resourceConformsTo", economicEvent.resourceConformsTo.id)
+      console.log("resourceConformsTo", economicEvent.resourceConformsTo.id, pickupFromOtherAgent, produce, consume);
       if (pickupFromOtherAgent || produce || consume) {
         let matchingResource = economicResources.find(it => it.conformsTo?.id == economicEvent.resourceConformsTo.id)
         console.log("matching resource", matchingResource)

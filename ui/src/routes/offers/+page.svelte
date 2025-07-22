@@ -303,9 +303,9 @@
             {#if $proposalsQuery.loading}
               <tr><td colspan="6"><Loading /></td></tr>
             {:else}
-              {@const offersList = $proposalsQuery.data?.proposals.edges.map((edge) => edge.node) ?? []}
+              {@const offersList = $proposalsQuery.data?.proposals.edges.map((edge) => edge.node).reverse() ?? []}
               <!-- ${JSON.stringify(offersList)} -->
-              {#each offersList as p, index}
+              {#each offersList as p, index (p.revisionId)}
                 {@const mainIntent = p.publishes[0]}
                 <!-- {JSON.stringify(mainIntent)} -->
                 {#if mainIntent && mainIntent.provider?.name}
@@ -344,15 +344,19 @@
                     >
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <input
-                        on:change={(e) => {
+                        on:change={async (e) => {
+                          const currentTime = new Date(Date.now()).getTime() * 1000;
+                          console.log('currentTime', currentTime, 'hasEnd', p.hasEnd, 'e.target.checked', e.target.checked)
+                          
                           let proposal = {
                             id: p.id,
                             revisionId: p.revisionId,
-                            hasBeginning: p.hasBeginning,
-                            hasEnd: e.target.checked ? null : new Date(),
+                            hasBeginning: new Date(p.hasBeginning).getTime(),
+                            hasEnd: e.target.checked ? currentTime + 1000000 * 60 * 60 * 24 * 365 * 10 : currentTime,
+                            publishes: p.publishes.map(i => i.id)
                           };
 
-                          updateProposal(proposal);
+                          await updateProposal(proposal);
 
                           refresh();
                         }}
@@ -360,7 +364,7 @@
                         aria-describedby="candidates-description"
                         name="candidates"
                         type="checkbox"
-                        checked={!p.hasEnd || (new Date() < p.hasEnd)}
+                        checked={!p.hasEnd || (new Date(p.hasEnd).getTime() > Date.now())}
                         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                       />
                     </td>

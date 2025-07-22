@@ -180,7 +180,7 @@ query {
 }
 `
 
-export const GET_All_ACTIONS = gql`
+export const GET_ALL_ACTIONS = gql`
 query {
   actions(last: 100000) {
     id
@@ -190,7 +190,7 @@ query {
 }
 `
 
-export const GET_AGREEMENTS = gql`
+export const GET_ALL_AGREEMENTS = gql`
 ${AGREEMENT_CORE_FIELDS}
 query {
   agreements(last: 100000) {
@@ -287,7 +287,7 @@ query GetProcess($id: ID!) {
 }
 `
 
-export const GET_ECONOMIC_EVENTS = gql`
+export const GET_ALL_ECONOMIC_EVENTS = gql`
 ${ECONOMIC_EVENT_RETURN_FIELDS}
 query {
   economicEvents(last: 100000) {
@@ -492,7 +492,7 @@ export const getAllProposals = async () => {
 
 export const getAllActions = async () => {
   let res = await client.query({
-    query: GET_All_ACTIONS,
+    query: GET_ALL_ACTIONS,
     fetchPolicy: 'no-cache'
   })
   setActions(res.data.actions)
@@ -510,7 +510,7 @@ export const getAllCommitments = async () => {
 
 export const getAllAgreements = async () => {
   const res = await client.query({
-    query: GET_AGREEMENTS,
+    query: GET_ALL_AGREEMENTS,
     fetchPolicy: 'no-cache'
   })
   setAgreements(res.data.agreements.edges.map((edge: any) => edge.node))
@@ -519,7 +519,7 @@ export const getAllAgreements = async () => {
 
 export const getAllEconomicEvents = async () => {
   const res = await client.query({
-    query: GET_ECONOMIC_EVENTS,
+    query: GET_ALL_ECONOMIC_EVENTS,
     fetchPolicy: 'no-cache'
   })
   setEconomicEvents(res.data.economicEvents.edges.map((edge: any) => edge.node))

@@ -1,7 +1,10 @@
 <script lang="ts">
   import { clickOutside } from '../utils'
-  import { allActions, allResourceSpecifications, allUnits, allRoles } from '../crud/store';
   import { createRecipeFlow, updateRecipeFlow } from '../crud/commit';
+  import { allRoles } from '../crud/store';
+  import { getAllAgents } from '../crud/fetch';
+  import { GET_ALL_UNITS, GET_ALL_ACTIONS, GET_ALL_RESOURCE_SPECIFICATIONS } from '../crud/fetch';
+  import { query } from 'svelte-apollo';
   import { onMount } from 'svelte';
   import type { RecipeFlowCreateParams, RecipeFlowUpdateParams } from '@valueflows/vf-graphql'
   import { getAllRecipes } from '../crud/fetch';
@@ -15,19 +18,24 @@
   export let open = false
   export let recipeFlow: RecipeFlowCreateParams | RecipeFlowUpdateParams;
 
+  const allUnits = query(GET_ALL_UNITS)
+  const allActions = query(GET_ALL_ACTIONS)
+  const allResourceSpecifications = query(GET_ALL_RESOURCE_SPECIFICATIONS)
+
   let units: any[] = []
   allUnits.subscribe(value => {
-    units = value
+    units = value.data?.units?.edges.map(edge => edge.node) || []
   })
 
   let actions: any[] = []
   allActions.subscribe(value => {
-    actions = value
+    console.log("actions", value)
+    actions = value.data?.actions || [];
   })
 
   let resourceSpecifications: any[] = []
   allResourceSpecifications.subscribe(value => {
-    resourceSpecifications = value
+    resourceSpecifications = value.data?.resourceSpecifications?.edges.map(edge => edge.node) || [];
   })
 
   let roles: any = allRoles
@@ -58,6 +66,10 @@
   $: validToSave = recipeFlow.resourceQuantity && Number(recipeFlow.resourceQuantity.hasNumericalValue) > 0 && recipeFlow.resourceQuantity.hasUnit != '' && recipeFlow.resourceConformsTo != '' && recipeFlow.action != '';
 
   onMount(async () => {
+    allUnits.refetch();
+    allActions.refetch();
+    allResourceSpecifications.refetch();
+    getAllAgents()
     window.addEventListener("keydown", checkKey);
   })
 </script>
@@ -337,7 +349,7 @@
                     }
                   }}
                 >
-                  {#each $allUnits as unit}
+                  {#each units as unit}
                     <option value={unit.id}>{unit.label}</option>
                   {/each}
                 </select>

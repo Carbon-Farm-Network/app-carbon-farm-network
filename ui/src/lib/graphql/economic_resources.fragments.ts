@@ -9,11 +9,18 @@ export const ECONOMIC_RESOURCE_RETURN_FIELDS = gql`
     conformsTo {
       id
     }
-    stageId
+    stage {
+      id
+      name
+    }
     trackingIdentifier
     accountingQuantity {
       hasNumericalValue
-      hasUnitId
+      hasUnit {
+        id
+        label
+        symbol
+      }
     }
   }   
 `

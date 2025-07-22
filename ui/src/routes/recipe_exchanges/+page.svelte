@@ -4,16 +4,18 @@
   import Header from '$lib/Header.svelte'
   import Loading from '$lib/Loading.svelte';
   import { goto } from '$app/navigation'
-  import { allRecipeExchanges } from '../../crud/store'
-  import { getAllRecipeExchanges, getAllProcessSpecifications, getAllResourceSpecifications } from '../../crud/fetch';
+  import { GET_ALL_RECIPES, GET_ALL_PROCESS_SPECIFICATIONS, GET_ALL_RECIPE_EXCHANGES } from '../../crud/fetch';
+  import { query } from 'svelte-apollo';
   import { deleteRecipeExchange, deleteRecipeFlow } from '../../crud/commit';
   import RecipeExchangeModal from './RecipeExchangeModal.svelte'
   import Export from '$lib/Export.svelte';
   import SvgIcon from '$lib/SvgIcon.svelte';
 
+  const allRecipeExchanges = query(GET_ALL_RECIPE_EXCHANGES)
+
   let recipeExchanges: any[] = []
   allRecipeExchanges.subscribe(value => {
-    recipeExchanges = value
+    recipeExchanges = value.data?.recipeExchanges?.edges.map(edge => edge.node).reverse() || []
   })
 
   let recipeExchangeModalOpen = false
@@ -29,18 +31,14 @@
 
   async function refresh() {
     fetching = true
-    await getAllProcessSpecifications()
-    await getAllResourceSpecifications()
-    await getAllRecipeExchanges()
+    await allRecipeExchanges.refetch()
     fetching = false
   }
 
   onMount(async () => {
     loading = recipeExchanges.length === 0
     if (loading) {
-      await getAllProcessSpecifications()
-      await getAllResourceSpecifications()
-      await getAllRecipeExchanges()
+      await refresh()
       console.log("recipe exchanges", recipeExchanges)
       loading = false
     }
@@ -167,7 +165,7 @@
                       for (let recipeOutput of recipeReciprocalClauses) {
                         await deleteRecipeFlow(recipeOutput.id)
                       }
-                      await getAllRecipeExchanges()
+                      await refresh()
                     }}
                   >
                     Delete</button

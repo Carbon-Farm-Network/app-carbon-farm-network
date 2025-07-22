@@ -4,7 +4,7 @@
   import { createEventDispatcher } from 'svelte';
   import type { AgentConnection, Agent, UnitConnection, Action } from '@valueflows/vf-graphql'
   import { cloneDeep } from "lodash"
-  import { GET_ALL_AGENTS, GET_ALL_UNITS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_All_ACTIONS } from '../../crud/fetch';
+  import { GET_ALL_AGENTS, GET_ALL_UNITS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_ACTIONS } from '../../crud/fetch';
   import { query } from 'svelte-apollo';
 
   export let open = false
@@ -43,7 +43,7 @@
   const agentsQuery = query(GET_ALL_AGENTS);
   const unitsQuery = query(GET_ALL_UNITS);
   const resourceSpecificationsQuery = query(GET_ALL_RESOURCE_SPECIFICATIONS);
-  const actionsQuery = query(GET_All_ACTIONS);
+  const actionsQuery = query(GET_ALL_ACTIONS);
 
   agentsQuery.subscribe((result) => {
     if (result.data) {
@@ -392,7 +392,7 @@
                 >
                 {#if selectedCommitment?.id && selectedCommitment?.resourceQuantity}
                   <!-- <p>{selectedCommitment?.resourceQuantity.hasUnit.label}</p> -->
-                  {selectedCommitment?.resourceQuantity.hasUnit.label}
+                  {selectedCommitment?.resourceQuantity.hasUnit?.label}
                 {:else}
                   <select
                     id="unit"
@@ -438,7 +438,7 @@
                 </div>
 
                 {#if !(selectedCommitment?.resourceConformsTo?.name == 'USD')} <!-- only show finished and save cost checkbox if resource is not USD -->
-                  {#if selectedCommitmentId && selectedCommitment?.finished}
+                  {#if selectedCommitmentId}
                     <div class="mt-4 flex items-center">
                       <input type="checkbox" id="finished" 
                         on:change={(e) => {

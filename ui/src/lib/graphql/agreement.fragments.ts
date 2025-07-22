@@ -37,7 +37,11 @@ export const AGREEMENT_CORE_FIELDS = gql`
           }
           resourceQuantity {
             hasNumericalValue
-            hasUnitId
+            hasUnit {
+              id
+              label
+              symbol
+            }
           }
       }
   }

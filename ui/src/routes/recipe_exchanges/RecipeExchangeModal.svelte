@@ -2,12 +2,15 @@
   import { clickOutside } from '../../utils'
   import { onMount } from 'svelte';
   import { createRecipeExchange, updateRecipeExchange } from '../../crud/commit'
-  import { getAllRecipeExchanges } from '../../crud/fetch'
+  import { GET_ALL_RECIPE_EXCHANGES } from '../../crud/fetch'
+  import { query } from 'svelte-apollo'
   import { goto } from '$app/navigation'
 
   // public CustomElement attributes
   export let open = false
   export let recipeExchange;
+
+  const allRecipeExchanges = query(GET_ALL_RECIPE_EXCHANGES)
 
   $: validToCreate = recipeExchange?.name?.length > 0
 
@@ -119,8 +122,8 @@
                 console.log("recipe exchange 1", recipeExchange)
                 const res = await updateRecipeExchange(recipeExchange)
                 console.log("recipe exchange 2", res)
+                allRecipeExchanges.refetch()
                 open = false
-                getAllRecipeExchanges()
               }}
             >
               Update
@@ -135,7 +138,7 @@
                 const res = await createRecipeExchange(recipeExchange)
                 console.log("recipe exchange 2", res)
                 open = false
-                goto(`/recipe_exchanges/edit/${encodeURIComponent(res.id)}`)//.data.createRecipeExchange.recipeExchange.id)}`)
+                goto(`/recipe_exchanges/edit/${encodeURIComponent(res.data.createRecipeExchange.recipeExchange.id)}`)
               }}
             >
               Create

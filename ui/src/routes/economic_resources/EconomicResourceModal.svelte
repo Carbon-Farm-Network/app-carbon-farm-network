@@ -19,25 +19,15 @@
 
     async function saveEconomicResource() {
       if (!note && !trackingIdentifier) {return;}
-      await updateEconomicResource({
-        id: economicResource?.id,
+      console.log("Saving Economic Resource", economicResource, note, trackingIdentifier);
+      const econUpdate = {
         revisionId: economicResource?.revisionId,
         note: note ? note : economicResource?.note,
-        accountingQuantity: {
-          has_numerical_value: economicResource?.accountingQuantity?.hasNumericalValue,
-          has_unit: economicResource?.accountingQuantity?.hasUnit?.id
-        },
-        onhandQuantity: {
-          has_numerical_value: economicResource?.onhandQuantity?.hasNumericalValue,
-          has_unit: economicResource?.onhandQuantity?.hasUnit?.id
-        },
-        conformsTo: economicResource?.conformsTo?.id,
-        name: economicResource?.name,
-        primaryAccountable: economicResource?.primaryAccountable?.id,
-        stage: economicResource?.stage?.id,
-        trackingIdentifier: trackingIdentifier ? trackingIdentifier : economicResource?.trackingIdentifier,
+        trackingIdentifier: trackingIdentifier || economicResource?.trackingIdentifier,
         updatedAt: new Date(Date.now())
-      })
+      }
+      console.log("econUpdate", econUpdate);
+      await updateEconomicResource(econUpdate)
     }
     
     function checkKey(e) {
@@ -82,14 +72,14 @@
                             class="block text-sm font-medium leading-6 text-gray-900"
                             >Name</label
                         >
-                        <!-- {economicResource?.name} -->
-                        <input
+                        {economicResource?.name}
+                        <!-- <input
                             id="name"
                             name="name"
                             class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             value={economicResource?.name}
                             on:change={(e) => economicResource.name = e.target.value}
-                        />
+                        /> -->
                     </div>
                     <div>
                       <label
@@ -102,7 +92,7 @@
                           name="note"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                           value={economicResource?.note}
-                          on:change={(e) => note = e.target.value}
+                          on:input={(e) => note = e.target.value}
                       />
                     </div>
                     <div>
@@ -119,14 +109,14 @@
                             class="block text-sm font-medium leading-6 text-gray-900"
                             >Tracking Identifier</label
                         >
-                        <!-- {economicResource?.trackingIdentifier} -->
-                        <input
+                        {economicResource?.trackingIdentifier}
+                        <!-- <input
                           id="note"
                           name="note"
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                           value={economicResource?.trackingIdentifier}
-                          on:change={(e) => trackingIdentifier = e.target.value}
-                        />
+                          on:input={(e) => trackingIdentifier = e.target.value}
+                        /> -->
                     </div>
                     <div>
                         <label
@@ -151,6 +141,7 @@
             type="button"
             on:click={async () => {
               await saveEconomicResource()
+              console.log("Economic Resource saved", economicResource)
               dispatch('submit', { economicResource })
             }}
               class="inline-flex w-full justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
