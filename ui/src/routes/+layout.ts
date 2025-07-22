@@ -42,12 +42,15 @@ export async function load() {
     }
   }
   try {
+    let conn;
     if (isWeaveContext()) {
       weClient = await WeaveClient.connect(appletServices);
       await setClientHC(weClient.renderInfo.appletClient)
-      return {
-        client: weClient.renderInfo.appletClient,
-      }
+      console.log("Weave client connected", weClient.renderInfo.appletClient)
+      conn = weClient.renderInfo.appletClient;
+      // return {
+      //   client: weClient.renderInfo.appletClient,
+      // }
     } else if (appPort) {
       console.log("adminPort is", adminPort)
       console.log("url is", url)
@@ -66,10 +69,10 @@ export async function load() {
         // await adminWebsocket.authorizeSigningCredentials(cellIds[3])
         // console.log("authorized four cells")
       }
-        console.log("authorized all cells")
-      } else {
-        console.log("no admin port")
-      }
+      console.log("authorized all cells")
+    } else {
+      console.log("no admin port")
+      console.log("Connecting to Holochain app at", url)
        
       // pull DNA config separately in order to bind to CFN-specific extension Cells
       let adminConn = await AdminWebsocket.connect({url: new URL(`ws://localhost:${adminPort}`), defaultTimeout: 999999999})
@@ -77,9 +80,11 @@ export async function load() {
         installed_app_id: appId,
       });
       let token = tokenResp.token;
-
-      const conn = await AppWebsocket.connect({url: new URL(url), token: token})
+  
+      conn = await AppWebsocket.connect({url: new URL(url), token: token})
       setClientHC(conn)
+    }
+
 
       const cache = new InMemoryCache({
         typePolicies: {
@@ -111,7 +116,7 @@ export async function load() {
 
       return {
         // client: conn,
-        client: apolloClient,
+        client: apolloClient
       }
   } catch (e) {
     console.error("Holochain connection error", e)
