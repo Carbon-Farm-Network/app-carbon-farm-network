@@ -22,6 +22,7 @@ import { RESOURCE_SPECIFICATION_CORE_FIELDS, UNIT_CORE_FIELDS } from '$lib/graph
 import { PROCESS_SPECIFICATION_CORE_FIELDS } from '$lib/graphql/process_specification.fragments'
 import { RECIPE_FLOW_CORE_FIELDS, RECIPE_PROCESS_CORE_FIELDS, RECIPE_EXCHANGE_CORE_FIELDS } from '$lib/graphql/recipe.fragments'
 import type { ProcessCreateParams } from '@valueflows/vf-graphql';
+import { query } from 'svelte-apollo';
 
 let client: any;
 clientStored.subscribe(value => {
@@ -65,6 +66,15 @@ export async function addHashChange(original: string, newHash: string) {
     addToHashChanges({ original, current: newHash })
   }
 }
+
+const GET_COMMITMENT = gql`
+${COMMITMENT_RETURN_FIELDS},
+query($id: ID!) {
+  commitment(id: $id) {
+    ...CommitmentReturnFields
+  }
+}
+`
 
 const ADD_UNIT = gql`
 ${UNIT_CORE_FIELDS},
@@ -868,6 +878,12 @@ export const updateCommitment = async (commitment: CommitmentUpdateParams) => {
       commitment
     }
   })
+
+  // const commitmentQuery = query(GET_COMMITMENT, {
+  //   variables: { id: res.data.updateCommitment.commitment.id }
+  // });
+  // const commitmentData = await commitmentQuery.refetch();
+
   console.log("==-=-=Updated commitment=-=-==", res.data.updateCommitment.commitment?.resourceConformsTo?.name)
   return res.data.updateCommitment.commitment as CommitmentUpdateParams;
 }

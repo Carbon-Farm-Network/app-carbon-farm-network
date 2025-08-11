@@ -70,10 +70,7 @@ export async function load() {
         // console.log("authorized four cells")
       }
       console.log("authorized all cells")
-    } else {
-      console.log("no admin port")
-      console.log("Connecting to Holochain app at", url)
-       
+      
       // pull DNA config separately in order to bind to CFN-specific extension Cells
       let adminConn = await AdminWebsocket.connect({url: new URL(`ws://localhost:${adminPort}`), defaultTimeout: 999999999})
       let tokenResp = await adminConn.issueAppAuthenticationToken({
@@ -82,7 +79,12 @@ export async function load() {
       let token = tokenResp.token;
   
       conn = await AppWebsocket.connect({url: new URL(url), token: token})
-      setClientHC(conn)
+      console.log("Holochain app connected", conn)
+      await setClientHC(conn)
+    } else {
+      console.log("no admin port")
+      console.log("Connecting to Holochain app at", url)
+      
     }
 
 

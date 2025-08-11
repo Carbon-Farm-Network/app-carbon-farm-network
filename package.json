@@ -41,7 +41,8 @@
     "import-hrea-local1": "cp ../hREA/dnas/hrea/workdir/hrea.dna ./workdir/hrea.dna",
     "import-hrea-local-2": "cp ../hREA/bundles/dna/hrea_combined/hrea_combined.dna ./workdir/hrea_combined.dna",
     "import-facets-local": "cp ../hc-facets/dnas/hc_facets/workdir/hc_facets.dna ./workdir/hc_facets.dna",
-    "install-hrea-npm": "rm -rf node_modules && sh ./scripts/update-hrea-modules.sh"
+    "install-hrea-npm": "rm -rf node_modules && sh ./scripts/update-hrea-modules.sh",
+    "calculate-hashes": "weave hash-webhapp workdir/acfn.webhapp"
   },
   "devDependencies": {
     "@theweave/cli": "0.14.4",

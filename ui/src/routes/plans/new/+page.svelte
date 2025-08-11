@@ -122,6 +122,9 @@ function previousColumn(column: any[]): Process[] {
       const scaledOutput = scaleOutput(input, matchingOutput);
 
       const process = buildProcess(recipe, scaledInput, scaledOutput, acc);
+
+      console.log("ajs---------------" + recipe?.name + "-------------------", scaledInput?.resourceQuantity?.hasNumericalValue, process);
+
       return [...acc.filter(p => p.id !== process.id), process];
     }, [])
     .map(runInstructions)
@@ -143,8 +146,11 @@ function buildProcess(recipe: RecipeProcess, input: Commitment, output: Commitme
     }
     return createNewProcess(recipe, [input, ...additionalInputs], [output, ...services]);
   }
-
-  const scaledInputs = scaleInputs(recipe, calculateMultiplier(input, output));
+  const test1 = calculateMultiplier(input, output);
+  const test2 = scaleInputs(recipe, test1 * (input?.resourceQuantity?.hasNumericalValue || 1));
+  console.log("ajs-2---------------" + recipe?.name + "-------------------", input?.resourceQuantity?.hasNumericalValue, output?.resourceQuantity?.hasNumericalValue, String(test1), test2[0]?.resourceQuantity?.hasNumericalValue);
+  const scaledInputs = scaleInputs(recipe, test1 * (input?.resourceQuantity?.hasNumericalValue || 1));
+  console.log("ajs-3---------------" + recipe?.name + "-------------------", input?.resourceQuantity?.hasNumericalValue, output?.resourceQuantity?.hasNumericalValue, scaledInputs);
   const additionalOutputs = getEditableOutputs(recipe, output);
   return createNewProcess(recipe, scaledInputs, [output, ...additionalOutputs]);
 }
@@ -311,6 +317,7 @@ function getNonMatchingInputs(recipe: any, exclude: any) {
 function scaleInputs(recipe: any, multiplier: Decimal) {
   return recipe.recipeInputs.map(input => {
     const { revisionId, ...rest } = assignProviderReceiver(input, agents);
+    console.log("ajs-3---------------" + recipe?.name + "-------------------", rest);
     return {
       ...rest,
       resourceQuantity: {
@@ -459,8 +466,6 @@ generate columns
   {agents}
   {resourceSpecifications}
   process = {currentProcess}
-
-  
   on:submit={(event) => {
     if (event.detail.useAs == "update") {
       if (event.detail.column == undefined) {
@@ -486,10 +491,11 @@ generate columns
         allColumns[event.detail.column][event.detail.process][event.detail.side][commitmentIndex] = updatedCommitment
       }
     } else {
-      console.log(event.detail)
+      console.log(event.detail.commitment, "commitmentModalColumn", commitmentModalColumn, "commitmentModalProcess", commitmentModalProcess, "commitmentModalSide", commitmentModalSide)
       if (event.detail.column == undefined) {
         commitments.push(event.detail.commitment)
         commitments = [...commitments]
+        console.log("commitments", commitments)
       } else {
         plan_created = true
         let exchange = findExchange(event.detail.commitment, allColumns[commitmentModalColumn][commitmentModalProcess].basedOn.name, recipeExchanges)

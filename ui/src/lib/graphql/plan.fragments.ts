@@ -60,6 +60,8 @@ export const COMMITMENT_RETURN_FIELDS = gql`
       name
       defaultUnitOfResource {
         id
+        label
+        symbol
       }
     }
     stage {
@@ -82,6 +84,8 @@ export const COMMITMENT_RETURN_FIELDS = gql`
         name
         defaultUnitOfResource {
           id
+          label
+          symbol
         }
       }
       resourceQuantity {
@@ -128,6 +132,8 @@ export const COMMITMENT_RETURN_FIELDS = gql`
             name
             defaultUnitOfResource {
               id
+              label
+              symbol
             }
           }
           resourceQuantity {
@@ -150,6 +156,8 @@ export const COMMITMENT_RETURN_FIELDS = gql`
           name
           defaultUnitOfResource {
             id
+            label
+            symbol
           }
         }
         resourceQuantity {
@@ -201,6 +209,8 @@ export const NON_PROCESS_COMMITMENT_RETURN_FIELDS = gql`
         name
         defaultUnitOfResource {
           id
+          label
+          symbol
         }
       }
       clauseOf {

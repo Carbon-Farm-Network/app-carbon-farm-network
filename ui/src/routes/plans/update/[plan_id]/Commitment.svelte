@@ -3,6 +3,8 @@
   import { json } from '@sveltejs/kit'
     import { Decimal } from 'decimal.js'
     import { cloneDeep } from 'lodash'
+  import { GET_PROCESS } from '../../../../crud/fetch'
+  import { query } from 'svelte-apollo'
     // import { getPlan } from '../../../../crud/fetch'
 
     export let getPlan;
@@ -64,6 +66,9 @@
     // $: produce = action.label == "produce"
     // $: consume = action.label == "consume"
     // $: matchingResource = economicResources.find(it => it.conformsTo?.id == resourceConformsTo?.id)
+
+    let deleting = false;
+    let deletingEvent = false;
     
 </script>
     <!-- {JSON.stringify(prevProcSpec)} -->
@@ -71,6 +76,7 @@
     <div
     class="bg-white rounded-r-full border border-gray-400 py-1 pl-2 pr-4 text-xs"
     style="background-color: {color};
+        opacity: {deleting ? 0.4 : 1};
             border-radius: 0px 60px 60px 0px;
     ">
     <strong>{resourceConformsTo?.name}</strong>
@@ -171,6 +177,7 @@
     <button
         on:click={async () => {
         // visually remove commitment
+        deleting = true
         
         // remove cost agreement if present
         let costAgreement = clauseOf
@@ -191,7 +198,12 @@
         // allColumns[columnIndex][processIndex][side] = allColumns[columnIndex][processIndex][side].filter(it => it.id != id)
         const deleteRes = await deleteCommitment(revisionId)
         console.log("deleted commitment", deleteRes)
-        await getPlan()
+
+        const processQuery = query(GET_PROCESS, {
+            variables: { id: processes[processIndex]?.id }
+        });
+        const processData = await processQuery.refetch();
+        // await getPlan()
         // if (side == "") {
         //     await getPlan(planId)
         // } else {
@@ -235,7 +247,7 @@
             economicEventModalOpen = true
 
             let similarCommitments = []
-            if (columnIndex && process[side]) {
+            if (side != "") {
                 similarCommitments = allColumns?.[columnIndex]?.map(process => process[side]).flat()
                 .filter(it => it.provider?.id == commitment.provider?.id && it.receiver?.id == commitment.receiver?.id && it.resourceConformsTo?.id == commitment.resourceConformsTo?.id)
                 console.log("similarCommitments", similarCommitments)
@@ -249,7 +261,10 @@
                 }]
             }
             let formattedSimilarCommitments = similarCommitments.map(it => {
-                const primaryCommitmentName = it?.resourceQuantity?.hasNumericalValue
+                const primaryCommitmentName = (it?.resourceQuantity?.hasNumericalValue !== undefined
+                    ? Number(it.resourceQuantity.hasNumericalValue).toFixed(2)
+                    : ""
+                )
                 + " " + it?.resourceConformsTo?.name
                 return {
                     name: primaryCommitmentName,
@@ -276,6 +291,7 @@
     <div
         class="bg-white rounded-r-full border border-gray-400 py-1 pl-8 pr-2 text-xs"
         style="background-color: {costColor};
+            opacity: {deletingEvent ? 0.4 : 1};
             border-radius: 60px 0 0 60px;
         "
         >
@@ -324,6 +340,7 @@
             <button
                 on:click={async () => {
                 // visually remove commitment
+                deletingEvent = true
                 // allColumns[columnIndex][processIndex][side] = allColumns[columnIndex][processIndex].committedOutputs.filter(it => it.id != id)
                 console.log("deleting agreement", clause?.revisionId)
                 const agreementDeleteRes = await deleteAgreement(clauseOf?.revisionId)
@@ -341,7 +358,11 @@
                 // let uc = await updateCommitment(updateC)
                 // console.log("UC", uc)
                 fetching = true
-                await getPlan()
+                // await getPlan()
+                const processQuery = query(GET_PROCESS, {
+                    variables: { id: processes[processIndex]?.id }
+                });
+                const processData = await processQuery.refetch();
                 // if (side == "") {
                 //     await getPlan(planId)
                 // } else {
@@ -362,14 +383,18 @@
                     selectedProcessId = undefined//processes[processIndex]?.id
                     currentProcess = undefined//[...allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide]]
                     selectedCommitment = cloneDeep(clause)
+                    
+                    console.log("clause", clause, selectedCommitmentId)
 
                     let formattedSimilarCommitments = []
-                    if (columnIndex && process[side]) {
+                    if (side != "") {
                         const similarCommitments = allColumns?.[columnIndex]?.map(process => process[side]).flat()
                         .filter(it => it.provider?.id == clause?.receiver?.id && it.receiver?.id == clause?.provider?.id)
                         formattedSimilarCommitments = similarCommitments.map(it => {
                             const recipCommitment = it.clauseOf?.commitments?.find(c => c.action.label == "transfer" && c.receiver.id == it.provider.id && c.provider.id == it.receiver.id && c.resourceConformsTo.id == clause.resourceConformsTo.id)
-                            const recipCommitmentName = recipCommitment?.resourceQuantity?.hasNumericalValue 
+                            const recipCommitmentName = (recipCommitment?.resourceQuantity?.hasNumericalValue !== undefined
+                                ? Number(recipCommitment.resourceQuantity.hasNumericalValue).toFixed(2)
+                                : "")
                             + " " + recipCommitment?.resourceConformsTo?.name
                             + " for " + it.resourceConformsTo?.name
                             return {
@@ -382,7 +407,7 @@
                         })
                     } else {
                         formattedSimilarCommitments = [{
-                            name: clause?.resourceQuantity?.hasNumericalValue + " " + clause?.resourceConformsTo?.name,
+                            name: (clause?.resourceQuantity?.hasNumericalValue?.toFixed?.(2) ?? clause?.resourceQuantity?.hasNumericalValue) + " " + clause?.resourceConformsTo?.name,
                             id: clause?.id,
                             provider: clause?.receiver?.name,
                             receiver: clause?.provider?.name,

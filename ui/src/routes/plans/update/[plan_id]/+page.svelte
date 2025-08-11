@@ -32,6 +32,26 @@
     // fetchPolicy: 'network-only'
   });
 
+  let processQueryVariables = { id: "" };
+  let processQuery: any = null;
+  
+  // Create process query reactively when we have a valid ID
+  $: if (processQueryVariables.id != "") {
+    processQuery = query(GET_PROCESS, {
+      variables: processQueryVariables
+      // fetchPolicy: 'network-only'
+    });
+
+    // Subscribe to processQuery to handle loading state
+    processQuery.subscribe((res) => {
+      console.log("processQuery subscription", res);
+      if (!res.loading) {
+        planQuery.getCurrentResult();
+        return;
+      }
+    });
+  }
+
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let commitmentModalProcess: number | undefined;
   let commitmentModalColumn: number | undefined;
@@ -123,73 +143,17 @@
     loadingPlan = false;
     plan = res.data?.plan;
     console.log("plan", plan, res);
-    await delay(100); // wait for the plan to be fully loaded
+    await delay(200); // wait for the plan to be fully loaded
     await buildPlan();
   });
-
-  // allEconomicResources.subscribe(value => {economicResources = value;})
-  // allEconomicEvents.subscribe(value => {economicEvents = value;})
-  // allProcessSpecifications.subscribe((res) => {processSpecifications = res})
-  // allResourceSpecifications.subscribe((res) => {resourceSpecifications = res})
-  // allUnits.subscribe((res) => {units = res})
-  // allActions.subscribe((res) => {actions = res})
-  // allFulfillments.subscribe((res) => {fulfillments = res})
-  // allRecipes.subscribe((res) => {recipes = res})
   
   async function getPlan() {
-    console.log("getPlan", $page.params.plan_id)
+    console.log("get plan", $page.params.plan_id)
     fetching = true
-    await planQuery.refetch()
-    fetching = false
+    await planQuery.refetch()     
   }
 
-  // const debouncedPlanSubscribe = debounce(async (res) => {
-  //   plan = res[$page.params.plan_id]
-  //   buildPlan()
-  // }, 100)
-
-  // fullPlans.subscribe(async(res) => {
-  //   await debouncedPlanSubscribe(res)
-  // })
-
-  // allAgents.subscribe((res) => {
-  //   agents = res.map((a) => {
-  //     return {
-  //       ...a,
-  //       "name": a.name,
-  //       "imageUrl": a.image,
-  //       "iconUrl": a.image,
-  //       "lat": a.classifiedAs[0],
-  //       "long": a.classifiedAs[1],
-  //       "role": a.classifiedAs[2],
-  //       "address": a.note,
-  //       "facets": a.facets
-  //     }
-  //   })
-  // })
-
-  // allProposals.subscribe((res) => {
-  //   console.log("proposals", res)
-  //   if (!res.length || res.length == 0) return
-  //   requests = res.filter(it => it.publishes?.find(it => it.reciprocal)?.publishes?.receiver)
-  //   offers = res.filter(it => it.publishes?.find(it => !it.reciprocal)?.publishes?.provider)
-  //   proposalsList = res
-  // })
-
   $: allColumns, commitmentModalColumn, commitmentModalProcess, commitmentModalSide, currentProcess, commitmentModalOpen, economicEventModalOpen, loadingPlan, currentProcess
-
-  // Debounce function
-  // function debounce(func, wait) {
-  //   let timeout;
-  //   return function executedFunction(...args) {
-  //     const later = () => {
-  //       clearTimeout(timeout);
-  //       func(...args);
-  //     };
-  //     clearTimeout(timeout);
-  //     timeout = setTimeout(later, wait);
-  //   };
-  // }
 
   function decrementWithRecipe(inputs: any[], recipeInputs: any[]): any[] | boolean {
     // console.log("apply recipe", inputs, recipeInputs)
@@ -643,25 +607,30 @@
         console.log("economic event res", res)
       }
 
-      fetching = true
-      fetching = false
+      // fetching = true
+       
       console.log("all economic events fetched")
       if (processId) {
         console.log("processId", processId)
         // await getProcess(processId)
         // get process query
-        const processQuery = query(GET_PROCESS, {
-          variables: { id: processId }
-        });
-        const processData = await processQuery.refetch();
-        console.log("processData", processData);
+        fetching = true
+        // const processQuery = query(GET_PROCESS, {
+        //   variables: { id: processId }
+        // });
+        processQueryVariables = { id: processId };
+        console.log("processQuery", processQuery)
+        if (processQuery) {
+          const processData = await processQuery.refetch();
+          console.log("processData", processData);
+        }
+         
         console.log("process fetched")
       } else {
         console.log("no processId, not fetching process")
         fetching = true
         await getPlan()
-        await buildPlan()
-        fetching = false
+         
         console.log("plan fetched")
       }
     } catch (e) {
@@ -671,10 +640,8 @@
 
   export async function getPlanLater() {
     fetching = true
-    // await getFulfillments()
     await getPlan()
-    // await buildPlan()
-    fetching = false
+     
   }
 
   export async function buildPlan() {
@@ -701,11 +668,11 @@
     allColumns = []
 
     try {
-      console.log("plan", plan)
+      // console.log("plan", plan)
       if (!plan) { return }
       independentDemands = plan ? [...plan.independentDemands] : []
       nonProcessCommitments = plan ? [...plan.nonProcessCommitments.filter(it => {return !(it.inputOf?.id || it.outputOf?.id)})] : []
-      console.log("nonProcessCommitments", nonProcessCommitments)
+      // console.log("nonProcessCommitments", nonProcessCommitments)
 
       // order plan.processes by meta.retrievedRevision.time
       let sortedProcesses = [...plan.processes]//.reverse() //.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
@@ -807,6 +774,8 @@
         console.log("Error building plan", e)
         error = e
       }
+
+    fetching = false
   }
 
   async function updateColumns(columnIndex: number, processIndex: number = 0, side: string = "committedInputs") {
@@ -866,10 +835,16 @@
         updatedColumn[i] = updatedCommitment
       }
 
-      // await getPlan()
-      // await buildPlan()
+      // const processQuery = query(GET_PROCESS, {
+      //   variables: { id: allColumns[columnIndex][processIndex].id }
+      // });
+      // console.log("processQuery", processQuery)
+      processQueryVariables = { id: allColumns[columnIndex][processIndex].id };
+      if (processQuery) {
+        const processData = await processQuery.refetch();
+      }
       // await getProcess(allColumns[columnIndex][processIndex].id)
-      fetching = false
+       
     } catch (e) {
       fetching = false
       console.log("error updating columns", e)
@@ -891,40 +866,9 @@
           zoomLevel = zoom.toString();
         }
       });
-
-      // let functions = [
-        // { array: units, func: getAllUnits },
-        // { array: actions, func: getAllActions },
-        // { array: agents, func: getAllAgents },
-        // // { array: economicEvents, func: getAllEconomicEvents},
-        // { array: resourceSpecifications, func: getAllResourceSpecifications },
-        // { array: processSpecifications, func: getAllProcessSpecifications },
-        // { array: recipes, func: getAllRecipes },
-        // { array: offers, func: getAllProposals },
-        // // { array: fulfillments, func: getFulfillments },
-        // { array: economicResources, func: getAllEconomicResources },
-      // ];
-
       fetching = true
-      // for (let item of functions) {
-      //   if (item.array.length === 0) {
-      //     await item.func();
-      //   }
-      // }
       await getPlan()
       await allProposalsQuery.refetch()
-      fetching = false
-
-      // if (plan == undefined) {
-      //   fetching = true
-      //   await getPlan()
-      //   await buildPlan()
-      //   fetching = false
-      // } else {
-      //   console.log("plan already exists")
-      //   await buildPlan()
-      //   getPlanLater()
-      // }
     }
   })
 
@@ -1013,7 +957,7 @@
       await updateColumns(backwardSuggestions.columnIndex, i, backwardSuggestions.side)
       console.log("end", i)
     }
-    fetching = false;
+     ;
   }}
 />
 {/if}
@@ -1033,7 +977,6 @@
   on:saved={async (event) => {
     loadingPlan = true
     await getPlan()
-    // await buildPlan()
     loadingPlan = false
   }}
 />
@@ -1061,12 +1004,68 @@ bind:open={economicEventModalOpen}
     await saveEconomicEvent(extractedEvent, selectedProcessId, commitmentModalSide, event.detail.fulfills)
 
     if (extractedEvent?.finished) {
-      // actually save commitment
-      console.log("updating commitment", commitmentModalColumn)
-      let indexOfCommitment = allColumns[commitmentModalColumn][commitmentModalProcess][commitmentModalSide].findIndex(it => it.id == extractedEvent.id)
-      allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = extractedEvent
-      console.log("updating commitment as finished", allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment])
-      await updateColumns(event.detail.column, event.detail.process, event.detail.side)
+      if (!commitmentModalColumn && selectedCommitmentId) {
+        console.log("finished, and no commitmentModalColumn, but selectedCommitmentId", selectedCommitmentId, event.detail.fulfills, commitmentModalProcess, commitmentModalSide, )
+        // for each commitment in fulfills array, mark as finished
+        for (let i = 0; i < event.detail.fulfills.length; i++) {
+          let commitmentId = event.detail.fulfills[i]
+          console.log("commitmentId", commitmentId)
+            // Find the commitment by id, or any commitment inside clauseOf of any commitment in the column/side/process that matches the id
+            let commitment = 
+            plan?.nonProcessCommitments?.find(
+              it => it.id == commitmentId
+              || (it.clauseOf?.commitments?.some(p => p.id == commitmentId))
+            )?.clauseOf?.commitments?.find(c => c.id == commitmentId)
+            // If not found, search inside all clauseOf.commitments of all commitments in the column/side/process
+            || plan?.nonProcessCommitments
+              ?.flatMap(it => it.clauseOf?.commitments || [])
+              ?.find(c => c.id == commitmentId);
+          if (commitment) {
+            console.log("updating commitment as finished", commitment)
+            await updateCommitment({
+              revisionId: commitment.revisionId,
+              finished: true,
+            })
+          } else {
+            console.log("no commitment found for id", commitmentId)
+          }
+        }
+          // console.log("suspected reciprocal commitment", extractedEvent.id, extractedEvent)
+          // const foundCommitment = plan.nonProcessCommitments.find(it => it.id == selectedCommitmentId)
+          // if (foundCommitment) {
+          //   console.log("found commitment", foundCommitment)
+          //   await updateCommitment({
+          //     revisionId: foundCommitment.revisionId,
+          //     finished: true,
+          //   })
+          // }
+          // await getPlan()
+      } else {
+        // for each commitment in fulfills array, mark as finished
+        console.log("finished, and commitmentModalColumn", commitmentModalColumn, commitmentModalProcess, commitmentModalSide)
+        for (let i = 0; i < event.detail.fulfills.length; i++) {
+          let commitmentId = event.detail.fulfills[i]
+          console.log("commitmentId", commitmentId)
+          let commitment = allColumns[commitmentModalColumn]?.[commitmentModalProcess]?.[commitmentModalSide]?.find(it => it.id == commitmentId)
+          if (commitment) {
+            console.log("updating commitment as finished", commitment)
+            await updateCommitment({
+              revisionId: commitment.revisionId,
+              finished: true,
+            })
+          } else {
+            console.log("no commitment found for id", commitmentId)
+          }
+        }
+
+        // // actually save commitment
+        // console.log("updating commitment", commitmentModalColumn)
+        // let indexOfCommitment = allColumns[commitmentModalColumn]?.[commitmentModalProcess]?.[commitmentModalSide]?.findIndex(it => it.id == extractedEvent.id)
+        // // allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment] = extractedEvent
+        // allColumns[event.detail.column][event.detail.process][event.detail.side][indexOfCommitment].finished = true
+        // console.log("updating commitment as finished", allColumns[event.detail.column]?.[event.detail.process]?.[event.detail.side]?.[indexOfCommitment])
+        // await updateColumns(event.detail.column, event.detail.process, event.detail.side)
+      }
     }
 
   }}
@@ -1221,10 +1220,10 @@ bind:open={economicEventModalOpen}
         // updatedCommitment.plannedWithin = planId
         // console.log(updatedCommitment.plannedWithin)
         console.log("updated commitment --", updatedCommitment, updateCommitment.stage)
-        const c = await updateCommitment(updatedCommitment)
         fetching = true
+        const c = await updateCommitment(updatedCommitment)
         await getPlan()
-        fetching = false
+         
       } else {
       // =============================ON UPDATE REGULAR=============================
         let updatedCommitment = {
@@ -1241,9 +1240,9 @@ bind:open={economicEventModalOpen}
         await updateColumns(event.detail.column, event.detail.process, event.detail.side)
         // await getProcess(allColumns[event.detail.column][event.detail.process].id)
       }
-    } else {
-      // =============================ON NEW SAVE COST ENDS=============================
-
+    } // =============================ON NEW SAVE COST ENDS=============================
+    else { 
+      console.log("commitmentModalColumn", commitmentModalColumn, "commitmentModalProcess", commitmentModalProcess, "commitmentModalSide", commitmentModalSide, event.detail)
       if (event.detail.column == undefined) {
       // =============================ON NEW INDEPENDENT=============================
         independentDemands.push(event.detail.commitment)
@@ -1271,13 +1270,13 @@ bind:open={economicEventModalOpen}
           resourceInventoriedAs: commitmentData.resourceInventoriedAs,
           resourceQuantity: {
             hasNumericalValue: commitmentData.resourceQuantity?.hasNumericalValue,
-            hasUnit: commitmentData.resourceQuantity?.hasUnitId
+            hasUnit: commitmentData.resourceQuantity?.hasUnit?.id
           }
         }
         await createCommitment(newCommitment)
         fetching = true
         await getPlan()
-        fetching = false
+         
       } else {
       // =============================ON NEW REGULAR=============================
         console.log("adding commitment", event.detail.commitment)
@@ -1334,6 +1333,17 @@ bind:open={economicEventModalOpen}
           }
 
           await createCommitment(newCommitment)
+
+          fetching = true
+          console.log("getting process", { id: allColumns[event.detail.column][event.detail.process].id })
+          // const processQuery = query(GET_PROCESS, {
+          //   variables: { id: allColumns[event.detail.column][event.detail.process].id }
+          // });
+          processQueryVariables = { id: allColumns[event.detail.column][event.detail.process].id };
+          if (processQuery) {
+            const processData = await processQuery.refetch();
+          }
+           
           // await getProcess(thisProcess.id)
         } else {
           console.log("no process")
@@ -1342,7 +1352,7 @@ bind:open={economicEventModalOpen}
           // await getNonProcessCommitments(planId)
           fetching = true
           await getPlan()
-          fetching = false
+           
         }
       }
     }
@@ -1350,7 +1360,7 @@ bind:open={economicEventModalOpen}
     // allColumns = [...allColumns]
     // console.log(allColumns[event.detail.column][event.detail.process][event.detail.side])
 
-    getPlan()
+    // getPlan()
     
     // reset form
     selectedCommitmentId = undefined
@@ -1396,13 +1406,25 @@ bind:open={economicEventModalOpen}
   commitments: independentDemands,
   nonProcessCommitments: nonProcessCommitments,
 }}
-<div class="flex justify-center items-center">
+<div>
   <!-- <div class="outer-div justify-center items-center">
   <div class="scroll-div justify-center items-center">
   <div class="content-div flex space-x-8 mx-4"> -->
   <!-- <div class="flex space-x-8 mx-4 overflow-x-scroll"> -->
   {#if plan?.name && plan?.revisionId && $planQuery.loading == false}
-  <div class="flex space-x-8 mx-4 overflow-x-scroll overflow-y-scroll" style="overflow: auto; height: calc((100vh - 150px) / {zoomLevel}); zoom: {zoomLevel}" use:dragscroll={{ axis: 'both' }}>
+  
+  <!-- Fetching overlay -->
+  {#if fetching}
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50" style="margin-top: 105px;">
+      <div class="bg-white p-6 rounded-lg shadow-lg flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="text-gray-700 font-medium text-lg">Please wait while plan updates...</span>
+      </div>
+    </div>
+  {/if}
+  
+  <div class="relative">
+    <div class="flex space-x-8 mx-4 overflow-x-scroll overflow-y-scroll" style="overflow: auto; height: calc((100vh - 150px) / {zoomLevel}); zoom: {zoomLevel}" use:dragscroll={{ axis: 'both' }}>
 
     
     <div class="min-w-[250px]">
@@ -1845,11 +1867,6 @@ bind:open={economicEventModalOpen}
                         </button>
                         <button
                           on:click={async () => {
-                            // visually remove commitment
-                            // await removeNonProcessCommitmentFromPlan(planId, id)
-                            // await buildPlan()
-                            // independentDemands = nonProcessCommitments.filter(it => it.id != id)
-
                             // remove cost agreement if present
                             console.log("clauseOf to delete", clauseOf)
                             let costAgreement = clauseOf
@@ -1869,7 +1886,7 @@ bind:open={economicEventModalOpen}
                             await deleteCommitment(revisionId)
                             fetching = true
                             await getPlan()
-                            fetching = false
+                             
                             // await getNonProcessCommitments(planId)
                           }}
                         >
@@ -1978,7 +1995,7 @@ bind:open={economicEventModalOpen}
                                   await deleteAgreement(clauseOf.revisionId)
                                   fetching = true
                                   await getPlan()
-                                  fetching = false
+                                   
                                   // await getNonProcessCommitments(planId)
                                 }}
                               >
@@ -2131,6 +2148,7 @@ bind:open={economicEventModalOpen}
       </div>
     </div>
 
+  </div>
   </div>
   {:else}
     No plan found

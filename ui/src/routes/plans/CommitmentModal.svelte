@@ -391,7 +391,6 @@
                   class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                 >
                 {#if selectedCommitment?.id && selectedCommitment?.resourceQuantity}
-                  <!-- <p>{selectedCommitment?.resourceQuantity.hasUnit.label}</p> -->
                   {selectedCommitment?.resourceQuantity.hasUnit?.label}
                 {:else}
                   <select

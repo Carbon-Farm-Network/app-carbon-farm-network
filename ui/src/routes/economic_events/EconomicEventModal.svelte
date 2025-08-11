@@ -101,8 +101,14 @@
   $: receiver = selectedEvent?.receiverId ? agents.find(a => a.id == selectedEvent?.receiverId) : selectedEvent?.receiver
   $: resourceSectionIsValid = newInventoriedResource.name && newInventoriedResource.stage
   $: selectedEventSectionIsValid = selectedEvent?.provider?.id && selectedEvent?.receiver?.id && selectedEvent?.resourceConformsTo && selectedEvent?.action && selectedEvent?.resourceQuantity?.hasNumericalValue && selectedEvent?.resourceQuantity?.hasUnit?.id
-  $: newEeventSectionIsValid = newEvent?.providerId && newEvent?.receiverId && newEvent?.resourceConformsTo && newEvent?.action && newEvent?.resourceQuantity?.hasNumericalValue && newEvent?.resourceQuantity?.hasUnitId
-  $: isValid = (selectedEventSectionIsValid || newEeventSectionIsValid) && (!raiseOnly || resourceSectionIsValid) && (selectedCombinations.length > 0 || !selectedCommitmentId)
+  $: newEventSectionIsValid = newEvent?.providerId && newEvent?.receiverId && newEvent?.resourceConformsTo && newEvent?.action && newEvent?.resourceQuantity?.hasNumericalValue && newEvent?.resourceQuantity?.hasUnitId
+  $: isValid = (selectedEventSectionIsValid || newEventSectionIsValid) && (!raiseOnly || resourceSectionIsValid) && (selectedCombinations.length > 0 || !selectedCommitmentId)
+
+  $: if (isValid != null) {
+    console.log("isValid", isValid, selectedEventSectionIsValid, newEventSectionIsValid, (!raiseOnly || resourceSectionIsValid), resourceSectionIsValid, (selectedCombinations.length > 0 || !selectedCommitmentId))
+  } else {
+    console.log("isValid 2", isValid, selectedEventSectionIsValid, newEventSectionIsValid, (!raiseOnly || resourceSectionIsValid), resourceSectionIsValid, selectedCombinations.length > 0, !selectedCommitmentId)
+  }
 
   $: if (newEvent) {
     console.log("newEvent", newEvent)
