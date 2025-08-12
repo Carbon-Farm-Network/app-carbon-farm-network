@@ -4,26 +4,24 @@
     import { createEventDispatcher } from 'svelte';
     import { updateEconomicResource } from '../../crud/commit'
     import type { EconomicResource, ProcessSpecification } from '@valueflows/vf-graphql';
+    import { GET_ALL_PROCESS_SPECIFICATIONS } from '../../crud/fetch';
+    import { query } from 'svelte-apollo';
 
     const dispatch = createEventDispatcher();
 
+    const processSpecificationsQuery = query(GET_ALL_PROCESS_SPECIFICATIONS);
+
     export let open = false
     export let economicResource: EconomicResource | undefined = undefined
-    export let units = undefined
-    export let processSpecifications: ProcessSpecification[] | undefined = undefined
 
-    // let stageId = economicResource?.stageId
-    let trackingIdentifier = economicResource?.trackingIdentifier
-    // let name = economicResource?.name
-    let note = economicResource?.note
 
     async function saveEconomicResource() {
-      if (!note && !trackingIdentifier) {return;}
-      console.log("Saving Economic Resource", economicResource, note, trackingIdentifier);
+      console.log("Saving Economic Resource", economicResource);
       const econUpdate = {
         revisionId: economicResource?.revisionId,
-        note: note ? note : economicResource?.note,
-        trackingIdentifier: trackingIdentifier || economicResource?.trackingIdentifier,
+        note: economicResource?.note,
+        trackingIdentifier: economicResource?.trackingIdentifier,
+        stage: economicResource?.stage?.id || economicResource?.stage,
         updatedAt: new Date(Date.now())
       }
       console.log("econUpdate", econUpdate);
@@ -38,6 +36,7 @@
 
     onMount(() => {
       window.addEventListener('keydown', checkKey)
+      processSpecificationsQuery.refetch();
       return () => {
         window.removeEventListener('keydown', checkKey)
       }
@@ -97,11 +96,25 @@
                     </div>
                     <div>
                         <label
-                            for="provider"
-                            class="block text-sm font-medium leading-6 text-gray-900"
-                            >Stage</label
+                          for="stage"
+                          class="block text-sm font-medium leading-6 text-gray-900"
+                          >Stage</label
                         >
-                        {processSpecifications?.find(p => p.id === economicResource?.stageId)?.name}
+                        <select
+                          id="stage"
+                          name="stage"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                          value={economicResource?.stage?.id || ''}
+                          on:change={(e) => {
+                            economicResource.stage = {id: e.target.value}
+                            console.log("Stage changed to", economicResource.stage.id)
+                          }}
+                        >
+                          <option value="" disabled selected>Select a stage</option>
+                          {#each $processSpecificationsQuery.data?.processSpecifications?.edges.map(edge => edge.node) || [] as spec}
+                            <option value={spec.id}>{spec.name}</option>
+                          {/each}
+                        </select>
                     </div>
                     <div>
                         <label
@@ -124,7 +137,7 @@
                             class="block text-sm font-medium leading-6 text-gray-900"
                             >Accounting Quantity</label
                         >
-                        {economicResource?.accountingQuantity?.hasNumericalValue} {units?.find(u => u.id === economicResource?.accountingQuantity?.hasUnitId)?.label}
+                        {economicResource?.accountingQuantity?.hasNumericalValue} {economicResource?.accountingQuantity?.hasUnit?.label}
                     </div>
                 </div>
             </div>

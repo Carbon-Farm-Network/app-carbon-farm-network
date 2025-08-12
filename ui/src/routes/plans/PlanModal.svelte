@@ -70,7 +70,7 @@
     // Independent demands
     const networkAgent = agents.find(a => a.classifiedAs[2] === 'Network')?.id;
     for (const d of commitments) {
-      const payload = {
+      let payload = {
         ...d,
         plannedWithin: planId,
         independentDemandOf: planId,
@@ -79,15 +79,16 @@
         receiver: d.receiver.id || networkAgent,
         resourceConformsTo: d.resourceConformsTo.id,
         resourceQuantity: {
-          hasNumericalValue: Number(d.resourceQuantity?.hasNumericalValue),
-          hasUnit: d.resourceQuantity.hasUnit?.id
+          hasNumericalValue: d.resourceQuantity?.hasNumericalValue ?? Number(d.resourceQuantity?.hasNumericalValue),
+          hasUnit: d.resourceQuantity?.hasUnit?.id
         },
         availableQuantity: {
-          hasNumericalValue: Number(d.availableQuantity?.hasNumericalValue),
-          hasUnit: d.availableQuantity.hasUnit?.id
+          hasNumericalValue: d.availableQuantity ?? Number(d.availableQuantity?.hasNumericalValue),
+          hasUnit: d.availableQuantity?.hasUnit?.id
         }
       }
-      console.log('Creating independent demand:', payload);
+      delete payload.finished;
+      delete payload.fulfilledBy;
       const res = await createCommitment(payload);
       console.log('Created independent demand commitment:', res);
     }

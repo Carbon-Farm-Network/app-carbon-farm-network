@@ -253,6 +253,9 @@
                     name="provider"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.provider.id}
+                    on:change={(e) => {
+                      newCommitment.provider = agents.find(agent => agent.id == e.target.value)
+                    }}
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
@@ -286,6 +289,9 @@
                     name="receiver"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.receiver.id}
+                    on:change={(e) => {
+                      newCommitment.receiver = agents.find(agent => agent.id == e.target.value)
+                    }}
                     >
                     {#each agents as agent}
                       <option value={agent.id}>{agent.name}</option>
@@ -312,6 +318,9 @@
                     name="defaultUnitOfResource"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.resourceConformsTo.id}
+                    on:change={(e) => {
+                      newCommitment.resourceConformsTo = resourceSpecifications.find(rs => rs.id == e.target.value)
+                    }}
                     >
                     {#each resourceSpecifications as rs}
                       <option value={rs.id}>{rs.name}</option>
@@ -337,6 +346,9 @@
                     name="action"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.action.id}
+                    on:change={(e) => {
+                      newCommitment.action = actions.find(action => action.id == e.target.value)
+                    }}
                   >
                   {#if filteredActions}
                     {#each filteredActions as action}
@@ -398,6 +410,9 @@
                     name="unit"
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     bind:value={newCommitment.resourceQuantity.hasUnit.id}
+                    on:change={(e) => {
+                      newCommitment.resourceQuantity.hasUnit = units.find(unit => unit.id == e.target.value)
+                    }}
                   >
                     {#if units}
                       {#each units as unit}

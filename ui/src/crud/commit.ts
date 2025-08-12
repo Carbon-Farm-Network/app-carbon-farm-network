@@ -829,7 +829,9 @@ export const createEconomicEventWithResource = async (event: EconomicEventCreate
   delete event.finished
 
   // TODO: handle stage properly
-  delete newInventoriedResource.stage
+  if (["produce", "dropoff", "modify", "combine"].includes((event.action?.id || event.action))) {
+    newInventoriedResource.stage = event.stage?.id || event.stage || newInventoriedResource.stage?.id || newInventoriedResource.stage;
+  }
 
   event = savePrep(event);
   newInventoriedResource = savePrep(newInventoriedResource);
@@ -854,6 +856,7 @@ export const updateEconomicResource = async (resource: EconomicResourceUpdatePar
     imageList: resource.imageList,
     containedIn: resource.containedIn,
     unitOfEffort: resource.unitOfEffort,
+    stage: resource.stage?.id || resource.stage,
     note: resource.note,
   }
   console.log('updateEconomicResource', resource)
@@ -955,8 +958,8 @@ export const createCommitment = async (commitment: CommitmentCreateParams) => {
       });
     }
   })
-  console.log("created commitment", res.data.createCommitment.commitment)
-  return res.data.createCommitment.commitment as CommitmentCreateParams;
+  console.log("created commitment", res?.data?.createCommitment?.commitment)
+  return res?.data?.createCommitment?.commitment as CommitmentCreateParams;
 }
 
 export const createAgreement = async (ag: any) => {

@@ -77,12 +77,7 @@
 
   let newEventTemplate = {
     id: undefined,
-    resourceConformsTo: {
-      name: '',
-      defaultUnitOfResource: {
-        label: ''
-      }
-    },
+    resourceConformsTo: null, // Changed from object to null
     action: {label: ''},
     resourceQuantity: {
       hasNumericalValue: 0,
@@ -381,25 +376,22 @@
                       {#if selectedEvent?.id && selectedEvent?.resourceConformsTo}
                         <p>{selectedEvent?.resourceConformsTo.name}</p>
                       {:else if resourceSpecifications}
-                          <select
+                        <select
                           id="defaultUnitOfResource"
                           name="defaultUnitOfResource"
                           class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                          value={newEvent.resourceConformsTo.id}
-                            on:change={(e) => {
-                              console.log(e.target.value)
-                              const rspec = resourceSpecifications.find((rs) => rs.id === e.target.value)
-                              newEvent.resourceConformsTo = {
-                                ...newEvent.resourceConformsTo,
-                                defaultUnitOfResource: rspec.defaultUnitOfResource,
-                              }
-                              newEvent.resourceConformsTo = rspec
-                              newInventoriedResource.name = rspec.name
-                              newInventoriedResource.conformsTo = rspec
-                              newInventoriedResource.image = rspec.image
-                              console.log("newEvent.resourceConformsTo", newEvent.resourceConformsTo)
-                            }}
-                          >
+                          value={newEvent.resourceConformsTo?.id || ''}
+                          on:change={(e) => {
+                            console.log(e.target.value)
+                            const rspec = resourceSpecifications.find((rs) => rs.id === e.target.value)
+                            newEvent.resourceConformsTo = rspec // Set the full object for UI usage
+                            newInventoriedResource.name = rspec.name
+                            newInventoriedResource.conformsTo = rspec
+                            newInventoriedResource.image = rspec.image
+                            console.log("newEvent.resourceConformsTo", newEvent.resourceConformsTo)
+                          }}
+                        >
+                          <option value="">Select a resource specification</option>
                           {#each resourceSpecifications as rs}
                             <option value={rs.id}>{rs.name}</option>
                           {/each}
@@ -729,6 +721,7 @@
                 resource: newInventoriedResource,
                 event: {
                   ...newEvent,
+                  resourceConformsTo: newEvent.resourceConformsTo?.id || null,
                 },
                 fulfills: selectedCombinations.map(c => c.id),
                 useAs: 'new'
