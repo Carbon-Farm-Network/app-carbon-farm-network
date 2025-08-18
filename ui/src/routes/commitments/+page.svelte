@@ -215,10 +215,9 @@ onMount(async () => {
               </thead>
                 <!-- {agreements} -->
                 {#each agreements as agreement}
-                {@const commitment = agreement?.commitments?.[1]}
-                {@const reciprocal = agreement?.commitments?.[0]}
+                {@const commitment = agreement?.commitments?.find(c => c.action?.id !== 'transfer')}
+                {@const reciprocal = agreement?.commitments?.find(c => c.action?.id === 'transfer') || agreement?.commitments?.find(c => c.id !== commitment?.id)}
                 <tbody class="bg-white">
-
                     <tr class="bg-gray-100">
                       <!-- PRIMARY COMMITMENT -->
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
