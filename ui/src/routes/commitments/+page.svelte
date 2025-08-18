@@ -1,10 +1,11 @@
 <script lang="ts">
 import Header from "$lib/Header.svelte";
 import Loading from "$lib/Loading.svelte";
+import EconomicEventModal from '../economic_events/EconomicEventModal.svelte';
 import AgreementModal from "./AgreementModal.svelte";
 import SvgIcon from "$lib/SvgIcon.svelte";
 import { getAllCommitments, getAllUnits, getAllAgreements, getAllActions, getAllAgents, getAllResourceSpecifications } from "../../crud/fetch";
-import { createCommitment, createAgreement, updateCommitment, updateAgreement, deleteCommitment, deleteAgreement } from "../../crud/commit";
+import { createCommitment, createAgreement, updateCommitment, updateAgreement, deleteCommitment, deleteAgreement, createEconomicEvent } from "../../crud/commit";
 import { cloneDeep } from "lodash";
 import { onMount } from "svelte";
 import { GET_ALL_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES, GET_ALL_UNITS, GET_ALL_ACTIONS, GET_ALL_AGENTS, GET_ALL_RESOURCE_SPECIFICATIONS, GET_ALL_AGREEMENTS } from '../../crud/fetch';
@@ -39,6 +40,7 @@ resourceSpecificationsQuery.subscribe(value => {
 let agreements: any = [];
 agreementsQuery.subscribe(value => {
   agreements = value.data?.agreements?.edges.map(edge => edge.node).reverse() || [];
+  console.log("agreements", agreements);
 });
 
 // let commitments: Commitment[] = [];
@@ -49,9 +51,11 @@ agreementsQuery.subscribe(value => {
 let loading: boolean = false;
 let fetching: boolean = false;
 let agreementModalOpen: boolean = false;
+let economicEventModalOpen: boolean = false;
 let currentAgreement: any;
 let currentCommitment: any;
 let currentReciprocalCommitment: any;
+let currentEventCommitment: any;
 
 async function refresh() {
   fetching = true;
@@ -69,6 +73,24 @@ onMount(async () => {
 </script>
 
 <Header title="Exchanges" description="The exchanges in a network." />
+<EconomicEventModal 
+  bind:open={economicEventModalOpen}
+  selectedCommitment={currentEventCommitment}
+  selectedCommitmentId={currentEventCommitment?.id}
+  combinationOptions={[currentEventCommitment]}
+  on:submit={async (data) => {
+    console.log("data", data.detail);
+    const eventPayload = {
+      ...data?.detail?.event,
+      hasBeginning: new Date(Date.now()).toISOString(),
+      fulfills: [currentEventCommitment?.id],
+    };
+    const res = await createEconomicEvent(eventPayload);
+    agreementsQuery.refetch();
+    console.log("Economic Event created", res);
+  }}
+  
+></EconomicEventModal>
 <AgreementModal 
   bind:open={agreementModalOpen}
   bind:agreement={currentAgreement}
@@ -207,6 +229,12 @@ onMount(async () => {
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                     >To</th
                   >
+
+                  <th
+                    scope="col"
+                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >Events</th
+                  >
                   
                   <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
                     <span class="sr-only">Edit</span>
@@ -236,8 +264,24 @@ onMount(async () => {
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {commitment?.receiver?.name}
                       </td>
+                      <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {commitment?.fulfilledBy?.length > 0
+                          ? commitment.fulfilledBy?.length
+                          : 0
+                        }
+                        <button
+                          type="button"
+                          class="text-indigo-600 hover:text-indigo-900"
+                          on:click={async () => {
+                            currentEventCommitment = cloneDeep(commitment);
+                            economicEventModalOpen = true;
+                          }}
+                        >
+                          <SvgIcon icon="event" size=14 color="#6b7280" />
+                        </button>
+                      </td>
 
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 text-indigo-600">
                         <button
                           type="button"
                           class="text-indigo-600 hover:text-indigo-900"
@@ -250,6 +294,7 @@ onMount(async () => {
                         >
                           Edit
                         </button>
+
                       </td>
                     </tr>
 
@@ -271,7 +316,23 @@ onMount(async () => {
                       <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                         {reciprocal?.receiver?.name}
                       </td>
-                      
+                      <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {reciprocal?.fulfilledBy?.length > 0
+                          ? reciprocal.fulfilledBy.length
+                          : 0
+                        }
+                        <button
+                          type="button"
+                          class="text-indigo-600 hover:text-indigo-900"
+                          on:click={async () => {
+                            currentEventCommitment = cloneDeep(reciprocal);
+                            economicEventModalOpen = true;
+                          }}
+                        >
+                          <SvgIcon icon="event" size=14 color="#6b7280" />
+                        </button>
+                      </td>
+
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
                         <button
                           type="button"

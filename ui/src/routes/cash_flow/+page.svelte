@@ -4,10 +4,10 @@
     import { onMount } from "svelte";
     import { getAllAgents, getAllEconomicEvents, getAllEconomicResources, getAllFacetGroups, getAllResourceSpecifications, getAllUnits, getAllActions, getAllProcessSpecifications } from "../../crud/fetch";
     import { importEconomicEvents } from '../../crud/import';
-    import EconomicEventModal from './EconomicEventModal.svelte';
+    import EconomicEventModal from '../economic_events/EconomicEventModal.svelte';
     import Export from '$lib/Export.svelte';
     import { createEconomicEvent, createEconomicEventWithResource } from '../../crud/commit'
-    import { GET_ALL_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES } from '../../crud/fetch';
+    import { GET_ALL_ECONOMIC_EVENTS, GET_ALL_ECONOMIC_RESOURCES, GET_ALL_AGENTS } from '../../crud/fetch';
     import EconomicEvent from '$lib/icons/EconomicEvent.svelte'
     import Loading from '$lib/Loading.svelte';
     import SvgIcon from '$lib/SvgIcon.svelte';
@@ -15,6 +15,7 @@
 
     const economicEventsQuery = query(GET_ALL_ECONOMIC_EVENTS);
     const economicResourcesQuery = query(GET_ALL_ECONOMIC_RESOURCES);
+    const agentsQuery = query(GET_ALL_AGENTS);
 
     let economicResources: EconomicResource[] = [];
     economicResourcesQuery.subscribe(res => {
@@ -28,6 +29,22 @@
     let fetching: boolean = false;
     let importing = false;
     let modalOpen = false;
+    let networkAgent: Agent | null = null;
+    let cashFlowEvents: EconomicEvent[] = [];
+
+    $: if ($agentsQuery.data) {
+      const agents = $agentsQuery.data.agents.edges.map(edge => edge.node);
+      networkAgent = agents.find(agent => agent.classifiedAs[2] === "Network") || null;
+      console.log("networkAgent", networkAgent);
+    }
+
+    $: if ($economicEventsQuery.data) {
+      cashFlowEvents = $economicEventsQuery.data.economicEvents.edges.map(edge => edge.node).reverse()
+        .filter(economicEvent => economicEvent?.resourceConformsTo?.name == "USD" &&
+          (economicEvent?.receiver?.id == networkAgent?.id || economicEvent?.provider?.id == networkAgent?.id)
+        );
+      console.log("cashFlowEvents", cashFlowEvents);
+    }
 
     async function refresh() {
       fetching = true;
@@ -41,20 +58,7 @@
       loading = $economicEventsQuery.loading;
       economicEventsQuery.refetch();
       economicResourcesQuery.refetch();
-      // loading = economicEvents.length === 0 || units.length === 0 || resourceSpecifications.length === 0;
-      // console.log(economicEvents.length, units.length, resourceSpecifications.length)
-      
-      // await getAllUnits();
-      // await getAllActions();
-      // await getAllFacetGroups();
-      // await getAllAgents();
-      // const rspecs = await getAllResourceSpecifications();
-      // console.log("resourceSpecifications", rspecs)
-      // const ecrecs = await getAllEconomicResources();
-      // console.log("economicResources", ecrecs)
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      // const ecevs = await getAllEconomicEvents();
-      // console.log("economicEvents", ecrecs, ecevs)
+      agentsQuery.refetch();
       loading = false;
     });
 
@@ -68,7 +72,7 @@
           hasNumericalValue: economicEvent.resourceQuantity.hasNumericalValue, 
           hasUnit: economicEvent.resourceQuantity.hasUnit?.id || economicEvent.resourceQuantity.hasUnitId
         },
-        resourceConformsTo: economicEvent.resourceConformsTo.id || economicEvent.resourceConformsTo,
+        resourceConformsTo: economicEvent.resourceConformsTo.id,
         hasPointInTime: new Date(),
         hasBeginning: new Date(),
       }
@@ -96,7 +100,7 @@
         let newInventoriedResource: EconomicResourceCreateParams = {
           name: resourceSpecification?.name,
           image: resourceSpecification?.image,
-          conformsTo: resourceSpecification?.id || resourceSpecification,
+          conformsTo: resourceSpecification?.id,
           trackingIdentifier: null,//crypto.randomUUID(),
         }
 
@@ -107,16 +111,26 @@
         const res = await createEconomicEvent(economicEventCreateInput)
         console.log("economic event res", res)
       }
-      // console.log("economicEventCreateInput", economicEventCreateInput);
-      // await createEconomicEvent(economicEventCreateInput);
-      // await getAllEconomicEvents();
       await economicEventsQuery.refetch();
       await economicResourcesQuery.refetch();
-      // modalOpen = false;
+    }
+
+    function calculateBalance(economicEvents: EconomicEvent[]) {
+      let balance = 0;
+      economicEvents.forEach(event => {
+        if (event.resourceQuantity?.hasNumericalValue) {
+          if (event.receiver?.id == networkAgent?.id) {
+            balance += event.resourceQuantity.hasNumericalValue;
+          } else if (event.provider?.id == networkAgent?.id) {
+            balance -= event.resourceQuantity.hasNumericalValue;
+          }
+        }
+      });
+      return balance;
     }
 </script>
 
-<Header title="Economic events" description="The economic events in a network." />
+<Header title="Cash Flow" description="The flow of cash in a network." />
     
 <EconomicEventModal bind:open={modalOpen}
   on:submit={async (e) => {
@@ -148,7 +162,7 @@
     </div>
       
     <!-- add economic event with modal -->
-    <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
+    <!-- <div class="mt-4 sm:ml-3 sm:mt-0 sm:flex-none">
       <button
         type="button"
         on:click={() => {
@@ -156,17 +170,25 @@
         }}
         class="block rounded-md bg-gray-900 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >Add an event</button>
-    </div>
+    </div> -->
                
-    <!-- <Export dataName="Economic Events" fileName="cfn-economic-events" data={{"economicEvents": economicEvents, "fulfillments": fulfillments}} bind:importing bind:open={exportOpen}
-      on:import={async data => {
-        console.log("importing", data.detail);
-        await importEconomicEvents(data.detail);
-        importing = false;
-        exportOpen = false;
-        await getAllEconomicEvents();
-      }} 
-    /> -->
+    <Export 
+      dataName="Cash Flow" 
+      fileName="cfn-cash-flow"
+      dataType="csv"
+      data={
+          cashFlowEvents.map((economicEvent, index) => ({
+            agent: economicEvent.receiver?.id == networkAgent.id ? economicEvent.provider?.name : economicEvent.receiver?.name,
+            date: new Date(economicEvent.hasBeginning).toLocaleDateString(),
+            amount: (economicEvent.resourceQuantity?.hasNumericalValue || 0) * (economicEvent.receiver?.id == networkAgent.id ? 1 : -1),
+            note: economicEvent.resourceQuantity?.note || "-",
+            balance: calculateBalance(cashFlowEvents.slice(index, cashFlowEvents.length + 1)),
+          }))
+        } 
+      bind:importing 
+      bind:open={exportOpen} 
+      hideImport={true}
+    />
   </div>
 <div class="mt-8 flow-root">
     <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -177,28 +199,28 @@
               <th
                 scope="col"
                 class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
-                >Provider</th
-              >
-              <th
-                scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Receiver</th
-              >
-              <th
-                scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Action</th
-              >
-              <th
-                scope="col"
-                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                >Resources</th
+                >Agent</th
               >
               <th
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                 >Date</th
                 >
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >Amount</th
+              >
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >Note</th
+              >
+              <th
+                scope="col"
+                class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                >Balance</th
+              >
               <!-- <th 
                 scope="col"
                 class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
@@ -210,25 +232,26 @@
             {#if $economicEventsQuery.loading}
               <span>Loading...</span>
             {:else}
-              {@const economicEvents = $economicEventsQuery.data?.economicEvents.edges.map((edge) => edge.node).reverse() ?? []}
-              {#each economicEvents as economicEvent, index}
+              {#each cashFlowEvents as economicEvent, index}
+                {@const direction = economicEvent.receiver?.id == networkAgent?.id ? "in" : "out"}
+                {@const eventsUpTillNow = cashFlowEvents.slice(index, cashFlowEvents.length + 1)}
+                {@const balance = calculateBalance(eventsUpTillNow)}
                 <tr class="{index % 2 == 0 ? 'bg-gray-100': ''}">
                   <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {economicEvent.provider?.name}
-                  </td>
-                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {economicEvent.receiver?.name}
-                  </td>
-                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {economicEvent.action?.label}
-                  </td>
-                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {economicEvent.resourceQuantity?.hasNumericalValue} 
-                      {economicEvent.resourceQuantity?.hasUnit?.label}
-                      {economicEvent?.resourceConformsTo?.name}
+                    {direction == "in" ? economicEvent.provider?.name : economicEvent.receiver?.name}
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(economicEvent?.hasBeginning).toLocaleDateString()}
+                  </td>
+                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {direction == "in" ? "+" : "-"}
+                    {economicEvent.resourceQuantity?.hasNumericalValue} 
+                  </td>
+                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {economicEvent.resourceQuantity?.note || "-"} 
+                  </td>
+                  <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {balance}
                   </td>
                   <!-- <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                     {#if economicEvent?.correctedBy?.length > 0}

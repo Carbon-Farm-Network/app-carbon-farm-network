@@ -680,7 +680,7 @@
                 newEvent.receiver = newEvent.receiver
               }
               if (!selectedEvent.resourceConformsTo) {
-                newEvent.resourceConformsTo = newEvent.resourceConformsTo
+                newEvent.resourceConformsTo = newEvent.resourceConformsTo?.id || newEvent.resourceConformsTo
               }
               if (!selectedEvent.resourceQuantity) {
                 newEvent.resourceQuantity = newEvent.resourceQuantity
@@ -721,7 +721,7 @@
                 resource: newInventoriedResource,
                 event: {
                   ...newEvent,
-                  resourceConformsTo: newEvent.resourceConformsTo?.id || null,
+                  resourceConformsTo: newEvent.resourceConformsTo?.id || newEvent.resourceConformsTo,
                 },
                 fulfills: selectedCombinations.map(c => c.id),
                 useAs: 'new'

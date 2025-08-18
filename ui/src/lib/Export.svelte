@@ -5,6 +5,7 @@
 
   export let dataName: string;
   export let fileName: string;
+  export let dataType: 'json' | 'csv' = 'json';
   export let data: any;  
   export let importing: boolean = false;
   export let open = false;
@@ -161,7 +162,12 @@
                 class="inline-flex justify-center w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
                 on:click={() => {
                   let currentTime = new Date().toISOString().replace(/:/g, '-')
-                  download(`${fileName}-${currentTime}.json`, JSON.stringify(data))
+                  if (dataType === 'csv') {
+                    const csvContent = data.map(row => Object.values(row).join(',')).join('\n');
+                    download(`${fileName}-${currentTime}.csv`, csvContent);
+                  } else {
+                    download(`${fileName}-${currentTime}.json`, JSON.stringify(data));
+                  }
                 }}
               >
                 Export

@@ -53,5 +53,8 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
           symbol
         }
     }
+    correctedBy {
+      id
+    }
   }
 `

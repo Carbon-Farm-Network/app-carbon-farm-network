@@ -801,6 +801,8 @@ export const createEconomicEvent = async (event: EconomicEventCreateParams) => {
   delete event.revisionId
   delete event.clauseOf
   delete event.fulfilledBy
+  delete event.finished
+  event.resourceConformsTo = event.resourceConformsTo?.id || event.resourceConformsTo;
   event = savePrep(event);
   console.log('createEconomicEvent', event)
   const res = await client.mutate({
@@ -827,6 +829,8 @@ export const createEconomicEventWithResource = async (event: EconomicEventCreate
   delete event.clauseOf
   delete event.fulfilledBy
   delete event.finished
+
+  event.resourceConformsTo = event.resourceConformsTo?.id || event.resourceConformsTo;
 
   // TODO: handle stage properly
   if (["produce", "dropoff", "modify", "combine"].includes((event.action?.id || event.action))) {

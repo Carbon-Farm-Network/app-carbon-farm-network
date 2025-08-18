@@ -98,7 +98,6 @@
         <div class="hidden sm:block sm:ml-6 w-full sm:mt-3">
           <div class="flex justify-end space-x-4">
             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-
             <button
               style="cursor: pointer;"
               on:click={() => navigate('/')}
@@ -155,6 +154,16 @@
               role="menuitem"
               tabindex="-1"
               id="user-menu-item-1">Activity</button
+            >
+
+
+            <button
+              style="cursor: pointer;"
+              class="{path === '/cash_flow' ? 'nav-active' : 'nav-inactive'} nav-default"
+              on:click={() => navigate('/cash_flow')}
+              role="menuitem"
+              tabindex="-1"
+              id="user-menu-item-1">Cash</button
             >
 
 
