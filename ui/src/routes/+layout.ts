@@ -78,7 +78,11 @@ export async function load() {
       });
       let token = tokenResp.token;
   
-      conn = await AppWebsocket.connect({url: new URL(url), token: token})
+      conn = await AppWebsocket.connect({
+        url: new URL(url), 
+        token: token,
+        defaultTimeout: 999999999
+      })
       console.log("Holochain app connected", conn)
       await setClientHC(conn)
     } else {
