@@ -31,8 +31,8 @@
 
     async function refresh() {
       fetching = true;
-      console.log("Economic events refetched", $economicEventsQuery.data);
       economicEventsQuery.refetch();
+      console.log("Economic events refetched", $economicEventsQuery);
       economicResourcesQuery.refetch();
       fetching = false;
     }
@@ -68,6 +68,7 @@
           hasNumericalValue: economicEvent.resourceQuantity.hasNumericalValue, 
           hasUnit: economicEvent.resourceQuantity.hasUnit?.id || economicEvent.resourceQuantity.hasUnitId
         },
+        note: economicEvent.note,
         resourceConformsTo: economicEvent.resourceConformsTo.id || economicEvent.resourceConformsTo,
         hasPointInTime: new Date(),
         hasBeginning: new Date(),

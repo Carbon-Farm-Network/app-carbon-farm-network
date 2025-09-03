@@ -552,11 +552,11 @@
 
   async function saveEconomicEvent(event: any, processId: any, side: string, commitmentIds: string[]) {
     try {
-      console.log("event", event)
       const economicEvent: EconomicEventCreateParams = {
         action: event.action.id,
         provider: event.provider?.id,
         receiver: event.receiver?.id,
+        note: event.note,
         resourceQuantity: { hasNumericalValue: event.resourceQuantity.hasNumericalValue, hasUnit: event.resourceQuantity.hasUnit?.id },
         resourceConformsTo: event.resourceConformsTo.id,
         hasPointInTime: new Date(),

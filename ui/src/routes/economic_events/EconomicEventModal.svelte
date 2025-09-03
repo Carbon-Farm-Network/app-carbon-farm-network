@@ -473,7 +473,7 @@
                         class="block text-sm font-medium leading-6 text-gray-900">Unit</label
                       >
                       {#if selectedEvent?.id && selectedEvent?.resourceQuantity}
-                        <p>{selectedEvent?.resourceQuantity.hasUnit.label}</p>
+                        <p>{selectedEvent?.resourceQuantity.hasUnit?.label}</p>
                       {:else}
                         <select
                           id="unit"

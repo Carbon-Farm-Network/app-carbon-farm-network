@@ -4,6 +4,7 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
   fragment EconomicEventReturnFields on EconomicEvent {
     id
     revisionId
+    note
     action {
       id
       symbol
@@ -24,6 +25,10 @@ export const ECONOMIC_EVENT_RETURN_FIELDS = gql`
     receiver {
       id
       name
+    }
+    fulfills {
+      id
+      revisionId
     }
     resourceQuantity {
         hasNumericalValue

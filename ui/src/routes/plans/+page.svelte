@@ -5,12 +5,13 @@
   import { deletePlan, deleteProcess, deleteAgreement, deleteCommitment, deleteEconomicEvent } from '../../crud/commit'
   import { getAllPlans, getPlan } from '../../crud/fetch'
   // import { plansList, fullPlans } from '../../crud/store';
-  import { GET_PLANS } from '../../crud/fetch'
+  import { GET_PLANS, GET_PLAN } from '../../crud/fetch'
   import { query } from 'svelte-apollo'
   import Loading from '$lib/Loading.svelte'
   import SvgIcon from '$lib/SvgIcon.svelte'
 
   const plansQuery = query(GET_PLANS)
+  const planQuery = query(GET_PLAN, { variables: { id: '' } });
 
   let plans: any[];
   plansQuery.subscribe(value => {
@@ -25,23 +26,29 @@
   let deleting = false
 
   async function removePlan(id: string, revisionId: string) {
+    // const allFullPlans = $plansQuery.data?.plans?.edges?.map(edge => edge.node) || []
+    // console.log('allFullPlans', allFullPlans, $plansQuery)
     let areYouSure = await confirm("Are you sure you want to delete this plan?")
     if (areYouSure == true) {
       deleting = true
-      // let fullPlan = allFullPlans[id]
+      planQuery.setOptions({ variables: { id } })
+      await planQuery.refetch()
+      console.log('planQuery', $planQuery)
+      let fullPlan = $planQuery.data?.plan
+      // let fullPlan = allFullPlans.find(plan => plan.id === id)
       // if (!fullPlan) {
-      //   await getPlan(id)
-      //   fullPlan = allFullPlans[id]
+        // await getPlan(id)
+        // fullPlan = allFullPlans[id]
       // }
-      // if (!fullPlan) {
-      //   console.error('no full plan found')
-      //   return
-      // }
+      if (!fullPlan) {
+        console.error('no full plan found')
+        return
+      }
       console.log('fullPlan', fullPlan)
       for (let process of fullPlan.processes) {
         const processCommitments = [...process.committedInputs, ...process.committedOutputs]
         for (let commitment of processCommitments) {
-          const economicEvents = commitment.fulfilleedBy?.economicEvents || []
+          const economicEvents = commitment.fulfilledBy?.economicEvents || []
           for (let economicEvent of economicEvents) {
             try {
               await deleteEconomicEvent(economicEvent.id)
@@ -50,31 +57,31 @@
             }
           }
 
-          const agreementRevisionId = commitment.clauseOf?.revisionId
+          const agreementId = commitment.clauseOf?.id
           try {
-            await deleteAgreement(agreementRevisionId)
+            await deleteAgreement(agreementId)
           } catch (error) {
             console.error('error deleting commitment', error)
           }
 
           const recipocals = commitment.clauseOf?.commitments || []
           for (let recipocal of recipocals) {
-            const recipocalEconomicEvents = recipocal.fulfilleedBy?.economicEvents || []
+            const recipocalEconomicEvents = recipocal.fulfilledBy?.economicEvents || []
             for (let recipocalEconomicEvent of recipocalEconomicEvents) {
               try {
-                await deleteEconomicEvent(recipocalEconomicEvent.revisionId)
+                await deleteEconomicEvent(recipocalEconomicEvent.id)
               } catch (error) {
                 console.error('error deleting recipocal economic event', error)
               }
             }
             try {
-              await deleteCommitment(recipocal.revisionId)
+              await deleteCommitment(recipocal.id)
             } catch (error) {
               console.error('error deleting recipocal commitment', error)
             }
           }
           try {
-            await deleteCommitment(commitment.revisionId)
+            await deleteCommitment(commitment.id)
           } catch (error) {
             console.error('error deleting commitment', error)
           }

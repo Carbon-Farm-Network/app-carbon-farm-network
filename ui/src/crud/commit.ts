@@ -52,7 +52,7 @@ export async function addHashChange(original: string, newHash: string) {
       // getAllHashChanges()
   } else {
     console.log('addHashChange', original, newHash)
-    const res = client0.callZome({
+    const res = await client0.callZome({
       cap_secret: null,
       role_name: 'migration',
       zome_name: 'migrate',

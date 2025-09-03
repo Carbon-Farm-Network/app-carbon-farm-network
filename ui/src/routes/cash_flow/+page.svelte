@@ -181,7 +181,7 @@
             agent: economicEvent.receiver?.id == networkAgent.id ? economicEvent.provider?.name : economicEvent.receiver?.name,
             date: new Date(economicEvent.hasBeginning).toLocaleDateString(),
             amount: (economicEvent.resourceQuantity?.hasNumericalValue || 0) * (economicEvent.receiver?.id == networkAgent.id ? 1 : -1),
-            note: economicEvent.resourceQuantity?.note || "-",
+            note: economicEvent?.note || "-",
             balance: calculateBalance(cashFlowEvents.slice(index, cashFlowEvents.length + 1)),
           }))
         } 
@@ -248,7 +248,7 @@
                     {economicEvent.resourceQuantity?.hasNumericalValue} 
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {economicEvent.resourceQuantity?.note || "-"} 
+                    {economicEvent?.note || "-"} 
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                     {balance}

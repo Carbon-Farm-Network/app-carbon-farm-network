@@ -5,7 +5,7 @@
     import { allFacetGroups, allHashChanges } from '../../crud/store';
     // import { allFacets, allFacetValues, allFacetGroups, allActions, allUnits, allAgents, allProcessSpecifications, allProposals, allResourceSpecifications, allRecipes, allRecipeExchanges, fullPlans, allHashChanges } from '../../crud/store';
     import { getAllActions, getAllAgents, getAllAgreements, getAllFacetGroups, getAllProcessSpecifications, getAllProposals, getAllRecipes, getAllRecipeExchanges, getAllResourceSpecifications, getAllUnits, getAllFullPlans, getAllHashChanges } from '../../crud/fetch';
-    import { importUnits, importFacets, importAgents, importProcessSpecifications, importPlan, importResourceSpecifications, importProposals, importRecipes, importRecipeExchanges } from '../../crud/import';
+    import { importUnits, importFacets, importAgents, importProcessSpecifications, importPlan, importEconomicEvents, importResourceSpecifications, importProposals, importRecipes, importRecipeExchanges } from '../../crud/import';
     import { goto } from '$app/navigation';
     import { get } from 'svelte/store';
     import JSZip from 'jszip';
@@ -315,6 +315,9 @@
                 if (importFiles.includes('proposals.json')) {
                     status = 'Importing proposals...';
                     console.log("dollars", dollars);
+                    if (!dollars) {
+                      await resourceSpecificationsQuery.refetch();
+                    }
                     await importProposals(parsedData, dollars);
                 }
                 break;
@@ -336,6 +339,12 @@
                     for (const plan of parsedData) {
                         await importPlan(plan);
                     }
+                }
+                break;
+            case 'economicEvents.json':
+                if (importFiles.includes('economicEvents.json')) {
+                    status = 'Importing economic events...';
+                    await importEconomicEvents(parsedData);
                 }
                 break;
             default:

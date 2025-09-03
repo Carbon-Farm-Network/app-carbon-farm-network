@@ -144,7 +144,8 @@
       loading = requestsList.length == 0
       if (loading) {
         // await getAllProposals()
-        proposalsQuery.refetch()
+        await proposalsQuery.refetch()
+        console.log("proposalsQuery", $proposalsQuery)
         loading = false
       }
 
