@@ -45,9 +45,9 @@
     "calculate-hashes": "weave hash-webhapp workdir/acfn.webhapp"
   },
   "devDependencies": {
-    "@theweave/cli": "0.14.4",
+    "@theweave/cli": "0.15.2",
+    "@holochain/hc-spin": "^0.600.0-dev.0",
     "@holochain-playground/cli": "^0.300.1",
-    "@holochain/hc-spin": "^0.500.2",
     "@types/svelte-leafletjs": "^0.8.3",
     "concurrently": "^6.2.1",
     "rimraf": "^3.0.2",

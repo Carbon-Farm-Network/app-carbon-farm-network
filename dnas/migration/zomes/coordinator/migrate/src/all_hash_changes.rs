@@ -3,13 +3,9 @@ use migrate_integrity::*;
 #[hdk_extern]
 pub fn get_all_hash_changes(_: ()) -> ExternResult<Vec<Record>> {
     let path = Path::from("all_hash_changes");
-    let links = get_links(
-        GetLinksInputBuilder::try_new(
-                path.path_entry_hash()?,
-                LinkTypes::AllHashChanges,
-            )?
-            .build(),
-    )?;
+    
+    let links_query = LinkQuery::try_new(path.path_entry_hash()?, LinkTypes::AllHashChanges)?;
+    let links = get_links(links_query, GetStrategy::Local)?;
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
