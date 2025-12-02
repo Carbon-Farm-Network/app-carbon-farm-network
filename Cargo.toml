@@ -13,6 +13,8 @@ hdi = "=0.7.0"
 hdk = "=0.6.0"
 holochain_serialized_bytes = "0.0.56"
 serde = "1.0"
+rand = "0.9"
+getrandom = { version = "0.3", features = ["wasm_js"] }
 
 [workspace.dependencies.migrate]
 path = "dnas/migration/zomes/coordinator/migrate"

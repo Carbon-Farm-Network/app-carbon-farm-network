@@ -1,7 +1,7 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: acfn
 ui:
-  bundled: "../ui/dist.zip"
-happ_manifest:
-  bundled: "./acfn.happ"
+  path: "../ui/dist.zip"
+happ:
+  path: "./acfn.happ"

@@ -21,13 +21,14 @@
           hc
           bootstrap-srv
           lair-keystore
-          hc-launch
           hc-scaffold
           hn-introspect
           rust # For Rust development, with the WASM target included for zome builds
         ]) ++ (with pkgs; [
           nodejs_22 # For UI development
+          yarn # Package manager for Node.js
           binaryen # For WASM optimisation
+          typescript # TypeScript compiler for GraphQL adapter
           # Add any other packages you need here
         ]);
 

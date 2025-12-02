@@ -1,5 +1,5 @@
 ---
-manifest_version: "1"
+manifest_version: "0"
 name: acfn
 description: ~
 roles:
@@ -8,7 +8,7 @@ roles:
       strategy: create
       deferred: false
     dna:
-      bundled: "./hrea.dna"
+      path: "./hrea.dna"
       properties: ~
       uuid: ~
       version: ~
@@ -18,7 +18,7 @@ roles:
       strategy: create
       deferred: false
     dna:
-      bundled: "./hc_facets.dna"
+      path: "./hc_facets.dna"
       properties: ~
       uuid: ~
       version: ~
@@ -28,7 +28,7 @@ roles:
       strategy: create
       deferred: false
     dna:
-      bundled: "../dnas/migration/workdir/migration.dna"
+      path: "../dnas/migration/workdir/migration.dna"
       properties: ~
       uuid: ~
       version: ~

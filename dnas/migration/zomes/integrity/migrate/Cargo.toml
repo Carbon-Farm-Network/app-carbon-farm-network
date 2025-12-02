@@ -11,3 +11,4 @@ name = "migrate_integrity"
 hdi = { workspace = true }
 holochain_serialized_bytes = { workspace = true }
 serde = { workspace = true }
+getrandom = { workspace = true }
